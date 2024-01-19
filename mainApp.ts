@@ -4,9 +4,12 @@ import session from "./router/sessionRouter";
 import staff from "./router/staffRouter";
 import payment from "./router/paymentRouter";
 
+import cronParser from "cron-parser";
+
 import { HTTP } from "./utils/enums";
 import { mainError } from "./error/mianError";
 import { handleError } from "./error/handleError";
+import cron from "node-cron";
 
 export const mainApp = (app: Application) => {
   try {
@@ -19,28 +22,44 @@ export const mainApp = (app: Application) => {
       try {
         let { started } = req.body;
 
-        const timered = setTimeout(async () => {
-          if (started) {
-            console.log("do nothing", started);
-          } else {
-            started = true;
-            console.log("removing", started);
+        function addTimeToCron(cronExpression: any, additionalMinutes: any) {
+          try {
+            // Parse the cron expression
+            const interval = cronParser.parseExpression(cronExpression);
+
+            // Get the next scheduled time
+            const nextTime = interval.next().toDate();
+
+            // Add additional minutes
+            const newTime = new Date(
+              // nextTime.getTime() + additionalMinutes * 60000
+              nextTime.setFullYear(nextTime.getFullYear() + additionalMinutes)
+            );
+
+            // Output the result
+            console.log(`Original cron expression: ${cronExpression}`);
+            console.log(`Next scheduled time: ${nextTime}`);
+            console.log(
+              `New time after adding ${additionalMinutes} minutes: ${newTime}`
+            );
+          } catch (err: any) {
+            console.error(`Error parsing cron expression: ${err.message}`);
           }
+        }
 
-          console.log(started);
-          clearTimeout(timered);
-        }, 5 * 1000);
+        // Example usage
+        const originalCronExpression = "0 0 0 0 0";
+        const additionalMinutes = started;
 
-        const timer = setTimeout(async () => {
-          if (started) {
-            console.log("do nothing", started);
-          } else {
-            console.log("removing", started);
-          }
+        // addTimeToCron(originalCronExpression, additionalMinutes);
 
-          console.log(started);
-          clearTimeout(timer);
-        }, 10 * 1000);
+        cron.schedule("0 0 0 * * *", () => {
+          let currentDate = new Date();
+
+          currentDate.setFullYear(currentDate.getFullYear() + 1);
+
+          console.log("New date:", currentDate);
+        });
 
         return res.status(200).json({
           message: "School API",

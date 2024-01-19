@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { Document, Schema, model } from "mongoose";
 
 interface iSchool {
+  started: boolean;
+
   email: string;
   verify: boolean;
   enrollmentID: string;
@@ -18,6 +20,8 @@ interface iSchool {
   session: Array<{}>;
   staff: Array<{}>;
 
+  schoolTags: Array<{}>;
+
   payments: Array<{}>;
 }
 
@@ -25,6 +29,10 @@ interface iSchoolData extends iSchool, Document {}
 
 const schoolModel = new Schema<iSchoolData>(
   {
+    started: {
+      type: Boolean,
+      default: false,
+    },
     avatar: {
       type: String,
     },
@@ -58,6 +66,12 @@ const schoolModel = new Schema<iSchoolData>(
       type: Boolean,
       default: false,
     },
+
+    schoolTags: [
+      {
+        type: {},
+      },
+    ],
 
     session: [
       {

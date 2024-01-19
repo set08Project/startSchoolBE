@@ -2,12 +2,14 @@ import { Router } from "express";
 import {
   changeSchoolAddress,
   changeSchoolName,
+  changeSchoolTag,
   createSchool,
   deleteSchool,
   loginSchool,
   logoutSchool,
   readSchoolCookie,
   updateSchoolAvatar,
+  updateSchoolStartPossition,
   verifySchool,
   viewAllSchools,
   viewSchoolStatus,
@@ -43,10 +45,16 @@ router.route("/logout-school").delete(logoutSchool);
 router.route("/read-school-cookie").get(readSchoolCookie);
 
 router.route("/change-school-name/:schoolID").patch(changeSchoolName);
-router.route("/change-school-address/:schoolID").patch(changeSchoolAddress);
+
+router.route("/change-school-location/:schoolID").patch(changeSchoolAddress);
 
 router
   .route("/upload-school-avatar/:schoolID")
   .patch(upload, updateSchoolAvatar);
+
+router.route("/change-school-tag/:schoolID").patch(changeSchoolTag);
+router
+  .route("/change-school-started/:schoolID")
+  .patch(updateSchoolStartPossition);
 
 export default router;

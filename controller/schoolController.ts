@@ -315,3 +315,69 @@ export const updateSchoolAvatar = async (req: any, res: Response) => {
     });
   }
 };
+// school shool has started
+
+export const updateSchoolStartPossition = async (req: any, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+
+    const school: any = await schoolModel.findById(schoolID);
+
+    if (school.schoolName) {
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          started: true,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "school has started, operation",
+        data: updatedSchool,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating user",
+    });
+  }
+};
+
+export const changeSchoolTag = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { schoolTags } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const verified = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        { schoolTags },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "school verified successfully",
+        data: verified,
+      });
+    } else {
+      return res.status(404).json({
+        message: "error finding school",
+        data: school,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error verifying school",
+    });
+  }
+};
