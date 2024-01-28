@@ -77,10 +77,13 @@ export const createSchool = async (
     return res.status(201).json({
       message: "creating school",
       data: school,
+      status: 201,
     });
   } catch (error) {
     return res.status(404).json({
       message: "Error creating school",
+      data: error,
+      status: 404,
     });
   }
 };
@@ -130,6 +133,7 @@ export const viewSchoolStatus = async (
     return res.status(200).json({
       message: "viewing school record",
       data: school,
+      status: 200,
     });
   } catch (error) {
     return res.status(404).json({
