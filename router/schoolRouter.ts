@@ -13,6 +13,7 @@ import {
   verifySchool,
   viewAllSchools,
   viewSchoolStatus,
+  viewSchoolStatusByName,
 } from "../controller/schoolController";
 import multer from "multer";
 const upload = multer({
@@ -36,6 +37,8 @@ router.route("/register-school/").post(createSchool);
 router.route("/login-school/").post(loginSchool);
 
 router.route("/delete-school/:schoolID").delete(deleteSchool);
+
+router.route("/get-school-by-name/:schoolName").get(viewSchoolStatusByName);
 
 router.route("/verify-school/:schoolID").get(verifySchool);
 router.route("/view-school/:schoolID").get(viewSchoolStatus);

@@ -142,6 +142,27 @@ export const viewSchoolStatus = async (
   }
 };
 
+export const viewSchoolStatusByName = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolName } = req.params;
+
+    const school = await schoolModel.findOne({ schoolName });
+
+    return res.status(200).json({
+      message: "viewing school record by her name",
+      data: school,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error verifying school",
+    });
+  }
+};
+
 export const logoutSchool = async (
   req: any,
   res: Response
