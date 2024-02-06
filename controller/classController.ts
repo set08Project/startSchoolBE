@@ -1,0 +1,205 @@
+import { Request, Response } from "express";
+import schoolModel from "../model/schoolModel";
+import subjectModel from "../model/subjectModel";
+import { Types } from "mongoose";
+import classroomModel from "../model/classroomModel";
+import staffModel from "../model/staffModel";
+
+export const createSchoolClasses = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { classTeacherName, className } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName && school.status === "school-admin") {
+      const classes = await classroomModel.create({
+        schoolName: school.schoolName,
+        classTeacherName,
+        className,
+      });
+
+      school.classRooms.push(new Types.ObjectId(classes._id));
+      school.save();
+
+      return res.status(201).json({
+        message: "classes created successfully",
+        data: classes,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      status: 404,
+    });
+  }
+};
+
+export const updateSchoolClassesPerformance = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, subjectID } = req.params;
+    const { subjectTitle } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName && school.status === "school-admin") {
+      const subjects = await subjectModel.findByIdAndUpdate(
+        subjectID,
+        {
+          subjectTitle,
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "subjects title updated successfully",
+        data: subjects,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      status: 404,
+    });
+  }
+};
+
+export const viewSchoolClasses = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    const schoolClasses = await schoolModel.findById(schoolID).populate({
+      path: "classRooms",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    return res.status(200).json({
+      message: "School classes found",
+      status: 200,
+      data: schoolClasses,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school class",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
+
+export const updateSchoolClassTeacher = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, classID } = req.params;
+    const { classTeacherName } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    const getTeacher = await staffModel.findOne({
+      staffName: classTeacherName,
+    });
+
+    if (school && school.schoolName && school.status === "school-admin") {
+      if (getTeacher) {
+        const subjects = await classroomModel.findByIdAndUpdate(
+          classID,
+          {
+            classTeacherName,
+          },
+          { new: true }
+        );
+
+        await staffModel.findByIdAndUpdate(
+          getTeacher._id,
+          {
+            classesAssigned: getTeacher.classesAssigned.push(
+              subjects?.className!
+            ),
+          },
+          { new: true }
+        );
+
+        return res.status(201).json({
+          message: "class teacher updated successfully",
+          data: subjects,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "unable to find school Teacher",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      status: 404,
+    });
+  }
+};
+
+export const deleteSchoolClass = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, classID } = req.params;
+
+    const school: any = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName && school.status === "school-admin") {
+      const subjects = await classroomModel.findByIdAndDelete(classID);
+
+      school.classRooms.pull(new Types.ObjectId(subjects?._id!));
+      school.save();
+
+      return res.status(201).json({
+        message: "class deleted successfully",
+        data: subjects,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      status: 404,
+    });
+  }
+};

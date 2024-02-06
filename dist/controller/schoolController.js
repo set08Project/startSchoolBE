@@ -12,10 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = void 0;
+exports.changeSchoolTag = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
+const email_1 = require("../utils/email");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const streamifier_1 = require("../utils/streamifier");
 const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, enrollmentID } = req.body;
@@ -33,6 +35,7 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     return res.status(201).json({
                         message: "welcome back",
                         data: token,
+                        status: 201,
                     });
                 }
                 else {
@@ -73,14 +76,18 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             enrollmentID: id,
             status: "school-admin",
         });
+        (0, email_1.verifiedEmail)(school);
         return res.status(201).json({
             message: "creating school",
             data: school,
+            status: 201,
         });
     }
     catch (error) {
         return res.status(404).json({
             message: "Error creating school",
+            data: error,
+            status: 404,
         });
     }
 });
@@ -117,6 +124,7 @@ const viewSchoolStatus = (req, res) => __awaiter(void 0, void 0, void 0, functio
         return res.status(200).json({
             message: "viewing school record",
             data: school,
+            status: 200,
         });
     }
     catch (error) {
@@ -126,6 +134,23 @@ const viewSchoolStatus = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.viewSchoolStatus = viewSchoolStatus;
+const viewSchoolStatusByName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolName } = req.params;
+        const school = yield schoolModel_1.default.findOne({ schoolName });
+        return res.status(200).json({
+            message: "viewing school record by her name",
+            data: school,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error verifying school",
+        });
+    }
+});
+exports.viewSchoolStatusByName = viewSchoolStatusByName;
 const logoutSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         req.session.destroy();
@@ -238,3 +263,86 @@ const changeSchoolAddress = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.changeSchoolAddress = changeSchoolAddress;
+// school Image/Logo
+const updateSchoolAvatar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
+            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                avatar: secure_url,
+                avatarID: public_id,
+            }, { new: true });
+            console.log("image uploaded successfully");
+            return res.status(200).json({
+                message: "school avatar has been, added",
+                data: updatedSchool,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating user",
+        });
+    }
+});
+exports.updateSchoolAvatar = updateSchoolAvatar;
+// school shool has started
+const updateSchoolStartPossition = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school.schoolName) {
+            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                started: true,
+            }, { new: true });
+            return res.status(200).json({
+                message: "school has started, operation",
+                data: updatedSchool,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating user",
+        });
+    }
+});
+exports.updateSchoolStartPossition = updateSchoolStartPossition;
+const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { schoolTags } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { schoolTags }, { new: true });
+            return res.status(201).json({
+                message: "school verified successfully",
+                data: verified,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "error finding school",
+                data: school,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error verifying school",
+        });
+    }
+});
+exports.changeSchoolTag = changeSchoolTag;

@@ -3,6 +3,8 @@ import school from "./router/schoolRouter";
 import session from "./router/sessionRouter";
 import staff from "./router/staffRouter";
 import payment from "./router/paymentRouter";
+import classes from "./router/classRouter";
+import subject from "./router/subjectRouter";
 
 import cronParser from "cron-parser";
 
@@ -17,6 +19,8 @@ export const mainApp = (app: Application) => {
     app.use("/api", session);
     app.use("/api", staff);
     app.use("/api", payment);
+    app.use("/api", classes);
+    app.use("/api", subject);
 
     app.get("/", (req: Request, res: Response) => {
       try {

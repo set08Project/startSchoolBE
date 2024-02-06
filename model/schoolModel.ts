@@ -22,6 +22,9 @@ interface iSchool {
 
   schoolTags: Array<{}>;
 
+  subjects: Array<{}>;
+  classRooms: Array<{}>;
+
   payments: Array<{}>;
 }
 
@@ -77,6 +80,20 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "sessions",
+      },
+    ],
+
+    subjects: [
+      {
+        type: Types.ObjectId,
+        ref: "subjects",
+      },
+    ],
+
+    classRooms: [
+      {
+        type: Types.ObjectId,
+        ref: "classes",
       },
     ],
 

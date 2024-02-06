@@ -5,6 +5,9 @@ interface iStaff {
   schoolName: string;
   staffRole: string;
 
+  classesAssigned: Array<string>;
+  subjectAssigned: Array<string>;
+
   phone: string;
   school: {};
 }
@@ -21,6 +24,14 @@ const staffModel = new Schema<iStaffData>(
     },
     staffRole: {
       type: String,
+    },
+
+    classesAssigned: {
+      type: [],
+    },
+
+    subjectAssigned: {
+      type: [],
     },
 
     phone: {

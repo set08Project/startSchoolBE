@@ -1,28 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-const staffModel = new mongoose_1.Schema({
+const paymentModel = new mongoose_1.Schema({
+    paymentID: {
+        type: String,
+    },
     schoolName: {
         type: String,
     },
-    staffName: {
+    datePaid: {
         type: String,
     },
-    staffRole: {
+    expiryDate: {
         type: String,
     },
-    classesAssigned: {
-        type: [],
-    },
-    subjectAssigned: {
-        type: [],
-    },
-    phone: {
-        type: String,
+    cost: {
+        type: Number,
     },
     school: {
         type: mongoose_1.Types.ObjectId,
         ref: "schools",
     },
 }, { timestamps: true });
-exports.default = (0, mongoose_1.model)("staffs", staffModel);
+exports.default = (0, mongoose_1.model)("payments", paymentModel);
