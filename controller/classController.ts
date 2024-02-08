@@ -11,25 +11,47 @@ export const createSchoolClasses = async (
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
-    const { classTeacherName, className } = req.body;
+    const {
+      classTeacherName,
+      className,
+      class2ndFee,
+      class3rdFee,
+      class1stFee,
+    } = req.body;
 
-    const school = await schoolModel.findById(schoolID);
+    const school = await schoolModel.findById(schoolID).populate({
+      path: "classRooms",
+    });
+
+    const checkClass = school?.classRooms.some((el: any) => {
+      return el.className === className;
+    });
 
     if (school && school.schoolName && school.status === "school-admin") {
-      const classes = await classroomModel.create({
-        schoolName: school.schoolName,
-        classTeacherName,
-        className,
-      });
+      if (!checkClass) {
+        const classes = await classroomModel.create({
+          schoolName: school.schoolName,
+          classTeacherName,
+          className,
+          class2ndFee,
+          class3rdFee,
+          class1stFee,
+        });
 
-      school.classRooms.push(new Types.ObjectId(classes._id));
-      school.save();
+        school.classRooms.push(new Types.ObjectId(classes._id));
+        school.save();
 
-      return res.status(201).json({
-        message: "classes created successfully",
-        data: classes,
-        status: 201,
-      });
+        return res.status(201).json({
+          message: "classes created successfully",
+          data: classes,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "duplicated class name",
+          status: 404,
+        });
+      }
     } else {
       return res.status(404).json({
         message: "unable to read school",
@@ -131,6 +153,7 @@ export const updateSchoolClassTeacher = async (
           classID,
           {
             classTeacherName,
+            teacherID: getTeacher._id,
           },
           { new: true }
         );

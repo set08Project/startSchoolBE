@@ -5,6 +5,7 @@ import staff from "./router/staffRouter";
 import payment from "./router/paymentRouter";
 import classes from "./router/classRouter";
 import subject from "./router/subjectRouter";
+import event from "./router/anouncementRouter";
 
 import cronParser from "cron-parser";
 
@@ -21,6 +22,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", payment);
     app.use("/api", classes);
     app.use("/api", subject);
+    app.use("/api", event);
 
     app.get("/", (req: Request, res: Response) => {
       try {
