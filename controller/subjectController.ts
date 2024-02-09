@@ -137,6 +137,7 @@ export const updateSchoolSubjectTeacher = async (
           subjectID,
           {
             subjectTeacherName,
+            teacherID: getTeacher?._id,
           },
           { new: true }
         );

@@ -2,6 +2,7 @@ import { Document, Model, Schema, Types, model } from "mongoose";
 
 interface iSubject {
   schoolName: string;
+  teacherID: string;
   subjectTeacherName: string;
   subjectTitle: string;
   designated: string;
@@ -16,6 +17,9 @@ interface iSubjectData extends iSubject, Document {}
 
 const subjectModel = new Schema<iSubjectData>(
   {
+    teacherID: {
+      type: String,
+    },
     schoolName: {
       type: String,
     },

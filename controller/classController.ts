@@ -184,9 +184,7 @@ export const updateSchoolClassTeacher = async (
         await staffModel.findByIdAndUpdate(
           getTeacher._id,
           {
-            classesAssigned: getTeacher.classesAssigned.push(
-              subjects?.className!
-            ),
+            classesAssigned: subjects?.className!,
           },
           { new: true }
         );
