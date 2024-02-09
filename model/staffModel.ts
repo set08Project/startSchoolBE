@@ -4,10 +4,21 @@ interface iStaff {
   staffName: string;
   schoolName: string;
   staffRole: string;
+  staffAddress: string;
+  salary: number;
+
+  email: string;
+  password: string;
+  staffAvatar: string;
+  staffAvatarID: string;
+  enrollmentID: string;
+  activeStatus: boolean;
 
   classesAssigned: Array<string>;
-  subjectAssigned: Array<string>;
+  subjectAssigned: Array<{}>;
 
+  staffRating: number;
+  status: string;
   phone: string;
   school: {};
 }
@@ -16,14 +27,48 @@ interface iStaffData extends iStaff, Document {}
 
 const staffModel = new Schema<iStaffData>(
   {
+    salary: {
+      type: Number,
+    },
     schoolName: {
       type: String,
     },
+    enrollmentID: {
+      type: String,
+    },
+
+    email: {
+      type: String,
+    },
+
+    activeStatus: {
+      type: Boolean,
+      default: false,
+    },
+
+    password: {
+      type: String,
+    },
+
+    staffAvatar: {
+      type: String,
+    },
+
+    staffAvatarID: {
+      type: String,
+    },
+
     staffName: {
       type: String,
     },
+
     staffRole: {
       type: String,
+    },
+
+    staffRating: {
+      type: Number,
+      default: 0,
     },
 
     classesAssigned: {
@@ -35,6 +80,10 @@ const staffModel = new Schema<iStaffData>(
     },
 
     phone: {
+      type: String,
+    },
+
+    status: {
       type: String,
     },
 

@@ -6,11 +6,20 @@ import {
   createSchoolTeacherByPrincipal,
   createSchoolTeacherByVicePrincipal,
   createSchoolVicePrincipal,
+  readSchooTeacher,
+  readTeacherDetail,
+  updateTeacherSalary,
 } from "../controller/staffController";
 
 const router: Router = Router();
 
-router.route("/create-teacher/:schoolID").post(createSchoolTeacher);
+router.route("/create-school-teacher/:schoolID").post(createSchoolTeacher);
+router.route("/view-school-teacher/:schoolID").get(readSchooTeacher);
+
+router.route("/view-teacher-detail/:staffID").get(readTeacherDetail);
+router.route("/update-teacher-salery/:staffID").patch(updateTeacherSalary);
+
+// others
 
 router.route("/create-school-principal/:schoolID").post(createSchoolPrincipal);
 

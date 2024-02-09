@@ -7,6 +7,8 @@ import classes from "./router/classRouter";
 import subject from "./router/subjectRouter";
 import event from "./router/anouncementRouter";
 
+import student from "./router/studentRouter";
+
 import cronParser from "cron-parser";
 
 import { HTTP } from "./utils/enums";
@@ -23,6 +25,8 @@ export const mainApp = (app: Application) => {
     app.use("/api", classes);
     app.use("/api", subject);
     app.use("/api", event);
+
+    app.use("/api", student);
 
     app.get("/", (req: Request, res: Response) => {
       try {
