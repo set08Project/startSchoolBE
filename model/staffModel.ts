@@ -20,6 +20,7 @@ interface iStaff {
   staffRating: number;
   status: string;
   phone: string;
+  gender: string;
   school: {};
 }
 
@@ -27,6 +28,9 @@ interface iStaffData extends iStaff, Document {}
 
 const staffModel = new Schema<iStaffData>(
   {
+    gender: {
+      type: String,
+    },
     salary: {
       type: Number,
     },
@@ -38,6 +42,10 @@ const staffModel = new Schema<iStaffData>(
     },
 
     email: {
+      type: String,
+    },
+
+    staffAddress: {
       type: String,
     },
 

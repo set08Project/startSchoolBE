@@ -11,8 +11,13 @@ export const createSchoolStudent = async (
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
-    const { studentLastName, studentFirstName, studentAddress, classAssigned } =
-      req.body;
+    const {
+      studentLastName,
+      gender,
+      studentFirstName,
+      studentAddress,
+      classAssigned,
+    } = req.body;
 
     const school = await schoolModel.findById(schoolID).populate({
       path: "classRooms",
@@ -35,6 +40,7 @@ export const createSchoolStudent = async (
     if (school && school.schoolName && school.status === "school-admin") {
       if (findClass) {
         const student = await studentModel.create({
+          gender,
           enrollmentID,
           schoolID: school?.enrollmentID,
           studentFirstName,

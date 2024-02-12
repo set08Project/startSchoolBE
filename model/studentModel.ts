@@ -4,6 +4,7 @@ interface iStudent {
   studentName: string;
   studentAddress: string;
   schoolName: string;
+  gender: string;
   classAssigned: string;
 
   enrollmentID: string;
@@ -21,6 +22,9 @@ interface iStudentData extends iStudent, Document {}
 const studentModel = new Schema<iStudentData>(
   {
     password: {
+      type: String,
+    },
+    gender: {
       type: String,
     },
     email: {

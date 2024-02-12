@@ -142,12 +142,19 @@ export const updateSchoolSubjectTeacher = async (
           { new: true }
         );
 
+        const addedData = [
+          ...getTeacher.subjectAssigned,
+          {
+            title: subjects?.subjectTitle,
+            id: subjects?._id,
+            classMeant: subjects?.designated,
+          },
+        ];
+
         await staffModel.findByIdAndUpdate(
           getTeacher._id,
           {
-            classesAssigned: getTeacher.subjectAssigned.push(
-              subjects?.subjectTitle!
-            ),
+            subjectAssigned: addedData,
           },
           { new: true }
         );
@@ -171,7 +178,7 @@ export const updateSchoolSubjectTeacher = async (
     }
   } catch (error) {
     return res.status(404).json({
-      message: "Error creating school session",
+      message: "Error updating school subject to Teacher",
       status: 404,
     });
   }

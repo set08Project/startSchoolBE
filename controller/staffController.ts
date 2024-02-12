@@ -210,7 +210,8 @@ export const createSchoolTeacher = async (
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
-    const { staffName, salary, staffAddress, role, subjectTitle } = req.body;
+    const { staffName, gender, salary, staffAddress, role, subjectTitle } =
+      req.body;
 
     const enrollmentID = crypto.randomBytes(3).toString("hex");
 
@@ -235,6 +236,7 @@ export const createSchoolTeacher = async (
           role,
           status: "school-teacher",
           salary,
+          gender,
 
           email: `${staffName
             .replace(/ /gi, "")
