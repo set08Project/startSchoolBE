@@ -8,6 +8,7 @@ import subject from "./router/subjectRouter";
 import event from "./router/anouncementRouter";
 
 import student from "./router/studentRouter";
+import timetable from "./router/timeTableRouter";
 
 import cronParser from "cron-parser";
 
@@ -27,6 +28,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", event);
 
     app.use("/api", student);
+    app.use("/api", timetable);
 
     app.get("/", (req: Request, res: Response) => {
       try {

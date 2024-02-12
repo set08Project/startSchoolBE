@@ -141,7 +141,9 @@ export const viewClassRM = async (
   try {
     const { classID } = req.params;
 
-    const schoolClasses = await classroomModel.findById(classID);
+    const schoolClasses = await classroomModel.findById(classID).populate({
+      path: "classSubjects",
+    });
 
     return res.status(200).json({
       message: "School classes info found",

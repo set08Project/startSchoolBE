@@ -14,6 +14,7 @@ interface iClass {
   classSubjects: Array<{}>;
   classStudents: Array<{}>;
   classAttendence: Array<{}>;
+  timeTable: Array<{}>;
 
   school: {};
 }
@@ -68,6 +69,13 @@ const classesModel = new Schema<iClassData>(
       {
         type: Types.ObjectId,
         ref: "students",
+      },
+    ],
+
+    timeTable: [
+      {
+        type: Types.ObjectId,
+        ref: "timeTables",
       },
     ],
 

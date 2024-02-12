@@ -16,6 +16,7 @@ interface iStaff {
 
   classesAssigned: string;
   subjectAssigned: Array<{}>;
+  timeTables: Array<{}>;
 
   staffRating: number;
   status: string;
@@ -86,6 +87,13 @@ const staffModel = new Schema<iStaffData>(
     subjectAssigned: {
       type: [],
     },
+
+    timeTables: [
+      {
+        type: Types.ObjectId,
+        ref: "timeTables",
+      },
+    ],
 
     phone: {
       type: String,
