@@ -7,6 +7,8 @@ import classroomModel from "../model/classroomModel";
 import timetableModel from "../model/timetableModel";
 import lodash from "lodash";
 import staffModel from "../model/staffModel";
+import { string } from "joi";
+
 export const createClassTimeTable = async (
   req: Request,
   res: Response
@@ -29,12 +31,10 @@ export const createClassTimeTable = async (
       }
     );
 
-    const findTeacher = await staffModel.findById({
-      _id: checkForSubjectteacher.teacherID,
-    });
-
+    console.log(subject);
+    //  || "Assembly" || "Short Break" || "Long Break"
     if (school && school.schoolName && school.status === "school-admin") {
-      if (checkForSubject) {
+      if (subject === "Assembly" || "Short Break" || "Long Break") {
         const classes = await timetableModel.create({
           subject,
           day,
@@ -44,8 +44,33 @@ export const createClassTimeTable = async (
         classRoom?.timeTable.push(new Types.ObjectId(classes._id));
         classRoom?.save();
 
-        findTeacher?.timeTables.push(new Types.ObjectId(classes._id));
-        findTeacher?.save();
+        return res.status(201).json({
+          message: "timetable entry created successfully",
+          data: classes,
+          status: 201,
+        });
+      } else if (checkForSubject) {
+        const classes = await timetableModel.create({
+          subject,
+          day,
+          time,
+        });
+
+        classRoom?.timeTable.push(new Types.ObjectId(classes._id));
+        classRoom?.save();
+
+        if (checkForSubjectteacher.teacherID) {
+          const findTeacher = await staffModel.findById({
+            _id: checkForSubjectteacher.teacherID,
+          });
+
+          findTeacher?.timeTables.push(new Types.ObjectId(classes._id));
+          findTeacher?.save();
+
+          console.log(findTeacher);
+        }
+
+        console.log(classes);
 
         return res.status(201).json({
           message: "timetable entry created successfully",
@@ -88,11 +113,9 @@ export const readClassTimeTable = async (
       },
     });
 
-    const viewTable = lodash.groupBy(timeTable?.timeTable, "day");
-
     return res.status(201).json({
       message: "timetable read successfully",
-      data: viewTable,
+      data: timeTable,
       status: 201,
     });
   } catch (error) {

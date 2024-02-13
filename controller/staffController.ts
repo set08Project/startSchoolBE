@@ -5,6 +5,76 @@ import { Types } from "mongoose";
 import { staffDuty } from "../utils/enums";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { streamUpload } from "../utils/streamifier";
+
+export const loginTeacher = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { email, password } = req.body;
+    const getTeacher = await staffModel.findOne({ email });
+
+    const school = await schoolModel.findOne({
+      schoolName: getTeacher?.schoolName,
+    });
+
+    if (school?.schoolName && getTeacher?.schoolName) {
+      if (school.verify) {
+        const token = jwt.sign({ status: school.status }, "teacher", {
+          expiresIn: "1d",
+        });
+
+        req.session.isAuth = true;
+        req.session.isSchoolID = getTeacher._id;
+
+        return res.status(201).json({
+          message: "welcome back",
+          user: getTeacher?.status,
+          data: token,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "please confirm with your school admin",
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "Error finding school",
+      });
+    }
+
+    return res.status(201).json({
+      message: "creating school",
+      data: school,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school",
+    });
+  }
+};
+
+export const readTeacherCookie = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const readSchool = req.session.isSchoolID;
+
+    return res.status(200).json({
+      message: "GoodBye",
+      data: readSchool,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error verifying school",
+    });
+  }
+};
 
 export const createSchoolPrincipal = async (
   req: Request,
@@ -314,10 +384,10 @@ export const readTeacherDetail = async (
 
     const staff = await staffModel.findById(staffID);
 
-    return res.status(201).json({
+    return res.status(200).json({
       message: "satff read successfully",
       data: staff,
-      status: 201,
+      status: 200,
     });
   } catch (error) {
     return res.status(404).json({
@@ -352,6 +422,23 @@ export const updateTeacherSalary = async (
     return res.status(404).json({
       message: "Error creating school staff",
       status: 404,
+    });
+  }
+};
+
+export const logoutTeacher = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    req.session.destroy();
+
+    return res.status(200).json({
+      message: "GoodBye",
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error logging out teacher",
     });
   }
 };

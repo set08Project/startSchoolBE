@@ -29,6 +29,7 @@ export const loginSchool = async (
           return res.status(201).json({
             message: "welcome back",
             data: token,
+            user: school?.status,
             status: 201,
           });
         } else {

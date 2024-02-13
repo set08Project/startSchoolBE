@@ -6,7 +6,9 @@ import {
   createSchoolTeacherByPrincipal,
   createSchoolTeacherByVicePrincipal,
   createSchoolVicePrincipal,
+  loginTeacher,
   readSchooTeacher,
+  readTeacherCookie,
   readTeacherDetail,
   updateTeacherSalary,
 } from "../controller/staffController";
@@ -15,6 +17,9 @@ const router: Router = Router();
 
 router.route("/create-school-teacher/:schoolID").post(createSchoolTeacher);
 router.route("/view-school-teacher/:schoolID").get(readSchooTeacher);
+
+router.route("/login-teacher").post(loginTeacher);
+router.route("/read-teacher-cookie").get(readTeacherCookie);
 
 router.route("/view-teacher-detail/:staffID").get(readTeacherDetail);
 router.route("/update-teacher-salery/:staffID").patch(updateTeacherSalary);
