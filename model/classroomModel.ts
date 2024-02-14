@@ -12,10 +12,11 @@ interface iClass {
   classPerformance: number;
 
   classSubjects: Array<{}>;
-  classStudents: Array<{}>;
   classAttendence: Array<{}>;
   timeTable: Array<{}>;
+  attendance: Array<{}>;
 
+  students: Array<{}>;
   school: {};
 }
 
@@ -65,10 +66,17 @@ const classesModel = new Schema<iClassData>(
       },
     ],
 
-    classStudents: [
+    students: [
       {
         type: Types.ObjectId,
         ref: "students",
+      },
+    ],
+
+    attendance: [
+      {
+        type: Types.ObjectId,
+        ref: "attendances",
       },
     ],
 

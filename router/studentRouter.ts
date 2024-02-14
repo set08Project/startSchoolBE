@@ -9,8 +9,8 @@ const router: Router = Router();
 
 router.route("/create-student/:schoolID").post(createSchoolStudent);
 
-router.route("/read-school-student/:schoolID").get(readSchoolStudents);
+router.route("/read-student/:schoolID").get(readSchoolStudents);
 
-router.route("/read-student-info/:StudentID").get(readStudentDetail);
+router.route("/read-student-info/:studentID").get(readStudentDetail);
 
 export default router;

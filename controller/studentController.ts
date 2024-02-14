@@ -33,7 +33,7 @@ export const createSchoolStudent = async (
       salt
     );
 
-    const findClass = school?.classRooms?.some((el: any) => {
+    const findClass: any = school?.classRooms?.find((el: any) => {
       return el.className === classAssigned;
     });
 
@@ -61,6 +61,9 @@ export const createSchoolStudent = async (
 
         school?.students.push(new Types.ObjectId(student._id));
         school.save();
+
+        findClass?.students.push(new Types.ObjectId(student._id));
+        findClass.save();
 
         return res.status(201).json({
           message: "student created successfully",
