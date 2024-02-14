@@ -2,7 +2,8 @@ import { Document, Schema, Types, model } from "mongoose";
 
 interface iStudent {
   totalPerformance: number;
-  studentName: string;
+  studentLastName: string;
+  studentFirstName: string;
   studentAddress: string;
   schoolName: string;
   gender: string;
@@ -27,6 +28,12 @@ interface iStudentData extends iStudent, Document {}
 const studentModel = new Schema<iStudentData>(
   {
     password: {
+      type: String,
+    },
+    studentFirstName: {
+      type: String,
+    },
+    studentLastName: {
       type: String,
     },
 
@@ -56,10 +63,6 @@ const studentModel = new Schema<iStudentData>(
     },
 
     status: {
-      type: String,
-    },
-
-    studentName: {
       type: String,
     },
 

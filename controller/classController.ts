@@ -142,15 +142,13 @@ export const viewClassesByStudent = async (
     const { classID } = req.params;
 
     const schoolClasses = await classroomModel.findById(classID).populate({
-      path: "classStudents",
+      path: "students",
       options: {
         sort: {
           createdAt: -1,
         },
       },
     });
-
-    console.log(schoolClasses);
 
     return res.status(200).json({
       message: "finding class students",

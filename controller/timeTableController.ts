@@ -25,16 +25,14 @@ export const createClassTimeTable = async (
     const checkForSubject = classRoom?.classSubjects.some((el: any) => {
       return el.subjectTitle === subject;
     });
-    const checkForSubjectteacher: any = classRoom?.classSubjects.find(
-      (el: any) => {
-        return el.subjectTitle === subject;
-      }
-    );
 
-    console.log(subject);
+    const findTeacher = await staffModel.findById({
+      _id: classRoom?.teacherID,
+    });
+
     //  || "Assembly" || "Short Break" || "Long Break"
     if (school && school.schoolName && school.status === "school-admin") {
-      if (subject === "Assembly" || "Short Break" || "Long Break") {
+      if (checkForSubject) {
         const classes = await timetableModel.create({
           subject,
           day,
@@ -43,13 +41,16 @@ export const createClassTimeTable = async (
 
         classRoom?.timeTable.push(new Types.ObjectId(classes._id));
         classRoom?.save();
+
+        findTeacher?.schedule.push(new Types.ObjectId(classes._id));
+        findTeacher?.save();
 
         return res.status(201).json({
           message: "timetable entry created successfully",
           data: classes,
           status: 201,
         });
-      } else if (checkForSubject) {
+      } else if (subject === "Assembly" || "Short Break" || "Long Break") {
         const classes = await timetableModel.create({
           subject,
           day,
@@ -58,19 +59,6 @@ export const createClassTimeTable = async (
 
         classRoom?.timeTable.push(new Types.ObjectId(classes._id));
         classRoom?.save();
-
-        if (checkForSubjectteacher.teacherID) {
-          const findTeacher = await staffModel.findById({
-            _id: checkForSubjectteacher.teacherID,
-          });
-
-          findTeacher?.timeTables.push(new Types.ObjectId(classes._id));
-          findTeacher?.save();
-
-          console.log(findTeacher);
-        }
-
-        console.log(classes);
 
         return res.status(201).json({
           message: "timetable entry created successfully",
@@ -132,19 +120,19 @@ export const readTeacherSchedule = async (
   try {
     const { teacherID } = req.params;
 
-    const timeTable = await staffModel.findById(teacherID).populate({
-      path: "timeTables",
-    });
+    const timeTable: any = await staffModel
+      .findById(teacherID)
+      .populate({ path: "schedule" });
 
-    console.log(timeTable);
+    console.log("I can see...!", timeTable?.timeTables);
     return res.status(201).json({
-      message: "timetable read successfully",
+      message: "scheule read successfully",
       data: timeTable,
       status: 201,
     });
   } catch (error: any) {
     return res.status(404).json({
-      message: "Error creating timetablemkm kim",
+      message: "Error creating timetable",
       data: error.message,
       status: 404,
     });

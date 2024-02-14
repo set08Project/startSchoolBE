@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 interface iClass {
   present?: boolean;
   absent?: boolean;
-  studentName?: string;
+  studentFirstName?: string;
+  studentLastName?: string;
   className?: string;
   classTeacher?: string;
   students?: {};
@@ -22,7 +23,11 @@ const attendanceModel = new mongoose.Schema(
       type: String,
       require: true,
     },
-    studentName: {
+    studentFirstName: {
+      type: String,
+      require: true,
+    },
+    studentLastName: {
       type: String,
       require: true,
     },

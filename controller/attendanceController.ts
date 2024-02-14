@@ -29,7 +29,8 @@ export const createAttendancePresent = async (req: Request, res: Response) => {
         classToken: code,
         present: true,
         absent: false,
-        studentName: getStudent!.studentName,
+        studentFirstName: getStudent!.studentFirstName,
+        studentLastName: getStudent!.studentLastName,
         classTeacher: getTeacher!.staffName,
         dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format(
           "MMMM Do YYYY"
@@ -79,7 +80,8 @@ export const createAttendanceAbsent = async (req: Request, res: Response) => {
         classToken: code,
         present: false,
         absent: true,
-        studentName: getStudent!.studentName,
+        studentLastName: getStudent!.studentLastName,
+        studentFirstName: getStudent!.studentFirstName,
         classTeacher: getTeacher!.staffName,
         dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format(
           "MMMM Do YYYY"
