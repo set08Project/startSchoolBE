@@ -13,11 +13,13 @@ interface iStaff {
   staffAvatarID: string;
   enrollmentID: string;
   activeStatus: boolean;
-
   classesAssigned: string;
+
   subjectAssigned: Array<{}>;
   schedule: Array<{}>;
   attendance: Array<{}>;
+  quiz: Array<{}>;
+  lessonNotes: Array<{}>;
 
   staffRating: number;
   status: string;
@@ -100,6 +102,20 @@ const staffModel = new Schema<iStaffData>(
       {
         type: Types.ObjectId,
         ref: "attendances",
+      },
+    ],
+
+    lessonNotes: [
+      {
+        type: Types.ObjectId,
+        ref: "attendances",
+      },
+    ],
+
+    quiz: [
+      {
+        type: Types.ObjectId,
+        ref: "quizes",
       },
     ],
 

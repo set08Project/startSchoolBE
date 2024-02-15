@@ -245,3 +245,25 @@ export const deleteSchoolSubject = async (
     });
   }
 };
+
+export const viewSubjectDetail = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { subjectID } = req.params;
+
+    const subject = await subjectModel.findById(subjectID);
+
+    return res.status(200).json({
+      message: "Subject found",
+      status: 200,
+      data: subject,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating subject session",
+      status: 404,
+    });
+  }
+};

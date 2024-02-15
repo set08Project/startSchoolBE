@@ -1,13 +1,9 @@
 import { Request, Response } from "express";
 import schoolModel from "../model/schoolModel";
-import announcementModel from "../model/announcementModel";
 import { Types } from "mongoose";
-import eventModel from "../model/eventModel";
 import classroomModel from "../model/classroomModel";
 import timetableModel from "../model/timetableModel";
-import lodash from "lodash";
 import staffModel from "../model/staffModel";
-import { string } from "joi";
 
 export const createClassTimeTable = async (
   req: Request,
@@ -124,7 +120,6 @@ export const readTeacherSchedule = async (
       .findById(teacherID)
       .populate({ path: "schedule" });
 
-    console.log("I can see...!", timeTable?.timeTables);
     return res.status(201).json({
       message: "scheule read successfully",
       data: timeTable,

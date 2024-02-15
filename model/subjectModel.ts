@@ -6,6 +6,7 @@ interface iSubject {
   subjectTeacherName: string;
   subjectTitle: string;
   designated: string;
+  quiz: Array<{}>;
 
   subjectPerformance: number;
   school: {};
@@ -17,6 +18,12 @@ interface iSubjectData extends iSubject, Document {}
 
 const subjectModel = new Schema<iSubjectData>(
   {
+    quiz: [
+      {
+        type: Types.ObjectId,
+        ref: "quizes",
+      },
+    ],
     teacherID: {
       type: String,
     },
