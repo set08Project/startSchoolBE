@@ -442,3 +442,37 @@ export const logoutTeacher = async (
     });
   }
 };
+
+export const updateStaffAvatar = async (req: any, res: Response) => {
+  try {
+    const { staffID } = req.params;
+
+    const school = await staffModel.findById(staffID);
+
+    if (school) {
+      const { secure_url, public_id }: any = await streamUpload(req);
+
+      const updatedSchool = await staffModel.findByIdAndUpdate(
+        staffID,
+        {
+          avatar: secure_url,
+          avatarID: public_id,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "staff avatar has been, added",
+        data: updatedSchool,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating user",
+    });
+  }
+};

@@ -10,8 +10,24 @@ import {
   readSchooTeacher,
   readTeacherCookie,
   readTeacherDetail,
+  updateStaffAvatar,
   updateTeacherSalary,
 } from "../controller/staffController";
+import multer from "multer";
+const upload = multer({
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("Only .png, .jpg and .jpeg format allowed!"));
+    }
+  },
+}).single("avatar");
 
 const router: Router = Router();
 
@@ -40,5 +56,7 @@ router
 router
   .route("/create-school-teacher-vice-prinicipal/:schoolID")
   .post(createSchoolTeacherByVicePrincipal);
+
+router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 export default router;
