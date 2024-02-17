@@ -4,6 +4,7 @@ import {
   deleteSchoolClass,
   updateSchoolClassTeacher,
   viewClassRM,
+  viewClassTopStudent,
   viewClassesByStudent,
   viewClassesBySubject,
   viewClassesByTimeTable,
@@ -27,6 +28,7 @@ router.route("/view-classroom-info-subject/:classID").get(viewClassesBySubject);
 router.route("/view-classroom-info-student/:classID").get(viewClassesByStudent);
 
 router.route("/view-classroom-info-name/").post(viewSchoolClassesByName);
+router.route("/view-classroom-performance/:classID").get(viewClassTopStudent);
 
 router
   .route("/update-classrooms-teacher/:schoolID/:classID")

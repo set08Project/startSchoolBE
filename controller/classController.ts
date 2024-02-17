@@ -4,6 +4,7 @@ import subjectModel from "../model/subjectModel";
 import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
 import staffModel from "../model/staffModel";
+import lodash from "lodash";
 
 export const createSchoolClasses = async (
   req: Request,
@@ -201,7 +202,9 @@ export const viewSchoolClassesByName = async (
   try {
     const { className } = req.body;
 
-    const schoolClasses = await classroomModel.findOne({ className });
+    const schoolClasses = await classroomModel.findOne({ className }).populate({
+      path: "classSubjects",
+    });
 
     return res.status(200).json({
       message: "finding classes by Name",
@@ -359,6 +362,42 @@ export const deleteSchoolClass = async (
     return res.status(404).json({
       message: "Error creating school session",
       status: 404,
+    });
+  }
+};
+
+export const viewClassTopStudent = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+
+    const schoolClasses = await classroomModel.findById(classID).populate({
+      path: "students",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    const rate = lodash.orderBy(
+      schoolClasses?.students,
+      ["totalPerformance"],
+      ["desc"]
+    );
+
+    return res.status(200).json({
+      message: "finding class students top performance!",
+      status: 200,
+      data: rate,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school class",
+      status: 404,
+      data: error.message,
     });
   }
 };

@@ -4,6 +4,43 @@ import crypto from "crypto";
 import { verifiedEmail } from "../utils/email";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
+import lodash from "lodash";
+
+export const viewSchoolTopStudent = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    const schoolClasses = await schoolModel.findById(schoolID).populate({
+      path: "students",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    const rate = lodash.orderBy(
+      schoolClasses?.students,
+      ["totalPerformance"],
+      ["desc"]
+    );
+
+    return res.status(200).json({
+      message: "finding class students top performance!",
+      status: 200,
+      data: rate,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school class",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
 
 export const loginSchool = async (
   req: any,

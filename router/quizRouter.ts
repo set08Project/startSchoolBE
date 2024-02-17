@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createSubjectQuiz,
+  readQuiz,
   readSubjectQuiz,
   readTeacherSubjectQuiz,
 } from "../controller/quizController";
@@ -11,5 +12,6 @@ router
   .route("/create-subject-quiz/:classID/:subjectID")
   .post(createSubjectQuiz);
 router.route("/view-subject-quiz/:subjectID").get(readSubjectQuiz);
-router.route("/view-teacher-quiz/:teacherID").get(readTeacherSubjectQuiz);
+router.route("/view-subject-quiz/:quizID").get(readTeacherSubjectQuiz);
+router.route("/view-quiz/:quizID").get(readQuiz);
 export default router;

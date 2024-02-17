@@ -6,6 +6,7 @@ import payment from "./router/paymentRouter";
 import classes from "./router/classRouter";
 import subject from "./router/subjectRouter";
 import event from "./router/anouncementRouter";
+import performance from "./router/performanceRouter";
 
 import student from "./router/studentRouter";
 import timetable from "./router/timeTableRouter";
@@ -32,6 +33,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", attendance);
     app.use("/api", quiz);
     app.use("/api", lessonNote);
+    app.use("/api", performance);
 
     app.use("/api", student);
     app.use("/api", timetable);

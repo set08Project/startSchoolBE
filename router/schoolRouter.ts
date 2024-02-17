@@ -14,6 +14,7 @@ import {
   viewAllSchools,
   viewSchoolStatus,
   viewSchoolStatusByName,
+  viewSchoolTopStudent,
 } from "../controller/schoolController";
 import multer from "multer";
 const upload = multer({
@@ -33,6 +34,7 @@ const upload = multer({
 
 const router: Router = Router();
 
+router.route("/view-school-top-student/:schoolID").get(viewSchoolTopStudent);
 router.route("/register-school/").post(createSchool);
 router.route("/login-school/").post(loginSchool);
 

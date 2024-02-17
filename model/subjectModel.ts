@@ -12,6 +12,7 @@ interface iSubject {
   school: {};
   class: {};
   classDetails: {};
+  performance: Array<{}>;
 }
 
 interface iSubjectData extends iSubject, Document {}
@@ -22,6 +23,13 @@ const subjectModel = new Schema<iSubjectData>(
       {
         type: Types.ObjectId,
         ref: "quizes",
+      },
+    ],
+
+    performance: [
+      {
+        type: Types.ObjectId,
+        ref: "performances",
       },
     ],
     teacherID: {

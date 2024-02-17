@@ -6,6 +6,7 @@ interface iTimeTable {
 
   subject: {};
   staff: {};
+  performance: Array<{}>;
 }
 
 interface iTimeTableData extends iTimeTable, Document {}
@@ -28,6 +29,13 @@ const quizModel = new Schema<iTimeTableData>(
       type: Types.ObjectId,
       ref: "staffs",
     },
+
+    performance: [
+      {
+        type: Types.ObjectId,
+        ref: "performances",
+      },
+    ],
   },
   { timestamps: true }
 );

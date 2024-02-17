@@ -107,3 +107,26 @@ export const readTeacherSubjectQuiz = async (
     });
   }
 };
+
+export const readQuiz = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { quizID } = req.params;
+
+    const quiz: any = await quizModel.findById(quizID);
+
+    return res.status(201).json({
+      message: "subject quiz read successfully",
+      data: quiz,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating subject quiz",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
