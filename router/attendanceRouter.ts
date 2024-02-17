@@ -3,6 +3,7 @@ import {
   createAttendanceAbsent,
   viewStudentAttendanceByTeacher,
   viewStudentAttendance,
+  viewClassStudentAttendance,
 } from "../controller/attendanceController";
 
 import { Router } from "express";
@@ -20,5 +21,9 @@ router
 router
   .route("/viewing-student-attendance/:teacherID")
   .get(viewStudentAttendance);
+
+router
+  .route("/viewing-class-attendance/:classID")
+  .get(viewClassStudentAttendance);
 
 export default router;
