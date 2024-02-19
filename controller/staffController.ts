@@ -299,6 +299,7 @@ export const createSchoolTeacher = async (
     if (school && school.schoolName && school.status === "school-admin") {
       if (getSubject) {
         const staff = await staffModel.create({
+          schoolIDs: schoolID,
           staffName,
           schoolName: school.schoolName,
           staffRole: staffDuty.TEACHER,

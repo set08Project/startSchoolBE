@@ -19,7 +19,7 @@ router
   .get(viewStudentAttendanceByTeacher);
 
 router
-  .route("/viewing-student-attendance/:teacherID")
+  .route("/viewing-student-attendance/:studentID")
   .get(viewStudentAttendance);
 
 router

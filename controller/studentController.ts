@@ -42,6 +42,7 @@ export const createSchoolStudent = async (
     if (school && school.schoolName && school.status === "school-admin") {
       if (findClass) {
         const student = await studentModel.create({
+          schoolIDs: schoolID,
           gender,
           enrollmentID,
           schoolID: school?.enrollmentID,

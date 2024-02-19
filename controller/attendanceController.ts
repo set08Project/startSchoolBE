@@ -25,7 +25,7 @@ export const createAttendancePresent = async (req: Request, res: Response) => {
         className: getStudent!.classAssigned,
         classToken: code,
         present: true,
-        absent: false,
+        absent: null,
         studentFirstName: getStudent!.studentFirstName,
         studentLastName: getStudent!.studentLastName,
         classTeacher: getTeacher!.staffName,
@@ -76,7 +76,7 @@ export const createAttendanceAbsent = async (req: Request, res: Response) => {
       const attendance = await attendanceModel.create({
         className: getStudent!.classAssigned,
         classToken: code,
-        present: false,
+        present: null,
         absent: true,
         studentFirstName: getStudent!.studentFirstName,
         studentLastName: getStudent!.studentLastName,
@@ -132,10 +132,12 @@ export const viewStudentAttendanceByTeacher = async (
 
 export const viewStudentAttendance = async (req: Request, res: Response) => {
   try {
-    const student = await studentModel.findById(req.params.teacherID).populate({
+    const student = await studentModel.findById(req.params.studentID).populate({
       path: "attendance",
       options: { sort: { createdAt: -1 } },
     });
+
+    console.log("attendance: ", student);
 
     return res.status(200).json({
       message: `Viewing student attendance detail...!`,

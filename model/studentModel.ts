@@ -8,6 +8,7 @@ interface iStudent {
   schoolName: string;
   gender: string;
   classAssigned: string;
+  schoolIDs: string;
 
   started: boolean;
   status: string;
@@ -22,12 +23,16 @@ interface iStudent {
   performance: Array<{}>;
   school: {};
   classroom: {};
+  assignmentResolve: Array<{}>;
 }
 
 interface iStudentData extends iStudent, Document {}
 
 const studentModel = new Schema<iStudentData>(
   {
+    schoolIDs: {
+      type: String,
+    },
     password: {
       type: String,
     },
@@ -112,6 +117,13 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "performances",
+      },
+    ],
+
+    assignmentResolve: [
+      {
+        type: Types.ObjectId,
+        ref: "resolvs",
       },
     ],
   },

@@ -13,6 +13,7 @@ import timetable from "./router/timeTableRouter";
 import attendance from "./router/attendanceRouter";
 import quiz from "./router/quizRouter";
 import lessonNote from "./router/lessonNoteRouter";
+import assignment from "./router/assignmentResolveRouter";
 
 import cronParser from "cron-parser";
 
@@ -37,6 +38,7 @@ export const mainApp = (app: Application) => {
 
     app.use("/api", student);
     app.use("/api", timetable);
+    app.use("/api", assignment);
 
     app.get("/", (req: Request, res: Response) => {
       try {

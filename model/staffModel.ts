@@ -5,6 +5,7 @@ interface iStaff {
   schoolName: string;
   staffRole: string;
   staffAddress: string;
+  schoolIDs: string;
   salary: number;
 
   email: string;
@@ -20,6 +21,8 @@ interface iStaff {
   attendance: Array<{}>;
   quiz: Array<{}>;
   lessonNotes: Array<{}>;
+  assignment: Array<{}>;
+  assignmentResolve: Array<{}>;
 
   staffRating: number;
   status: string;
@@ -32,6 +35,9 @@ interface iStaffData extends iStaff, Document {}
 
 const staffModel = new Schema<iStaffData>(
   {
+    schoolIDs: {
+      type: String,
+    },
     gender: {
       type: String,
     },
@@ -95,6 +101,20 @@ const staffModel = new Schema<iStaffData>(
       {
         type: Types.ObjectId,
         ref: "timeTables",
+      },
+    ],
+
+    assignment: [
+      {
+        type: Types.ObjectId,
+        ref: "assignments",
+      },
+    ],
+
+    assignmentResolve: [
+      {
+        type: Types.ObjectId,
+        ref: "resolves",
       },
     ],
 

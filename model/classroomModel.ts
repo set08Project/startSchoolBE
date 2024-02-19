@@ -17,6 +17,8 @@ interface iClass {
   attendance: Array<{}>;
 
   students: Array<{}>;
+  assignment: Array<{}>;
+  assignmentResolve: Array<{}>;
   school: {};
 }
 
@@ -66,6 +68,13 @@ const classesModel = new Schema<iClassData>(
       },
     ],
 
+    assignment: [
+      {
+        type: Types.ObjectId,
+        ref: "assignments",
+      },
+    ],
+
     students: [
       {
         type: Types.ObjectId,
@@ -77,6 +86,13 @@ const classesModel = new Schema<iClassData>(
       {
         type: Types.ObjectId,
         ref: "attendances",
+      },
+    ],
+
+    assignmentResolve: [
+      {
+        type: Types.ObjectId,
+        ref: "resolvs",
       },
     ],
 
