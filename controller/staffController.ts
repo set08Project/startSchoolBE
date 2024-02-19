@@ -25,16 +25,23 @@ export const loginTeacher = async (
         const token = jwt.sign({ status: school.status }, "teacher", {
           expiresIn: "1d",
         });
+        const passed = await bcrypt.compare(password, getTeacher?.password);
 
-        req.session.isAuth = true;
-        req.session.isSchoolID = getTeacher._id;
+        if (passed) {
+          req.session.isAuth = true;
+          req.session.isSchoolID = getTeacher._id;
 
-        return res.status(201).json({
-          message: "welcome back",
-          user: getTeacher?.status,
-          data: token,
-          status: 201,
-        });
+          return res.status(201).json({
+            message: "welcome back",
+            user: getTeacher?.status,
+            data: token,
+            status: 201,
+          });
+        } else {
+          return res.status(404).json({
+            message: "Password error",
+          });
+        }
       } else {
         return res.status(404).json({
           message: "please confirm with your school admin",
