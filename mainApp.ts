@@ -7,6 +7,7 @@ import classes from "./router/classRouter";
 import subject from "./router/subjectRouter";
 import event from "./router/anouncementRouter";
 import performance from "./router/performanceRouter";
+import article from "./router/articleRouter";
 
 import student from "./router/studentRouter";
 import timetable from "./router/timeTableRouter";
@@ -15,6 +16,7 @@ import quiz from "./router/quizRouter";
 import lessonNote from "./router/lessonNoteRouter";
 import assignment from "./router/assignmentResolveRouter";
 import remark from "./router/remarkRouter";
+import store from "./router/storeRouter";
 
 import cronParser from "cron-parser";
 
@@ -37,6 +39,8 @@ export const mainApp = (app: Application) => {
     app.use("/api", lessonNote);
     app.use("/api", performance);
     app.use("/api", remark);
+    app.use("/api", store);
+    app.use("/api", article);
 
     app.use("/api", student);
     app.use("/api", timetable);
