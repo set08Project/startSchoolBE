@@ -15,6 +15,7 @@ interface iClass {
   classAttendence: Array<{}>;
   timeTable: Array<{}>;
   attendance: Array<{}>;
+  lessonNotes: Array<{}>;
 
   students: Array<{}>;
   assignment: Array<{}>;
@@ -26,6 +27,13 @@ interface iClassData extends iClass, Document {}
 
 const classesModel = new Schema<iClassData>(
   {
+    lessonNotes: [
+      {
+        type: Types.ObjectId,
+        ref: "lessonNotes",
+      },
+    ],
+
     class1stFee: {
       type: Number,
     },

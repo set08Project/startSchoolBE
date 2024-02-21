@@ -2,12 +2,16 @@ import { Document, Schema, Types, model } from "mongoose";
 
 interface ilessonNote {
   week: string;
+  teacher: string;
+  teacherID: string;
+  teacherClass: string;
   endingAt: string;
   createDate: string;
   subject: string;
   classes: string;
   term: string;
   subTopic: string;
+  topic: string;
   period: string;
   duration: string;
   instructionalMaterial: string;
@@ -15,19 +19,40 @@ interface ilessonNote {
   previousKnowledge: string;
   specificObjectives: string;
   content: string;
-  evalution: string;
+  evaluation: string;
   summary: string;
   presentation: string;
   assignment: string;
   adminSignation: boolean;
+  rate: number;
+  rateData: any[];
   staff: {};
   school: {};
+  class: {};
 }
 
 interface ilessonNoteData extends ilessonNote, Document {}
 
 const lessonNoteModel = new Schema<ilessonNoteData>(
   {
+    rate: {
+      type: Number,
+    },
+    rateData: {
+      type: [],
+    },
+    topic: {
+      type: String,
+    },
+    teacher: {
+      type: String,
+    },
+    teacherID: {
+      type: String,
+    },
+    teacherClass: {
+      type: String,
+    },
     week: {
       type: String,
     },
@@ -60,13 +85,16 @@ const lessonNoteModel = new Schema<ilessonNoteData>(
     previousKnowledge: {
       type: String,
     },
+    subject: {
+      type: String,
+    },
     specificObjectives: {
       type: String,
     },
     content: {
       type: String,
     },
-    evalution: {
+    evaluation: {
       type: String,
     },
     summary: {
@@ -93,6 +121,10 @@ const lessonNoteModel = new Schema<ilessonNoteData>(
     school: {
       type: Types.ObjectId,
       ref: "schools",
+    },
+    class: {
+      type: Types.ObjectId,
+      ref: "classes",
     },
   },
   { timestamps: true }

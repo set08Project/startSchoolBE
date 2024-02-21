@@ -128,7 +128,7 @@ const staffModel = new Schema<iStaffData>(
     lessonNotes: [
       {
         type: Types.ObjectId,
-        ref: "attendances",
+        ref: "lessonNotes",
       },
     ],
 

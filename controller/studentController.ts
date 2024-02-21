@@ -159,19 +159,27 @@ export const loginStudent = async (
 
     if (school?.schoolName && getTeacher?.schoolName) {
       if (school.verify) {
-        const token = jwt.sign({ status: school.status }, "teacher", {
+        const token = jwt.sign({ status: school.status }, "student", {
           expiresIn: "1d",
         });
 
-        req.session.isAuth = true;
-        req.session.isSchoolID = getTeacher._id;
+        const pass = await bcrypt.compare(password, getTeacher?.password);
 
-        return res.status(201).json({
-          message: "welcome back",
-          user: getTeacher?.status,
-          data: token,
-          status: 201,
-        });
+        if (pass) {
+          req.session.isAuth = true;
+          req.session.isSchoolID = getTeacher._id;
+
+          return res.status(201).json({
+            message: "welcome back",
+            user: getTeacher?.status,
+            data: token,
+            status: 201,
+          });
+        } else {
+          return res.status(404).json({
+            message: "Invalid Password",
+          });
+        }
       } else {
         return res.status(404).json({
           message: "please confirm with your school admin",

@@ -39,9 +39,6 @@ export const createSubjectAssignment = async (
       classRoom?.assignment.push(new Types.ObjectId(quizes._id));
       classRoom?.save();
 
-      classRoom?.assignment.push(new Types.ObjectId(quizes._id));
-      classRoom?.save();
-
       findTeacher?.assignment.push(new Types.ObjectId(quizes._id));
       findTeacher?.save();
 

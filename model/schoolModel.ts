@@ -138,7 +138,7 @@ const schoolModel = new Schema<iSchoolData>(
     lessonNotes: [
       {
         type: Types.ObjectId,
-        ref: "students",
+        ref: "lessonNotes",
       },
     ],
   },
