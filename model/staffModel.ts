@@ -23,6 +23,7 @@ interface iStaff {
   lessonNotes: Array<{}>;
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
+  remark: Array<{}>;
 
   staffRating: number;
   status: string;
@@ -129,6 +130,13 @@ const staffModel = new Schema<iStaffData>(
       {
         type: Types.ObjectId,
         ref: "lessonNotes",
+      },
+    ],
+
+    remark: [
+      {
+        type: Types.ObjectId,
+        ref: "remarks",
       },
     ],
 

@@ -108,7 +108,9 @@ export const readAdminLessonNote = async (
     const school = await schoolModel.findById(schoolID);
 
     if (school && school.schoolName && school.status === "school-admin") {
-      const note = school.populate({ path: "lessonNotes" });
+      const note = await schoolModel
+        .findById(schoolID)
+        .populate({ path: "lessonNotes" });
 
       return res.status(200).json({
         message: "Reading admin's lesson note",

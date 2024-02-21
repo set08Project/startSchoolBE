@@ -14,6 +14,7 @@ import attendance from "./router/attendanceRouter";
 import quiz from "./router/quizRouter";
 import lessonNote from "./router/lessonNoteRouter";
 import assignment from "./router/assignmentResolveRouter";
+import remark from "./router/remarkRouter";
 
 import cronParser from "cron-parser";
 
@@ -35,6 +36,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", quiz);
     app.use("/api", lessonNote);
     app.use("/api", performance);
+    app.use("/api", remark);
 
     app.use("/api", student);
     app.use("/api", timetable);

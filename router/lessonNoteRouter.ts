@@ -15,7 +15,8 @@ router
   .route("/create-lesson-note/:schoolID/:staffID")
   .post(createClasslessonNote);
 
-router.route("/view-lesson-note/:schoolID/").get(readAdminLessonNote);
+router.route("/admin-view-lesson-note/:schoolID/").get(readAdminLessonNote);
+
 router.route("/view-lesson-note-detail/:lessonID/").get(readLessonNote);
 
 router.route("/view-lesson-note/:schoolID/:staffID").get(readTeacherLessonNote);

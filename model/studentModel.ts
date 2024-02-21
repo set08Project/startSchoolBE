@@ -24,6 +24,7 @@ interface iStudent {
   school: {};
   classroom: {};
   assignmentResolve: Array<{}>;
+  remark: Array<{}>;
 }
 
 interface iStudentData extends iStudent, Document {}
@@ -124,6 +125,13 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "resolvs",
+      },
+    ],
+
+    remark: [
+      {
+        type: Types.ObjectId,
+        ref: "remarks",
       },
     ],
   },
