@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteSchoolSubject = exports.viewSchoolSubjects = exports.updateSchoolSubjectTeacher = exports.updateSchoolSubjectTitle = exports.createSchoolSubject = void 0;
+exports.viewSubjectDetail = exports.deleteSchoolSubject = exports.viewSchoolSubjects = exports.updateSchoolSubjectTeacher = exports.updateSchoolSubjectTitle = exports.createSchoolSubject = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -126,9 +126,18 @@ const updateSchoolSubjectTeacher = (req, res) => __awaiter(void 0, void 0, void 
             if (getTeacher) {
                 const subjects = yield subjectModel_1.default.findByIdAndUpdate(subjectID, {
                     subjectTeacherName,
+                    teacherID: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher._id,
                 }, { new: true });
+                const addedData = [
+                    ...getTeacher.subjectAssigned,
+                    {
+                        title: subjects === null || subjects === void 0 ? void 0 : subjects.subjectTitle,
+                        id: subjects === null || subjects === void 0 ? void 0 : subjects._id,
+                        classMeant: subjects === null || subjects === void 0 ? void 0 : subjects.designated,
+                    },
+                ];
                 yield staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
-                    classesAssigned: getTeacher.subjectAssigned.push(subjects === null || subjects === void 0 ? void 0 : subjects.subjectTitle),
+                    subjectAssigned: addedData,
                 }, { new: true });
                 return res.status(201).json({
                     message: "subjects teacher updated successfully",
@@ -152,7 +161,7 @@ const updateSchoolSubjectTeacher = (req, res) => __awaiter(void 0, void 0, void 
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating school session",
+            message: "Error updating school subject to Teacher",
             status: 404,
         });
     }
@@ -212,3 +221,21 @@ const deleteSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.deleteSchoolSubject = deleteSchoolSubject;
+const viewSubjectDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { subjectID } = req.params;
+        const subject = yield subjectModel_1.default.findById(subjectID);
+        return res.status(200).json({
+            message: "Subject found",
+            status: 200,
+            data: subject,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating subject session",
+            status: 404,
+        });
+    }
+});
+exports.viewSubjectDetail = viewSubjectDetail;

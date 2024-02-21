@@ -10,6 +10,17 @@ const staffRouter_1 = __importDefault(require("./router/staffRouter"));
 const paymentRouter_1 = __importDefault(require("./router/paymentRouter"));
 const classRouter_1 = __importDefault(require("./router/classRouter"));
 const subjectRouter_1 = __importDefault(require("./router/subjectRouter"));
+const anouncementRouter_1 = __importDefault(require("./router/anouncementRouter"));
+const performanceRouter_1 = __importDefault(require("./router/performanceRouter"));
+const articleRouter_1 = __importDefault(require("./router/articleRouter"));
+const studentRouter_1 = __importDefault(require("./router/studentRouter"));
+const timeTableRouter_1 = __importDefault(require("./router/timeTableRouter"));
+const attendanceRouter_1 = __importDefault(require("./router/attendanceRouter"));
+const quizRouter_1 = __importDefault(require("./router/quizRouter"));
+const lessonNoteRouter_1 = __importDefault(require("./router/lessonNoteRouter"));
+const assignmentResolveRouter_1 = __importDefault(require("./router/assignmentResolveRouter"));
+const remarkRouter_1 = __importDefault(require("./router/remarkRouter"));
+const storeRouter_1 = __importDefault(require("./router/storeRouter"));
 const cron_parser_1 = __importDefault(require("cron-parser"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
@@ -23,6 +34,17 @@ const mainApp = (app) => {
         app.use("/api", paymentRouter_1.default);
         app.use("/api", classRouter_1.default);
         app.use("/api", subjectRouter_1.default);
+        app.use("/api", anouncementRouter_1.default);
+        app.use("/api", attendanceRouter_1.default);
+        app.use("/api", quizRouter_1.default);
+        app.use("/api", lessonNoteRouter_1.default);
+        app.use("/api", performanceRouter_1.default);
+        app.use("/api", remarkRouter_1.default);
+        app.use("/api", storeRouter_1.default);
+        app.use("/api", articleRouter_1.default);
+        app.use("/api", studentRouter_1.default);
+        app.use("/api", timeTableRouter_1.default);
+        app.use("/api", assignmentResolveRouter_1.default);
         app.get("/", (req, res) => {
             try {
                 let { started } = req.body;

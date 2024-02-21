@@ -48,6 +48,18 @@ const schoolModel = new mongoose_2.Schema({
             ref: "sessions",
         },
     ],
+    events: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "events",
+        },
+    ],
+    announcements: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "announcements",
+        },
+    ],
     subjects: [
         {
             type: mongoose_1.Types.ObjectId,
@@ -70,6 +82,30 @@ const schoolModel = new mongoose_2.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "payments",
+        },
+    ],
+    students: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "students",
+        },
+    ],
+    store: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "stores",
+        },
+    ],
+    lessonNotes: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "lessonNotes",
+        },
+    ],
+    articles: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "articles",
         },
     ],
 }, { timestamps: true });

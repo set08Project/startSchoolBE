@@ -2,6 +2,33 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const subjectModel = new mongoose_1.Schema({
+    assignmentResolve: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "resolvs",
+        },
+    ],
+    quiz: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "quizes",
+        },
+    ],
+    assignment: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "assignments",
+        },
+    ],
+    performance: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "performances",
+        },
+    ],
+    teacherID: {
+        type: String,
+    },
     schoolName: {
         type: String,
     },

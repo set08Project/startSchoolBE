@@ -20,6 +20,7 @@ const upload = (0, multer_1.default)({
     },
 }).single("avatar");
 const router = (0, express_1.Router)();
+router.route("/view-school-top-student/:schoolID").get(schoolController_1.viewSchoolTopStudent);
 router.route("/register-school/").post(schoolController_1.createSchool);
 router.route("/login-school/").post(schoolController_1.loginSchool);
 router.route("/delete-school/:schoolID").delete(schoolController_1.deleteSchool);

@@ -12,12 +12,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeSchoolTag = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = void 0;
+exports.changeSchoolTag = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
+const lodash_1 = __importDefault(require("lodash"));
+const viewSchoolTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const schoolClasses = yield schoolModel_1.default.findById(schoolID).populate({
+            path: "students",
+            options: {
+                sort: {
+                    createdAt: -1,
+                },
+            },
+        });
+        const rate = lodash_1.default.orderBy(schoolClasses === null || schoolClasses === void 0 ? void 0 : schoolClasses.students, ["totalPerformance"], ["desc"]);
+        return res.status(200).json({
+            message: "finding class students top performance!",
+            status: 200,
+            data: rate,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school class",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.viewSchoolTopStudent = viewSchoolTopStudent;
 const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, enrollmentID } = req.body;
@@ -35,6 +63,7 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     return res.status(201).json({
                         message: "welcome back",
                         data: token,
+                        user: school === null || school === void 0 ? void 0 : school.status,
                         status: 201,
                     });
                 }
