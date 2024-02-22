@@ -23,7 +23,10 @@ const app = (0, express_1.default)();
 const portServer = process.env.PORT;
 const port = parseInt(portServer);
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", process.env.APP_URL);
+    res.header("Access-Control-Allow-Origin", [
+        `${process.env.APP_URL}`,
+        `${process.env.APP_URL_DEPLOY}`,
+    ]);
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
     res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -36,7 +39,7 @@ app.use((req, res, next) => {
 //   // standardHeaders: "draft-7",
 //   // legacyHeaders: false,
 // });
-app.use((0, cors_1.default)({ origin: process.env.APP_URL }));
+app.use((0, cors_1.default)({ origin: [`${process.env.APP_URL}`, `${process.env.APP_URL_DEPLOY}`] }));
 app.use(express_1.default.json());
 app.use((0, helmet_1.default)());
 app.use((0, morgan_1.default)("dev"));
