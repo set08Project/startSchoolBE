@@ -64,7 +64,6 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                         message: "welcome back",
                         data: token,
                         user: school === null || school === void 0 ? void 0 : school.status,
-                        id: req.session.isSchoolID,
                         status: 201,
                     });
                 }
