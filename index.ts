@@ -57,9 +57,9 @@ app.use(
 
     cookie: {
       maxAge: 1000 * 60 * 24 * 60,
-      sameSite: "lax",
-      secure: false,
-      // httpOnly: false,
+      // sameSite: "lax",
+      // secure: false,
+      httpOnly: true,
       // domain: process.env.APP_URL_DEPLOY,
     },
 

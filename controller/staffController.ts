@@ -35,6 +35,7 @@ export const loginTeacher = async (
             message: "welcome back",
             user: getTeacher?.status,
             data: token,
+            id: req.session.isSchoolID,
             status: 201,
           });
         } else {

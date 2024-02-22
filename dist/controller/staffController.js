@@ -41,6 +41,7 @@ const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                         message: "welcome back",
                         user: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.status,
                         data: token,
+                        id: req.session.isSchoolID,
                         status: 201,
                     });
                 }
