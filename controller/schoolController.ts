@@ -67,6 +67,7 @@ export const loginSchool = async (
             message: "welcome back",
             data: token,
             user: school?.status,
+            id: req.session.isSchoolID,
             status: 201,
           });
         } else {

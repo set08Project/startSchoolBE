@@ -23,7 +23,7 @@ const app = (0, express_1.default)();
 const portServer = process.env.PORT;
 const port = parseInt(portServer);
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "https://just-next.web.app");
+    res.header("Access-Control-Allow-Origin", process.env.APP_URL_DEPLOY);
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
     res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -51,8 +51,8 @@ app.use((0, express_session_1.default)({
         maxAge: 1000 * 60 * 24 * 60,
         sameSite: "lax",
         secure: false,
-        httpOnly: false,
-        domain: process.env.APP_URL_DEPLOY,
+        // httpOnly: false,
+        // domain: process.env.APP_URL_DEPLOY,
     },
     store,
 }));
