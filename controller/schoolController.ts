@@ -63,10 +63,13 @@ export const loginSchool = async (
           req.session.isAuth = true;
           req.session.isSchoolID = school._id;
 
+          console.log(req.session);
+
           return res.status(201).json({
             message: "welcome back",
             data: token,
             user: school?.status,
+            id: req.session.isSchoolID,
             status: 201,
           });
         } else {

@@ -23,7 +23,7 @@ const portServer = process.env.PORT!;
 const port = parseInt(portServer);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header("Access-Control-Allow-Origin", `${process.env.APP_URL_DEPLOY}`);
+  res.header("Access-Control-Allow-Origin", process.env.APP_URL_DEPLOY);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -40,7 +40,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // });
 app.use(
   cors({
-    origin: `${process.env.APP_URL_DEPLOY}`,
+    origin: process.env.APP_URL_DEPLOY,
   })
 );
 app.use(express.json());
@@ -48,7 +48,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan("dev"));
 
-// app.use(limiter);
+// app.use(limiter)
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,
@@ -57,10 +57,10 @@ app.use(
 
     cookie: {
       maxAge: 1000 * 60 * 24 * 60,
-      sameSite: "none",
+      sameSite: "lax",
       secure: true,
-      httpOnly: false,
-      domain: `${process.env.APP_URL_DEPLOY}`,
+      // httpOnly: true,
+      // domain: process.env.APP_URL_DEPLOY,
     },
 
     store,
