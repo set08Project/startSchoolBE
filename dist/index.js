@@ -51,8 +51,8 @@ app.use((0, express_session_1.default)({
         maxAge: 1000 * 60 * 24 * 60,
         sameSite: "lax",
         secure: true,
-        // httpOnly: true,
-        // domain: process.env.APP_URL_DEPLOY,
+        httpOnly: false,
+        domain: process.env.APP_URL_DEPLOY,
     },
     store,
 }));

@@ -60,7 +60,6 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     });
                     req.session.isAuth = true;
                     req.session.isSchoolID = school._id;
-                    console.log(req.session);
                     return res.status(201).json({
                         message: "welcome back",
                         data: token,
