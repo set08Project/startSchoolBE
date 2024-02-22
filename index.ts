@@ -23,10 +23,7 @@ const portServer = process.env.PORT!;
 const port = parseInt(portServer);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header(
-    "Access-Control-Allow-Origin",
-    process.env.APP_URL_DEPLOY || process.env.APP_URL
-  );
+  res.header("Access-Control-Allow-Origin", process.env.APP_URL_DEPLOY);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -43,7 +40,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // });
 app.use(
   cors({
-    origin: process.env.APP_URL_DEPLOY || process.env.APP_URL,
+    origin: process.env.APP_URL_DEPLOY,
   })
 );
 app.use(express.json());
