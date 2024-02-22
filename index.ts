@@ -23,14 +23,7 @@ const portServer = process.env.PORT!;
 const port = parseInt(portServer);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header(
-    "Access-Control-Allow-Origin",
-    `${
-      process.env.APP_URL_DEPLOY
-        ? process.env.APP_URL_DEPLOY
-        : process.env.APP_URL
-    }`
-  );
+  res.header("Access-Control-Allow-Origin", `${process.env.APP_URL_DEPLOY}`);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -42,15 +35,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 //   limit: 10,
 //   message: "Limit exceeded, please try again in 15mins time!!!",
 //   // standardHeaders: "draft-7",
-//   // legacyHeaders: false,
+//   // legacyHeaders: false, process.env.APP_URL_DEPLOY
+
 // });
 app.use(
   cors({
-    origin: `${
-      process.env.APP_URL_DEPLOY
-        ? process.env.APP_URL_DEPLOY
-        : process.env.APP_URL
-    }`,
+    origin: `${process.env.APP_URL_DEPLOY}`,
   })
 );
 app.use(express.json());
@@ -67,14 +57,10 @@ app.use(
 
     cookie: {
       maxAge: 1000 * 60 * 24 * 60,
-      sameSite: "strict",
+      sameSite: "none",
       secure: true,
-      httpOnly: true,
-      domain: `${
-        process.env.APP_URL_DEPLOY
-          ? process.env.APP_URL_DEPLOY
-          : process.env.APP_URL
-      }`,
+      httpOnly: false,
+      domain: `${process.env.APP_URL_DEPLOY}`,
     },
 
     store,
