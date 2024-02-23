@@ -20,6 +20,6 @@ const upload = (0, multer_1.default)({
     },
 }).single("avatar");
 const router = (0, express_1.Router)();
-router.route("/create-store/:schoolID").post(storeController_1.createStore);
+router.route("/create-store/:schoolID").post(upload, storeController_1.createStore);
 router.route("/view-store/:schoolID").get(storeController_1.viewSchoolStore);
 exports.default = router;

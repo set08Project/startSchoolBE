@@ -18,7 +18,7 @@ const upload = multer({
 
 const router: Router = Router();
 
-router.route("/create-store/:schoolID").post(createStore);
+router.route("/create-store/:schoolID").post(upload, createStore);
 router.route("/view-store/:schoolID").get(viewSchoolStore);
 
 export default router;

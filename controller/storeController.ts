@@ -33,15 +33,17 @@ export const createStore = async (
       return res.status(201).json({
         message: "remark created successfully",
         data: store,
+        status: 201,
       });
     } else {
       return res.status(404).json({
         message: "unable to read school",
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school session",
+      data: error.message,
     });
   }
 };

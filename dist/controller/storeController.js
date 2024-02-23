@@ -37,6 +37,7 @@ const createStore = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return res.status(201).json({
                 message: "remark created successfully",
                 data: store,
+                status: 201,
             });
         }
         else {
@@ -48,6 +49,7 @@ const createStore = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     catch (error) {
         return res.status(404).json({
             message: "Error creating school session",
+            data: error.message,
         });
     }
 });
