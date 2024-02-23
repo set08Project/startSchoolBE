@@ -22,7 +22,7 @@ export const createStore = async (
       const store = await storeModel.create({
         title,
         description,
-        cost,
+        cost: parseInt(cost),
         avatar: secure_url,
         avatarID: public_id,
       });

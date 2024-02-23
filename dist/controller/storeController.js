@@ -28,7 +28,7 @@ const createStore = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             const store = yield storeModel_1.default.create({
                 title,
                 description,
-                cost,
+                cost: parseInt(cost),
                 avatar: secure_url,
                 avatarID: public_id,
             });
