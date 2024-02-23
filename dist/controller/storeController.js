@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.viewSchoolStore = exports.createStore = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const mongoose_1 = require("mongoose");
-const studentModel_1 = __importDefault(require("../model/studentModel"));
 const storeModel_1 = __importDefault(require("../model/storeModel"));
 const streamifier_1 = require("../utils/streamifier");
 const createStore = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -57,12 +56,12 @@ exports.createStore = createStore;
 const viewSchoolStore = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
-        const student = yield studentModel_1.default.findById(schoolID).populate({
+        const student = yield schoolModel_1.default.findById(schoolID).populate({
             path: "store",
         });
         return res.status(200).json({
             message: "viewing school store",
-            data: student === null || student === void 0 ? void 0 : student.remark,
+            data: student === null || student === void 0 ? void 0 : student.store,
         });
     }
     catch (error) {

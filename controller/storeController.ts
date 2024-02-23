@@ -54,13 +54,13 @@ export const viewSchoolStore = async (
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
-    const student = await studentModel.findById(schoolID).populate({
+    const student = await schoolModel.findById(schoolID).populate({
       path: "store",
     });
 
     return res.status(200).json({
       message: "viewing school store",
-      data: student?.remark,
+      data: student?.store,
     });
   } catch (error) {
     return res.status(404).json({
