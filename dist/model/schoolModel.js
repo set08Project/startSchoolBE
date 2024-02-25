@@ -108,5 +108,11 @@ const schoolModel = new mongoose_2.Schema({
             ref: "articles",
         },
     ],
+    gallaries: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "gallaries",
+        },
+    ],
 }, { timestamps: true });
 exports.default = (0, mongoose_2.model)("schools", schoolModel);

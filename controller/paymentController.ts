@@ -5,6 +5,10 @@ import { Types } from "mongoose";
 import moment from "moment";
 import crypto from "crypto";
 import { CronJob } from "cron";
+import axios from "axios";
+import https from "https";
+import env from "dotenv";
+env.config();
 
 export const createPayment = async (
   req: Request,
@@ -179,6 +183,160 @@ export const makeSchoolPayment = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error viewing school payments",
+    });
+  }
+};
+
+export const makePayment = async (req: Request, res: Response) => {
+  try {
+    const { amount, email } = req.body;
+
+    const params = JSON.stringify({
+      email,
+      amount: (parseInt(amount) * 100).toString(),
+      callback_url: `${process.env.APP_URL_DEPLOY}`,
+      metadata: {
+        cancel_action: "http://localhost:5173/action",
+      },
+      channels: ["card"],
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/transaction/initialize",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const request = https
+      .request(options, (response: any) => {
+        let data = "";
+
+        response.on("data", (chunk: any) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          return res.status(201).json({
+            message: "processing payment",
+            data: JSON.parse(data),
+            status: 201,
+          });
+        });
+      })
+      .on("error", (error: any) => {
+        console.error(error);
+      });
+
+    request.write(params);
+    request.end();
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
+
+export const viewVerifyTransaction = async (req: Request, res: Response) => {
+  try {
+    const { ref } = req.params;
+    console.log(ref);
+
+    await axios
+      .get(`https://api.paystack.co/transaction/verify/${ref}`, {
+        headers: {
+          authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+
+          "content-type": "application/json",
+          "cache-control": "no-cache",
+        },
+      })
+      .then((resp: any) => {
+        return res.status(201).json({
+          message: "welcome",
+          data: resp.data,
+          status: 201,
+        });
+      });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error",
+      data: error.message,
+      error: error,
+      status: 404,
+    });
+  }
+};
+
+export const paymentFromStore = (req: Request, res: Response) => {
+  try {
+    const https = require("https");
+
+    // email,
+    //   amount: (parseInt(amount) * 100).toString(),
+    //   callback_url: `${process.env.APP_URL_DEPLOY}`,
+    //   metadata: {
+    //     cancel_action: "http://localhost:5173/action",
+    //   },
+    //   channels: ["card"],
+
+    const params = JSON.stringify({
+      name: "Percentage Split",
+      type: "percentage",
+      currency: "NGN",
+      subaccounts: [
+        {
+          subaccount: "ACCT_z3x6z3nbo14xsil",
+          share: 20,
+        },
+      ],
+      bearer_type: "subaccount",
+      bearer_subaccount: "ACCT_hdl8abxl8drhrl3",
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/split",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const req = https
+      .request(options, (resp: any) => {
+        let data = "";
+
+        resp.on("data", (chunk: any) => {
+          data += chunk;
+        });
+
+        resp.on("end", () => {
+          res.status(404).json({
+            message: "payment done",
+            status: 201,
+            data: JSON.parse(data),
+          });
+        });
+      })
+      .on("error", (error: any) => {
+        console.error(error);
+      });
+
+    req.write(params);
+    req.end();
+  } catch (error) {
+    res.status(404).json({
+      message: "Error",
+      status: 404,
     });
   }
 };

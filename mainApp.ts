@@ -17,6 +17,7 @@ import lessonNote from "./router/lessonNoteRouter";
 import assignment from "./router/assignmentResolveRouter";
 import remark from "./router/remarkRouter";
 import store from "./router/storeRouter";
+import gallary from "./router/gallaryRouter";
 
 import cronParser from "cron-parser";
 
@@ -45,6 +46,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", student);
     app.use("/api", timetable);
     app.use("/api", assignment);
+    app.use("/api", gallary);
 
     app.get("/", (req: Request, res: Response) => {
       try {

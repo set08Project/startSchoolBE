@@ -32,6 +32,7 @@ interface iSchool {
   students: Array<{}>;
   store: Array<{}>;
   articles: Array<{}>;
+  gallaries: Array<{}>;
 }
 
 interface iSchoolData extends iSchool, Document {}
@@ -155,6 +156,13 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "articles",
+      },
+    ],
+
+    gallaries: [
+      {
+        type: Types.ObjectId,
+        ref: "gallaries",
       },
     ],
   },

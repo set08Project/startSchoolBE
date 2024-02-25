@@ -13,7 +13,7 @@ dotenv.config();
 import MongoDB from "connect-mongodb-session";
 const MongoDBStore = MongoDB(session);
 const store = new MongoDBStore({
-  uri: process.env.MONGO_DB_URL_ONLINE!,
+  uri: process.env.MONGO_DB_URL!,
   collection: "sessions",
 });
 
