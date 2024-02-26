@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.paymentFromStore = exports.viewVerifyTransaction = exports.makePayment = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = exports.createPayment = void 0;
+exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makePayment = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = exports.createPayment = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const paymentModel_1 = __importDefault(require("../model/paymentModel"));
 const mongoose_1 = require("mongoose");
@@ -46,13 +46,17 @@ const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 plan: "active",
             }, { new: true });
-            const timer = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-                console.log("work out this...!");
-                yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
-                    plan: "in active",
-                }, { new: true });
-                clearTimeout(timer);
-            }), 1000 * 60);
+            // const timer = setTimeout(async () => {
+            //   console.log("work out this...!");
+            //   await schoolModel.findByIdAndUpdate(
+            //     schoolID,
+            //     {
+            //       plan: "in active",
+            //     },
+            //     { new: true }
+            //   );
+            //   clearTimeout(timer);
+            // }, 1000 * 60);
             return res.status(201).json({
                 message: "payment created successfully",
                 data: school,
@@ -164,7 +168,7 @@ const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             amount: (parseInt(amount) * 100).toString(),
             callback_url: `${process.env.APP_URL_DEPLOY}`,
             metadata: {
-                cancel_action: "http://localhost:5173/action",
+                cancel_action: "http://localhost:5173/",
             },
             channels: ["card"],
         });
@@ -239,56 +243,37 @@ const viewVerifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, fu
 exports.viewVerifyTransaction = viewVerifyTransaction;
 const paymentFromStore = (req, res) => {
     try {
-        const https = require("https");
-        // email,
-        //   amount: (parseInt(amount) * 100).toString(),
-        //   callback_url: `${process.env.APP_URL_DEPLOY}`,
-        //   metadata: {
-        //     cancel_action: "http://localhost:5173/action",
-        //   },
-        //   channels: ["card"],
+        const { account } = req.body;
         const params = JSON.stringify({
-            name: "Percentage Split",
-            type: "percentage",
-            currency: "NGN",
-            subaccounts: [
-                {
-                    subaccount: "ACCT_z3x6z3nbo14xsil",
-                    share: 20,
-                },
-            ],
-            bearer_type: "subaccount",
-            bearer_subaccount: "ACCT_hdl8abxl8drhrl3",
+            email: "customer@email.com",
+            amount: "20000",
+            subaccount: account,
         });
         const options = {
             hostname: "api.paystack.co",
             port: 443,
-            path: "/split",
+            path: "/transaction/initialize",
             method: "POST",
             headers: {
                 Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
                 "Content-Type": "application/json",
             },
         };
-        const req = https
-            .request(options, (resp) => {
+        const request = https_1.default
+            .request(options, (res) => {
             let data = "";
-            resp.on("data", (chunk) => {
+            res.on("data", (chunk) => {
                 data += chunk;
             });
-            resp.on("end", () => {
-                res.status(404).json({
-                    message: "payment done",
-                    status: 201,
-                    data: JSON.parse(data),
-                });
+            res.on("end", () => {
+                console.log(JSON.parse(data));
             });
         })
             .on("error", (error) => {
             console.error(error);
         });
-        req.write(params);
-        req.end();
+        request.write(params);
+        request.end();
     }
     catch (error) {
         res.status(404).json({
@@ -298,3 +283,88 @@ const paymentFromStore = (req, res) => {
     }
 };
 exports.paymentFromStore = paymentFromStore;
+const createPaymentAccount = (req, res) => {
+    try {
+        const { account } = req.body;
+        const params = JSON.stringify({
+            // business_name: "Cheese Sticks",
+            // bank_code: "058",
+            account_number: "2254710854",
+            percentage_charge: 20,
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/subaccount",
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https_1.default
+            .request(options, (resp) => {
+            let data = "";
+            resp.on("data", (chunk) => {
+                data += chunk;
+            });
+            resp.on("end", () => {
+                res.status(200).json({
+                    message: "gotten",
+                    data: JSON.parse(data),
+                    status: 200,
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Error",
+            status: 404,
+        });
+    }
+};
+exports.createPaymentAccount = createPaymentAccount;
+const getBankAccount = (req, res) => {
+    try {
+        const { account } = req.body;
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/bank",
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+            },
+        };
+        https_1.default
+            .request(options, (resp) => {
+            let data = "";
+            resp.on("data", (chunk) => {
+                data += chunk;
+            });
+            resp.on("end", () => {
+                res.status(200).json({
+                    message: "gotten",
+                    data: JSON.parse(data),
+                    status: 200,
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Error",
+            status: 404,
+        });
+    }
+};
+exports.getBankAccount = getBankAccount;
