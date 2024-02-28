@@ -217,8 +217,6 @@ export const createAssignmentPerformance = async (
       subjectTitle: quizData?.subjectTitle,
     });
 
-    console.log(findSubject);
-
     if (quizData) {
       const quizes = await assignmentResolvedModel.create({
         assignmentResult,

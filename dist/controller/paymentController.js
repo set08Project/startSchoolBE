@@ -98,7 +98,6 @@ const makePaymentWithCron = (req, res) => __awaiter(void 0, void 0, void 0, func
                 plan: "active",
             }, { new: true });
             const timer = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-                console.log("work out this...!");
                 yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
                     plan: "in active",
                 }, { new: true });
@@ -168,7 +167,7 @@ const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             amount: (parseInt(amount) * 100).toString(),
             callback_url: `${process.env.APP_URL_DEPLOY}`,
             metadata: {
-                cancel_action: "http://localhost:5173/",
+                cancel_action: `${process.env.APP_URL_DEPLOY}`,
             },
             channels: ["card"],
         });
@@ -214,7 +213,6 @@ exports.makePayment = makePayment;
 const viewVerifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { ref } = req.params;
-        console.log(ref);
         yield axios_1.default
             .get(`https://api.paystack.co/transaction/verify/${ref}`, {
             headers: {

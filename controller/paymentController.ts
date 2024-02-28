@@ -112,7 +112,6 @@ export const makePaymentWithCron = async (
       );
 
       const timer = setTimeout(async () => {
-        console.log("work out this...!");
         await schoolModel.findByIdAndUpdate(
           schoolID,
           {
@@ -196,7 +195,7 @@ export const makePayment = async (req: Request, res: Response) => {
       amount: (parseInt(amount) * 100).toString(),
       callback_url: `${process.env.APP_URL_DEPLOY}`,
       metadata: {
-        cancel_action: "http://localhost:5173/",
+        cancel_action: `${process.env.APP_URL_DEPLOY}`,
       },
       channels: ["card"],
     });
@@ -246,7 +245,6 @@ export const makePayment = async (req: Request, res: Response) => {
 export const viewVerifyTransaction = async (req: Request, res: Response) => {
   try {
     const { ref } = req.params;
-    console.log(ref);
 
     await axios
       .get(`https://api.paystack.co/transaction/verify/${ref}`, {

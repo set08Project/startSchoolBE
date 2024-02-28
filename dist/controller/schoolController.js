@@ -304,7 +304,6 @@ const updateSchoolAvatar = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 avatar: secure_url,
                 avatarID: public_id,
             }, { new: true });
-            console.log("image uploaded successfully");
             return res.status(200).json({
                 message: "school avatar has been, added",
                 data: updatedSchool,

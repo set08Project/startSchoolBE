@@ -362,8 +362,6 @@ export const updateSchoolAvatar = async (req: any, res: Response) => {
         { new: true }
       );
 
-      console.log("image uploaded successfully");
-
       return res.status(200).json({
         message: "school avatar has been, added",
         data: updatedSchool,

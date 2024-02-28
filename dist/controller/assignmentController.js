@@ -194,7 +194,6 @@ const createAssignmentPerformance = (req, res) => __awaiter(void 0, void 0, void
         const findSubject = yield subjectModel_1.default.findOne({
             subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
         });
-        console.log(findSubject);
         if (quizData) {
             const quizes = yield assignmentResolvedModel_1.default.create({
                 assignmentResult,

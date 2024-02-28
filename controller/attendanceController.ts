@@ -62,9 +62,6 @@ export const createAttendanceAbsent = async (req: Request, res: Response) => {
     const getTeacher = await staffModel.findById(req.params.teacherID);
     const getStudent = await studentModel.findById(req.params.studentID);
 
-    // console.log(getTeacher);
-    console.log(getStudent);
-
     const getClass = await classroomModel.findOne({
       className: getStudent!.classAssigned,
     });
@@ -136,8 +133,6 @@ export const viewStudentAttendance = async (req: Request, res: Response) => {
       path: "attendance",
       options: { sort: { createdAt: -1 } },
     });
-
-    console.log("attendance: ", student);
 
     return res.status(200).json({
       message: `Viewing student attendance detail...!`,

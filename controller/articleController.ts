@@ -59,8 +59,6 @@ export const readAllArticles = async (
       .findById(schoolID)
       .populate({ path: "articles", options: { sort: { createdAt: -1 } } });
 
-    console.log(school);
-
     if (school) {
       return res.status(201).json({
         message: "Article created successfully",

@@ -61,7 +61,6 @@ const readAllArticles = (req, res) => __awaiter(void 0, void 0, void 0, function
         const school = yield schoolModel_1.default
             .findById(schoolID)
             .populate({ path: "articles", options: { sort: { createdAt: -1 } } });
-        console.log(school);
         if (school) {
             return res.status(201).json({
                 message: "Article created successfully",

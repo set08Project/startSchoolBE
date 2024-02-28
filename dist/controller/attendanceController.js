@@ -65,8 +65,6 @@ const createAttendanceAbsent = (req, res) => __awaiter(void 0, void 0, void 0, f
     try {
         const getTeacher = yield staffModel_1.default.findById(req.params.teacherID);
         const getStudent = yield studentModel_1.default.findById(req.params.studentID);
-        // console.log(getTeacher);
-        console.log(getStudent);
         const getClass = yield classroomModel_1.default.findOne({
             className: getStudent.classAssigned,
         });
@@ -128,7 +126,6 @@ const viewStudentAttendance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             path: "attendance",
             options: { sort: { createdAt: -1 } },
         });
-        console.log("attendance: ", student);
         return res.status(200).json({
             message: `Viewing student attendance detail...!`,
             data: student,
