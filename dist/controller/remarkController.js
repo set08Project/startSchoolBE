@@ -18,24 +18,36 @@ const mongoose_1 = require("mongoose");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const studentRemark_1 = __importDefault(require("../model/studentRemark"));
+const moment_1 = __importDefault(require("moment"));
 const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { teacherID, studentID } = req.params;
         const { remark } = req.body;
         const teacher = yield staffModel_1.default.findById(teacherID);
         const student = yield studentModel_1.default.findById(studentID);
-        if (teacher) {
-            const remarkData = yield studentRemark_1.default.create({
-                remark,
-            });
-            teacher.remark.push(new mongoose_1.Types.ObjectId(remarkData._id));
-            teacher.save();
-            student.remark.push(new mongoose_1.Types.ObjectId(remarkData._id));
-            student === null || student === void 0 ? void 0 : student.save();
-            return res.status(201).json({
-                message: "remark created successfully",
-                data: remarkData,
-            });
+        if (teacher && student) {
+            const fridayDate = Date.now();
+            const readDate = (0, moment_1.default)(fridayDate).days();
+            console.log(readDate);
+            if (readDate === 5) {
+                const remarkData = yield studentRemark_1.default.create({
+                    remark,
+                });
+                student.remark.push(new mongoose_1.Types.ObjectId(remarkData._id));
+                student === null || student === void 0 ? void 0 : student.save();
+                teacher.remark.push(new mongoose_1.Types.ObjectId(remarkData._id));
+                teacher.save();
+                return res.status(201).json({
+                    message: "remark created successfully",
+                    data: remarkData,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Report can only be done on FRIDAYS",
+                });
+            }
         }
         else {
             return res.status(404).json({
@@ -45,7 +57,8 @@ const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating school session",
+            message: "Error creating remake for Student",
+            data: error.message,
         });
     }
 });

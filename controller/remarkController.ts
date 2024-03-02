@@ -5,6 +5,7 @@ import { Types } from "mongoose";
 import studentModel from "../model/studentModel";
 import staffModel from "../model/staffModel";
 import remarkModel from "../model/studentRemark";
+import moment from "moment";
 
 export const createRemark = async (
   req: Request,
@@ -17,29 +18,40 @@ export const createRemark = async (
     const teacher = await staffModel.findById(teacherID);
     const student: any = await studentModel.findById(studentID);
 
-    if (teacher) {
-      const remarkData = await remarkModel.create({
-        remark,
-      });
+    if (teacher && student) {
+      const fridayDate = Date.now();
+      const readDate = moment(fridayDate).days();
+      console.log(readDate);
+      if (readDate === 5) {
+        const remarkData = await remarkModel.create({
+          remark,
+        });
 
-      teacher.remark.push(new Types.ObjectId(remarkData._id));
-      teacher.save();
+        student.remark.push(new Types.ObjectId(remarkData._id));
+        student?.save();
 
-      student.remark.push(new Types.ObjectId(remarkData._id));
-      student?.save();
+        teacher.remark.push(new Types.ObjectId(remarkData._id));
+        teacher.save();
 
-      return res.status(201).json({
-        message: "remark created successfully",
-        data: remarkData,
-      });
+        return res.status(201).json({
+          message: "remark created successfully",
+          data: remarkData,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Report can only be done on FRIDAYS",
+        });
+      }
     } else {
       return res.status(404).json({
         message: "unable to read school",
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
-      message: "Error creating school session",
+      message: "Error creating remake for Student",
+      data: error.message,
     });
   }
 };
