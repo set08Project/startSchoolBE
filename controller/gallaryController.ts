@@ -55,6 +55,11 @@ export const createRestrictedSchoolGallary = async (
 
     const school = await schoolModel.findById(schoolID).populate({
       path: "gallaries",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
     });
 
     if (school) {

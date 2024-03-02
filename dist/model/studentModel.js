@@ -2,6 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const studentModel = new mongoose_1.Schema({
+    feesPaid1st: {
+        type: Boolean,
+        default: false,
+    },
+    feesPaid2nd: {
+        type: Boolean,
+        default: false,
+    },
+    feesPaid3rd: {
+        type: Boolean,
+        default: false,
+    },
     schoolIDs: {
         type: String,
     },

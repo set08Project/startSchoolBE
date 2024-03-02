@@ -26,7 +26,7 @@ export const createSchoolSubject = async (
     });
 
     const getClassRoomsSubj = schoolSubj?.subjects.some((el: any) => {
-      return el.subjectTitle === subjectTitle;
+      return el.subjectTitle === subjectTitle && el.designated === designated;
     });
 
     const getClassRM = await classroomModel.findOne({ className: designated });

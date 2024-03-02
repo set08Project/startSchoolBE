@@ -203,3 +203,50 @@ export const changeTokenEmail = async (getUser: any) => {
     console.error();
   }
 };
+
+export const verifySchoolFees = async (user: any, term: number) => {
+  try {
+    const accessToken: any = (await oAuth.getAccessToken()).token;
+
+    const transporter = nodemail.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: "codelabbest@gmail.com",
+        clientSecret: GOOGLE_SECRET,
+        clientId: GOOGLE_ID,
+        refreshToken: GOOGLE_REFRESH,
+        accessToken,
+      },
+    });
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.parentEmail,
+      },
+      "weCareHospital"
+    );
+
+    let frontEndURL: string = `${url}/${token}/sign-in`;
+    let devURL: string = `${url}/api/verify-hospital/${user._id}`;
+
+    const myPath = path.join(__dirname, "../views/feesMail.ejs");
+    const html = await ejs.renderFile(myPath, {
+      link: devURL,
+      token: user.token,
+      hospitalName: user.studentFirstName,
+    });
+
+    const mailerOption = {
+      from: "NEXT Team❤️⛑️🚑 <codelabbest@gmail.com>",
+      to: user.parentEmail,
+      subject: `${term} Term School Fees Payment`,
+      html,
+    };
+
+    await transporter.sendMail(mailerOption);
+  } catch (error) {
+    console.error();
+  }
+};

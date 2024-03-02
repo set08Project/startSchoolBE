@@ -86,7 +86,7 @@ const schoolModel = new Schema<iSchoolData>(
     session: [
       {
         type: Types.ObjectId,
-        ref: "sessions",
+        ref: "academicSessions",
       },
     ],
     events: [

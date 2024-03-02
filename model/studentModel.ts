@@ -10,6 +10,10 @@ interface iStudent {
   classAssigned: string;
   schoolIDs: string;
 
+  feesPaid1st: boolean;
+  feesPaid2nd: boolean;
+  feesPaid3rd: boolean;
+
   started: boolean;
   status: string;
   enrollmentID: string;
@@ -32,6 +36,21 @@ interface iStudentData extends iStudent, Document {}
 
 const studentModel = new Schema<iStudentData>(
   {
+    feesPaid1st: {
+      type: Boolean,
+      default: false,
+    },
+
+    feesPaid2nd: {
+      type: Boolean,
+      default: false,
+    },
+
+    feesPaid3rd: {
+      type: Boolean,
+      default: false,
+    },
+
     schoolIDs: {
       type: String,
     },

@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.termPerSession = exports.studentsPerSession = exports.viewSchoolSession = exports.createSchoolSession = void 0;
+exports.termPerSession = exports.studentsPerSession = exports.viewSchoolSession = exports.createNewSchoolSession = exports.createSchoolSession = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const sessionModel_1 = __importDefault(require("../model/sessionModel"));
 const mongoose_1 = require("mongoose");
+const studentModel_1 = __importDefault(require("../model/studentModel"));
 const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -25,6 +26,61 @@ const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, func
             const session = yield sessionModel_1.default.create({
                 year,
                 term,
+            });
+            school.session.push(new mongoose_1.Types.ObjectId(session._id));
+            school.save();
+            return res.status(201).json({
+                message: "session created successfully",
+                data: session,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+        });
+    }
+});
+exports.createSchoolSession = createSchoolSession;
+const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const { schoolID } = req.params;
+        const { year, term } = req.body;
+        let paid = 0;
+        let notPaid = 0;
+        const school = yield schoolModel_1.default
+            .findById(schoolID)
+            .populate({ path: "students" });
+        let totalStudent = 0;
+        const totalStaff = (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.length;
+        const totalSubjects = (_b = school === null || school === void 0 ? void 0 : school.subjects) === null || _b === void 0 ? void 0 : _b.length;
+        const students = school === null || school === void 0 ? void 0 : school.students;
+        if (school && school.schoolName) {
+            for (let i of students) {
+                totalStudent++;
+                if (i.feesPaid1st || i.feesPaid2nd || i.feesPaid2nd) {
+                    paid++;
+                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, { feesPaid1st: false, feesPaid2nd: false, feesPaid3rd: false }, { new: true });
+                }
+                else {
+                    notPaid++;
+                }
+            }
+            const session = yield sessionModel_1.default.create({
+                year,
+                term,
+                totalStudents: totalStudent,
+                numberOfTeachers: totalStaff,
+                numberOfSubjects: totalSubjects,
+                studentFeesNotPaid: notPaid,
+                studentFeesPaid: paid,
             });
             school.session.push(new mongoose_1.Types.ObjectId(session._id));
             school.save();
@@ -45,12 +101,17 @@ const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
     }
 });
-exports.createSchoolSession = createSchoolSession;
+exports.createNewSchoolSession = createNewSchoolSession;
 const viewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID).populate({
             path: "session",
+            options: {
+                sort: {
+                    createdAt: -1,
+                },
+            },
         });
         return res.status(200).json({
             message: "viewing school session",
@@ -60,6 +121,7 @@ const viewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, functi
     catch (error) {
         return res.status(404).json({
             message: "Error viewing school session",
+            data: error.message,
         });
     }
 });

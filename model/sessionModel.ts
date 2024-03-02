@@ -4,11 +4,12 @@ interface iSession {
   year: string;
   term: string;
   totalStudents: number;
-  totalExpense: number;
+  studentFeesPaid: number;
+  studentFeesNotPaid: number;
+  numberOfTeachers: number;
+  numberOfSubjects: number;
   totalAmountRecieved: number;
   profit: number;
-
-  school: {};
 }
 
 interface iSessionData extends iSession, Document {}
@@ -23,12 +24,27 @@ const sessionModel = new Schema<iSessionData>(
       type: String,
     },
 
-    totalStudents: {
+    studentFeesPaid: {
       type: Number,
       default: 0,
     },
 
-    totalExpense: {
+    studentFeesNotPaid: {
+      type: Number,
+      default: 0,
+    },
+
+    numberOfTeachers: {
+      type: Number,
+      default: 0,
+    },
+
+    numberOfSubjects: {
+      type: Number,
+      default: 0,
+    },
+
+    totalStudents: {
       type: Number,
       default: 0,
     },
@@ -42,13 +58,8 @@ const sessionModel = new Schema<iSessionData>(
       type: Number,
       default: 0,
     },
-
-    school: {
-      type: Types.ObjectId,
-      ref: "schools",
-    },
   },
   { timestamps: true }
 );
 
-export default model<iSessionData>("sessions", sessionModel);
+export default model<iSessionData>("academicSessions", sessionModel);

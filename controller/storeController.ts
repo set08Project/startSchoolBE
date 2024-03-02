@@ -56,6 +56,11 @@ export const viewSchoolStore = async (
     const { schoolID } = req.params;
     const student = await schoolModel.findById(schoolID).populate({
       path: "store",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
     });
 
     return res.status(200).json({

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeTokenEmail = exports.addMemberEmail = exports.hospitalVerifiedEmail = exports.verifiedEmail = void 0;
+exports.verifySchoolFees = exports.changeTokenEmail = exports.addMemberEmail = exports.hospitalVerifiedEmail = exports.verifiedEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const googleapis_1 = require("googleapis");
 const path_1 = __importDefault(require("path"));
@@ -181,3 +181,42 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.changeTokenEmail = changeTokenEmail;
+const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const accessToken = (yield oAuth.getAccessToken()).token;
+        const transporter = nodemailer_1.default.createTransport({
+            service: "gmail",
+            auth: {
+                type: "OAuth2",
+                user: "codelabbest@gmail.com",
+                clientSecret: GOOGLE_SECRET,
+                clientId: GOOGLE_ID,
+                refreshToken: GOOGLE_REFRESH,
+                accessToken,
+            },
+        });
+        const token = jsonwebtoken_1.default.sign({
+            id: user._id,
+            email: user.parentEmail,
+        }, "weCareHospital");
+        let frontEndURL = `${url}/${token}/sign-in`;
+        let devURL = `${url}/api/verify-hospital/${user._id}`;
+        const myPath = path_1.default.join(__dirname, "../views/feesMail.ejs");
+        const html = yield ejs_1.default.renderFile(myPath, {
+            link: devURL,
+            token: user.token,
+            hospitalName: user.studentFirstName,
+        });
+        const mailerOption = {
+            from: "NEXT Team❤️⛑️🚑 <codelabbest@gmail.com>",
+            to: user.parentEmail,
+            subject: `${term} Term School Fees Payment`,
+            html,
+        };
+        yield transporter.sendMail(mailerOption);
+    }
+    catch (error) {
+        console.error();
+    }
+});
+exports.verifySchoolFees = verifySchoolFees;

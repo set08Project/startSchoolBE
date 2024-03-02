@@ -5,6 +5,9 @@ import {
   readSchoolStudents,
   readStudentCookie,
   readStudentDetail,
+  updateStudent1stFees,
+  updateStudent2ndFees,
+  updateStudent3rdFees,
   updateStudentAvatar,
 } from "../controller/studentController";
 import multer from "multer";
@@ -24,6 +27,16 @@ const upload = multer({
 }).single("avatar");
 
 const router: Router = Router();
+
+router
+  .route("/update-student-fees-1st/:schoolID/:studentID")
+  .patch(updateStudent1stFees);
+router
+  .route("/update-student-fees-2nd/:schoolID/:studentID")
+  .patch(updateStudent2ndFees);
+router
+  .route("/update-student-fees-3rd/:schoolID/:studentID")
+  .patch(updateStudent3rdFees);
 
 router.route("/create-student/:schoolID").post(createSchoolStudent);
 

@@ -32,7 +32,7 @@ const createSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
             return el.className === designated;
         });
         const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
-            return el.subjectTitle === subjectTitle;
+            return el.subjectTitle === subjectTitle && el.designated === designated;
         });
         const getClassRM = yield classroomModel_1.default.findOne({ className: designated });
         if (getClassRooms) {

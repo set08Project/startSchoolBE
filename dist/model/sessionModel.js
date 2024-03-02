@@ -8,11 +8,23 @@ const sessionModel = new mongoose_1.Schema({
     term: {
         type: String,
     },
-    totalStudents: {
+    studentFeesPaid: {
         type: Number,
         default: 0,
     },
-    totalExpense: {
+    studentFeesNotPaid: {
+        type: Number,
+        default: 0,
+    },
+    numberOfTeachers: {
+        type: Number,
+        default: 0,
+    },
+    numberOfSubjects: {
+        type: Number,
+        default: 0,
+    },
+    totalStudents: {
         type: Number,
         default: 0,
     },
@@ -24,9 +36,5 @@ const sessionModel = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
-    school: {
-        type: mongoose_1.Types.ObjectId,
-        ref: "schools",
-    },
 }, { timestamps: true });
-exports.default = (0, mongoose_1.model)("sessions", sessionModel);
+exports.default = (0, mongoose_1.model)("academicSessions", sessionModel);

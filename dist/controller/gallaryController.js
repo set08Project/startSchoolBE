@@ -59,6 +59,11 @@ const createRestrictedSchoolGallary = (req, res) => __awaiter(void 0, void 0, vo
         const { title, description } = req.body;
         const school = yield schoolModel_1.default.findById(schoolID).populate({
             path: "gallaries",
+            options: {
+                sort: {
+                    createdAt: -1,
+                },
+            },
         });
         if (school) {
             if (((_a = school === null || school === void 0 ? void 0 : school.gallaries) === null || _a === void 0 ? void 0 : _a.length) > 10) {

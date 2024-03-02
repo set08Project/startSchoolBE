@@ -58,6 +58,11 @@ const viewSchoolStore = (req, res) => __awaiter(void 0, void 0, void 0, function
         const { schoolID } = req.params;
         const student = yield schoolModel_1.default.findById(schoolID).populate({
             path: "store",
+            options: {
+                sort: {
+                    createdAt: -1,
+                },
+            },
         });
         return res.status(200).json({
             message: "viewing school store",

@@ -6,6 +6,7 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
+import { verifySchoolFees } from "../utils/email";
 
 export const createSchoolStudent = async (
   req: Request,
@@ -269,6 +270,131 @@ export const updateStudentAvatar = async (req: any, res: Response) => {
   } catch (error) {
     return res.status(404).json({
       message: "Error creating user",
+    });
+  }
+};
+
+export const updateStudent1stFees = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school?.status === "school-admin" && school) {
+      const students = await studentModel.findByIdAndUpdate(
+        studentID,
+        { feesPaid1st: true },
+        { new: true }
+      );
+      verifySchoolFees(students, 1);
+
+      return res.status(201).json({
+        message: "student fees updated successfully",
+        data: students,
+        status: 200,
+      });
+    } else {
+      return res.status(404).json({
+        message: "student 1st fees not found",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school students",
+      status: 404,
+    });
+  }
+};
+
+export const updateStudent2ndFees = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school?.status === "school-admin" && school) {
+      let students = await studentModel.findById(studentID);
+
+      if (students?.feesPaid1st === true) {
+        let student = await studentModel.findByIdAndUpdate(
+          students?._id,
+          { feesPaid2nd: true },
+          { new: true }
+        );
+
+        verifySchoolFees(student, 2);
+
+        return res.status(201).json({
+          message: "student fees updated successfully",
+          data: student,
+          status: 200,
+        });
+      } else {
+        return res.status(404).json({
+          message: "student 3rd fees not found",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School not found",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school students",
+      status: 404,
+    });
+  }
+};
+
+export const updateStudent3rdFees = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school?.status === "school-admin" && school) {
+      const student = await studentModel.findById(studentID);
+      if (student?.feesPaid2nd === true) {
+        await studentModel.findByIdAndUpdate(
+          studentID,
+          { feesPaid3rd: true },
+          { new: true }
+        );
+        verifySchoolFees(student, 3);
+        return res.status(201).json({
+          message: "student fees updated successfully",
+          data: student,
+          status: 200,
+        });
+      } else {
+        return res.status(404).json({
+          message: "student 2nd fees not found",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School not found",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school students",
+      status: 404,
     });
   }
 };

@@ -305,43 +305,44 @@ export const createSchoolTeacher = async (
     });
 
     if (school && school.schoolName && school.status === "school-admin") {
-      if (getSubject) {
-        const staff = await staffModel.create({
-          schoolIDs: schoolID,
-          staffName,
-          schoolName: school.schoolName,
-          staffRole: staffDuty.TEACHER,
-          subjectAssigned: [{ title: subjectTitle, id: getSubject._id }],
-          role,
-          status: "school-teacher",
-          salary,
-          gender,
+      // if (getSubject) {
+      const staff = await staffModel.create({
+        schoolIDs: schoolID,
+        staffName,
+        schoolName: school.schoolName,
+        staffRole: staffDuty.TEACHER,
+        // subjectAssigned: [{ title: subjectTitle, id: getSubject._id }],
+        role,
+        status: "school-teacher",
+        salary,
+        gender,
 
-          email: `${staffName
-            .replace(/ /gi, "")
-            .toLowerCase()}@${school?.schoolName
-            ?.replace(/ /gi, "")
-            .toLowerCase()}.com`,
-          enrollmentID,
-          password: hashed,
-          staffAddress,
-        });
+        email: `${staffName
+          .replace(/ /gi, "")
+          .toLowerCase()}@${school?.schoolName
+          ?.replace(/ /gi, "")
+          .toLowerCase()}.com`,
+        enrollmentID,
+        password: hashed,
+        staffAddress,
+      });
 
-        school.staff.push(new Types.ObjectId(staff._id));
-        school.save();
+      school.staff.push(new Types.ObjectId(staff._id));
+      school.save();
 
-        return res.status(201).json({
-          message: "teacher created successfully",
-          data: staff,
-          status: 201,
-        });
-      } else {
-        return res.status(404).json({
-          message:
-            "A teacher must have a subject to handle and Subject hasn't been created",
-          status: 404,
-        });
-      }
+      return res.status(201).json({
+        message: "teacher created successfully",
+        data: staff,
+        status: 201,
+      });
+      // }
+      // else {
+      //   return res.status(404).json({
+      //     message:
+      //       "A teacher must have a subject to handle and Subject hasn't been created",
+      //     status: 404,
+      //   });
+      // }
     } else {
       return res.status(404).json({
         message: "unable to read school",
@@ -350,7 +351,7 @@ export const createSchoolTeacher = async (
     }
   } catch (error) {
     return res.status(404).json({
-      message: "Error creating school session",
+      message: "Error creating teacher",
     });
   }
 };

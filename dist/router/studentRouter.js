@@ -20,6 +20,15 @@ const upload = (0, multer_1.default)({
     },
 }).single("avatar");
 const router = (0, express_1.Router)();
+router
+    .route("/update-student-fees-1st/:schoolID/:studentID")
+    .patch(studentController_1.updateStudent1stFees);
+router
+    .route("/update-student-fees-2nd/:schoolID/:studentID")
+    .patch(studentController_1.updateStudent2ndFees);
+router
+    .route("/update-student-fees-3rd/:schoolID/:studentID")
+    .patch(studentController_1.updateStudent3rdFees);
 router.route("/create-student/:schoolID").post(studentController_1.createSchoolStudent);
 router.route("/read-student/:schoolID").get(studentController_1.readSchoolStudents);
 router.route("/read-student-info/:studentID").get(studentController_1.readStudentDetail);

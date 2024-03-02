@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
+exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -20,6 +20,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
+const email_1 = require("../utils/email");
 const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -243,3 +244,105 @@ const updateStudentAvatar = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.updateStudentAvatar = updateStudentAvatar;
+const updateStudent1stFees = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
+            const students = yield studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid1st: true }, { new: true });
+            (0, email_1.verifySchoolFees)(students, 1);
+            return res.status(201).json({
+                message: "student fees updated successfully",
+                data: students,
+                status: 200,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "student 1st fees not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school students",
+            status: 404,
+        });
+    }
+});
+exports.updateStudent1stFees = updateStudent1stFees;
+const updateStudent2ndFees = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
+            let students = yield studentModel_1.default.findById(studentID);
+            if ((students === null || students === void 0 ? void 0 : students.feesPaid1st) === true) {
+                let student = yield studentModel_1.default.findByIdAndUpdate(students === null || students === void 0 ? void 0 : students._id, { feesPaid2nd: true }, { new: true });
+                (0, email_1.verifySchoolFees)(student, 2);
+                return res.status(201).json({
+                    message: "student fees updated successfully",
+                    data: student,
+                    status: 200,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "student 3rd fees not found",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school students",
+            status: 404,
+        });
+    }
+});
+exports.updateStudent2ndFees = updateStudent2ndFees;
+const updateStudent3rdFees = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if ((student === null || student === void 0 ? void 0 : student.feesPaid2nd) === true) {
+                yield studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid3rd: true }, { new: true });
+                (0, email_1.verifySchoolFees)(student, 3);
+                return res.status(201).json({
+                    message: "student fees updated successfully",
+                    data: student,
+                    status: 200,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "student 2nd fees not found",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school students",
+            status: 404,
+        });
+    }
+});
+exports.updateStudent3rdFees = updateStudent3rdFees;

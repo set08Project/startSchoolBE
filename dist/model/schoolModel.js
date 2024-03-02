@@ -45,7 +45,7 @@ const schoolModel = new mongoose_2.Schema({
     session: [
         {
             type: mongoose_1.Types.ObjectId,
-            ref: "sessions",
+            ref: "academicSessions",
         },
     ],
     events: [

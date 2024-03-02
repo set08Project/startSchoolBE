@@ -274,38 +274,39 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
             return el.subjectTitle === subjectTitle;
         });
         if (school && school.schoolName && school.status === "school-admin") {
-            if (getSubject) {
-                const staff = yield staffModel_1.default.create({
-                    schoolIDs: schoolID,
-                    staffName,
-                    schoolName: school.schoolName,
-                    staffRole: enums_1.staffDuty.TEACHER,
-                    subjectAssigned: [{ title: subjectTitle, id: getSubject._id }],
-                    role,
-                    status: "school-teacher",
-                    salary,
-                    gender,
-                    email: `${staffName
-                        .replace(/ /gi, "")
-                        .toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
-                    enrollmentID,
-                    password: hashed,
-                    staffAddress,
-                });
-                school.staff.push(new mongoose_1.Types.ObjectId(staff._id));
-                school.save();
-                return res.status(201).json({
-                    message: "teacher created successfully",
-                    data: staff,
-                    status: 201,
-                });
-            }
-            else {
-                return res.status(404).json({
-                    message: "A teacher must have a subject to handle and Subject hasn't been created",
-                    status: 404,
-                });
-            }
+            // if (getSubject) {
+            const staff = yield staffModel_1.default.create({
+                schoolIDs: schoolID,
+                staffName,
+                schoolName: school.schoolName,
+                staffRole: enums_1.staffDuty.TEACHER,
+                // subjectAssigned: [{ title: subjectTitle, id: getSubject._id }],
+                role,
+                status: "school-teacher",
+                salary,
+                gender,
+                email: `${staffName
+                    .replace(/ /gi, "")
+                    .toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
+                enrollmentID,
+                password: hashed,
+                staffAddress,
+            });
+            school.staff.push(new mongoose_1.Types.ObjectId(staff._id));
+            school.save();
+            return res.status(201).json({
+                message: "teacher created successfully",
+                data: staff,
+                status: 201,
+            });
+            // }
+            // else {
+            //   return res.status(404).json({
+            //     message:
+            //       "A teacher must have a subject to handle and Subject hasn't been created",
+            //     status: 404,
+            //   });
+            // }
         }
         else {
             return res.status(404).json({
@@ -316,7 +317,7 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating school session",
+            message: "Error creating teacher",
         });
     }
 });
