@@ -104,5 +104,11 @@ const studentModel = new mongoose_1.Schema({
             ref: "articles",
         },
     ],
+    complain: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "complains",
+        },
+    ],
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("students", studentModel);

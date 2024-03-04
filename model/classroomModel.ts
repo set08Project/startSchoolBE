@@ -21,12 +21,16 @@ interface iClass {
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
   school: {};
+  weekStudent: {};
 }
 
 interface iClassData extends iClass, Document {}
 
 const classesModel = new Schema<iClassData>(
   {
+    weekStudent: {
+      type: {},
+    },
     lessonNotes: [
       {
         type: Types.ObjectId,

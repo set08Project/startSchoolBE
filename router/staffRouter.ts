@@ -10,6 +10,7 @@ import {
   readSchooTeacher,
   readTeacherCookie,
   readTeacherDetail,
+  updateStaffActiveness,
   updateStaffAvatar,
   updateTeacherSalary,
 } from "../controller/staffController";
@@ -58,5 +59,7 @@ router
   .post(createSchoolTeacherByVicePrincipal);
 
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
+
+router.route("/staff-active/:studentID").patch(updateStaffActiveness);
 
 export default router;

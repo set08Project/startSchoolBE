@@ -22,6 +22,7 @@ const assignmentResolveRouter_1 = __importDefault(require("./router/assignmentRe
 const remarkRouter_1 = __importDefault(require("./router/remarkRouter"));
 const storeRouter_1 = __importDefault(require("./router/storeRouter"));
 const gallaryRouter_1 = __importDefault(require("./router/gallaryRouter"));
+const complainRouter_1 = __importDefault(require("./router/complainRouter"));
 const cron_parser_1 = __importDefault(require("cron-parser"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
@@ -47,6 +48,7 @@ const mainApp = (app) => {
         app.use("/api", timeTableRouter_1.default);
         app.use("/api", assignmentResolveRouter_1.default);
         app.use("/api", gallaryRouter_1.default);
+        app.use("/api", complainRouter_1.default);
         app.get("/", (req, res) => {
             try {
                 let { started } = req.body;

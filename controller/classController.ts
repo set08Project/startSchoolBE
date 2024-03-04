@@ -5,6 +5,7 @@ import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
 import staffModel from "../model/staffModel";
 import lodash from "lodash";
+import studentModel from "../model/studentModel";
 
 export const createSchoolClasses = async (
   req: Request,
@@ -398,6 +399,61 @@ export const viewClassTopStudent = async (
       message: "Error creating school class",
       status: 404,
       data: error.message,
+    });
+  }
+};
+
+export const studentOfWeek = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { teacherID } = req.params;
+    const { studentName, remark } = req.body;
+
+    const teacher = await staffModel.findById(teacherID);
+
+    const classRM = await classroomModel
+      .findOne({
+        className: teacher?.classesAssigned,
+      })
+      .populate({
+        path: "students",
+      });
+
+    const getStudent: any = classRM?.students.find((el: any) => {
+      return `${el.studentFirstName} ${el.studentFirstName}` === studentName;
+    });
+
+    const studentData = await studentModel.findOne(getStudent?._id);
+
+    if (teacher?.status === "school-teacher" && classRM && studentData) {
+      const week = await classroomModel.findByIdAndUpdate(
+        classRM?._id,
+        {
+          weekStudent: {
+            student: studentData,
+            remark,
+          },
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "student of the week awarded",
+        status: 201,
+        data: week,
+      });
+    } else {
+      return res.status(404).json({
+        message: "student 2nd fees not found",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school students",
+      status: 404,
     });
   }
 };

@@ -7,6 +7,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
 import { verifySchoolFees } from "../utils/email";
+import staffModel from "../model/staffModel";
+import classroomModel from "../model/classroomModel";
 
 export const createSchoolStudent = async (
   req: Request,

@@ -25,11 +25,15 @@ interface iStudent {
   studentAvatarID: string;
   attendance: Array<{}>;
   performance: Array<{}>;
+
+  weekStudent: {};
+
   school: {};
   classroom: {};
   assignmentResolve: Array<{}>;
   remark: Array<{}>;
   articles: Array<{}>;
+  complain: Array<{}>;
 }
 
 interface iStudentData extends iStudent, Document {}
@@ -159,6 +163,13 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "articles",
+      },
+    ],
+
+    complain: [
+      {
+        type: Types.ObjectId,
+        ref: "complains",
       },
     ],
   },

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createSchoolClasses,
   deleteSchoolClass,
+  studentOfWeek,
   updateSchoolClassTeacher,
   viewClassRM,
   viewClassTopStudent,
@@ -36,4 +37,5 @@ router
 
 router.route("/delete-classrooms/:schoolID/:classID").delete(deleteSchoolClass);
 
+router.route("/student-week/:teacherID").patch(studentOfWeek);
 export default router;

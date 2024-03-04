@@ -215,34 +215,56 @@ const rateLessonNote = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const { rate } = req.body;
         const student = yield studentModel_1.default.findById(studentID);
         const lessonNote = yield lessonNoteModel_1.default.findById(lessonID);
+        const teacher = yield staffModel_1.default
+            .findById(lessonNote.teacherID)
+            .populate({ path: "lessonNotes" });
         const check = lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote.rateData.some((el) => {
             return el.id === studentID;
         });
         if (student && lessonNote) {
-            if (!check) {
-                // let dataNote = [...lessonNote?.rateData, { id: studentID, rate }];
-                const lessonNoteData = yield lessonNoteModel_1.default.findByIdAndUpdate(lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote._id, {
-                    rateData: [...lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote.rateData, { id: studentID, rate }],
-                }, { new: true });
-                const lessonNoteDate = yield lessonNoteModel_1.default.findByIdAndUpdate(lessonNoteData === null || lessonNoteData === void 0 ? void 0 : lessonNoteData._id, {
-                    rate: lessonNote.rateData
-                        .map((el) => parseInt(el.rate))
-                        .reduce((a, b) => a + b) /
-                        lessonNote.rateData.length,
-                }, { new: true });
-                const lesson = yield lessonNoteModel_1.default.findById(lessonNoteDate === null || lessonNoteDate === void 0 ? void 0 : lessonNoteDate._id);
-                return res.status(200).json({
-                    message: "lesson note rated",
-                    data: lesson,
-                    status: 200,
-                });
-            }
-            else {
-                return res.status(404).json({
-                    message: "Already rated",
-                    status: 404,
-                });
-            }
+            // if (!check) {
+            // let dataNote = [...lessonNote?.rateData, { id: studentID, rate }];
+            const lessonNoteData = yield lessonNoteModel_1.default.findByIdAndUpdate(lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote._id, {
+                rateData: [...lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote.rateData, { id: studentID, rate }],
+            }, { new: true });
+            const lessonNoteDate = yield lessonNoteModel_1.default.findByIdAndUpdate(lessonNoteData === null || lessonNoteData === void 0 ? void 0 : lessonNoteData._id, {
+                rate: lessonNote.rateData
+                    .map((el) => {
+                    if (el.rate === undefined) {
+                        return (el.rate = 0);
+                    }
+                    else {
+                        return parseInt(el.rate);
+                    }
+                })
+                    .reduce((a, b) => a + b) /
+                    lessonNote.rateData.length,
+            }, { new: true });
+            const lesson = yield lessonNoteModel_1.default.findById(lessonNoteDate === null || lessonNoteDate === void 0 ? void 0 : lessonNoteDate._id);
+            yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
+                staffRating: (teacher === null || teacher === void 0 ? void 0 : teacher.lessonNotes.map((el) => {
+                    if (el.rate === undefined) {
+                        return (el.rate = 0);
+                    }
+                    else {
+                        return el.rate;
+                    }
+                }).reduce((a, b) => {
+                    return a + b;
+                })) / (teacher === null || teacher === void 0 ? void 0 : teacher.lessonNotes.length),
+            }, { new: true });
+            return res.status(200).json({
+                message: "lesson note rated",
+                data: lesson,
+                status: 200,
+            });
+            // }
+            // else {
+            //   return res.status(404).json({
+            //     message: "Already rated",
+            //     status: 404,
+            //   });
+            // }
         }
         else {
             return res.status(404).json({
@@ -255,6 +277,7 @@ const rateLessonNote = (req, res) => __awaiter(void 0, void 0, void 0, function*
         return res.status(404).json({
             message: "Error creating lesson Note",
             status: 404,
+            data: error.message,
         });
     }
 });

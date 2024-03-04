@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginTeacher = void 0;
+exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -21,6 +21,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
+const studentModel_1 = __importDefault(require("../model/studentModel"));
 const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
@@ -428,3 +429,39 @@ const updateStaffAvatar = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.updateStaffAvatar = updateStaffAvatar;
+const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID } = req.params;
+        const { teacherName } = req.body;
+        const student = yield studentModel_1.default.findById(studentID);
+        const teacher = yield staffModel_1.default.findOne({ staffName: teacherName });
+        if (teacher && student) {
+            const updatedSchool = yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
+                activeStatus: true,
+            }, { new: true });
+            const timing = 45 * 60 * 1000;
+            const taskId = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+                yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
+                    activeStatus: false,
+                }, { new: true });
+                clearTimeout(taskId);
+            }), timing);
+            return res.status(201).json({
+                message: "staff activity has been, active",
+                data: updatedSchool,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating user",
+        });
+    }
+});
+exports.updateStaffActiveness = updateStaffActiveness;

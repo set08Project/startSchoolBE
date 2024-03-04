@@ -262,56 +262,87 @@ export const rateLessonNote = async (
     const student = await studentModel.findById(studentID);
     const lessonNote: any = await lessonNoteModel.findById(lessonID);
 
+    const teacher = await staffModel
+      .findById(lessonNote.teacherID)
+      .populate({ path: "lessonNotes" });
+
     const check = lessonNote?.rateData.some((el: any) => {
       return el.id === studentID;
     });
     if (student && lessonNote) {
-      if (!check) {
-        // let dataNote = [...lessonNote?.rateData, { id: studentID, rate }];
+      // if (!check) {
+      // let dataNote = [...lessonNote?.rateData, { id: studentID, rate }];
 
-        const lessonNoteData = await lessonNoteModel.findByIdAndUpdate(
-          lessonNote?._id,
-          {
-            rateData: [...lessonNote?.rateData, { id: studentID, rate }],
-          },
-          { new: true }
-        );
+      const lessonNoteData = await lessonNoteModel.findByIdAndUpdate(
+        lessonNote?._id,
+        {
+          rateData: [...lessonNote?.rateData, { id: studentID, rate }],
+        },
+        { new: true }
+      );
 
-        const lessonNoteDate = await lessonNoteModel.findByIdAndUpdate(
-          lessonNoteData?._id,
-          {
-            rate:
-              lessonNote.rateData
-                .map((el: any) => parseInt(el.rate))
-                .reduce((a: number, b: number) => a + b) /
-              lessonNote.rateData.length,
-          },
-          { new: true }
-        );
+      const lessonNoteDate = await lessonNoteModel.findByIdAndUpdate(
+        lessonNoteData?._id,
+        {
+          rate:
+            lessonNote.rateData
+              .map((el: any) => {
+                if (el.rate === undefined) {
+                  return (el.rate = 0);
+                } else {
+                  return parseInt(el.rate);
+                }
+              })
+              .reduce((a: number, b: number) => a + b) /
+            lessonNote.rateData.length,
+        },
+        { new: true }
+      );
 
-        const lesson = await lessonNoteModel.findById(lessonNoteDate?._id);
+      const lesson = await lessonNoteModel.findById(lessonNoteDate?._id);
 
-        return res.status(200).json({
-          message: "lesson note rated",
-          data: lesson,
-          status: 200,
-        });
-      } else {
-        return res.status(404).json({
-          message: "Already rated",
-          status: 404,
-        });
-      }
+      await staffModel.findByIdAndUpdate(
+        teacher?._id,
+        {
+          staffRating:
+            teacher?.lessonNotes
+              .map((el: any) => {
+                if (el.rate === undefined) {
+                  return (el.rate = 0);
+                } else {
+                  return el.rate;
+                }
+              })
+              .reduce((a: number, b: number) => {
+                return a + b;
+              }) / teacher?.lessonNotes.length!,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "lesson note rated",
+        data: lesson,
+        status: 200,
+      });
+      // }
+      // else {
+      //   return res.status(404).json({
+      //     message: "Already rated",
+      //     status: 404,
+      //   });
+      // }
     } else {
       return res.status(404).json({
         message: "Student can't be fine",
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating lesson Note",
       status: 404,
+      data: error.message,
     });
   }
 };

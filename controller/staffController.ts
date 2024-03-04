@@ -7,6 +7,8 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
+import { CronJob } from "cron";
+import studentModel from "../model/studentModel";
 
 export const loginTeacher = async (
   req: any,
@@ -474,6 +476,53 @@ export const updateStaffAvatar = async (req: any, res: Response) => {
       return res.status(200).json({
         message: "staff avatar has been, added",
         data: updatedSchool,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating user",
+    });
+  }
+};
+
+export const updateStaffActiveness = async (req: any, res: Response) => {
+  try {
+    const { studentID } = req.params;
+    const { teacherName } = req.body;
+
+    const student = await studentModel.findById(studentID);
+    const teacher = await staffModel.findOne({ staffName: teacherName });
+
+    if (teacher && student) {
+      const updatedSchool = await staffModel.findByIdAndUpdate(
+        teacher?._id,
+        {
+          activeStatus: true,
+        },
+        { new: true }
+      );
+
+      const timing = 45 * 60 * 1000;
+
+      const taskId = setTimeout(async () => {
+        await staffModel.findByIdAndUpdate(
+          teacher?._id,
+          {
+            activeStatus: false,
+          },
+          { new: true }
+        );
+        clearTimeout(taskId);
+      }, timing);
+
+      return res.status(201).json({
+        message: "staff activity has been, active",
+        data: updatedSchool,
+        status: 201,
       });
     } else {
       return res.status(404).json({

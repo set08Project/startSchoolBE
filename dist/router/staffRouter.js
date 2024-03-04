@@ -41,4 +41,5 @@ router
     .route("/create-school-teacher-vice-prinicipal/:schoolID")
     .post(staffController_1.createSchoolTeacherByVicePrincipal);
 router.route("/upload-staff-avatar/:staffID").patch(upload, staffController_1.updateStaffAvatar);
+router.route("/staff-active/:studentID").patch(staffController_1.updateStaffActiveness);
 exports.default = router;

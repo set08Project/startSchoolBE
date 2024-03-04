@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const classesModel = new mongoose_1.Schema({
+    weekStudent: {
+        type: {},
+    },
     lessonNotes: [
         {
             type: mongoose_1.Types.ObjectId,

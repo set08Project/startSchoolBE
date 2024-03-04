@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClassTeacher = exports.viewClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
+exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClassTeacher = exports.viewClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const lodash_1 = __importDefault(require("lodash"));
+const studentModel_1 = __importDefault(require("../model/studentModel"));
 const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -346,3 +347,47 @@ const viewClassTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.viewClassTopStudent = viewClassTopStudent;
+const studentOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { teacherID } = req.params;
+        const { studentName, remark } = req.body;
+        const teacher = yield staffModel_1.default.findById(teacherID);
+        const classRM = yield classroomModel_1.default
+            .findOne({
+            className: teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned,
+        })
+            .populate({
+            path: "students",
+        });
+        const getStudent = classRM === null || classRM === void 0 ? void 0 : classRM.students.find((el) => {
+            return `${el.studentFirstName} ${el.studentFirstName}` === studentName;
+        });
+        const studentData = yield studentModel_1.default.findOne(getStudent === null || getStudent === void 0 ? void 0 : getStudent._id);
+        if ((teacher === null || teacher === void 0 ? void 0 : teacher.status) === "school-teacher" && classRM && studentData) {
+            const week = yield classroomModel_1.default.findByIdAndUpdate(classRM === null || classRM === void 0 ? void 0 : classRM._id, {
+                weekStudent: {
+                    student: studentData,
+                    remark,
+                },
+            }, { new: true });
+            return res.status(201).json({
+                message: "student of the week awarded",
+                status: 201,
+                data: week,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "student 2nd fees not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school students",
+            status: 404,
+        });
+    }
+});
+exports.studentOfWeek = studentOfWeek;

@@ -24,6 +24,7 @@ interface iStaff {
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
   remark: Array<{}>;
+  complain: Array<{}>;
 
   staffRating: number;
   status: string;
@@ -36,6 +37,12 @@ interface iStaffData extends iStaff, Document {}
 
 const staffModel = new Schema<iStaffData>(
   {
+    complain: [
+      {
+        type: Types.ObjectId,
+        ref: "complains",
+      },
+    ],
     schoolIDs: {
       type: String,
     },

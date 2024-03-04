@@ -66,6 +66,12 @@ const schoolModel = new mongoose_2.Schema({
             ref: "subjects",
         },
     ],
+    complain: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "complains",
+        },
+    ],
     classRooms: [
         {
             type: mongoose_1.Types.ObjectId,

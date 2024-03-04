@@ -18,6 +18,7 @@ import assignment from "./router/assignmentResolveRouter";
 import remark from "./router/remarkRouter";
 import store from "./router/storeRouter";
 import gallary from "./router/gallaryRouter";
+import complain from "./router/complainRouter";
 
 import cronParser from "cron-parser";
 
@@ -47,6 +48,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", timetable);
     app.use("/api", assignment);
     app.use("/api", gallary);
+    app.use("/api", complain);
 
     app.get("/", (req: Request, res: Response) => {
       try {
