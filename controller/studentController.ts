@@ -244,15 +244,15 @@ export const logoutStudent = async (
 
 export const updateStudentAvatar = async (req: any, res: Response) => {
   try {
-    const { studntID } = req.params;
+    const { studentID } = req.params;
 
-    const school = await studentModel.findById(studntID);
-
+    const school = await studentModel.findById(studentID);
+    console.log(school);
     if (school) {
       const { secure_url, public_id }: any = await streamUpload(req);
 
       const updatedStudent = await studentModel.findByIdAndUpdate(
-        studntID,
+        studentID,
         {
           avatar: secure_url,
           avatarID: public_id,
@@ -263,15 +263,17 @@ export const updateStudentAvatar = async (req: any, res: Response) => {
       return res.status(200).json({
         message: "student avatar has been, added",
         data: updatedStudent,
+        status: 201,
       });
     } else {
       return res.status(404).json({
-        message: "Something went wrong",
+        message: "student not seen",
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
-      message: "Error creating user",
+      message: "Error creating avatar",
+      data: error.message,
     });
   }
 };

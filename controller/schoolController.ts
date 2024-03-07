@@ -118,10 +118,10 @@ export const createSchool = async (
       data: school,
       status: 201,
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school",
-      data: error,
+      data: error.message,
       status: 404,
     });
   }
@@ -365,6 +365,7 @@ export const updateSchoolAvatar = async (req: any, res: Response) => {
       return res.status(200).json({
         message: "school avatar has been, added",
         data: updatedSchool,
+        status: 201,
       });
     } else {
       return res.status(404).json({

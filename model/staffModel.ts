@@ -7,6 +7,8 @@ interface iStaff {
   staffAddress: string;
   schoolIDs: string;
   salary: number;
+  avatar: string;
+  avatarID: string;
 
   email: string;
   password: string;
@@ -47,6 +49,12 @@ const staffModel = new Schema<iStaffData>(
       type: String,
     },
     gender: {
+      type: String,
+    },
+    avatar: {
+      type: String,
+    },
+    avatarID: {
       type: String,
     },
     salary: {

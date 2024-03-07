@@ -17,6 +17,12 @@ const studentModel = new mongoose_1.Schema({
     schoolIDs: {
         type: String,
     },
+    avatar: {
+        type: String,
+    },
+    avatarID: {
+        type: String,
+    },
     password: {
         type: String,
     },

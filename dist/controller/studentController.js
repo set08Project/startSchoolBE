@@ -218,28 +218,31 @@ const logoutStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.logoutStudent = logoutStudent;
 const updateStudentAvatar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { studntID } = req.params;
-        const school = yield studentModel_1.default.findById(studntID);
+        const { studentID } = req.params;
+        const school = yield studentModel_1.default.findById(studentID);
+        console.log(school);
         if (school) {
             const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
-            const updatedStudent = yield studentModel_1.default.findByIdAndUpdate(studntID, {
+            const updatedStudent = yield studentModel_1.default.findByIdAndUpdate(studentID, {
                 avatar: secure_url,
                 avatarID: public_id,
             }, { new: true });
             return res.status(200).json({
                 message: "student avatar has been, added",
                 data: updatedStudent,
+                status: 201,
             });
         }
         else {
             return res.status(404).json({
-                message: "Something went wrong",
+                message: "student not seen",
             });
         }
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating user",
+            message: "Error creating avatar",
+            data: error.message,
         });
     }
 });

@@ -116,7 +116,7 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     catch (error) {
         return res.status(404).json({
             message: "Error creating school",
-            data: error,
+            data: error.message,
             status: 404,
         });
     }
@@ -307,6 +307,7 @@ const updateSchoolAvatar = (req, res) => __awaiter(void 0, void 0, void 0, funct
             return res.status(200).json({
                 message: "school avatar has been, added",
                 data: updatedSchool,
+                status: 201,
             });
         }
         else {

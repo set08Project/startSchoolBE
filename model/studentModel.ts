@@ -9,6 +9,8 @@ interface iStudent {
   gender: string;
   classAssigned: string;
   schoolIDs: string;
+  avatar: string;
+  avatarID: string;
 
   feesPaid1st: boolean;
   feesPaid2nd: boolean;
@@ -56,6 +58,14 @@ const studentModel = new Schema<iStudentData>(
     },
 
     schoolIDs: {
+      type: String,
+    },
+
+    avatar: {
+      type: String,
+    },
+
+    avatarID: {
       type: String,
     },
     password: {

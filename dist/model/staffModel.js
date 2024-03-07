@@ -14,6 +14,12 @@ const staffModel = new mongoose_1.Schema({
     gender: {
         type: String,
     },
+    avatar: {
+        type: String,
+    },
+    avatarID: {
+        type: String,
+    },
     salary: {
         type: Number,
     },
