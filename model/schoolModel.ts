@@ -19,8 +19,9 @@ interface iSchool {
 
   session: Array<{}>;
   staff: Array<{}>;
-  lessonNotes: Array<{}>;
+  reportCard: Array<{}>;
 
+  lessonNotes: Array<{}>;
   schoolTags: Array<{}>;
 
   subjects: Array<{}>;
@@ -101,6 +102,13 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "announcements",
+      },
+    ],
+
+    reportCard: [
+      {
+        type: Types.ObjectId,
+        ref: "reportcards",
       },
     ],
 
