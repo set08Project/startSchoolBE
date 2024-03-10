@@ -16,6 +16,7 @@ interface iClass {
   timeTable: Array<{}>;
   attendance: Array<{}>;
   lessonNotes: Array<{}>;
+  reportCard: Array<{}>;
 
   students: Array<{}>;
   assignment: Array<{}>;
@@ -112,6 +113,13 @@ const classesModel = new Schema<iClassData>(
       {
         type: Types.ObjectId,
         ref: "timeTables",
+      },
+    ],
+
+    reportCard: [
+      {
+        type: Types.ObjectId,
+        ref: "myReportCards",
       },
     ],
 

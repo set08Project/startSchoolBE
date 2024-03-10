@@ -137,7 +137,7 @@ const staffModel = new Schema<iStaffData>(
     reportCard: [
       {
         type: Types.ObjectId,
-        ref: "reportcards",
+        ref: "myReportCards",
       },
     ],
 

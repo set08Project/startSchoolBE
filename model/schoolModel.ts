@@ -19,7 +19,6 @@ interface iSchool {
 
   session: Array<{}>;
   staff: Array<{}>;
-  reportCard: Array<{}>;
 
   lessonNotes: Array<{}>;
   schoolTags: Array<{}>;
@@ -35,6 +34,7 @@ interface iSchool {
   articles: Array<{}>;
   gallaries: Array<{}>;
   complain: Array<{}>;
+  reportCard: Array<{}>;
 }
 
 interface iSchoolData extends iSchool, Document {}
@@ -108,7 +108,7 @@ const schoolModel = new Schema<iSchoolData>(
     reportCard: [
       {
         type: Types.ObjectId,
-        ref: "reportcards",
+        ref: "myReportCards",
       },
     ],
 

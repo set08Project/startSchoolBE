@@ -46,7 +46,7 @@ export const createSubjectQuiz = async (
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (errorL) {
     return res.status(404).json({
       message: "Error creating class subject quiz",
       status: 404,

@@ -85,14 +85,10 @@ export const loginSchool = async (
         message: "Error finding school",
       });
     }
-
-    return res.status(201).json({
-      message: "creating school",
-      data: school,
-    });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school",
+      data: error.message,
     });
   }
 };

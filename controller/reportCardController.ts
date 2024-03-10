@@ -56,10 +56,12 @@ export const createStudentreportCard = async (
         newTermDate,
         date,
         principalRemark,
+
         teachersRemark,
         totalGrade,
         totalObtainableScore,
         totalObtainedScore,
+
         remarks,
         position,
         grade,
@@ -67,11 +69,11 @@ export const createStudentreportCard = async (
         examScore,
         continuousAssesment,
         color,
-        clubSociety,
-        wt,
-        ht,
-        age,
-        DOB,
+        clubSociety: "JET",
+        wt: student?.weight,
+        ht: student?.height,
+        age: student?.age,
+        DOB: student?.DoB,
         session: school?.session,
         toataTage,
       });
@@ -104,4 +106,3 @@ export const createStudentreportCard = async (
     });
   }
 };
-
