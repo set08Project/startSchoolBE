@@ -28,6 +28,7 @@ interface iStudent {
   attendance: Array<{}>;
   performance: Array<{}>;
   reportCard: Array<{}>;
+  pastQuestionHistory: Array<{}>;
 
   weekStudent: {};
 
@@ -188,6 +189,12 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "myReportCards",
+      },
+    ],
+    pastQuestionHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "pquestions",
       },
     ],
   },
