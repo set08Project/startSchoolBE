@@ -61,6 +61,10 @@ export const createNewSchoolSession = async (
       .findById(schoolID)
       .populate({ path: "classRooms" });
 
+    const pushClass = await schoolModel.findById(schoolID).populate({
+      path: "sessionHistroy",
+    });
+
     let totalStudent = 0;
     const totalStaff = school?.staff?.length;
     const totalSubjects = school?.subjects?.length;
@@ -93,6 +97,8 @@ export const createNewSchoolSession = async (
       });
 
       school.session.push(new Types.ObjectId(session._id));
+
+      school.sessionHistroy.push(new Types.ObjectId(session?._id));
       school.save();
 
       schoolClass?.classRooms.find((el: any) => {
@@ -118,7 +124,7 @@ export const createNewSchoolSession = async (
       }
       return res.status(201).json({
         message: "session created successfully",
-        data: session,
+        // data: session,
         class: schoolClass?.classRooms,
       });
     } else {
