@@ -75,6 +75,12 @@ const classesModel = new mongoose_1.Schema({
             ref: "timeTables",
         },
     ],
+    reportCard: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "myReportCards",
+        },
+    ],
     school: {
         type: mongoose_1.Types.ObjectId,
         ref: "schools",

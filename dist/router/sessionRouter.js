@@ -9,5 +9,9 @@ router
     .post(sessionController_1.createNewSchoolSession);
 router.route("/view-school-session/:schoolID").get(sessionController_1.viewSchoolSession);
 router.route("/update-students").patch(sessionController_1.studentsPerSession);
-router.route("/edit-school-term").patch(sessionController_1.termPerSession);
+router.route("/create-school-term/:sessionID").post(sessionController_1.termPerSession);
+router
+    .route("/view-present-school-session/:sessionID")
+    .get(sessionController_1.viewSchoolPresentSession);
+router.route("/view-school-term/:termID").get(sessionController_1.viewSchoolPresentSessionTerm);
 exports.default = router;

@@ -74,10 +74,11 @@ export const createClassTimeTable = async (
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating class timetable",
       status: 404,
+      data: error.message,
     });
   }
 };
