@@ -79,7 +79,7 @@ export const createNewSchoolSession = async (
 
       const session = await sessionModel.create({
         year,
-        term,
+        // term,
         totalStudents: totalStudent,
         numberOfTeachers: totalStaff,
         numberOfSubjects: totalSubjects,
@@ -102,6 +102,7 @@ export const createNewSchoolSession = async (
   } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school session",
+      data: error.message,
     });
   }
 };
@@ -143,10 +144,12 @@ export const viewSchoolPresentSession = async (
 
     const school = await sessionModel.findById(sessionID);
 
+    console.log("read");
+    console.log(sessionID);
     console.log(school);
 
     return res.status(200).json({
-      message: "viewing school session",
+      message: "viewing school session now!",
       data: school,
     });
   } catch (error: any) {
@@ -216,7 +219,9 @@ export const termPerSession = async (
   try {
     const { sessionID } = req.params;
     let { term } = req.body;
-    const session = await sessionModel.findById(sessionID);
+    const session = await sessionModel.findById(sessionID).populate({
+      path: "term",
+    });
 
     if (session) {
       if (
@@ -238,18 +243,29 @@ export const termPerSession = async (
 
           return result.trim();
         };
-        const sessionTerm = await termModel.create({
-          term: capitalizedText(term),
-          year: session?.year,
+
+        const check = session.term.some((el: any) => {
+          return el.term === capitalizedText(term);
         });
 
-        session?.term.push(new Types.ObjectId(sessionTerm?._id));
-        session?.save();
+        if (check) {
+          return res.status(404).json({
+            message: "Term Already exist",
+          });
+        } else {
+          const sessionTerm = await termModel.create({
+            term: capitalizedText(term),
+            year: session?.year,
+          });
 
-        return res.status(200).json({
-          message: "creating session term",
-          data: sessionTerm,
-        });
+          session?.term.push(new Types.ObjectId(sessionTerm?._id));
+          session?.save();
+
+          return res.status(200).json({
+            message: "creating session term",
+            data: sessionTerm,
+          });
+        }
       } else {
         return res.status(404).json({
           message: "Term can't be created",

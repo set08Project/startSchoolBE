@@ -17,8 +17,11 @@ router
   .post(createNewSchoolSession);
 router.route("/view-school-session/:schoolID").get(viewSchoolSession);
 router.route("/update-students").patch(studentsPerSession);
+
 router.route("/create-school-term/:sessionID").post(termPerSession);
 
-router.route("/view-school-session/:sessionID").get(viewSchoolPresentSession);
+router
+  .route("/view-present-school-session/:sessionID")
+  .get(viewSchoolPresentSession);
 router.route("/view-school-term/:termID").get(viewSchoolPresentSessionTerm);
 export default router;
