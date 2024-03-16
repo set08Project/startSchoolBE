@@ -1,8 +1,9 @@
 import { Document, Schema, Types, model } from "mongoose";
 
-interface iSession {
+interface iSessionTerm {
   year: string;
-  term: Array<{}>;
+  term: string;
+
   totalStudents: number;
   studentFeesPaid: number;
   studentFeesNotPaid: number;
@@ -10,22 +11,20 @@ interface iSession {
   numberOfSubjects: number;
   totalAmountRecieved: number;
   profit: number;
+  session: {};
 }
 
-interface iSessionData extends iSession, Document {}
+interface iSessionTermData extends iSessionTerm, Document {}
 
-const sessionModel = new Schema<iSessionData>(
+const termModel = new Schema<iSessionTermData>(
   {
     year: {
       type: String,
     },
 
-    term: [
-      {
-        type: Types.ObjectId,
-        ref: "academicSessionsTerms",
-      },
-    ],
+    term: {
+      type: String,
+    },
 
     studentFeesPaid: {
       type: Number,
@@ -57,12 +56,12 @@ const sessionModel = new Schema<iSessionData>(
       default: 0,
     },
 
-    profit: {
-      type: Number,
-      default: 0,
+    session: {
+      type: Types.ObjectId,
+      ref: "academicSessions",
     },
   },
   { timestamps: true }
 );
 
-export default model<iSessionData>("academicSessions", sessionModel);
+export default model<iSessionTermData>("academicSessionsTerms", termModel);

@@ -11,7 +11,7 @@ export const createClassTimeTable = async (
 ): Promise<Response> => {
   try {
     const { schoolID, classID } = req.params;
-    const { subject, day, time } = req.body;
+    const { subject, day, time, CR } = req.body;
 
     const school = await schoolModel.findById(schoolID);
     const classRoom = await classroomModel.findById(classID).populate({
@@ -33,6 +33,7 @@ export const createClassTimeTable = async (
           subject,
           day,
           time,
+          CR: classRoom?.className,
         });
 
         classRoom?.timeTable.push(new Types.ObjectId(classes._id));

@@ -4,6 +4,7 @@ interface iTimeTable {
   time: string;
   subject: string;
   day: string;
+  CR: string;
 
   classroom: {};
   staff: {};
@@ -22,6 +23,10 @@ const timeTableModel = new Schema<iTimeTableData>(
     },
 
     subject: {
+      type: String,
+    },
+
+    CR: {
       type: String,
     },
 

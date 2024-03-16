@@ -3,6 +3,7 @@ import schoolModel from "../model/schoolModel";
 import sessionModel from "../model/sessionModel";
 import { Types } from "mongoose";
 import studentModel from "../model/studentModel";
+import termModel from "../model/termModel";
 
 export const createSchoolSession = async (
   req: Request,
@@ -133,6 +134,50 @@ export const viewSchoolSession = async (
   }
 };
 
+export const viewSchoolPresentSession = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { sessionID } = req.params;
+
+    const school = await sessionModel.findById(sessionID);
+
+    console.log(school);
+
+    return res.status(200).json({
+      message: "viewing school session",
+      data: school,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error viewing school session",
+      data: error.message,
+    });
+  }
+};
+
+export const viewSchoolPresentSessionTerm = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { termID } = req.params;
+
+    const school = await termModel.findById(termID);
+
+    return res.status(200).json({
+      message: "viewing school session",
+      data: school,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error viewing school session",
+      data: error.message,
+    });
+  }
+};
+
 export const studentsPerSession = async (
   req: Request,
   res: Response
@@ -170,19 +215,46 @@ export const termPerSession = async (
 ): Promise<Response> => {
   try {
     const { sessionID } = req.params;
-    const { term } = req.body;
+    let { term } = req.body;
     const session = await sessionModel.findById(sessionID);
 
     if (session) {
-      const students = await sessionModel.findByIdAndUpdate(
-        sessionID,
-        { term },
-        { new: true }
-      );
-      return res.status(200).json({
-        message: "viewing session session",
-        data: students,
-      });
+      if (
+        term === "1st Term" ||
+        term === "First Term" ||
+        term === "2nd Term" ||
+        term === "Second Term" ||
+        term === "3rd Term" ||
+        term === "Third Term"
+      ) {
+        const capitalizedText = (str: string): string => {
+          let result: string = "";
+
+          let word: string[] = str.split(" ");
+
+          for (let i of word) {
+            result = result + i[0].toUpperCase().concat(i.slice(1), " ");
+          }
+
+          return result.trim();
+        };
+        const sessionTerm = await termModel.create({
+          term: capitalizedText(term),
+          year: session?.year,
+        });
+
+        session?.term.push(new Types.ObjectId(sessionTerm?._id));
+        session?.save();
+
+        return res.status(200).json({
+          message: "creating session term",
+          data: sessionTerm,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Term can't be created",
+        });
+      }
     } else {
       return res.status(404).json({
         message: "Error finding school session",
