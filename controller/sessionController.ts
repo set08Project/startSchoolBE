@@ -4,6 +4,7 @@ import sessionModel from "../model/sessionModel";
 import { Types } from "mongoose";
 import studentModel from "../model/studentModel";
 import termModel from "../model/termModel";
+import classroomModel from "../model/classroomModel";
 
 export const createSchoolSession = async (
   req: Request,
@@ -56,6 +57,10 @@ export const createNewSchoolSession = async (
       .findById(schoolID)
       .populate({ path: "students" });
 
+    const schoolClass: any = await schoolModel
+      .findById(schoolID)
+      .populate({ path: "classRooms" });
+
     let totalStudent = 0;
     const totalStaff = school?.staff?.length;
     const totalSubjects = school?.subjects?.length;
@@ -90,9 +95,31 @@ export const createNewSchoolSession = async (
       school.session.push(new Types.ObjectId(session._id));
       school.save();
 
+      schoolClass?.classRooms.find((el: any) => {
+        return;
+      });
+
+      for (let i of schoolClass?.classRooms) {
+        let num: number = parseInt(`${i.className}`.match(/\d+/)![0]);
+        let name = i.className.split(`${num}`);
+        console.log(num);
+        console.log(num++);
+        if (num < 4) {
+          await classroomModel.findByIdAndUpdate(
+            i?._id,
+            {
+              className: `${name[0].trim()} ${num++}${name[1].trim()}`,
+            },
+            { new: true }
+          );
+        } else {
+          console.log("can't");
+        }
+      }
       return res.status(201).json({
         message: "session created successfully",
         data: session,
+        class: schoolClass?.classRooms,
       });
     } else {
       return res.status(404).json({
