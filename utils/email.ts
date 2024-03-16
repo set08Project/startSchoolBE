@@ -69,7 +69,7 @@ export const verifiedEmail = async (user: any) => {
     });
 
     const mailerOption = {
-      from: "schoolProject❤️⛑️🚑 <codelabbest@gmail.com>",
+      from: "NEXT🟦🟦🟦 <codelabbest@gmail.com>",
       to: user.email,
       subject: "Account Verification",
       html,
