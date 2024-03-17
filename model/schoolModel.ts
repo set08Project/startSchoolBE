@@ -102,7 +102,7 @@ const schoolModel = new Schema<iSchoolData>(
     sessionHistroy: [
       {
         type: Types.ObjectId,
-        ref: "sessionHistroys",
+        ref: "academicSessions",
       },
     ],
 

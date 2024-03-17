@@ -48,7 +48,7 @@ export const createNewSchoolSession = async (
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
-    const { year, term } = req.body;
+    const { year } = req.body;
 
     let paid = 0;
     let notPaid = 0;
@@ -87,6 +87,7 @@ export const createNewSchoolSession = async (
       }
 
       const session = await sessionModel.create({
+        schoolID,
         year,
         // term,
         totalStudents: totalStudent,
@@ -108,8 +109,7 @@ export const createNewSchoolSession = async (
       for (let i of schoolClass?.classRooms) {
         let num: number = parseInt(`${i.className}`.match(/\d+/)![0]);
         let name = i.className.split(`${num}`);
-        console.log(num);
-        console.log(num++);
+
         if (num < 4) {
           await classroomModel.findByIdAndUpdate(
             i?._id,
@@ -124,8 +124,7 @@ export const createNewSchoolSession = async (
       }
       return res.status(201).json({
         message: "session created successfully",
-        // data: session,
-        class: schoolClass?.classRooms,
+        data: session,
       });
     } else {
       return res.status(404).json({
@@ -252,9 +251,14 @@ export const termPerSession = async (
   try {
     const { sessionID } = req.params;
     let { term } = req.body;
+
     const session = await sessionModel.findById(sessionID).populate({
       path: "term",
     });
+
+    const schoolClass: any = await schoolModel
+      .findById(session?.schoolID)
+      .populate({ path: "classRooms" });
 
     if (session) {
       if (
@@ -293,6 +297,16 @@ export const termPerSession = async (
 
           session?.term.push(new Types.ObjectId(sessionTerm?._id));
           session?.save();
+          // presentTerm
+          for (let i of schoolClass?.classRooms!) {
+            await classroomModel.findByIdAndUpdate(
+              i?._id,
+              {
+                presentTerm: capitalizedText(term),
+              },
+              { new: true }
+            );
+          }
 
           return res.status(200).json({
             message: "creating session term",
