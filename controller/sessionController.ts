@@ -174,7 +174,9 @@ export const viewSchoolPresentSession = async (
   try {
     const { sessionID } = req.params;
 
-    const school = await sessionModel.findById(sessionID);
+    const school = await sessionModel.findById(sessionID).populate({
+      path: "term",
+    });
 
     console.log("read");
     console.log(sessionID);
@@ -293,6 +295,7 @@ export const termPerSession = async (
           const sessionTerm = await termModel.create({
             term: capitalizedText(term),
             year: session?.year,
+            presentTerm: term,
           });
 
           session?.term.push(new Types.ObjectId(sessionTerm?._id));
@@ -326,6 +329,26 @@ export const termPerSession = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error viewing school session",
+    });
+  }
+};
+
+export const getAllSession = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const getAll = await sessionModel.find().populate({
+      path: "term",
+    });
+    return res.status(200).json({
+      message: "all session gotten",
+      data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
     });
   }
 };

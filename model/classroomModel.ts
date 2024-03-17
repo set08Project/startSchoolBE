@@ -21,6 +21,7 @@ interface iClass {
   reportCard: Array<{}>;
 
   students: Array<{}>;
+  historys: Array<{}>;
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
   school: {};
@@ -77,6 +78,13 @@ const classesModel = new Schema<iClassData>(
       {
         type: Types.ObjectId,
         ref: "subjects",
+      },
+    ],
+
+    historys: [
+      {
+        type: Types.ObjectId,
+        ref: "historys",
       },
     ],
 

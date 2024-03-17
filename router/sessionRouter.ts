@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createNewSchoolSession,
   createSchoolSession,
+  getAllSession,
   studentsPerSession,
   termPerSession,
   viewSchoolPresentSession,
@@ -24,4 +25,5 @@ router
   .route("/view-present-school-session/:sessionID")
   .get(viewSchoolPresentSession);
 router.route("/view-school-term/:termID").get(viewSchoolPresentSessionTerm);
+router.route("/view-all-session").get(getAllSession);
 export default router;
