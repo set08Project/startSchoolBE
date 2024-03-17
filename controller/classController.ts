@@ -43,6 +43,9 @@ export const createSchoolClasses = async (
         school.classRooms.push(new Types.ObjectId(classes._id));
         school.save();
 
+        school.historys.push(new Types.ObjectId(classes._id));
+        school.save();
+
         return res.status(201).json({
           message: "classes created successfully",
           data: classes,
