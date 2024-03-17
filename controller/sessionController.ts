@@ -61,6 +61,10 @@ export const createNewSchoolSession = async (
       .findById(schoolID)
       .populate({ path: "classRooms" });
 
+    const schoolStudents: any = await schoolModel
+      .findById(schoolID)
+      .populate({ path: "students" });
+
     const pushClass = await schoolModel.findById(schoolID).populate({
       path: "sessionHistroy",
     });
@@ -122,6 +126,29 @@ export const createNewSchoolSession = async (
           console.log("can't");
         }
       }
+
+      for (let i of schoolClass?.schoolStudents) {
+        let num: number = parseInt(`${i.classAssigned}`.match(/\d+/)![0]);
+        let name = i.className.split(`${num}`);
+
+        if (num < 4) {
+          await studentModel.findByIdAndUpdate(
+            i?._id,
+            {
+              classAssigned: `${name[0].trim()} ${num++}${name[1].trim()}`,
+              attendance: null,
+              performance: null,
+              feesPaid1st: false,
+              feesPaid2nd: false,
+              feesPaid3rd: false,
+            },
+            { new: true }
+          );
+        } else {
+          console.log("can't");
+        }
+      }
+
       return res.status(201).json({
         message: "session created successfully",
         data: session,
@@ -301,6 +328,15 @@ export const termPerSession = async (
           session?.term.push(new Types.ObjectId(sessionTerm?._id));
           session?.save();
           // presentTerm
+
+          await sessionModel.findByIdAndUpdate(
+            sessionID,
+            {
+              presentTerm: capitalizedText(term),
+            },
+            { new: true }
+          );
+
           for (let i of schoolClass?.classRooms!) {
             await classroomModel.findByIdAndUpdate(
               i?._id,
