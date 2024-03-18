@@ -20,6 +20,9 @@ const classesModel = new mongoose_1.Schema({
     class3rdFee: {
         type: Number,
     },
+    presentTerm: {
+        type: String,
+    },
     className: {
         type: String,
     },
@@ -37,6 +40,12 @@ const classesModel = new mongoose_1.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "subjects",
+        },
+    ],
+    historys: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "historys",
         },
     ],
     classAttendence: [

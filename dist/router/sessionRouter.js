@@ -14,4 +14,5 @@ router
     .route("/view-present-school-session/:sessionID")
     .get(sessionController_1.viewSchoolPresentSession);
 router.route("/view-school-term/:termID").get(sessionController_1.viewSchoolPresentSessionTerm);
+router.route("/view-all-session").get(sessionController_1.getAllSession);
 exports.default = router;

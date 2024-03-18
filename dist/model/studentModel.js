@@ -86,6 +86,12 @@ const studentModel = new mongoose_1.Schema({
             ref: "attendances",
         },
     ],
+    history: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "historys",
+        },
+    ],
     performance: [
         {
             type: mongoose_1.Types.ObjectId,

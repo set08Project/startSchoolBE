@@ -2,8 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const sessionModel = new mongoose_1.Schema({
+    presentTerm: {
+        type: String,
+    },
+    schoolID: {
+        type: String,
+    },
     year: {
         type: String,
+    },
+    school: {
+        type: mongoose_1.Types.ObjectId,
+        ref: "schools",
     },
     term: [
         {
