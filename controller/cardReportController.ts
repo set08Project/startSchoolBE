@@ -6,6 +6,7 @@ import cardReportModel from "../model/cardReportModel";
 import studentModel from "../model/studentModel";
 import schoolModel from "../model/schoolModel";
 import classroomModel from "../model/classroomModel";
+import lodash from "lodash";
 
 export const createReportCardEntry = async (
   req: Request,
@@ -74,11 +75,9 @@ export const createReportCardEntry = async (
           });
         });
 
-        const read = dataFIle?.result.find((el: any) => {
+        const read = dataFIle?.result?.find((el: any) => {
           return el.subject === subject;
         });
-
-        console.log(read);
 
         if (data) {
           let x1 = !test1 ? read?.test1 : test1 ? test1 : 0;
@@ -113,6 +112,21 @@ export const createReportCardEntry = async (
             return el.subject !== subject;
           });
 
+          let total = lodash.sumBy(getData?.result, (el: any) => {
+            return el.mark;
+          });
+
+          let totalScore = lodash.sumBy(getData?.result, (el: any) => {
+            return el.score;
+          });
+
+          let sum = getData?.result.length;
+
+          let mainPoints = total / sum;
+
+          console.log(mainPoints, sum, totalScore, total);
+          let myGrade = (total / totalScore) * 100;
+
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -145,7 +159,30 @@ export const createReportCardEntry = async (
                       : null,
                 },
               ],
+              points: parseFloat(
+                (
+                  lodash.sumBy(getData?.result, (el: any) => {
+                    return el.points;
+                  }) / getData?.result.length
+                ).toFixed(2)
+              ),
+
+              grade:
+                myGrade >= 0 && myGrade <= 39
+                  ? "F"
+                  : myGrade >= 40 && myGrade <= 49
+                  ? "E"
+                  : myGrade >= 50 && myGrade <= 59
+                  ? "D"
+                  : myGrade >= 60 && myGrade <= 69
+                  ? "C"
+                  : myGrade >= 70 && myGrade <= 79
+                  ? "B"
+                  : myGrade >= 80 && myGrade <= 100
+                  ? "A"
+                  : null,
             },
+
             { new: true }
           );
 
@@ -182,6 +219,18 @@ export const createReportCardEntry = async (
           let w5 = x5 !== 0 ? (examination = 60) : 0;
 
           let score = w1 + w2 + w3 + w4 + w5;
+
+          let total = lodash.sumBy(getData?.result, (el: any) => {
+            return el.mark;
+          });
+
+          let totalScore = lodash.sumBy(getData?.result, (el: any) => {
+            return el.score;
+          });
+
+          let sum = getData?.result.length;
+
+          let myGrade = (total / totalScore) * 100;
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -214,6 +263,28 @@ export const createReportCardEntry = async (
                       : null,
                 },
               ],
+              points: parseFloat(
+                (
+                  lodash.sumBy(getData?.result, (el: any) => {
+                    return el.points;
+                  }) / getData?.result.length
+                ).toFixed(2)
+              ),
+
+              grade:
+                myGrade >= 0 && myGrade <= 39
+                  ? "F"
+                  : myGrade >= 40 && myGrade <= 49
+                  ? "E"
+                  : myGrade >= 50 && myGrade <= 59
+                  ? "D"
+                  : myGrade >= 60 && myGrade <= 69
+                  ? "C"
+                  : myGrade >= 70 && myGrade <= 79
+                  ? "B"
+                  : myGrade >= 80 && myGrade <= 100
+                  ? "A"
+                  : null,
             },
             { new: true }
           );
@@ -416,11 +487,6 @@ export const classTeacherReportRemark = async (
     //  `${student?.classAssigned} session: ${school?.session[0]
     //           ?.year!}(${school?.session[0]?.presentTerm!})`
     const teacher = await staffModel.findById(teacherID);
-
-    console.log(
-      `${student?.classAssigned} session: ${school?.session[0]?.year!}(${school
-        ?.session[0]?.presentTerm!})`
-    );
 
     if (teacher?.classesAssigned === student?.classAssigned) {
       const report = await cardReportModel.findByIdAndUpdate(
