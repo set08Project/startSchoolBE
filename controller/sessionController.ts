@@ -5,6 +5,9 @@ import { Types } from "mongoose";
 import studentModel from "../model/studentModel";
 import termModel from "../model/termModel";
 import classroomModel from "../model/classroomModel";
+import classHistoryModel from "../model/classHistory";
+import staffModel from "../model/staffModel";
+import axios from "axios";
 
 export const createSchoolSession = async (
   req: Request,
@@ -205,10 +208,6 @@ export const viewSchoolPresentSession = async (
       path: "term",
     });
 
-    console.log("read");
-    console.log(sessionID);
-    console.log(school);
-
     return res.status(200).json({
       message: "viewing school session now!",
       data: school,
@@ -328,6 +327,10 @@ export const termPerSession = async (
           session?.term.push(new Types.ObjectId(sessionTerm?._id));
           session?.save();
           // presentTerm
+          const URL = "http://localhost:2244";
+          // for (let i of schoolClass?.classRooms!) {
+          //   await axios.post(`${URL}/api/create-history-session/${i}`);
+          // }
 
           await sessionModel.findByIdAndUpdate(
             sessionID,
@@ -376,6 +379,75 @@ export const getAllSession = async (
   try {
     const getAll = await sessionModel.find().populate({
       path: "term",
+    });
+    return res.status(200).json({
+      message: "all session gotten",
+      data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
+    });
+  }
+};
+
+export const createSessionHistory = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+
+    const getClassRoom = await classroomModel.findById(classID);
+    const teacher = await staffModel.findById(getClassRoom?.teacherID);
+
+    const getSchool: any = await schoolModel
+      .findById(teacher?.schoolIDs)
+      .populate({ path: "session" });
+
+    let history = [];
+    for (let i of getClassRoom?.students!) {
+      let getStudentsData = await studentModel
+        .findById(i)
+        .populate({ path: "reportCard" });
+
+      history.push(getStudentsData);
+    }
+
+    const getAll = await classHistoryModel.create({
+      resultHistory: history,
+      session: getSchool?.session[0]?.year!,
+      term: getSchool?.session[0]?.presentTerm!,
+      classTeacherName: getClassRoom?.classTeacherName,
+      className: getClassRoom?.className,
+      principalsRemark:
+        "Good Result generally... But till need to work Hard!!!",
+    });
+
+    getClassRoom?.classHistory.push(new Types.ObjectId(getAll?._id));
+    getClassRoom?.save();
+
+    return res.status(200).json({
+      message: "all session gotten",
+      data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
+    });
+  }
+};
+
+export const getAllClassSessionResults = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+    const getAll = await classroomModel.findById(classID).populate({
+      path: "classHistory",
     });
     return res.status(200).json({
       message: "all session gotten",
