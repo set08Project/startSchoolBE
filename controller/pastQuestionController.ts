@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import pQuestionModel from "../model/pastQuestionModel";
 import studentModel from "../model/studentModel";
 import { Types } from "mongoose";
+import pastQuestionModel from "../model/pastQuestionModel";
 
 export const createPastQuestionHistory = async (
   req: Request,
@@ -10,7 +11,7 @@ export const createPastQuestionHistory = async (
   try {
     const { studentID } = req.params;
 
-    const { year, subject, percent, score } = req.body;
+    const { year, subject, percent, score, chosenAnswers } = req.body;
 
     const student = await studentModel.findById(studentID);
 
@@ -20,6 +21,7 @@ export const createPastQuestionHistory = async (
         subject,
         percent,
         score,
+        chosenAnswers,
       });
 
       student.pastQuestionHistory.push(new Types.ObjectId(history?._id));
@@ -64,6 +66,29 @@ export const getOneStudentHistory = async (
   } catch (error: any) {
     return res.status(404).json({
       message: "Error creating lesson Note",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
+
+export const getOneHistory = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { historyID } = req.params;
+
+    const history = await pastQuestionModel.findById(historyID);
+
+    return res.status(201).json({
+      message: "One history found",
+      data: history,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error getting history",
       status: 404,
       data: error.message,
     });
