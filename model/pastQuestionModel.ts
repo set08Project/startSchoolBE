@@ -5,6 +5,7 @@ interface iTimeTable {
   percent: number;
   subject: string;
   score: number;
+  chosenAnswers: {};
 }
 
 interface iTimeTableData extends iTimeTable, Document {}
@@ -25,6 +26,10 @@ const pQuestionModel = new Schema<iTimeTableData>(
 
     score: {
       type: Number,
+    },
+
+    chosenAnswers: {
+      type: {},
     },
   },
   { timestamps: true }
