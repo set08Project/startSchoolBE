@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   approveTeacherLessonNote,
+  createAdminLessonNoteReply,
   createClasslessonNote,
   rateLessonNote,
   readAdminLessonNote,
@@ -14,6 +15,10 @@ const router: Router = Router();
 router
   .route("/create-lesson-note/:schoolID/:staffID")
   .post(createClasslessonNote);
+
+router
+  .route("/reply-lesson-note/:schoolID/:lessonNotedID")
+  .patch(createAdminLessonNoteReply);
 
 router.route("/admin-view-lesson-note/:schoolID/").get(readAdminLessonNote);
 

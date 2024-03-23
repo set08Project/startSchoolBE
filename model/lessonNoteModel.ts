@@ -25,6 +25,9 @@ interface ilessonNote {
   assignment: string;
   adminSignation: boolean;
   rate: number;
+  responseDetail: string;
+  deadline: string;
+  messageSent: boolean;
   rateData: any[];
   staff: {};
   school: {};
@@ -108,6 +111,17 @@ const lessonNoteModel = new Schema<ilessonNoteData>(
     },
     assignment: {
       type: String,
+    },
+    responseDetail: {
+      type: String,
+      default: "",
+    },
+    deadline: {
+      type: String,
+    },
+    messageSent: {
+      type: Boolean,
+      default: false,
     },
     adminSignation: {
       type: Boolean,
