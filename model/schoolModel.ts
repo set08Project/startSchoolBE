@@ -28,6 +28,7 @@ interface iSchool {
 
   payments: Array<{}>;
   announcements: Array<{}>;
+  historys: Array<{}>;
   events: Array<{}>;
   students: Array<{}>;
   store: Array<{}>;
@@ -92,6 +93,12 @@ const schoolModel = new Schema<iSchoolData>(
         ref: "academicSessions",
       },
     ],
+    historys: [
+      {
+        type: Types.ObjectId,
+        ref: "historys",
+      },
+    ],
     events: [
       {
         type: Types.ObjectId,
@@ -102,7 +109,11 @@ const schoolModel = new Schema<iSchoolData>(
     classHistory: [
       {
         type: Types.ObjectId,
+<<<<<<< HEAD
         ref: "classHistroy",
+=======
+        ref: "academicSessions",
+>>>>>>> c1d54a3e068fa8a78ea3bedf499562d267b5e8e8
       },
     ],
 

@@ -12,11 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.termPerSession = exports.studentsPerSession = exports.viewSchoolSession = exports.createNewSchoolSession = exports.createSchoolSession = void 0;
+exports.getAllSession = exports.termPerSession = exports.studentsPerSession = exports.viewSchoolPresentSessionTerm = exports.viewSchoolPresentSession = exports.viewSchoolSession = exports.createNewSchoolSession = exports.createSchoolSession = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const sessionModel_1 = __importDefault(require("../model/sessionModel"));
 const mongoose_1 = require("mongoose");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
+const termModel_1 = __importDefault(require("../model/termModel"));
+const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -52,12 +54,21 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
     var _a, _b;
     try {
         const { schoolID } = req.params;
-        const { year, term } = req.body;
+        const { year } = req.body;
         let paid = 0;
         let notPaid = 0;
         const school = yield schoolModel_1.default
             .findById(schoolID)
             .populate({ path: "students" });
+        const schoolClass = yield schoolModel_1.default
+            .findById(schoolID)
+            .populate({ path: "classRooms" });
+        const schoolStudents = yield schoolModel_1.default
+            .findById(schoolID)
+            .populate({ path: "students" });
+        const pushClass = yield schoolModel_1.default.findById(schoolID).populate({
+            path: "sessionHistroy",
+        });
         let totalStudent = 0;
         const totalStaff = (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.length;
         const totalSubjects = (_b = school === null || school === void 0 ? void 0 : school.subjects) === null || _b === void 0 ? void 0 : _b.length;
@@ -74,8 +85,9 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 }
             }
             const session = yield sessionModel_1.default.create({
+                schoolID,
                 year,
-                term,
+                // term,
                 totalStudents: totalStudent,
                 numberOfTeachers: totalStaff,
                 numberOfSubjects: totalSubjects,
@@ -83,7 +95,40 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 studentFeesPaid: paid,
             });
             school.session.push(new mongoose_1.Types.ObjectId(session._id));
+            school.sessionHistroy.push(new mongoose_1.Types.ObjectId(session === null || session === void 0 ? void 0 : session._id));
             school.save();
+            schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms.find((el) => {
+                return;
+            });
+            for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
+                let num = parseInt(`${i.className}`.match(/\d+/)[0]);
+                let name = i.className.split(`${num}`);
+                if (num < 4) {
+                    yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                        className: `${name[0].trim()} ${num++}${name[1].trim()}`,
+                    }, { new: true });
+                }
+                else {
+                    console.log("can't");
+                }
+            }
+            for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.schoolStudents) {
+                let num = parseInt(`${i.classAssigned}`.match(/\d+/)[0]);
+                let name = i.className.split(`${num}`);
+                if (num < 4) {
+                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                        classAssigned: `${name[0].trim()} ${num++}${name[1].trim()}`,
+                        attendance: null,
+                        performance: null,
+                        feesPaid1st: false,
+                        feesPaid2nd: false,
+                        feesPaid3rd: false,
+                    }, { new: true });
+                }
+                else {
+                    console.log("can't");
+                }
+            }
             return res.status(201).json({
                 message: "session created successfully",
                 data: session,
@@ -98,6 +143,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
     catch (error) {
         return res.status(404).json({
             message: "Error creating school session",
+            data: error.message,
         });
     }
 });
@@ -126,6 +172,45 @@ const viewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.viewSchoolSession = viewSchoolSession;
+const viewSchoolPresentSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { sessionID } = req.params;
+        const school = yield sessionModel_1.default.findById(sessionID).populate({
+            path: "term",
+        });
+        console.log("read");
+        console.log(sessionID);
+        console.log(school);
+        return res.status(200).json({
+            message: "viewing school session now!",
+            data: school,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error viewing school session",
+            data: error.message,
+        });
+    }
+});
+exports.viewSchoolPresentSession = viewSchoolPresentSession;
+const viewSchoolPresentSessionTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { termID } = req.params;
+        const school = yield termModel_1.default.findById(termID);
+        return res.status(200).json({
+            message: "viewing school session",
+            data: school,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error viewing school session",
+            data: error.message,
+        });
+    }
+});
+exports.viewSchoolPresentSessionTerm = viewSchoolPresentSessionTerm;
 const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { sessionID } = req.params;
@@ -154,14 +239,64 @@ exports.studentsPerSession = studentsPerSession;
 const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { sessionID } = req.params;
-        const { term } = req.body;
-        const session = yield sessionModel_1.default.findById(sessionID);
+        let { term } = req.body;
+        const session = yield sessionModel_1.default.findById(sessionID).populate({
+            path: "term",
+        });
+        const schoolClass = yield schoolModel_1.default
+            .findById(session === null || session === void 0 ? void 0 : session.schoolID)
+            .populate({ path: "classRooms" });
         if (session) {
-            const students = yield sessionModel_1.default.findByIdAndUpdate(sessionID, { term }, { new: true });
-            return res.status(200).json({
-                message: "viewing session session",
-                data: students,
-            });
+            if (term === "1st Term" ||
+                term === "First Term" ||
+                term === "2nd Term" ||
+                term === "Second Term" ||
+                term === "3rd Term" ||
+                term === "Third Term") {
+                const capitalizedText = (str) => {
+                    let result = "";
+                    let word = str.split(" ");
+                    for (let i of word) {
+                        result = result + i[0].toUpperCase().concat(i.slice(1), " ");
+                    }
+                    return result.trim();
+                };
+                const check = session.term.some((el) => {
+                    return el.term === capitalizedText(term);
+                });
+                if (check) {
+                    return res.status(404).json({
+                        message: "Term Already exist",
+                    });
+                }
+                else {
+                    const sessionTerm = yield termModel_1.default.create({
+                        term: capitalizedText(term),
+                        year: session === null || session === void 0 ? void 0 : session.year,
+                        presentTerm: term,
+                    });
+                    session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
+                    session === null || session === void 0 ? void 0 : session.save();
+                    // presentTerm
+                    yield sessionModel_1.default.findByIdAndUpdate(sessionID, {
+                        presentTerm: capitalizedText(term),
+                    }, { new: true });
+                    for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
+                        yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                            presentTerm: capitalizedText(term),
+                        }, { new: true });
+                    }
+                    return res.status(200).json({
+                        message: "creating session term",
+                        data: sessionTerm,
+                    });
+                }
+            }
+            else {
+                return res.status(404).json({
+                    message: "Term can't be created",
+                });
+            }
         }
         else {
             return res.status(404).json({
@@ -176,3 +311,21 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.termPerSession = termPerSession;
+const getAllSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const getAll = yield sessionModel_1.default.find().populate({
+            path: "term",
+        });
+        return res.status(200).json({
+            message: "all session gotten",
+            data: getAll,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "error getting session",
+            data: error.message,
+        });
+    }
+});
+exports.getAllSession = getAllSession;

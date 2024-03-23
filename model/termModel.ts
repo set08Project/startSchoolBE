@@ -3,6 +3,7 @@ import { Document, Schema, Types, model } from "mongoose";
 interface iSessionTerm {
   year: string;
   term: string;
+  presentTerm: string;
 
   totalStudents: number;
   studentFeesPaid: number;
@@ -19,6 +20,10 @@ interface iSessionTermData extends iSessionTerm, Document {}
 const termModel = new Schema<iSessionTermData>(
   {
     year: {
+      type: String,
+    },
+
+    presentTerm: {
       type: String,
     },
 

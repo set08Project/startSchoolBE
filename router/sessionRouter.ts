@@ -2,6 +2,9 @@ import { Router } from "express";
 import {
   createNewSchoolSession,
   createSchoolSession,
+  createSessionHistory,
+  getAllClassSessionResults,
+  getAllSession,
   studentsPerSession,
   termPerSession,
   viewSchoolPresentSession,
@@ -24,4 +27,9 @@ router
   .route("/view-present-school-session/:sessionID")
   .get(viewSchoolPresentSession);
 router.route("/view-school-term/:termID").get(viewSchoolPresentSessionTerm);
+router.route("/view-all-session").get(getAllSession);
+router
+  .route("/view-class-result-history/:classID")
+  .get(getAllClassSessionResults);
+router.route("/create-history-session/:classID").post(createSessionHistory);
 export default router;

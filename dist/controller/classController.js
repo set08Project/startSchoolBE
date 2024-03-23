@@ -42,6 +42,8 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
                 });
                 school.classRooms.push(new mongoose_1.Types.ObjectId(classes._id));
                 school.save();
+                school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
+                school.save();
                 return res.status(201).json({
                     message: "classes created successfully",
                     data: classes,

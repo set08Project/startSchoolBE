@@ -5,6 +5,8 @@ interface iClass {
   classTeacherName: string;
   teacherID: string;
 
+  presentTerm: string;
+
   class1stFee: number;
   class2ndFee: number;
   class3rdFee: number;
@@ -17,8 +19,10 @@ interface iClass {
   attendance: Array<{}>;
   lessonNotes: Array<{}>;
   reportCard: Array<{}>;
+  classHistory: Array<{}>;
 
   students: Array<{}>;
+  classHistories: Array<{}>;
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
   school: {};
@@ -32,6 +36,7 @@ const classesModel = new Schema<iClassData>(
     weekStudent: {
       type: {},
     },
+
     lessonNotes: [
       {
         type: Types.ObjectId,
@@ -49,6 +54,10 @@ const classesModel = new Schema<iClassData>(
 
     class3rdFee: {
       type: Number,
+    },
+
+    presentTerm: {
+      type: String,
     },
 
     className: {
@@ -122,6 +131,20 @@ const classesModel = new Schema<iClassData>(
         ref: "myReportCards",
       },
     ],
+
+    classHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "classHistories",
+      },
+    ],
+
+    // historys: [
+    //   {
+    //     type: Types.ObjectId,
+    //     ref: "historys",
+    //   },
+    // ],
 
     school: {
       type: Types.ObjectId,

@@ -5,6 +5,7 @@ import studentModel from "../model/studentModel";
 import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
 import reportcardModel from "../model/reportCardModel";
+
 export const createStudentreportCard = async (
   req: Request,
   res: Response

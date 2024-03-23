@@ -86,6 +86,12 @@ const studentModel = new mongoose_1.Schema({
             ref: "attendances",
         },
     ],
+    history: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "historys",
+        },
+    ],
     performance: [
         {
             type: mongoose_1.Types.ObjectId,
@@ -114,6 +120,18 @@ const studentModel = new mongoose_1.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "complains",
+        },
+    ],
+    reportCard: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "myReportCards",
+        },
+    ],
+    pastQuestionHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "pquestions",
         },
     ],
 }, { timestamps: true });

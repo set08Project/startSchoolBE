@@ -1,26 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-const sessionModel = new mongoose_1.Schema({
-    presentTerm: {
-        type: String,
-    },
-    schoolID: {
-        type: String,
-    },
+const termModel = new mongoose_1.Schema({
     year: {
         type: String,
     },
-    school: {
-        type: mongoose_1.Types.ObjectId,
-        ref: "schools",
+    presentTerm: {
+        type: String,
     },
-    term: [
-        {
-            type: mongoose_1.Types.ObjectId,
-            ref: "academicSessionsTerms",
-        },
-    ],
+    term: {
+        type: String,
+    },
     studentFeesPaid: {
         type: Number,
         default: 0,
@@ -45,9 +35,9 @@ const sessionModel = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
-    profit: {
-        type: Number,
-        default: 0,
+    session: {
+        type: mongoose_1.Types.ObjectId,
+        ref: "academicSessions",
     },
 }, { timestamps: true });
-exports.default = (0, mongoose_1.model)("academicSessions", sessionModel);
+exports.default = (0, mongoose_1.model)("academicSessionsTerms", termModel);

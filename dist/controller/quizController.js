@@ -49,7 +49,7 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
             });
         }
     }
-    catch (error) {
+    catch (errorL) {
         return res.status(404).json({
             message: "Error creating class subject quiz",
             status: 404,

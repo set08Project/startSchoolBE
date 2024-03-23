@@ -48,16 +48,34 @@ const schoolModel = new mongoose_2.Schema({
             ref: "academicSessions",
         },
     ],
+    historys: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "historys",
+        },
+    ],
     events: [
         {
             type: mongoose_1.Types.ObjectId,
             ref: "events",
         },
     ],
+    sessionHistroy: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "academicSessions",
+        },
+    ],
     announcements: [
         {
             type: mongoose_1.Types.ObjectId,
             ref: "announcements",
+        },
+    ],
+    reportCard: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "myReportCards",
         },
     ],
     subjects: [

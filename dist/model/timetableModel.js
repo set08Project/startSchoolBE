@@ -11,6 +11,9 @@ const timeTableModel = new mongoose_1.Schema({
     subject: {
         type: String,
     },
+    CR: {
+        type: String,
+    },
     classroom: {
         type: mongoose_1.Types.ObjectId,
         ref: "classes",
