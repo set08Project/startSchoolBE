@@ -8,6 +8,9 @@ const termModel = new mongoose_1.Schema({
     presentTerm: {
         type: String,
     },
+    classResult: {
+        type: [],
+    },
     term: {
         type: String,
     },
