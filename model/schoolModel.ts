@@ -109,7 +109,11 @@ const schoolModel = new Schema<iSchoolData>(
     classHistory: [
       {
         type: Types.ObjectId,
+<<<<<<< HEAD
         ref: "classHistroy",
+=======
+        ref: "academicSessions",
+>>>>>>> c1d54a3e068fa8a78ea3bedf499562d267b5e8e8
       },
     ],
 
