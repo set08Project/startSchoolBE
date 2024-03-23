@@ -15,12 +15,19 @@ interface iSubject {
   class: {};
   classDetails: {};
   performance: Array<{}>;
+  reportCard: Array<{}>;
 }
 
 interface iSubjectData extends iSubject, Document {}
 
 const subjectModel = new Schema<iSubjectData>(
   {
+    reportCard: [
+      {
+        type: Types.ObjectId,
+        ref: "myReportCards",
+      },
+    ],
     assignmentResolve: [
       {
         type: Types.ObjectId,

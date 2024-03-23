@@ -85,14 +85,11 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 message: "Error finding school",
             });
         }
-        return res.status(201).json({
-            message: "creating school",
-            data: school,
-        });
     }
     catch (error) {
         return res.status(404).json({
             message: "Error creating school",
+            data: error.message,
         });
     }
 });

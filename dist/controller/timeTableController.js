@@ -21,7 +21,7 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const createClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, classID } = req.params;
-        const { subject, day, time } = req.body;
+        const { subject, day, time, CR } = req.body;
         const school = yield schoolModel_1.default.findById(schoolID);
         const classRoom = yield classroomModel_1.default.findById(classID).populate({
             path: "classSubjects",
@@ -39,6 +39,7 @@ const createClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, fun
                     subject,
                     day,
                     time,
+                    CR: classRoom === null || classRoom === void 0 ? void 0 : classRoom.className,
                 });
                 classRoom === null || classRoom === void 0 ? void 0 : classRoom.timeTable.push(new mongoose_1.Types.ObjectId(classes._id));
                 classRoom === null || classRoom === void 0 ? void 0 : classRoom.save();
@@ -82,6 +83,7 @@ const createClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, fun
         return res.status(404).json({
             message: "Error creating class timetable",
             status: 404,
+            data: error.message,
         });
     }
 });

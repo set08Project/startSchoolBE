@@ -64,7 +64,7 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
             userName: user === null || user === void 0 ? void 0 : user.userName,
         });
         const mailerOption = {
-            from: "schoolProject❤️⛑️🚑 <codelabbest@gmail.com>",
+            from: "NEXT🟦🟦🟦 <codelabbest@gmail.com>",
             to: user.email,
             subject: "Account Verification",
             html,

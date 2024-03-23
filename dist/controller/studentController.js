@@ -22,7 +22,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const email_1 = require("../utils/email");
 const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         const { schoolID } = req.params;
         const { studentLastName, gender, studentFirstName, studentAddress, classAssigned, } = req.body;
@@ -58,6 +58,8 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
                     status: "school-student",
                 });
                 school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
+                school.save();
+                (_c = school === null || school === void 0 ? void 0 : school.historys) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(student._id));
                 school.save();
                 findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
                 findClass.save();
