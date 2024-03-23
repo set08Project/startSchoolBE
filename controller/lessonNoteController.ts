@@ -97,6 +97,48 @@ export const createClasslessonNote = async (
     });
   }
 };
+export const createAdminLessonNoteReply = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { lessonNotedID } = req.params;
+
+    const { responseDetail, deadline } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName) {
+      const note = await lessonNoteModel.findByIdAndUpdate(
+        lessonNotedID,
+        {
+          responseDetail,
+          deadline,
+          messageSent: true,
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "Lesson Note Response Updated",
+        data: note,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "school not found",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating lesson Note",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
 
 export const readAdminLessonNote = async (
   req: Request,

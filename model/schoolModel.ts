@@ -35,7 +35,7 @@ interface iSchool {
   gallaries: Array<{}>;
   complain: Array<{}>;
   reportCard: Array<{}>;
-  sessionHistroy: Array<{}>;
+  classHistory: Array<{}>;
 }
 
 interface iSchoolData extends iSchool, Document {}
@@ -99,10 +99,10 @@ const schoolModel = new Schema<iSchoolData>(
       },
     ],
 
-    sessionHistroy: [
+    classHistory: [
       {
         type: Types.ObjectId,
-        ref: "sessionHistroys",
+        ref: "classHistroy",
       },
     ],
 

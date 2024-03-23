@@ -1,17 +1,19 @@
 import { Document, Schema, Types, model } from "mongoose";
 
 interface iSessionHistroy {
-  school: {};
+  classHistory: Array<{}>;
 }
 
 interface iSessionHistoryData extends iSessionHistroy, Document {}
 
 const sessionHistroyModel = new Schema<iSessionHistoryData>(
   {
-    school: {
-      type: Types.ObjectId,
-      ref: "schools",
-    },
+    classHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "classHistory",
+      },
+    ],
   },
   { timestamps: true }
 );

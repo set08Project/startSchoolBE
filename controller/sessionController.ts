@@ -62,7 +62,7 @@ export const createNewSchoolSession = async (
       .populate({ path: "classRooms" });
 
     const pushClass = await schoolModel.findById(schoolID).populate({
-      path: "sessionHistroy",
+      path: "classHistory",
     });
 
     let totalStudent = 0;
@@ -98,7 +98,7 @@ export const createNewSchoolSession = async (
 
       school.session.push(new Types.ObjectId(session._id));
 
-      school.sessionHistroy.push(new Types.ObjectId(session?._id));
+      school.pushClass.push(new Types.ObjectId(session?._id));
       school.save();
 
       schoolClass?.classRooms.find((el: any) => {
