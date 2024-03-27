@@ -281,6 +281,38 @@ export const updateStudentAvatar = async (req: any, res: Response) => {
   }
 };
 
+export const updateStudentProfile = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { parentEmail } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName) {
+      const student = await studentModel.findByIdAndUpdate(studentID, { parentEmail }, { new: true });
+
+      return res.status(201).json({
+        message: "student profile updated successful",
+        data: student,
+        status: 200,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to update student profile",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error getting school",
+      status: 404,
+    });
+  }
+};
+
 export const updateStudent1stFees = async (
   req: Request,
   res: Response
