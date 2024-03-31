@@ -281,7 +281,7 @@ export const updateStudentAvatar = async (req: any, res: Response) => {
   }
 };
 
-export const updateStudentProfile = async (
+export const updateStudentParentEmail = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
