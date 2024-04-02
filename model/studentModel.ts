@@ -22,6 +22,7 @@ interface iStudent {
   schoolID: string;
   password: string;
   email: string;
+  parentEmail: string;
   phone: string;
   studentAvatar: string;
   studentAvatarID: string;
@@ -41,7 +42,7 @@ interface iStudent {
   complain: Array<{}>;
 }
 
-interface iStudentData extends iStudent, Document {}
+interface iStudentData extends iStudent, Document { }
 
 const studentModel = new Schema<iStudentData>(
   {
@@ -94,6 +95,10 @@ const studentModel = new Schema<iStudentData>(
     },
 
     email: {
+      type: String,
+    },
+
+    parentEmail: {
       type: String,
     },
 
