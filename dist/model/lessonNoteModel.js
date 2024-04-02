@@ -74,6 +74,17 @@ const lessonNoteModel = new mongoose_1.Schema({
     assignment: {
         type: String,
     },
+    responseDetail: {
+        type: String,
+        default: "",
+    },
+    deadline: {
+        type: String,
+    },
+    messageSent: {
+        type: Boolean,
+        default: false,
+    },
     adminSignation: {
         type: Boolean,
         default: false,

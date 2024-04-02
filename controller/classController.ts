@@ -40,10 +40,9 @@ export const createSchoolClasses = async (
           class1stFee,
         });
 
-        school.classRooms.push(new Types.ObjectId(classes._id));
-        school.save();
-
         school.historys.push(new Types.ObjectId(classes._id));
+        school.classRooms.push(new Types.ObjectId(classes._id));
+
         school.save();
 
         return res.status(201).json({
@@ -63,10 +62,11 @@ export const createSchoolClasses = async (
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school session",
       status: 404,
+      error,
     });
   }
 };

@@ -5,6 +5,8 @@ interface iSessionTerm {
   term: string;
   presentTerm: string;
 
+  classResult: any;
+
   totalStudents: number;
   studentFeesPaid: number;
   studentFeesNotPaid: number;
@@ -25,6 +27,10 @@ const termModel = new Schema<iSessionTermData>(
 
     presentTerm: {
       type: String,
+    },
+
+    classResult: {
+      type: [],
     },
 
     term: {

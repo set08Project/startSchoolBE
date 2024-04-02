@@ -60,10 +60,10 @@ const schoolModel = new mongoose_2.Schema({
             ref: "events",
         },
     ],
-    sessionHistroy: [
+    classHistory: [
         {
             type: mongoose_1.Types.ObjectId,
-            ref: "academicSessions",
+            ref: "classHistroy",
         },
     ],
     announcements: [

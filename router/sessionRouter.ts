@@ -32,4 +32,10 @@ router
   .route("/view-class-result-history/:classID")
   .get(getAllClassSessionResults);
 router.route("/create-history-session/:classID").post(createSessionHistory);
+
+router
+  .route("/create-school-history-session/:schoolID")
+  .post(createSessionHistory);
+
+// router.route("/create-school-term-history/:session").post(createSessionHistory);
 export default router;
