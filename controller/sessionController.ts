@@ -68,9 +68,9 @@ export const createNewSchoolSession = async (
       .findById(schoolID)
       .populate({ path: "students" });
 
-    const pushClass = await schoolModel.findById(schoolID).populate({
-      path: "classHistory",
-    });
+    // const pushClass = await schoolModel.findById(schoolID).populate({
+    //   path: "classHistory",
+    // });
 
     let totalStudent = 0;
     const totalStaff = school?.staff?.length;
@@ -106,7 +106,7 @@ export const createNewSchoolSession = async (
 
       school.session.push(new Types.ObjectId(session._id));
 
-      school.pushClass.push(new Types.ObjectId(session?._id));
+      school.pushClass?.push(new Types.ObjectId(session?._id));
       school.save();
 
       schoolClass?.classRooms.find((el: any) => {
@@ -130,9 +130,9 @@ export const createNewSchoolSession = async (
         }
       }
 
-      for (let i of schoolClass?.schoolStudents) {
+      for (let i of schoolStudents?.students) {
         let num: number = parseInt(`${i.classAssigned}`.match(/\d+/)![0]);
-        let name = i.className.split(`${num}`);
+        let name = i.classAssigned?.split(`${num}`);
 
         if (num < 4) {
           await studentModel.findByIdAndUpdate(

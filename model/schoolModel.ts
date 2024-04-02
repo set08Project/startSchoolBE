@@ -33,6 +33,7 @@ interface iSchool {
   students: Array<{}>;
   store: Array<{}>;
   articles: Array<{}>;
+  pushClass: Array<{}>;
   gallaries: Array<{}>;
   complain: Array<{}>;
   reportCard: Array<{}>;
@@ -138,6 +139,13 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "complains",
+      },
+    ],
+
+    pushClass: [
+      {
+        type: Types.ObjectId,
+        ref: "classHistories",
       },
     ],
 
