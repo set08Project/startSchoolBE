@@ -69,7 +69,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             .findById(schoolID)
             .populate({ path: "students" });
         const pushClass = yield schoolModel_1.default.findById(schoolID).populate({
-            path: "sessionHistroy",
+            path: "classHistory",
         });
         let totalStudent = 0;
         const totalStaff = (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.length;
@@ -97,7 +97,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 studentFeesPaid: paid,
             });
             school.session.push(new mongoose_1.Types.ObjectId(session._id));
-            school.sessionHistroy.push(new mongoose_1.Types.ObjectId(session === null || session === void 0 ? void 0 : session._id));
+            school.pushClass.push(new mongoose_1.Types.ObjectId(session === null || session === void 0 ? void 0 : session._id));
             school.save();
             schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms.find((el) => {
                 return;

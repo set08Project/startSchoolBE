@@ -14,5 +14,8 @@ const pQuestionModel = new mongoose_1.Schema({
     score: {
         type: Number,
     },
+    chosenAnswers: {
+        type: {},
+    },
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("pquestions", pQuestionModel);
