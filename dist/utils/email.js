@@ -198,17 +198,19 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
         const token = jsonwebtoken_1.default.sign({
             id: user._id,
             email: user.parentEmail,
-        }, "weCareHospital");
+        }, "weEducation");
         let frontEndURL = `${url}/${token}/sign-in`;
-        let devURL = `${url}/api/verify-hospital/${user._id}`;
+        let devURL = `${url}/api/update-student-fees-1st/${user._id}`;
         const myPath = path_1.default.join(__dirname, "../views/feesMail.ejs");
         const html = yield ejs_1.default.renderFile(myPath, {
             link: devURL,
             token: user.token,
-            hospitalName: user.studentFirstName,
+            studentName: user.studentFirstName,
+            schoolMail: user.email,
+            schoolName: user.schoolName,
         });
         const mailerOption = {
-            from: "NEXT Team❤️⛑️🚑 <codelabbest@gmail.com>",
+            from: `${user.schoolName}📘📘📘 <codelabbest@gmail.com>`,
             to: user.parentEmail,
             subject: `${term} Term School Fees Payment`,
             html,

@@ -37,4 +37,7 @@ router
     .patch(upload, studentController_1.updateStudentAvatar);
 router.route("/login-student").post(studentController_1.loginStudent);
 router.route("/read-student-cookie").get(studentController_1.readStudentCookie);
+router
+    .route("/update-parent-email/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentParentEmail);
 exports.default = router;

@@ -44,6 +44,9 @@ const studentModel = new mongoose_1.Schema({
     email: {
         type: String,
     },
+    parentEmail: {
+        type: String,
+    },
     schoolName: {
         type: String,
     },

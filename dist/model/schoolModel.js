@@ -90,6 +90,12 @@ const schoolModel = new mongoose_2.Schema({
             ref: "complains",
         },
     ],
+    pushClass: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "classHistories",
+        },
+    ],
     classRooms: [
         {
             type: mongoose_1.Types.ObjectId,

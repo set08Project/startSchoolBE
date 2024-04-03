@@ -53,7 +53,7 @@ const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.createSchoolSession = createSchoolSession;
 const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         const { schoolID } = req.params;
         const { year } = req.body;
@@ -68,9 +68,9 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
         const schoolStudents = yield schoolModel_1.default
             .findById(schoolID)
             .populate({ path: "students" });
-        const pushClass = yield schoolModel_1.default.findById(schoolID).populate({
-            path: "classHistory",
-        });
+        // const pushClass = await schoolModel.findById(schoolID).populate({
+        //   path: "classHistory",
+        // });
         let totalStudent = 0;
         const totalStaff = (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.length;
         const totalSubjects = (_b = school === null || school === void 0 ? void 0 : school.subjects) === null || _b === void 0 ? void 0 : _b.length;
@@ -97,7 +97,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 studentFeesPaid: paid,
             });
             school.session.push(new mongoose_1.Types.ObjectId(session._id));
-            school.pushClass.push(new mongoose_1.Types.ObjectId(session === null || session === void 0 ? void 0 : session._id));
+            school.classHistory.push(new mongoose_1.Types.ObjectId(session === null || session === void 0 ? void 0 : session._id));
             school.save();
             schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms.find((el) => {
                 return;
@@ -106,17 +106,17 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 let num = parseInt(`${i.className}`.match(/\d+/)[0]);
                 let name = i.className.split(`${num}`);
                 if (num < 4) {
-                    yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        className: `${name[0].trim()} ${num++}${name[1].trim()}`,
+                    let myClass = yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                        className: `${name[0].trim()}${num++} ${name[1].trim()}`,
                     }, { new: true });
                 }
                 else {
                     console.log("can't");
                 }
             }
-            for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.schoolStudents) {
+            for (let i of schoolStudents === null || schoolStudents === void 0 ? void 0 : schoolStudents.students) {
                 let num = parseInt(`${i.classAssigned}`.match(/\d+/)[0]);
-                let name = i.className.split(`${num}`);
+                let name = (_c = i.classAssigned) === null || _c === void 0 ? void 0 : _c.split(`${num}`);
                 if (num < 4) {
                     yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                         classAssigned: `${name[0].trim()} ${num++}${name[1].trim()}`,
@@ -236,7 +236,7 @@ const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.studentsPerSession = studentsPerSession;
 const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _d, _e;
     try {
         const { sessionID } = req.params;
         let { term } = req.body;
@@ -277,11 +277,11 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     });
                     session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
                     session === null || session === void 0 ? void 0 : session.save();
-                    let termData = yield termModel_1.default.findById((_c = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 2]) === null || _c === void 0 ? void 0 : _c._id);
+                    let termData = yield termModel_1.default.findById((_d = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 2]) === null || _d === void 0 ? void 0 : _d._id);
                     let resultHist = [];
                     for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
                         resultHist.push(Object.assign({}, i));
-                        yield termModel_1.default.findByIdAndUpdate((_d = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 2]) === null || _d === void 0 ? void 0 : _d._id, {
+                        yield termModel_1.default.findByIdAndUpdate((_e = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 2]) === null || _e === void 0 ? void 0 : _e._id, {
                             classResult: resultHist,
                         }, { new: true });
                     }
@@ -344,7 +344,7 @@ const getAllSession = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.getAllSession = getAllSession;
 const createSessionHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f;
+    var _f, _g;
     try {
         const { classID } = req.params;
         const getClassRoom = yield classroomModel_1.default.findById(classID);
@@ -361,8 +361,8 @@ const createSessionHistory = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         const getAll = yield classHistory_1.default.create({
             resultHistory: history,
-            session: (_e = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _e === void 0 ? void 0 : _e.year,
-            term: (_f = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _f === void 0 ? void 0 : _f.presentTerm,
+            session: (_f = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _f === void 0 ? void 0 : _f.year,
+            term: (_g = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _g === void 0 ? void 0 : _g.presentTerm,
             classTeacherName: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.classTeacherName,
             className: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.className,
             principalsRemark: "Good Result generally... But till need to work Hard!!!",
@@ -402,7 +402,7 @@ const getAllClassSessionResults = (req, res) => __awaiter(void 0, void 0, void 0
 });
 exports.getAllClassSessionResults = getAllClassSessionResults;
 const createSchoolSessionHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _g, _h;
+    var _h, _j;
     try {
         const { classID } = req.params;
         const getClassRoom = yield classroomModel_1.default.findById(classID);
@@ -419,8 +419,8 @@ const createSchoolSessionHistory = (req, res) => __awaiter(void 0, void 0, void 
         }
         const getAll = yield classHistory_1.default.create({
             resultHistory: history,
-            session: (_g = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _g === void 0 ? void 0 : _g.year,
-            term: (_h = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _h === void 0 ? void 0 : _h.presentTerm,
+            session: (_h = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _h === void 0 ? void 0 : _h.year,
+            term: (_j = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _j === void 0 ? void 0 : _j.presentTerm,
             classTeacherName: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.classTeacherName,
             className: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.className,
             principalsRemark: "Good Result generally... But till need to work Hard!!!",
