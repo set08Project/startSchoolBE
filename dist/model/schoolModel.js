@@ -48,16 +48,22 @@ const schoolModel = new mongoose_2.Schema({
             ref: "academicSessions",
         },
     ],
+    historys: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "historys",
+        },
+    ],
     events: [
         {
             type: mongoose_1.Types.ObjectId,
             ref: "events",
         },
     ],
-    sessionHistroy: [
+    classHistory: [
         {
             type: mongoose_1.Types.ObjectId,
-            ref: "sessionHistroys",
+            ref: "classHistroy",
         },
     ],
     announcements: [
@@ -82,6 +88,12 @@ const schoolModel = new mongoose_2.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "complains",
+        },
+    ],
+    pushClass: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "classHistories",
         },
     ],
     classRooms: [

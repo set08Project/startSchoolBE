@@ -68,10 +68,10 @@ export const createSchoolStudent = async (
         school?.students.push(new Types.ObjectId(student._id));
 
         school?.historys?.push(new Types.ObjectId(student._id));
-        school.save();
+        await school.save();
 
         findClass?.students.push(new Types.ObjectId(student._id));
-        findClass.save();
+        await findClass.save();
 
         return res.status(201).json({
           message: "student created successfully",
@@ -137,7 +137,7 @@ export const readStudentDetail = async (
 
     const students = await studentModel.findById(studentID);
 
-    return res.status(201).json({
+    return res.status(200).json({
       message: "student read successfully",
       data: students,
       status: 200,
@@ -280,6 +280,42 @@ export const updateStudentAvatar = async (req: any, res: Response) => {
   }
 };
 
+export const updateStudentParentEmail = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { parentEmail } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName) {
+      const student = await studentModel.findByIdAndUpdate(
+        studentID,
+        { parentEmail },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "student profile updated successful",
+        data: student,
+        status: 200,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to update student profile",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error getting school",
+      status: 404,
+    });
+  }
+};
+
 export const updateStudent1stFees = async (
   req: Request,
   res: Response
@@ -288,11 +324,12 @@ export const updateStudent1stFees = async (
     const { schoolID, studentID } = req.params;
 
     const school = await schoolModel.findById(schoolID);
+    const getStudent = await studentModel.findById(studentID);
 
     if (school?.status === "school-admin" && school) {
       const students = await studentModel.findByIdAndUpdate(
         studentID,
-        { feesPaid1st: true },
+        { feesPaid1st: !getStudent?.feesPaid1st },
         { new: true }
       );
       verifySchoolFees(students, 1);
@@ -331,7 +368,7 @@ export const updateStudent2ndFees = async (
       if (students?.feesPaid1st === true) {
         let student = await studentModel.findByIdAndUpdate(
           students?._id,
-          { feesPaid2nd: true },
+          { feesPaid2nd: !students?.feesPaid2nd },
           { new: true }
         );
 
@@ -376,7 +413,7 @@ export const updateStudent3rdFees = async (
       if (student?.feesPaid2nd === true) {
         await studentModel.findByIdAndUpdate(
           studentID,
-          { feesPaid3rd: true },
+          { feesPaid3rd: !student?.feesPaid3rd },
           { new: true }
         );
         verifySchoolFees(student, 3);

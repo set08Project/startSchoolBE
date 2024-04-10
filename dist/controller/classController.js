@@ -40,6 +40,7 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
                     class3rdFee,
                     class1stFee,
                 });
+                school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
                 school.classRooms.push(new mongoose_1.Types.ObjectId(classes._id));
                 school.save();
                 return res.status(201).json({
@@ -66,6 +67,7 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
         return res.status(404).json({
             message: "Error creating school session",
             status: 404,
+            error,
         });
     }
 });

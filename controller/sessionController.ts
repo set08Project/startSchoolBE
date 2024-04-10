@@ -5,6 +5,9 @@ import { Types } from "mongoose";
 import studentModel from "../model/studentModel";
 import termModel from "../model/termModel";
 import classroomModel from "../model/classroomModel";
+import classHistoryModel from "../model/classHistory";
+import staffModel from "../model/staffModel";
+import axios from "axios";
 
 export const createSchoolSession = async (
   req: Request,
@@ -61,9 +64,13 @@ export const createNewSchoolSession = async (
       .findById(schoolID)
       .populate({ path: "classRooms" });
 
-    const pushClass = await schoolModel.findById(schoolID).populate({
-      path: "sessionHistroy",
-    });
+    const schoolStudents: any = await schoolModel
+      .findById(schoolID)
+      .populate({ path: "students" });
+
+    // const pushClass = await schoolModel.findById(schoolID).populate({
+    //   path: "classHistory",
+    // });
 
     let totalStudent = 0;
     const totalStaff = school?.staff?.length;
@@ -99,7 +106,7 @@ export const createNewSchoolSession = async (
 
       school.session.push(new Types.ObjectId(session._id));
 
-      school.sessionHistroy.push(new Types.ObjectId(session?._id));
+      school.classHistory.push(new Types.ObjectId(session?._id));
       school.save();
 
       schoolClass?.classRooms.find((el: any) => {
@@ -111,10 +118,10 @@ export const createNewSchoolSession = async (
         let name = i.className.split(`${num}`);
 
         if (num < 4) {
-          await classroomModel.findByIdAndUpdate(
+          let myClass = await classroomModel.findByIdAndUpdate(
             i?._id,
             {
-              className: `${name[0].trim()} ${num++}${name[1].trim()}`,
+              className: `${name[0].trim()}${num++} ${name[1].trim()}`,
             },
             { new: true }
           );
@@ -122,6 +129,29 @@ export const createNewSchoolSession = async (
           console.log("can't");
         }
       }
+
+      for (let i of schoolStudents?.students) {
+        let num: number = parseInt(`${i.classAssigned}`.match(/\d+/)![0]);
+        let name = i.classAssigned?.split(`${num}`);
+
+        if (num < 4) {
+          await studentModel.findByIdAndUpdate(
+            i?._id,
+            {
+              classAssigned: `${name[0].trim()} ${num++}${name[1].trim()}`,
+              attendance: null,
+              performance: null,
+              feesPaid1st: false,
+              feesPaid2nd: false,
+              feesPaid3rd: false,
+            },
+            { new: true }
+          );
+        } else {
+          console.log("can't");
+        }
+      }
+
       return res.status(201).json({
         message: "session created successfully",
         data: session,
@@ -177,10 +207,6 @@ export const viewSchoolPresentSession = async (
     const school = await sessionModel.findById(sessionID).populate({
       path: "term",
     });
-
-    console.log("read");
-    console.log(sessionID);
-    console.log(school);
 
     return res.status(200).json({
       message: "viewing school session now!",
@@ -254,7 +280,7 @@ export const termPerSession = async (
     const { sessionID } = req.params;
     let { term } = req.body;
 
-    const session = await sessionModel.findById(sessionID).populate({
+    const session: any = await sessionModel.findById(sessionID).populate({
       path: "term",
     });
 
@@ -292,7 +318,7 @@ export const termPerSession = async (
             message: "Term Already exist",
           });
         } else {
-          const sessionTerm = await termModel.create({
+          const sessionTerm: any = await termModel.create({
             term: capitalizedText(term),
             year: session?.year,
             presentTerm: term,
@@ -313,6 +339,13 @@ export const termPerSession = async (
               i?._id,
               {
                 presentTerm: capitalizedText(term),
+                attendance: [],
+                timeTable: [],
+                lessonNotes: [],
+                reportCard: [],
+                assignment: [],
+                assignmentResolve: [],
+                weekStudent: {},
               },
               { new: true }
             );
@@ -372,37 +405,6 @@ export const getAllSession = async (
     return res.status(200).json({
       message: "all session gotten",
       data: getAll,
-    });
-  } catch (error: any) {
-    return res.status(404).json({
-      message: "error getting session",
-      data: error.message,
-    });
-  }
-};
-
-export const updateTermPay = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  try {
-    const { termID } = req.params;
-    const { costPaid, payRef } = req.body;
-
-    const termPaid = await termModel.findByIdAndUpdate(
-      termID,
-      {
-        plan: true,
-        costPaid,
-        payRef,
-      },
-      { new: true }
-    );
-
-    return res.status(200).json({
-      message: "payemnt for term",
-      status: 201,
-      data: termPaid,
     });
   } catch (error: any) {
     return res.status(404).json({

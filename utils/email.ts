@@ -225,21 +225,23 @@ export const verifySchoolFees = async (user: any, term: number) => {
         id: user._id,
         email: user.parentEmail,
       },
-      "weCareHospital"
+      "weEducation"
     );
 
     let frontEndURL: string = `${url}/${token}/sign-in`;
-    let devURL: string = `${url}/api/verify-hospital/${user._id}`;
+    let devURL: string = `${url}/api/update-student-fees-1st/${user._id}`;
 
     const myPath = path.join(__dirname, "../views/feesMail.ejs");
     const html = await ejs.renderFile(myPath, {
       link: devURL,
       token: user.token,
-      hospitalName: user.studentFirstName,
+      studentName: user.studentFirstName,
+      schoolMail: user.email,
+      schoolName: user.schoolName,
     });
 
     const mailerOption = {
-      from: "NEXT Team❤️⛑️🚑 <codelabbest@gmail.com>",
+      from: `${user.schoolName}📘📘📘 <codelabbest@gmail.com>`,
       to: user.parentEmail,
       subject: `${term} Term School Fees Payment`,
       html,

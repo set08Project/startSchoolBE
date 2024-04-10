@@ -5,6 +5,12 @@ const termModel = new mongoose_1.Schema({
     year: {
         type: String,
     },
+    presentTerm: {
+        type: String,
+    },
+    classResult: {
+        type: [],
+    },
     term: {
         type: String,
     },

@@ -20,6 +20,9 @@ const classesModel = new mongoose_1.Schema({
     class3rdFee: {
         type: Number,
     },
+    presentTerm: {
+        type: String,
+    },
     className: {
         type: String,
     },
@@ -81,6 +84,18 @@ const classesModel = new mongoose_1.Schema({
             ref: "myReportCards",
         },
     ],
+    classHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "classHistories",
+        },
+    ],
+    // historys: [
+    //   {
+    //     type: Types.ObjectId,
+    //     ref: "historys",
+    //   },
+    // ],
     school: {
         type: mongoose_1.Types.ObjectId,
         ref: "schools",

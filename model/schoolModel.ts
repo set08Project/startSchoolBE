@@ -35,10 +35,11 @@ interface iSchool {
   students: Array<{}>;
   store: Array<{}>;
   articles: Array<{}>;
+  pushClass: Array<{}>;
   gallaries: Array<{}>;
   complain: Array<{}>;
   reportCard: Array<{}>;
-  sessionHistroy: Array<{}>;
+  classHistory: Array<{}>;
 }
 
 interface iSchoolData extends iSchool, Document {}
@@ -108,10 +109,10 @@ const schoolModel = new Schema<iSchoolData>(
       },
     ],
 
-    sessionHistroy: [
+    classHistory: [
       {
         type: Types.ObjectId,
-        ref: "academicSessions",
+        ref: "classHistroy",
       },
     ],
 
@@ -140,6 +141,13 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "complains",
+      },
+    ],
+
+    pushClass: [
+      {
+        type: Types.ObjectId,
+        ref: "classHistories",
       },
     ],
 

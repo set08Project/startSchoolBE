@@ -6,7 +6,7 @@ import cardReportModel from "../model/cardReportModel";
 import studentModel from "../model/studentModel";
 import schoolModel from "../model/schoolModel";
 import classroomModel from "../model/classroomModel";
-import { forEach, update } from "lodash";
+import lodash from "lodash";
 
 export const createReportCardEntry = async (
   req: Request,
@@ -14,6 +14,7 @@ export const createReportCardEntry = async (
 ): Promise<Response> => {
   try {
     const { teacherID, studentID } = req.params;
+    const { subject, test1, test2, test3, test4, exam } = req.body;
     const { subject, test1, test2, test3, test4, exam } = req.body;
 
     const teacher = await staffModel.findById(teacherID);
@@ -41,7 +42,7 @@ export const createReportCardEntry = async (
       return (
         el.classInfo ===
         `${student?.classAssigned} session: ${school?.session[0]
-          ?.year!}(${school?.session[0]?.term!})`
+          ?.year!}(${school?.session[0]?.presentTerm!})`
       );
     });
 
@@ -62,7 +63,7 @@ export const createReportCardEntry = async (
           return (
             el.classInfo ===
             `${student?.classAssigned} session: ${school?.session[0]
-              ?.year!}(${school?.session[0]?.term!})`
+              ?.year!}(${school?.session[0]?.presentTerm!})`
           );
         });
 
@@ -78,7 +79,7 @@ export const createReportCardEntry = async (
           });
         });
 
-        const read = dataFIle?.result.find((el: any) => {
+        const read = dataFIle?.result?.find((el: any) => {
           return el.subject === subject;
         });
 
@@ -91,17 +92,17 @@ export const createReportCardEntry = async (
               (!exam ? read?.exam : exam ? exam : 0)
           );
 
-          let myTest1: number;
-          let myTest2: number;
-          let myTest3: number;
-          let myTest4: number;
-          let examination: number;
+          let myTest1: number = 0;
+          let myTest2: number = 0;
+          let myTest3: number = 0;
+          let myTest4: number = 0;
+          let examination: number = 0;
 
-          if (test1 !== null && read?.[`1st Test`]) {
-            myTest1 = 10;
-          } else {
-            myTest1 = 0;
-          }
+          // let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+          // let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+          // let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+          // let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+          // let w5 = x5 !== 0 ? (examination = 60) : 0;
 
           if (test2 !== null && read?.[`2nd Test`]) {
             myTest2 = 10;
@@ -132,6 +133,21 @@ export const createReportCardEntry = async (
           let updated = getData.result.filter((el: any) => {
             return el.subject !== subject;
           });
+
+          let total = lodash.sumBy(getData?.result, (el: any) => {
+            return el.mark;
+          });
+
+          let totalScore = lodash.sumBy(getData?.result, (el: any) => {
+            return el.score;
+          });
+
+          let sum = getData?.result.length;
+
+          let mainPoints = total / sum;
+
+          console.log(mainPoints, sum, totalScore, total);
+          let myGrade = (total / totalScore) * 100;
 
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
@@ -164,7 +180,30 @@ export const createReportCardEntry = async (
                       : null,
                 },
               ],
+              points: parseFloat(
+                (
+                  lodash.sumBy(getData?.result, (el: any) => {
+                    return el.points;
+                  }) / getData?.result.length
+                ).toFixed(2)
+              ),
+
+              grade:
+                myGrade >= 0 && myGrade <= 39
+                  ? "F"
+                  : myGrade >= 40 && myGrade <= 49
+                  ? "E"
+                  : myGrade >= 50 && myGrade <= 59
+                  ? "D"
+                  : myGrade >= 60 && myGrade <= 69
+                  ? "C"
+                  : myGrade >= 70 && myGrade <= 79
+                  ? "B"
+                  : myGrade >= 80 && myGrade <= 100
+                  ? "A"
+                  : null,
             },
+
             { new: true }
           );
 
@@ -182,29 +221,23 @@ export const createReportCardEntry = async (
               (!exam ? read?.exam : exam ? exam : 0)
           );
 
-          let myTest1: number;
-          let myTest2: number;
-          let myTest3: number;
-          let myTest4: number;
-          let examination: number;
+          let myTest1: number = 0;
+          let myTest2: number = 0;
+          let myTest3: number = 0;
+          let myTest4: number = 0;
+          let examination: number = 0;
 
-          if (test1 !== null && read?.[`1st Test`]) {
-            myTest1 = 10;
-          } else {
-            myTest1 = 0;
-          }
+          // let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+          // let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+          // let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+          // let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+          // let w5 = x5 !== 0 ? (examination = 60) : 0;
 
-          if (test2 !== null && read?.[`2nd Test`]) {
-            myTest2 = 10;
-          } else {
-            myTest2 = 0;
-          }
+          // let score = w1 + w2 + w3 + w4 + w5;
 
-          if (test3 !== null && read?.[`3rd Test`]) {
-            myTest3 = 10;
-          } else {
-            myTest3 = 0;
-          }
+          let total = lodash.sumBy(getData?.result, (el: any) => {
+            return el.mark;
+          });
 
           if (test4 !== null && read?.[`4th Test`]) {
             myTest4 = 10;
@@ -218,8 +251,13 @@ export const createReportCardEntry = async (
             examination = 0;
           }
 
+          let totalScore = lodash.sumBy(getData?.result, (el: any) => {
+            return el.score;
+          });
+
           let score = myTest1 + myTest2 + myTest3 + myTest4 + examination;
 
+          let myGrade = (total / totalScore) * 100;
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -250,6 +288,28 @@ export const createReportCardEntry = async (
                       : null,
                 },
               ],
+              points: parseFloat(
+                (
+                  lodash.sumBy(getData?.result, (el: any) => {
+                    return el.points;
+                  }) / getData?.result.length
+                ).toFixed(2)
+              ),
+
+              grade:
+                myGrade >= 0 && myGrade <= 39
+                  ? "F"
+                  : myGrade >= 40 && myGrade <= 49
+                  ? "E"
+                  : myGrade >= 50 && myGrade <= 59
+                  ? "D"
+                  : myGrade >= 60 && myGrade <= 69
+                  ? "C"
+                  : myGrade >= 70 && myGrade <= 79
+                  ? "B"
+                  : myGrade >= 80 && myGrade <= 100
+                  ? "A"
+                  : null,
             },
             { new: true }
           );
@@ -447,13 +507,10 @@ export const classTeacherReportRemark = async (
       });
 
     const getReportSubject: any = student?.reportCard.find((el: any) => {
-      return (
-        el?.classInfo ===
-        `${student?.classAssigned} session: ${school?.session[0]
-          ?.year!}(${school?.session[0]?.term!})`
-      );
+      return el?.classInfo === `JSS 1A session: 2024/2025(Second Term)`;
     });
-
+    //  `${student?.classAssigned} session: ${school?.session[0]
+    //           ?.year!}(${school?.session[0]?.presentTerm!})`
     const teacher = await staffModel.findById(teacherID);
 
     if (teacher?.classesAssigned === student?.classAssigned) {

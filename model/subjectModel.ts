@@ -17,6 +17,7 @@ interface iSubject {
   class: {};
   classDetails: {};
   performance: Array<{}>;
+  reportCard: Array<{}>;
 }
 
 interface iSubjectData extends iSubject, Document {}

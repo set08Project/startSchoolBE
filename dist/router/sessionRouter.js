@@ -14,4 +14,13 @@ router
     .route("/view-present-school-session/:sessionID")
     .get(sessionController_1.viewSchoolPresentSession);
 router.route("/view-school-term/:termID").get(sessionController_1.viewSchoolPresentSessionTerm);
+router.route("/view-all-session").get(sessionController_1.getAllSession);
+router
+    .route("/view-class-result-history/:classID")
+    .get(sessionController_1.getAllClassSessionResults);
+router.route("/create-history-session/:classID").post(sessionController_1.createSessionHistory);
+router
+    .route("/create-school-history-session/:schoolID")
+    .post(sessionController_1.createSessionHistory);
+// router.route("/create-school-term-history/:session").post(createSessionHistory);
 exports.default = router;

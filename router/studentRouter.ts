@@ -9,6 +9,7 @@ import {
   updateStudent2ndFees,
   updateStudent3rdFees,
   updateStudentAvatar,
+  updateStudentParentEmail,
 } from "../controller/studentController";
 import multer from "multer";
 const upload = multer({
@@ -50,5 +51,8 @@ router
 
 router.route("/login-student").post(loginStudent);
 router.route("/read-student-cookie").get(readStudentCookie);
+router
+  .route("/update-parent-email/:schoolID/:studentID")
+  .patch(updateStudentParentEmail);
 
 export default router;

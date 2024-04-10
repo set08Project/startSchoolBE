@@ -1,6 +1,7 @@
 import { Document, Schema, Types, model } from "mongoose";
 
 interface iSession {
+  presentTerm: string;
   schoolID: string;
   presentTerm: string;
   year: string;
@@ -19,6 +20,9 @@ interface iSessionData extends iSession, Document {}
 
 const sessionModel = new Schema<iSessionData>(
   {
+    presentTerm: {
+      type: String,
+    },
     schoolID: {
       type: String,
     },

@@ -44,6 +44,9 @@ const studentModel = new mongoose_1.Schema({
     email: {
         type: String,
     },
+    parentEmail: {
+        type: String,
+    },
     schoolName: {
         type: String,
     },
@@ -84,6 +87,12 @@ const studentModel = new mongoose_1.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "attendances",
+        },
+    ],
+    history: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "historys",
         },
     ],
     performance: [

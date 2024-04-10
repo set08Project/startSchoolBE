@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rateLessonNote = exports.readLessonNote = exports.approveTeacherLessonNote = exports.readTeacherClassLessonNote = exports.readTeacherLessonNote = exports.readAdminLessonNote = exports.createClasslessonNote = void 0;
+exports.rateLessonNote = exports.readLessonNote = exports.approveTeacherLessonNote = exports.readTeacherClassLessonNote = exports.readTeacherLessonNote = exports.readAdminLessonNote = exports.createAdminLessonNoteReply = exports.createClasslessonNote = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -81,6 +81,40 @@ const createClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.createClasslessonNote = createClasslessonNote;
+const createAdminLessonNoteReply = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { lessonNotedID } = req.params;
+        const { responseDetail, deadline } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school && school.schoolName) {
+            const note = yield lessonNoteModel_1.default.findByIdAndUpdate(lessonNotedID, {
+                responseDetail,
+                deadline,
+                messageSent: true,
+            }, { new: true });
+            return res.status(201).json({
+                message: "Lesson Note Response Updated",
+                data: note,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "school not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating lesson Note",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.createAdminLessonNoteReply = createAdminLessonNoteReply;
 const readAdminLessonNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
