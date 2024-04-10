@@ -23,6 +23,8 @@ interface iSchool {
   lessonNotes: Array<{}>;
   schoolTags: Array<{}>;
 
+  receipt: [];
+
   subjects: Array<{}>;
   classRooms: Array<{}>;
 
@@ -175,6 +177,10 @@ const schoolModel = new Schema<iSchoolData>(
         ref: "stores",
       },
     ],
+
+    receipt: {
+      type: [],
+    },
 
     lessonNotes: [
       {

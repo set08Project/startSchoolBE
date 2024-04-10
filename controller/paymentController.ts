@@ -10,71 +10,6 @@ import https from "https";
 import env from "dotenv";
 env.config();
 
-export const createPayment = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  try {
-    const { schoolID } = req.params;
-    // const { cost, schoolName, expiryDate, datePaid, paymentID } = req.body;
-
-    const school = await schoolModel.findById(schoolID);
-
-    if (school && school.schoolName) {
-      const startDate = new Date();
-      const startedDate = new Date().setTime(startDate.getTime());
-      // const dataPeriod = startDate.setFullYear(startDate.getFullYear() + 1);
-      const dataPeriod = startDate.setMinutes(startDate.getMinutes() + 1);
-
-      const paymentID = crypto.randomBytes(3).toString("hex");
-
-      const payments = await paymentModel.create({
-        cost: 200000,
-        schoolName: school?.schoolName,
-        expiryDate: moment(dataPeriod).format("LLLL"),
-        datePaid: moment(startedDate).format("LLLL"),
-        paymentID,
-      });
-
-      school.payments.push(new Types.ObjectId(payments._id));
-      school.save();
-
-      await schoolModel.findByIdAndUpdate(
-        schoolID,
-        {
-          plan: "active",
-        },
-        { new: true }
-      );
-
-      // const timer = setTimeout(async () => {
-      //   console.log("work out this...!");
-      //   await schoolModel.findByIdAndUpdate(
-      //     schoolID,
-      //     {
-      //       plan: "in active",
-      //     },
-      //     { new: true }
-      //   );
-      //   clearTimeout(timer);
-      // }, 1000 * 60);
-
-      return res.status(201).json({
-        message: "payment created successfully",
-        data: school,
-      });
-    } else {
-      return res.status(404).json({
-        message: "unable to read school",
-      });
-    }
-  } catch (error) {
-    return res.status(404).json({
-      message: "Error creating school session",
-    });
-  }
-};
-
 export const makePaymentWithCron = async (
   req: Request,
   res: Response
@@ -182,62 +117,6 @@ export const makeSchoolPayment = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error viewing school payments",
-    });
-  }
-};
-
-export const makePayment = async (req: Request, res: Response) => {
-  try {
-    const { amount, email } = req.body;
-
-    const params = JSON.stringify({
-      email,
-      amount: (parseInt(amount) * 100).toString(),
-      callback_url: `${process.env.APP_URL_DEPLOY}`,
-      metadata: {
-        cancel_action: `${process.env.APP_URL_DEPLOY}`,
-      },
-      channels: ["card"],
-    });
-
-    const options = {
-      hostname: "api.paystack.co",
-      port: 443,
-      path: "/transaction/initialize",
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
-        "Content-Type": "application/json",
-      },
-    };
-
-    const request = https
-      .request(options, (response: any) => {
-        let data = "";
-
-        response.on("data", (chunk: any) => {
-          data += chunk;
-        });
-
-        response.on("end", () => {
-          return res.status(201).json({
-            message: "processing payment",
-            data: JSON.parse(data),
-            status: 201,
-          });
-        });
-      })
-      .on("error", (error: any) => {
-        console.error(error);
-      });
-
-    request.write(params);
-    request.end();
-  } catch (error: any) {
-    return res.status(404).json({
-      message: "Error",
-      data: error.message,
-      status: 404,
     });
   }
 };
@@ -408,6 +287,161 @@ export const getBankAccount = (req: Request, res: Response) => {
     res.status(404).json({
       message: "Error",
       status: 404,
+    });
+  }
+};
+
+// Perfect integration and selected...
+
+export const createPayment = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    // const { cost, schoolName, expiryDate, datePaid, paymentID } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName) {
+      const startDate = new Date();
+      const startedDate = new Date().setTime(startDate.getTime());
+      // const dataPeriod = startDate.setFullYear(startDate.getFullYear() + 1);
+      const dataPeriod = startDate.setMinutes(startDate.getMinutes() + 1);
+
+      const paymentID = crypto.randomBytes(3).toString("hex");
+
+      const payments = await paymentModel.create({
+        cost: school?.students.length * 1000,
+        schoolName: school?.schoolName,
+        expiryDate: moment(dataPeriod).format("LLLL"),
+        datePaid: moment(startedDate).format("LLLL"),
+        paymentID,
+      });
+
+      school.payments.push(new Types.ObjectId(payments._id));
+      school.save();
+
+      await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          plan: "active",
+        },
+        { new: true }
+      );
+
+      // const timer = setTimeout(async () => {
+      //   console.log("work out this...!");
+      //   await schoolModel.findByIdAndUpdate(
+      //     schoolID,
+      //     {
+      //       plan: "in active",
+      //     },
+      //     { new: true }
+      //   );
+      //   clearTimeout(timer);
+      // }, 1000 * 60);
+
+      return res.status(201).json({
+        message: "payment created successfully",
+        data: school,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school session",
+    });
+  }
+};
+
+export const makePayment = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const { schoolID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+
+    let amount = school?.students!.length! * 1000;
+
+    const params = JSON.stringify({
+      email,
+      amount: (amount * 100).toString(),
+      callback_url: `${process.env.APP_URL_DEPLOY}/successful-payment`,
+      metadata: {
+        cancel_action: `${process.env.APP_URL_DEPLOY}`,
+      },
+      channels: ["card"],
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/transaction/initialize",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const request = https
+      .request(options, (response: any) => {
+        let data = "";
+
+        response.on("data", (chunk: any) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          return res.status(201).json({
+            message: "processing payment",
+            data: JSON.parse(data),
+            status: 201,
+          });
+        });
+      })
+      .on("error", (error: any) => {
+        console.error(error);
+      });
+
+    request.write(params);
+    request.end();
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
+
+export const verifyTransaction = async (req: Request, res: Response) => {
+  try {
+    const { ref } = req.params;
+
+    const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
+
+    await axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        },
+      })
+      .then((data) => {
+        return res.status(200).json({
+          message: "payment verified",
+          status: 200,
+          data: data.data,
+        });
+      });
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
     });
   }
 };

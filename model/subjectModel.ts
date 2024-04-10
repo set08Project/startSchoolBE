@@ -10,6 +10,8 @@ interface iSubject {
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
 
+  recordData: Array<{}>;
+
   subjectPerformance: number;
   school: {};
   class: {};
@@ -21,6 +23,12 @@ interface iSubjectData extends iSubject, Document {}
 
 const subjectModel = new Schema<iSubjectData>(
   {
+    recordData: [
+      {
+        type: Types.ObjectId,
+        ref: "myReportCards",
+      },
+    ],
     assignmentResolve: [
       {
         type: Types.ObjectId,

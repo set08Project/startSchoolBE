@@ -301,6 +301,13 @@ export const termPerSession = async (
           session?.term.push(new Types.ObjectId(sessionTerm?._id));
           session?.save();
           // presentTerm
+
+          await sessionModel.findByIdAndUpdate(
+            sessionID,
+            { presentTerm: capitalizedText(term) },
+            { new: true }
+          );
+
           for (let i of schoolClass?.classRooms!) {
             await classroomModel.findByIdAndUpdate(
               i?._id,
@@ -333,6 +340,27 @@ export const termPerSession = async (
   }
 };
 
+export const viewTerm = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { termID } = req.params;
+
+    const getAll = await termModel.findById(termID);
+
+    return res.status(200).json({
+      message: "viewing term details",
+      data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
+    });
+  }
+};
+
 export const getAllSession = async (
   req: Request,
   res: Response
@@ -344,6 +372,37 @@ export const getAllSession = async (
     return res.status(200).json({
       message: "all session gotten",
       data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
+    });
+  }
+};
+
+export const updateTermPay = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { termID } = req.params;
+    const { costPaid, payRef } = req.body;
+
+    const termPaid = await termModel.findByIdAndUpdate(
+      termID,
+      {
+        plan: true,
+        costPaid,
+        payRef,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "payemnt for term",
+      status: 201,
+      data: termPaid,
     });
   } catch (error: any) {
     return res.status(404).json({

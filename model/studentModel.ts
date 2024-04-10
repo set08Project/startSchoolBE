@@ -12,6 +12,8 @@ interface iStudent {
   avatar: string;
   avatarID: string;
 
+  records: any;
+
   feesPaid1st: boolean;
   feesPaid2nd: boolean;
   feesPaid3rd: boolean;
@@ -48,6 +50,9 @@ const studentModel = new Schema<iStudentData>(
     feesPaid1st: {
       type: Boolean,
       default: false,
+    },
+    records: {
+      type: Array<any>,
     },
 
     feesPaid2nd: {

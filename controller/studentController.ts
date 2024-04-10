@@ -66,7 +66,6 @@ export const createSchoolStudent = async (
         });
 
         school?.students.push(new Types.ObjectId(student._id));
-        school.save();
 
         school?.historys?.push(new Types.ObjectId(student._id));
         school.save();

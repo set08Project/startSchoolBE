@@ -14,9 +14,14 @@ export const createReportCardEntry = async (
 ): Promise<Response> => {
   try {
     const { teacherID, studentID } = req.params;
-    const { subject, test1, test2, test3, exam } = req.body;
+    const { subject, test1, test2, test3, test4, exam } = req.body;
 
     const teacher = await staffModel.findById(teacherID);
+
+    const subjectData = await subjectModel.findOne({
+      subjectTitle: subject,
+    });
+
     const school: any = await schoolModel
       .findById(teacher?.schoolIDs)
       .populate({
@@ -82,12 +87,14 @@ export const createReportCardEntry = async (
             (!test1 ? read?.[`1st Test`] : test1 ? test1 : 0) +
               (!test2 ? read?.[`2nd Test`] : test2 ? test2 : 0) +
               (!test3 ? read?.[`3rd Test`] : test3 ? test3 : 0) +
-              (!exam ? read?.Exam : exam ? exam : 0)
+              (!test4 ? read?.[`4th Test`] : test4 ? test4 : 0) +
+              (!exam ? read?.exam : exam ? exam : 0)
           );
 
           let myTest1: number;
           let myTest2: number;
           let myTest3: number;
+          let myTest4: number;
           let examination: number;
 
           if (test1 !== null && read?.[`1st Test`]) {
@@ -108,14 +115,20 @@ export const createReportCardEntry = async (
             myTest3 = 0;
           }
 
-          if (test1 !== null && read?.[`Exam`]) {
-            examination = 70;
+          if (test4 !== null && read?.[`4th Test`]) {
+            myTest4 = 10;
+          } else {
+            myTest4 = 0;
+          }
+
+          if (exam !== null && read?.exam) {
+            examination = 60;
           } else {
             examination = 0;
           }
 
-          let score = myTest1 + myTest2 + myTest3 + examination;
-
+          let score = myTest1 + myTest2 + myTest3 + myTest4 + examination;
+          console.log(score);
           let updated = getData.result.filter((el: any) => {
             return el.subject !== subject;
           });
@@ -130,7 +143,9 @@ export const createReportCardEntry = async (
                   "1st Test": !test1 ? read?.[`1st Test`] : test1,
                   "2nd Test": !test2 ? read?.[`2nd Test`] : test2,
                   "3rd Test": !test3 ? read?.[`3rd Test`] : test3,
-                  Exam: !exam ? exam : read?.exam,
+                  "4th Test": !test4 ? read?.[`4th Test`] : test4,
+                  exam: !exam ? read?.exam : exam,
+
                   points: parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
                     (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
@@ -163,12 +178,14 @@ export const createReportCardEntry = async (
             (!test1 ? read?.[`1st Test`] : test1 ? test1 : 0) +
               (!test2 ? read?.[`2nd Test`] : test2 ? test2 : 0) +
               (!test3 ? read?.[`3rd Test`] : test3 ? test3 : 0) +
-              (!exam ? read?.Exam : exam ? exam : 0)
+              (!test4 ? read?.[`4th Test`] : test4 ? test4 : 0) +
+              (!exam ? read?.exam : exam ? exam : 0)
           );
 
           let myTest1: number;
           let myTest2: number;
           let myTest3: number;
+          let myTest4: number;
           let examination: number;
 
           if (test1 !== null && read?.[`1st Test`]) {
@@ -189,13 +206,19 @@ export const createReportCardEntry = async (
             myTest3 = 0;
           }
 
-          if (test1 !== null && read?.[`Exam`]) {
-            examination = 70;
+          if (test4 !== null && read?.[`4th Test`]) {
+            myTest4 = 10;
+          } else {
+            myTest4 = 0;
+          }
+
+          if (exam !== null && read?.[`exam`]) {
+            examination = 60;
           } else {
             examination = 0;
           }
 
-          let score = myTest1 + myTest2 + myTest3 + examination;
+          let score = myTest1 + myTest2 + myTest3 + myTest4 + examination;
 
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
@@ -207,7 +230,8 @@ export const createReportCardEntry = async (
                   "1st Test": !test1 ? read?.[`1st Test`] : test1,
                   "2nd Test": !test2 ? read?.[`2nd Test`] : test2,
                   "3rd Test": !test3 ? read?.[`3rd Test`] : test3,
-                  Exam: !exam ? exam : read?.exam,
+                  "4th Test": !test4 ? read?.[`4th Test`] : test4,
+                  exam: !exam ? read?.exam : exam,
                   points: parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
                     (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
@@ -244,14 +268,19 @@ export const createReportCardEntry = async (
               "1st Test": test1,
               "2nd Test": test2,
               "3rd Test": test3,
+              "4th Test": test4,
+              exam,
             },
           ],
           classInfo: `${student?.classAssigned} session: ${school?.session[0]
-            ?.year!}(${school?.session[0]?.term!})`,
+            ?.year!}(${school?.session[0]?.presentTerm!})`,
         });
 
         student?.reportCard.push(new Types.ObjectId(report._id));
         student?.save();
+
+        subjectData?.recordData.push(new Types.ObjectId(report._id));
+        subjectData?.save();
 
         // school?.reportCard.push(new Types.ObjectId(report._id));
         // school?.save();
@@ -468,7 +497,7 @@ export const studentReportRemark = async (
       .populate({ path: "reportCard" });
 
     return res.status(201).json({
-      message: "class Teacher report remark successfully",
+      message: "class Teacher report grade",
       data: student,
       status: 201,
     });
