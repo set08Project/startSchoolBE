@@ -413,3 +413,33 @@ export const getAllSession = async (
     });
   }
 };
+
+export const updateTermPay = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { termID } = req.params;
+    const { costPaid, payRef } = req.body;
+
+    const getAll = await termModel.findByIdAndUpdate(
+      termID,
+      {
+        plan: true,
+        costPaid,
+        payRef,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "Term payment has been recorded successfully",
+      data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
+    });
+  }
+};

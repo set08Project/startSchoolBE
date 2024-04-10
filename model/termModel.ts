@@ -9,8 +9,6 @@ interface iSessionTerm {
   plan: boolean;
   costPaid: number;
 
-  classResult: any[];
-
   totalStudents: number;
   studentFeesPaid: number;
   studentFeesNotPaid: number;
@@ -44,10 +42,6 @@ const termModel = new Schema<iSessionTermData>(
     plan: {
       type: Boolean,
       default: false,
-    },
-
-    classResult: {
-      type: [],
     },
 
     term: {

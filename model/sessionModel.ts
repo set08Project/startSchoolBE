@@ -1,7 +1,6 @@
 import { Document, Schema, Types, model } from "mongoose";
 
 interface iSession {
-  presentTerm: string;
   schoolID: string;
   presentTerm: string;
   year: string;
@@ -26,9 +25,7 @@ const sessionModel = new Schema<iSessionData>(
     schoolID: {
       type: String,
     },
-    presentTerm: {
-      type: String,
-    },
+
     year: {
       type: String,
     },

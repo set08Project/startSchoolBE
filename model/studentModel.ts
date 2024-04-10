@@ -44,7 +44,7 @@ interface iStudent {
   complain: Array<{}>;
 }
 
-interface iStudentData extends iStudent, Document { }
+interface iStudentData extends iStudent, Document {}
 
 const studentModel = new Schema<iStudentData>(
   {
@@ -105,6 +105,7 @@ const studentModel = new Schema<iStudentData>(
 
     parentEmail: {
       type: String,
+      default: "",
     },
 
     schoolName: {

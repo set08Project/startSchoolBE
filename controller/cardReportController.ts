@@ -15,7 +15,6 @@ export const createReportCardEntry = async (
   try {
     const { teacherID, studentID } = req.params;
     const { subject, test1, test2, test3, test4, exam } = req.body;
-    const { subject, test1, test2, test3, test4, exam } = req.body;
 
     const teacher = await staffModel.findById(teacherID);
 
