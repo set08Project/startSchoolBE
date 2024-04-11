@@ -17,6 +17,8 @@ interface iSchool {
 
   plan: string;
 
+  bankDetails: {};
+
   session: Array<{}>;
   staff: Array<{}>;
 
@@ -40,12 +42,19 @@ interface iSchool {
   complain: Array<{}>;
   reportCard: Array<{}>;
   classHistory: Array<{}>;
+  purchaseHistory: Array<{}>;
 }
 
 interface iSchoolData extends iSchool, Document {}
 
 const schoolModel = new Schema<iSchoolData>(
   {
+    purchaseHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "purchasedHistories",
+      },
+    ],
     started: {
       type: Boolean,
       default: false,
@@ -68,6 +77,9 @@ const schoolModel = new Schema<iSchoolData>(
 
     schoolName: {
       type: String,
+    },
+    bankDetails: {
+      type: {},
     },
     status: {
       type: String,

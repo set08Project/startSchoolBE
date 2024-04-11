@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const subjectModel = new mongoose_1.Schema({
-    reportCard: [
+    recordData: [
         {
             type: mongoose_1.Types.ObjectId,
             ref: "myReportCards",

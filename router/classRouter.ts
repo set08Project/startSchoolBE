@@ -9,6 +9,7 @@ import {
   viewClassesByStudent,
   viewClassesBySubject,
   viewClassesByTimeTable,
+  viewOneClassRM,
   viewSchoolClasses,
   viewSchoolClassesByName,
 } from "../controller/classController";
@@ -19,6 +20,7 @@ router.route("/create-classroom/:schoolID").post(createSchoolClasses);
 
 router.route("/view-classrooms/:schoolID").get(viewSchoolClasses);
 router.route("/view-classroom-info/:classID").get(viewClassRM);
+router.route("/view-one-classroom-info/:classID").get(viewOneClassRM);
 
 router
   .route("/view-classroom-info-timetable/:classID")

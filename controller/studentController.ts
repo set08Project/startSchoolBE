@@ -9,6 +9,7 @@ import { streamUpload } from "../utils/streamifier";
 import { verifySchoolFees } from "../utils/email";
 import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
+import purchasedModel from "../model/historyModel";
 
 export const createSchoolStudent = async (
   req: Request,
@@ -46,6 +47,7 @@ export const createSchoolStudent = async (
       if (findClass) {
         const student = await studentModel.create({
           schoolIDs: schoolID,
+          presentClassID: findClass?._id,
           gender,
           enrollmentID,
           schoolID: school?.enrollmentID,
@@ -438,6 +440,115 @@ export const updateStudent3rdFees = async (
     return res.status(404).json({
       message: "Error creating school students",
       status: 404,
+    });
+  }
+};
+
+export const updatePurchaseRecord = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+    const { purchased } = req.body;
+    const student: any = await studentModel.findById(studentID);
+    const school: any = await schoolModel.findById(student?.schoolIDs!);
+
+    console.log(student!.purchaseHistory, purchased);
+
+    if (school?.status === "school-admin" && school) {
+      await studentModel.findById(
+        studentID,
+        {
+          purchaseHistory: student?.purchaseHistory?.push(purchased),
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "student purchase recorded successfully",
+        data: student,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "School not found",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating students purchase",
+      status: 404,
+    });
+  }
+};
+
+export const createStorePurchased = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+    const { date, amount, cart, reference, purchasedID, delievered } = req.body;
+
+    const student = await studentModel.findById(studentID);
+    const school = await schoolModel.findById(student?.schoolIDs);
+
+    if (school) {
+      const store = await purchasedModel.create({
+        date,
+        amount,
+        cart,
+        reference,
+        purchasedID,
+        delievered: false,
+      });
+
+      student?.purchaseHistory.push(new Types.ObjectId(store._id));
+      student?.save();
+
+      school?.purchaseHistory.push(new Types.ObjectId(store._id));
+      school?.save();
+
+      return res.status(201).json({
+        message: "remark created successfully",
+        data: store,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const viewStorePurchased = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+
+    const student = await studentModel.findById(studentID).populate({
+      path: "purchaseHistory",
+    });
+
+    return res.status(201).json({
+      message: "remark created successfully",
+      data: student?.purchaseHistory,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school's store item",
+      data: error.message,
     });
   }
 };

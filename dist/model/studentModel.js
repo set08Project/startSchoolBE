@@ -6,6 +6,9 @@ const studentModel = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    records: {
+        type: (Array),
+    },
     feesPaid2nd: {
         type: Boolean,
         default: false,
@@ -15,6 +18,9 @@ const studentModel = new mongoose_1.Schema({
         default: false,
     },
     schoolIDs: {
+        type: String,
+    },
+    presentClassID: {
         type: String,
     },
     avatar: {
@@ -46,6 +52,7 @@ const studentModel = new mongoose_1.Schema({
     },
     parentEmail: {
         type: String,
+        default: "",
     },
     schoolName: {
         type: String,
@@ -135,6 +142,12 @@ const studentModel = new mongoose_1.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "pquestions",
+        },
+    ],
+    purchaseHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "purchasedHistories",
         },
     ],
 }, { timestamps: true });

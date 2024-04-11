@@ -6,9 +6,11 @@ import moment from "moment";
 import crypto from "crypto";
 import { CronJob } from "cron";
 import axios from "axios";
-import https from "https";
+// import https from "https";
 import env from "dotenv";
 env.config();
+
+const https = require("https");
 
 export const makePaymentWithCron = async (
   req: Request,
@@ -173,10 +175,10 @@ export const paymentFromStore = (req: Request, res: Response) => {
     };
 
     const request = https
-      .request(options, (res) => {
+      .request(options, (res: Response) => {
         let data = "";
 
-        res.on("data", (chunk) => {
+        res.on("data", (chunk: any) => {
           data += chunk;
         });
 
@@ -184,7 +186,7 @@ export const paymentFromStore = (req: Request, res: Response) => {
           console.log(JSON.parse(data));
         });
       })
-      .on("error", (error) => {
+      .on("error", (error: Error) => {
         console.error(error);
       });
 
@@ -221,10 +223,10 @@ export const createPaymentAccount = (req: Request, res: Response) => {
     };
 
     const request = https
-      .request(options, (resp) => {
+      .request(options, (resp: Response) => {
         let data = "";
 
-        resp.on("data", (chunk) => {
+        resp.on("data", (chunk: any) => {
           data += chunk;
         });
 
@@ -236,7 +238,7 @@ export const createPaymentAccount = (req: Request, res: Response) => {
           });
         });
       })
-      .on("error", (error) => {
+      .on("error", (error: Error) => {
         console.error(error);
       });
 
@@ -265,10 +267,10 @@ export const getBankAccount = (req: Request, res: Response) => {
     };
 
     https
-      .request(options, (resp) => {
+      .request(options, (resp: Response) => {
         let data = "";
 
-        resp.on("data", (chunk) => {
+        resp.on("data", (chunk: any) => {
           data += chunk;
         });
 
@@ -280,7 +282,7 @@ export const getBankAccount = (req: Request, res: Response) => {
           });
         });
       })
-      .on("error", (error) => {
+      .on("error", (error: Error) => {
         console.error(error);
       });
   } catch (error) {
@@ -438,6 +440,114 @@ export const verifyTransaction = async (req: Request, res: Response) => {
           data: data.data,
         });
       });
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
+    });
+  }
+};
+
+export const makeSplitPayment = async (req: Request, res: Response) => {
+  try {
+    const { accountName, accountNumber, accountBankCode } = req.body;
+
+    const params = JSON.stringify({
+      business_name: accountName,
+      settlement_bank: accountBankCode,
+      account_number: accountNumber,
+      percentage_charge: 10,
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/subaccount",
+      method: "POST",
+      headers: {
+        Authorization:
+          "Bearer sk_test_c9f764c9d687cf28275c9cd131eb835393e87df6",
+        "Content-Type": "application/json",
+      },
+    };
+
+    const request = https
+      .request(options, (response: Response) => {
+        let data = "";
+
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          return res.status(200).json({
+            message: "sub-account created",
+            status: 200,
+            data: JSON.parse(data),
+          });
+        });
+      })
+      .on("error", (error: Error) => {
+        console.error(error);
+      });
+
+    request.write(params);
+    request.end();
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error viewing store",
+    });
+  }
+};
+
+export const storePayment = async (req: Request, res: Response) => {
+  try {
+    const { subAccountCode, email, amount } = req.body;
+
+    const params = JSON.stringify({
+      email,
+      amount: `${amount * 100}`,
+      subaccount: subAccountCode,
+      callback_url: "http://localhost:5173/purchase-history",
+      meta: {
+        cancel: "http://localhost:5173",
+      },
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/transaction/initialize",
+      method: "POST",
+      headers: {
+        Authorization:
+          "Bearer sk_test_c9f764c9d687cf28275c9cd131eb835393e87df6",
+        "Content-Type": "application/json",
+      },
+    };
+
+    const request = https
+      .request(options, (response: Response) => {
+        let data = "";
+
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          return res.status(200).json({
+            message: "sub account payment ",
+            status: 200,
+            data: JSON.parse(data),
+          });
+        });
+      })
+      .on("error", (error: Error) => {
+        console.error(error);
+      });
+
+    request.write(params);
+    request.end();
   } catch (error: any) {
     res.status(404).json({
       message: "Errror",

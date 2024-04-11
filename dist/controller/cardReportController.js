@@ -27,6 +27,9 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const { teacherID, studentID } = req.params;
         const { subject, test1, test2, test3, test4, exam } = req.body;
         const teacher = yield staffModel_1.default.findById(teacherID);
+        const subjectData = yield subjectModel_1.default.findOne({
+            subjectTitle: subject,
+        });
         const school = yield schoolModel_1.default
             .findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs)
             .populate({
@@ -40,7 +43,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const student = yield studentModel_1.default.findById(studentID).populate({
             path: "reportCard",
         });
-        const subjectData = yield subjectModel_1.default.findOne({ subjectTitle: subject });
         const studentCheck = student === null || student === void 0 ? void 0 : student.reportCard.some((el) => {
             var _a, _b;
             return (el.classInfo ===
@@ -75,28 +77,47 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     return el.subject === subject;
                 });
                 if (data) {
-                    let x1 = !test1 ? read === null || read === void 0 ? void 0 : read.test1 : test1 ? test1 : 0;
-                    let x2 = !test2 ? read === null || read === void 0 ? void 0 : read.test2 : test2 ? test2 : 0;
-                    let x3 = !test3 ? read === null || read === void 0 ? void 0 : read.test3 : test3 ? test3 : 0;
-                    let x4 = !test4 ? read === null || read === void 0 ? void 0 : read.test4 : test4 ? test4 : 0;
-                    let x5 = !exam ? read === null || read === void 0 ? void 0 : read.exam : exam ? exam : 0;
-                    let y1 = x1 !== null ? x1 : 0;
-                    let y2 = x2 !== null ? x2 : 0;
-                    let y3 = x3 !== null ? x3 : 0;
-                    let y4 = x4 !== null ? x4 : 0;
-                    let y5 = x5 !== null ? x5 : 0;
-                    let mark = y1 + y2 + y3 + y4 + y5;
-                    let myTest1;
-                    let myTest2;
-                    let myTest3;
-                    let myTest4;
-                    let examination;
-                    let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
-                    let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
-                    let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
-                    let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
-                    let w5 = x5 !== 0 ? (examination = 60) : 0;
-                    let score = w1 + w2 + w3 + w4 + w5;
+                    let mark = parseInt((!test1 ? read === null || read === void 0 ? void 0 : read[`1st Test`] : test1 ? test1 : 0) +
+                        (!test2 ? read === null || read === void 0 ? void 0 : read[`2nd Test`] : test2 ? test2 : 0) +
+                        (!test3 ? read === null || read === void 0 ? void 0 : read[`3rd Test`] : test3 ? test3 : 0) +
+                        (!test4 ? read === null || read === void 0 ? void 0 : read[`4th Test`] : test4 ? test4 : 0) +
+                        (!exam ? read === null || read === void 0 ? void 0 : read.exam : exam ? exam : 0));
+                    let myTest1 = 0;
+                    let myTest2 = 0;
+                    let myTest3 = 0;
+                    let myTest4 = 0;
+                    let examination = 0;
+                    // let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+                    // let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+                    // let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+                    // let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+                    // let w5 = x5 !== 0 ? (examination = 60) : 0;
+                    if (test2 !== null && (read === null || read === void 0 ? void 0 : read[`2nd Test`])) {
+                        myTest2 = 10;
+                    }
+                    else {
+                        myTest2 = 0;
+                    }
+                    if (test3 !== null && (read === null || read === void 0 ? void 0 : read[`3rd Test`])) {
+                        myTest3 = 10;
+                    }
+                    else {
+                        myTest3 = 0;
+                    }
+                    if (test4 !== null && (read === null || read === void 0 ? void 0 : read[`4th Test`])) {
+                        myTest4 = 10;
+                    }
+                    else {
+                        myTest4 = 0;
+                    }
+                    if (exam !== null && (read === null || read === void 0 ? void 0 : read.exam)) {
+                        examination = 60;
+                    }
+                    else {
+                        examination = 0;
+                    }
+                    let score = myTest1 + myTest2 + myTest3 + myTest4 + examination;
+                    console.log(score);
                     let updated = getData.result.filter((el) => {
                         return el.subject !== subject;
                     });
@@ -115,13 +136,11 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                             ...updated,
                             {
                                 subject: !subject ? read === null || read === void 0 ? void 0 : read.subject : subject,
-                                test1: y1,
-                                test2: y2,
-                                test3: y3,
-                                test4: y4,
-                                exam: y5,
-                                mark,
-                                score,
+                                "1st Test": !test1 ? read === null || read === void 0 ? void 0 : read[`1st Test`] : test1,
+                                "2nd Test": !test2 ? read === null || read === void 0 ? void 0 : read[`2nd Test`] : test2,
+                                "3rd Test": !test3 ? read === null || read === void 0 ? void 0 : read[`3rd Test`] : test3,
+                                "4th Test": !test4 ? read === null || read === void 0 ? void 0 : read[`4th Test`] : test4,
+                                exam: !exam ? read === null || read === void 0 ? void 0 : read.exam : exam,
                                 points: parseFloat(((mark / score) * 100).toFixed(2)),
                                 grade: (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
                                     ? "F"
@@ -163,48 +182,52 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     });
                 }
                 else {
-                    let x1 = !test1 ? read === null || read === void 0 ? void 0 : read.test1 : test1 ? test1 : 0;
-                    let x2 = !test2 ? read === null || read === void 0 ? void 0 : read.test2 : test2 ? test2 : 0;
-                    let x3 = !test3 ? read === null || read === void 0 ? void 0 : read.test3 : test3 ? test3 : 0;
-                    let x4 = !test4 ? read === null || read === void 0 ? void 0 : read.test4 : test4 ? test4 : 0;
-                    let x5 = !exam ? read === null || read === void 0 ? void 0 : read.exam : exam ? exam : 0;
-                    let y1 = x1 !== null ? x1 : 0;
-                    let y2 = x2 !== null ? x2 : 0;
-                    let y3 = x3 !== null ? x3 : 0;
-                    let y4 = x4 !== null ? x4 : 0;
-                    let y5 = x5 !== null ? x5 : 0;
-                    let mark = y1 + y2 + y3 + y4 + y5;
-                    let myTest1;
-                    let myTest2;
-                    let myTest3;
-                    let myTest4;
-                    let examination;
-                    let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
-                    let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
-                    let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
-                    let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
-                    let w5 = x5 !== 0 ? (examination = 60) : 0;
-                    let score = w1 + w2 + w3 + w4 + w5;
+                    let mark = parseInt((!test1 ? read === null || read === void 0 ? void 0 : read[`1st Test`] : test1 ? test1 : 0) +
+                        (!test2 ? read === null || read === void 0 ? void 0 : read[`2nd Test`] : test2 ? test2 : 0) +
+                        (!test3 ? read === null || read === void 0 ? void 0 : read[`3rd Test`] : test3 ? test3 : 0) +
+                        (!test4 ? read === null || read === void 0 ? void 0 : read[`4th Test`] : test4 ? test4 : 0) +
+                        (!exam ? read === null || read === void 0 ? void 0 : read.exam : exam ? exam : 0));
+                    let myTest1 = 0;
+                    let myTest2 = 0;
+                    let myTest3 = 0;
+                    let myTest4 = 0;
+                    let examination = 0;
+                    // let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+                    // let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+                    // let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+                    // let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+                    // let w5 = x5 !== 0 ? (examination = 60) : 0;
+                    // let score = w1 + w2 + w3 + w4 + w5;
                     let total = lodash_1.default.sumBy(getData === null || getData === void 0 ? void 0 : getData.result, (el) => {
                         return el.mark;
                     });
+                    if (test4 !== null && (read === null || read === void 0 ? void 0 : read[`4th Test`])) {
+                        myTest4 = 10;
+                    }
+                    else {
+                        myTest4 = 0;
+                    }
+                    if (exam !== null && (read === null || read === void 0 ? void 0 : read[`exam`])) {
+                        examination = 60;
+                    }
+                    else {
+                        examination = 0;
+                    }
                     let totalScore = lodash_1.default.sumBy(getData === null || getData === void 0 ? void 0 : getData.result, (el) => {
                         return el.score;
                     });
-                    let sum = getData === null || getData === void 0 ? void 0 : getData.result.length;
+                    let score = myTest1 + myTest2 + myTest3 + myTest4 + examination;
                     let myGrade = (total / totalScore) * 100;
                     const report = yield cardReportModel_1.default.findByIdAndUpdate(getData === null || getData === void 0 ? void 0 : getData._id, {
                         result: [
                             ...getData.result,
                             {
                                 subject: !subject ? read === null || read === void 0 ? void 0 : read.subject : subject,
-                                test1: y1,
-                                test2: y2,
-                                test3: y3,
-                                test4: y4,
-                                exam: y5,
-                                mark,
-                                score,
+                                "1st Test": !test1 ? read === null || read === void 0 ? void 0 : read[`1st Test`] : test1,
+                                "2nd Test": !test2 ? read === null || read === void 0 ? void 0 : read[`2nd Test`] : test2,
+                                "3rd Test": !test3 ? read === null || read === void 0 ? void 0 : read[`3rd Test`] : test3,
+                                "4th Test": !test4 ? read === null || read === void 0 ? void 0 : read[`4th Test`] : test4,
+                                exam: !exam ? read === null || read === void 0 ? void 0 : read.exam : exam,
                                 points: parseFloat(((mark / score) * 100).toFixed(2)),
                                 grade: (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
                                     ? "F"
@@ -251,10 +274,10 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     result: [
                         {
                             subject,
-                            test1,
-                            test2,
-                            test3,
-                            test4,
+                            "1st Test": test1,
+                            "2nd Test": test2,
+                            "3rd Test": test3,
+                            "4th Test": test4,
                             exam,
                         },
                     ],
@@ -262,7 +285,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 });
                 student === null || student === void 0 ? void 0 : student.reportCard.push(new mongoose_1.Types.ObjectId(report._id));
                 student === null || student === void 0 ? void 0 : student.save();
-                subjectData === null || subjectData === void 0 ? void 0 : subjectData.reportCard.push(new mongoose_1.Types.ObjectId(report._id));
+                subjectData === null || subjectData === void 0 ? void 0 : subjectData.recordData.push(new mongoose_1.Types.ObjectId(report._id));
                 subjectData === null || subjectData === void 0 ? void 0 : subjectData.save();
                 // school?.reportCard.push(new Types.ObjectId(report._id));
                 // school?.save();
@@ -440,7 +463,7 @@ const studentReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, func
             .findById(studentID)
             .populate({ path: "reportCard" });
         return res.status(201).json({
-            message: "class Teacher report remark successfully",
+            message: "class Teacher report grade",
             data: student,
             status: 201,
         });

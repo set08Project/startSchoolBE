@@ -47,7 +47,7 @@ const createStore = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating school session",
+            message: "Error creating school's store item",
             data: error.message,
         });
     }

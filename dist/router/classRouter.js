@@ -6,6 +6,7 @@ const router = (0, express_1.Router)();
 router.route("/create-classroom/:schoolID").post(classController_1.createSchoolClasses);
 router.route("/view-classrooms/:schoolID").get(classController_1.viewSchoolClasses);
 router.route("/view-classroom-info/:classID").get(classController_1.viewClassRM);
+router.route("/view-one-classroom-info/:classID").get(classController_1.viewOneClassRM);
 router
     .route("/view-classroom-info-timetable/:classID")
     .get(classController_1.viewClassesByTimeTable);

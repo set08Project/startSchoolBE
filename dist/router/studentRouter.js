@@ -40,4 +40,6 @@ router.route("/read-student-cookie").get(studentController_1.readStudentCookie);
 router
     .route("/update-parent-email/:schoolID/:studentID")
     .patch(studentController_1.updateStudentParentEmail);
+router.route("/purchase/:studentID").post(studentController_1.createStorePurchased);
+router.route("/view-purchase/:studentID").get(studentController_1.viewStorePurchased);
 exports.default = router;

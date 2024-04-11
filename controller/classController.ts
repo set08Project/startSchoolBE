@@ -254,6 +254,29 @@ export const viewSchoolClasses = async (
   }
 };
 
+export const viewOneClassRM = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+
+    const schoolClasses = await classroomModel.findById(classID);
+
+    return res.status(200).json({
+      message: "School's class info found",
+      status: 200,
+      data: schoolClasses,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school class info",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
+
 export const viewClassRM = async (
   req: Request,
   res: Response

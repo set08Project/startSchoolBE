@@ -4,7 +4,9 @@ import {
   createPaymentAccount,
   getBankAccount,
   makePayment,
+  makeSplitPayment,
   paymentFromStore,
+  storePayment,
   verifyTransaction,
   viewSchoolPayment,
 } from "../controller/paymentController";
@@ -22,5 +24,7 @@ router.route("/create-payment-account/:schoolID").post(createPaymentAccount);
 // selected
 router.route("/make-payment/:schoolID").post(makePayment);
 router.route("/verify-payment/:ref").get(verifyTransaction);
+router.route("/update-payment-info").post(makeSplitPayment);
+router.route("/make-store-payment").post(storePayment);
 
 export default router;

@@ -3,6 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const mongoose_2 = require("mongoose");
 const schoolModel = new mongoose_2.Schema({
+    purchaseHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "purchasedHistories",
+        },
+    ],
     started: {
         type: Boolean,
         default: false,
@@ -22,6 +28,9 @@ const schoolModel = new mongoose_2.Schema({
     },
     schoolName: {
         type: String,
+    },
+    bankDetails: {
+        type: {},
     },
     status: {
         type: String,
@@ -126,6 +135,9 @@ const schoolModel = new mongoose_2.Schema({
             ref: "stores",
         },
     ],
+    receipt: {
+        type: [],
+    },
     lessonNotes: [
         {
             type: mongoose_1.Types.ObjectId,

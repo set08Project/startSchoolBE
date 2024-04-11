@@ -8,8 +8,16 @@ const termModel = new mongoose_1.Schema({
     presentTerm: {
         type: String,
     },
-    classResult: {
-        type: [],
+    payRef: {
+        type: String,
+        default: "",
+    },
+    costPaid: {
+        type: Number,
+    },
+    plan: {
+        type: Boolean,
+        default: false,
     },
     term: {
         type: String,

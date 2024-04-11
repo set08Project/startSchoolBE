@@ -11,6 +11,7 @@ interface iStudent {
   schoolIDs: string;
   avatar: string;
   avatarID: string;
+  presentClassID: string;
 
   records: any;
 
@@ -42,6 +43,7 @@ interface iStudent {
   remark: Array<{}>;
   articles: Array<{}>;
   complain: Array<{}>;
+  purchaseHistory: Array<{}>;
 }
 
 interface iStudentData extends iStudent, Document {}
@@ -67,6 +69,10 @@ const studentModel = new Schema<iStudentData>(
     },
 
     schoolIDs: {
+      type: String,
+    },
+
+    presentClassID: {
       type: String,
     },
 
@@ -213,6 +219,12 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "pquestions",
+      },
+    ],
+    purchaseHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "purchasedHistories",
       },
     ],
   },

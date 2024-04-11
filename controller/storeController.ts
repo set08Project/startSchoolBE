@@ -42,7 +42,7 @@ export const createStore = async (
     }
   } catch (error: any) {
     return res.status(404).json({
-      message: "Error creating school session",
+      message: "Error creating school's store item",
       data: error.message,
     });
   }

@@ -1,15 +1,18 @@
 import { Router } from "express";
 import {
   createSchoolStudent,
+  createStorePurchased,
   loginStudent,
   readSchoolStudents,
   readStudentCookie,
   readStudentDetail,
+  updatePurchaseRecord,
   updateStudent1stFees,
   updateStudent2ndFees,
   updateStudent3rdFees,
   updateStudentAvatar,
   updateStudentParentEmail,
+  viewStorePurchased,
 } from "../controller/studentController";
 import multer from "multer";
 const upload = multer({
@@ -54,5 +57,7 @@ router.route("/read-student-cookie").get(readStudentCookie);
 router
   .route("/update-parent-email/:schoolID/:studentID")
   .patch(updateStudentParentEmail);
+router.route("/purchase/:studentID").post(createStorePurchased);
+router.route("/view-purchase/:studentID").get(viewStorePurchased);
 
 export default router;

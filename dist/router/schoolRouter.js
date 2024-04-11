@@ -32,6 +32,7 @@ router.route("/logout-school").delete(schoolController_1.logoutSchool);
 router.route("/read-school-cookie").get(schoolController_1.readSchoolCookie);
 router.route("/change-school-name/:schoolID").patch(schoolController_1.changeSchoolName);
 router.route("/change-school-location/:schoolID").patch(schoolController_1.changeSchoolAddress);
+router.route("/update-account-info/:schoolID").patch(schoolController_1.updateSchoolAccountDetail);
 router
     .route("/upload-school-avatar/:schoolID")
     .patch(upload, schoolController_1.updateSchoolAvatar);

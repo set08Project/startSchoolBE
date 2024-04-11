@@ -8,6 +8,7 @@ import {
   loginSchool,
   logoutSchool,
   readSchoolCookie,
+  updateSchoolAccountDetail,
   updateSchoolAvatar,
   updateSchoolStartPossition,
   verifySchool,
@@ -52,6 +53,7 @@ router.route("/read-school-cookie").get(readSchoolCookie);
 router.route("/change-school-name/:schoolID").patch(changeSchoolName);
 
 router.route("/change-school-location/:schoolID").patch(changeSchoolAddress);
+router.route("/update-account-info/:schoolID").patch(updateSchoolAccountDetail);
 
 router
   .route("/upload-school-avatar/:schoolID")

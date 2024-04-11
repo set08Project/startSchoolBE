@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
+exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -21,6 +21,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const email_1 = require("../utils/email");
+const historyModel_1 = __importDefault(require("../model/historyModel"));
 const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
@@ -41,6 +42,7 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
             if (findClass) {
                 const student = yield studentModel_1.default.create({
                     schoolIDs: schoolID,
+                    presentClassID: findClass === null || findClass === void 0 ? void 0 : findClass._id,
                     gender,
                     enrollmentID,
                     schoolID: school === null || school === void 0 ? void 0 : school.enrollmentID,
@@ -58,7 +60,6 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
                     status: "school-student",
                 });
                 school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
-                yield school.save();
                 (_c = school === null || school === void 0 ? void 0 : school.historys) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(student._id));
                 yield school.save();
                 findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
@@ -380,3 +381,95 @@ const updateStudent3rdFees = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.updateStudent3rdFees = updateStudent3rdFees;
+const updatePurchaseRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    try {
+        const { studentID } = req.params;
+        const { purchased } = req.body;
+        const student = yield studentModel_1.default.findById(studentID);
+        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        console.log(student.purchaseHistory, purchased);
+        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
+            yield studentModel_1.default.findById(studentID, {
+                purchaseHistory: (_d = student === null || student === void 0 ? void 0 : student.purchaseHistory) === null || _d === void 0 ? void 0 : _d.push(purchased),
+            }, { new: true });
+            return res.status(201).json({
+                message: "student purchase recorded successfully",
+                data: student,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "School not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating students purchase",
+            status: 404,
+        });
+    }
+});
+exports.updatePurchaseRecord = updatePurchaseRecord;
+const createStorePurchased = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID } = req.params;
+        const { date, amount, cart, reference, purchasedID, delievered } = req.body;
+        const student = yield studentModel_1.default.findById(studentID);
+        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        if (school) {
+            const store = yield historyModel_1.default.create({
+                date,
+                amount,
+                cart,
+                reference,
+                purchasedID,
+                delievered: false,
+            });
+            student === null || student === void 0 ? void 0 : student.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
+            student === null || student === void 0 ? void 0 : student.save();
+            school === null || school === void 0 ? void 0 : school.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
+            school === null || school === void 0 ? void 0 : school.save();
+            return res.status(201).json({
+                message: "remark created successfully",
+                data: store,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school's store item",
+            data: error.message,
+        });
+    }
+});
+exports.createStorePurchased = createStorePurchased;
+const viewStorePurchased = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID } = req.params;
+        const student = yield studentModel_1.default.findById(studentID).populate({
+            path: "purchaseHistory",
+        });
+        return res.status(201).json({
+            message: "remark created successfully",
+            data: student === null || student === void 0 ? void 0 : student.purchaseHistory,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school's store item",
+            data: error.message,
+        });
+    }
+});
+exports.viewStorePurchased = viewStorePurchased;

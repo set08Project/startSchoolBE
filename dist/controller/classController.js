@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClassTeacher = exports.viewClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
+exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClassTeacher = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -227,6 +227,25 @@ const viewSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.viewSchoolClasses = viewSchoolClasses;
+const viewOneClassRM = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { classID } = req.params;
+        const schoolClasses = yield classroomModel_1.default.findById(classID);
+        return res.status(200).json({
+            message: "School's class info found",
+            status: 200,
+            data: schoolClasses,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school class info",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.viewOneClassRM = viewOneClassRM;
 const viewClassRM = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { classID } = req.params;

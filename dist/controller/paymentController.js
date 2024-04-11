@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makePayment = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = exports.createPayment = void 0;
+exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const paymentModel_1 = __importDefault(require("../model/paymentModel"));
 const mongoose_1 = require("mongoose");
@@ -20,61 +20,10 @@ const moment_1 = __importDefault(require("moment"));
 const crypto_1 = __importDefault(require("crypto"));
 const cron_1 = require("cron");
 const axios_1 = __importDefault(require("axios"));
-const https_1 = __importDefault(require("https"));
+// import https from "https";
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { schoolID } = req.params;
-        // const { cost, schoolName, expiryDate, datePaid, paymentID } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        if (school && school.schoolName) {
-            const startDate = new Date();
-            const startedDate = new Date().setTime(startDate.getTime());
-            // const dataPeriod = startDate.setFullYear(startDate.getFullYear() + 1);
-            const dataPeriod = startDate.setMinutes(startDate.getMinutes() + 1);
-            const paymentID = crypto_1.default.randomBytes(3).toString("hex");
-            const payments = yield paymentModel_1.default.create({
-                cost: 200000,
-                schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
-                expiryDate: (0, moment_1.default)(dataPeriod).format("LLLL"),
-                datePaid: (0, moment_1.default)(startedDate).format("LLLL"),
-                paymentID,
-            });
-            school.payments.push(new mongoose_1.Types.ObjectId(payments._id));
-            school.save();
-            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
-                plan: "active",
-            }, { new: true });
-            // const timer = setTimeout(async () => {
-            //   console.log("work out this...!");
-            //   await schoolModel.findByIdAndUpdate(
-            //     schoolID,
-            //     {
-            //       plan: "in active",
-            //     },
-            //     { new: true }
-            //   );
-            //   clearTimeout(timer);
-            // }, 1000 * 60);
-            return res.status(201).json({
-                message: "payment created successfully",
-                data: school,
-            });
-        }
-        else {
-            return res.status(404).json({
-                message: "unable to read school",
-            });
-        }
-    }
-    catch (error) {
-        return res.status(404).json({
-            message: "Error creating school session",
-        });
-    }
-});
-exports.createPayment = createPayment;
+const https = require("https");
 const makePaymentWithCron = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -159,57 +108,6 @@ const makeSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.makeSchoolPayment = makeSchoolPayment;
-const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { amount, email } = req.body;
-        const params = JSON.stringify({
-            email,
-            amount: (parseInt(amount) * 100).toString(),
-            callback_url: `${process.env.APP_URL_DEPLOY}`,
-            metadata: {
-                cancel_action: `${process.env.APP_URL_DEPLOY}`,
-            },
-            channels: ["card"],
-        });
-        const options = {
-            hostname: "api.paystack.co",
-            port: 443,
-            path: "/transaction/initialize",
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
-                "Content-Type": "application/json",
-            },
-        };
-        const request = https_1.default
-            .request(options, (response) => {
-            let data = "";
-            response.on("data", (chunk) => {
-                data += chunk;
-            });
-            response.on("end", () => {
-                return res.status(201).json({
-                    message: "processing payment",
-                    data: JSON.parse(data),
-                    status: 201,
-                });
-            });
-        })
-            .on("error", (error) => {
-            console.error(error);
-        });
-        request.write(params);
-        request.end();
-    }
-    catch (error) {
-        return res.status(404).json({
-            message: "Error",
-            data: error.message,
-            status: 404,
-        });
-    }
-});
-exports.makePayment = makePayment;
 const viewVerifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { ref } = req.params;
@@ -257,7 +155,7 @@ const paymentFromStore = (req, res) => {
                 "Content-Type": "application/json",
             },
         };
-        const request = https_1.default
+        const request = https
             .request(options, (res) => {
             let data = "";
             res.on("data", (chunk) => {
@@ -300,7 +198,7 @@ const createPaymentAccount = (req, res) => {
                 "Content-Type": "application/json",
             },
         };
-        const request = https_1.default
+        const request = https
             .request(options, (resp) => {
             let data = "";
             resp.on("data", (chunk) => {
@@ -340,7 +238,7 @@ const getBankAccount = (req, res) => {
                 Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
             },
         };
-        https_1.default
+        https
             .request(options, (resp) => {
             let data = "";
             resp.on("data", (chunk) => {
@@ -366,3 +264,232 @@ const getBankAccount = (req, res) => {
     }
 };
 exports.getBankAccount = getBankAccount;
+// Perfect integration and selected...
+const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        // const { cost, schoolName, expiryDate, datePaid, paymentID } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school && school.schoolName) {
+            const startDate = new Date();
+            const startedDate = new Date().setTime(startDate.getTime());
+            // const dataPeriod = startDate.setFullYear(startDate.getFullYear() + 1);
+            const dataPeriod = startDate.setMinutes(startDate.getMinutes() + 1);
+            const paymentID = crypto_1.default.randomBytes(3).toString("hex");
+            const payments = yield paymentModel_1.default.create({
+                cost: (school === null || school === void 0 ? void 0 : school.students.length) * 1000,
+                schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
+                expiryDate: (0, moment_1.default)(dataPeriod).format("LLLL"),
+                datePaid: (0, moment_1.default)(startedDate).format("LLLL"),
+                paymentID,
+            });
+            school.payments.push(new mongoose_1.Types.ObjectId(payments._id));
+            school.save();
+            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                plan: "active",
+            }, { new: true });
+            // const timer = setTimeout(async () => {
+            //   console.log("work out this...!");
+            //   await schoolModel.findByIdAndUpdate(
+            //     schoolID,
+            //     {
+            //       plan: "in active",
+            //     },
+            //     { new: true }
+            //   );
+            //   clearTimeout(timer);
+            // }, 1000 * 60);
+            return res.status(201).json({
+                message: "payment created successfully",
+                data: school,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+        });
+    }
+});
+exports.createPayment = createPayment;
+const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        const { schoolID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        let amount = (school === null || school === void 0 ? void 0 : school.students.length) * 1000;
+        const params = JSON.stringify({
+            email,
+            amount: (amount * 100).toString(),
+            callback_url: `${process.env.APP_URL_DEPLOY}/successful-payment`,
+            metadata: {
+                cancel_action: `${process.env.APP_URL_DEPLOY}`,
+            },
+            channels: ["card"],
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/transaction/initialize",
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https
+            .request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                return res.status(201).json({
+                    message: "processing payment",
+                    data: JSON.parse(data),
+                    status: 201,
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.makePayment = makePayment;
+const verifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { ref } = req.params;
+        const url = `https://api.paystack.co/transaction/verify/${ref}`;
+        yield axios_1.default
+            .get(url, {
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+            },
+        })
+            .then((data) => {
+            return res.status(200).json({
+                message: "payment verified",
+                status: 200,
+                data: data.data,
+            });
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Errror",
+            data: error.message,
+        });
+    }
+});
+exports.verifyTransaction = verifyTransaction;
+const makeSplitPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { accountName, accountNumber, accountBankCode } = req.body;
+        const params = JSON.stringify({
+            business_name: accountName,
+            settlement_bank: accountBankCode,
+            account_number: accountNumber,
+            percentage_charge: 10,
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/subaccount",
+            method: "POST",
+            headers: {
+                Authorization: "Bearer sk_test_c9f764c9d687cf28275c9cd131eb835393e87df6",
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https
+            .request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                return res.status(200).json({
+                    message: "sub-account created",
+                    status: 200,
+                    data: JSON.parse(data),
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error viewing store",
+        });
+    }
+});
+exports.makeSplitPayment = makeSplitPayment;
+const storePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { subAccountCode, email, amount } = req.body;
+        const params = JSON.stringify({
+            email,
+            amount: `${amount * 100}`,
+            subaccount: subAccountCode,
+            callback_url: "http://localhost:5173/purchase-history",
+            meta: {
+                cancel: "http://localhost:5173",
+            },
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/transaction/initialize",
+            method: "POST",
+            headers: {
+                Authorization: "Bearer sk_test_c9f764c9d687cf28275c9cd131eb835393e87df6",
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https
+            .request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                return res.status(200).json({
+                    message: "sub account payment ",
+                    status: 200,
+                    data: JSON.parse(data),
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Errror",
+            data: error.message,
+        });
+    }
+});
+exports.storePayment = storePayment;
