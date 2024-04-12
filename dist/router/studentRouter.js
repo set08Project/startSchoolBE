@@ -41,5 +41,18 @@ router
     .route("/update-parent-email/:schoolID/:studentID")
     .patch(studentController_1.updateStudentParentEmail);
 router.route("/purchase/:studentID").post(studentController_1.createStorePurchased);
+router.route("/pay-student-schoolfee/:studentID").post(studentController_1.createSchoolFeePayment);
+router
+    .route("/view-student-schoolfee-detail/:studentID")
+    .get(studentController_1.viewSchoolFeeRecord);
+router
+    .route("/view-school-schoolfee-detail/:schoolID")
+    .get(studentController_1.viewSchoolSchoolFeeRecord);
 router.route("/view-purchase/:studentID").get(studentController_1.viewStorePurchased);
+router
+    .route("/update-school-school-fee/:schoolFeeID")
+    .post(studentController_1.updateSchoolSchoolFee);
+router.route("/view-school-purchase/:schoolID").get(studentController_1.viewSchoolStorePurchased);
+router.route("/teacher-purchase/:staffID").post(studentController_1.createStorePurchasedTeacher);
+router.route("/view-teacher-purchase/:staffID").get(studentController_1.viewStorePurchasedTeacher);
 exports.default = router;

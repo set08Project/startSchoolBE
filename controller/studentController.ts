@@ -10,6 +10,7 @@ import { verifySchoolFees } from "../utils/email";
 import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
 import purchasedModel from "../model/historyModel";
+import schoolFeeHistory from "../model/schoolFeeHistory";
 
 export const createSchoolStudent = async (
   req: Request,
@@ -492,30 +493,47 @@ export const createStorePurchased = async (
     const { studentID } = req.params;
     const { date, amount, cart, reference, purchasedID, delievered } = req.body;
 
-    const student = await studentModel.findById(studentID);
+    const student = await studentModel.findById(studentID).populate({
+      path: "purchaseHistory",
+    });
+
     const school = await schoolModel.findById(student?.schoolIDs);
 
     if (school) {
-      const store = await purchasedModel.create({
-        date,
-        amount,
-        cart,
-        reference,
-        purchasedID,
-        delievered: false,
+      const check = student?.purchaseHistory.some((el: any) => {
+        return el.reference === reference;
       });
 
-      student?.purchaseHistory.push(new Types.ObjectId(store._id));
-      student?.save();
+      if (!check) {
+        const store = await purchasedModel.create({
+          date,
+          amount,
+          cart,
+          reference,
+          purchasedID,
+          delievered: false,
+          studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+          studentClass: student?.classAssigned,
+        });
 
-      school?.purchaseHistory.push(new Types.ObjectId(store._id));
-      school?.save();
+        student?.purchaseHistory.push(new Types.ObjectId(store._id));
+        student?.save();
 
-      return res.status(201).json({
-        message: "remark created successfully",
-        data: store,
-        status: 201,
-      });
+        school?.purchaseHistory.push(new Types.ObjectId(store._id));
+        school?.save();
+
+        return res.status(201).json({
+          message: "remark created successfully",
+          data: store,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Has already entered it",
+
+          status: 404,
+        });
+      }
     } else {
       return res.status(404).json({
         message: "unable to read school",
@@ -538,6 +556,11 @@ export const viewStorePurchased = async (
 
     const student = await studentModel.findById(studentID).populate({
       path: "purchaseHistory",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
     });
 
     return res.status(201).json({
@@ -548,6 +571,309 @@ export const viewStorePurchased = async (
   } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const viewSchoolStorePurchased = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    const student = await schoolModel.findById(schoolID).populate({
+      path: "purchaseHistory",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    return res.status(201).json({
+      message: "remark created successfully",
+      data: student?.purchaseHistory,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const updateSchoolStorePurchased = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { purchaseID } = req.params;
+    const { delievered } = req.body;
+
+    const item = await purchasedModel.findByIdAndUpdate(
+      purchaseID,
+      {
+        delievered,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: `item delieved successfully`,
+      data: item,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error updating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const createStorePurchasedTeacher = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { staffID } = req.params;
+    const { date, amount, cart, reference, purchasedID } = req.body;
+
+    const student = await staffModel.findById(staffID).populate({
+      path: "purchaseHistory",
+    });
+
+    const school = await schoolModel.findById(student?.schoolIDs);
+
+    console.log(student);
+
+    if (school) {
+      const check = student?.purchaseHistory.some((el: any) => {
+        return el.reference === reference;
+      });
+
+      if (!check) {
+        const store = await purchasedModel.create({
+          date,
+          amount,
+          cart,
+          reference,
+          purchasedID,
+          delievered: false,
+          studentName: student?.staffName,
+          studentClass: student?.classesAssigned,
+        });
+
+        student?.purchaseHistory.push(new Types.ObjectId(store._id));
+        student?.save();
+
+        school?.purchaseHistory.push(new Types.ObjectId(store._id));
+        school?.save();
+
+        return res.status(201).json({
+          message: "remark created successfully",
+          data: store,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Has already entered it",
+
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const viewStorePurchasedTeacher = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { staffID } = req.params;
+
+    const student = await staffModel.findById(staffID).populate({
+      path: "purchaseHistory",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    return res.status(201).json({
+      message: "remark created successfully",
+      data: student?.purchaseHistory,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const createSchoolFeePayment = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+    const { date, amount, reference, purchasedID } = req.body;
+
+    const student = await studentModel.findById(studentID).populate({
+      path: "schoolFeesHistory",
+    });
+
+    const classOne = await classroomModel.findById(student?.presentClassID);
+
+    const school = await schoolModel.findById(student?.schoolIDs);
+
+    if (school) {
+      const check = student?.schoolFeesHistory.some((el: any) => {
+        return el.reference === reference;
+      });
+
+      if (!check) {
+        const store = await schoolFeeHistory.create({
+          date,
+          amount,
+          reference,
+          purchasedID,
+          confirm: false,
+          term: classOne?.presentTerm,
+          studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+          studentClass: student?.classAssigned,
+          image: student?.avatar,
+        });
+
+        student?.schoolFeesHistory.push(new Types.ObjectId(store._id));
+        student?.save();
+
+        school?.schoolFeesHistory.push(new Types.ObjectId(store._id));
+        school?.save();
+
+        return res.status(201).json({
+          message: "schoolfee paid successfully",
+          data: store,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Has already entered it",
+
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error paying school's fee",
+      data: error.message,
+    });
+  }
+};
+
+export const viewSchoolFeeRecord = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+
+    const student = await studentModel.findById(studentID).populate({
+      path: "schoolFeesHistory",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    return res.status(201).json({
+      message: "remark created successfully",
+      data: student?.schoolFeesHistory,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const viewSchoolSchoolFeeRecord = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    const student = await schoolModel.findById(schoolID).populate({
+      path: "schoolFeesHistory",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    return res.status(201).json({
+      message: "remark created successfully",
+      data: student?.schoolFeesHistory,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school's store item",
+      data: error.message,
+    });
+  }
+};
+
+export const updateSchoolSchoolFee = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolFeeID } = req.params;
+    const { confirm } = req.body;
+
+    const item = await schoolFeeHistory.findByIdAndUpdate(
+      schoolFeeID,
+      {
+        confirm,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: `schoolfee confirm successfully`,
+      data: item,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error updating school's school fee",
       data: error.message,
     });
   }

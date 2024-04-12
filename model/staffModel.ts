@@ -28,6 +28,7 @@ interface iStaff {
   assignmentResolve: Array<{}>;
   remark: Array<{}>;
   complain: Array<{}>;
+  purchaseHistory: Array<{}>;
 
   staffRating: number;
   status: string;
@@ -138,6 +139,13 @@ const staffModel = new Schema<iStaffData>(
       {
         type: Types.ObjectId,
         ref: "myReportCards",
+      },
+    ],
+
+    purchaseHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "purchasedHistories",
       },
     ],
 

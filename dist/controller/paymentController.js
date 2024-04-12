@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
+exports.schoolFeePayment = exports.makeSplitSchoolfeePayment = exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const paymentModel_1 = __importDefault(require("../model/paymentModel"));
 const mongoose_1 = require("mongoose");
@@ -412,7 +412,7 @@ const makeSplitPayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
             path: "/subaccount",
             method: "POST",
             headers: {
-                Authorization: "Bearer sk_test_c9f764c9d687cf28275c9cd131eb835393e87df6",
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
                 "Content-Type": "application/json",
             },
         };
@@ -450,9 +450,9 @@ const storePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             email,
             amount: `${amount * 100}`,
             subaccount: subAccountCode,
-            callback_url: "http://localhost:5173/purchase-history",
+            callback_url: `http://localhost:5173/purchase-history`,
             meta: {
-                cancel: "http://localhost:5173",
+                cancel: `http://localhost:5173`,
             },
         });
         const options = {
@@ -461,7 +461,7 @@ const storePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             path: "/transaction/initialize",
             method: "POST",
             headers: {
-                Authorization: "Bearer sk_test_c9f764c9d687cf28275c9cd131eb835393e87df6",
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
                 "Content-Type": "application/json",
             },
         };
@@ -493,3 +493,99 @@ const storePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.storePayment = storePayment;
+const makeSplitSchoolfeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { accountName, accountNumber, accountBankCode } = req.body;
+        const params = JSON.stringify({
+            business_name: accountName,
+            settlement_bank: accountBankCode,
+            account_number: accountNumber,
+            percentage_charge: 5,
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/subaccount",
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https
+            .request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                return res.status(200).json({
+                    message: "sub-account created",
+                    status: 200,
+                    data: JSON.parse(data),
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error viewing store",
+        });
+    }
+});
+exports.makeSplitSchoolfeePayment = makeSplitSchoolfeePayment;
+const schoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { subAccountCode, email, amount } = req.body;
+        const params = JSON.stringify({
+            email,
+            amount: `${amount * 100}`,
+            subaccount: subAccountCode,
+            callback_url: `http://localhost:5173/school-fee-payment`,
+            meta: {
+                cancel: `http://localhost:5173`,
+            },
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/transaction/initialize",
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https
+            .request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                return res.status(200).json({
+                    message: "sub account payment ",
+                    status: 200,
+                    data: JSON.parse(data),
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Errror",
+            data: error.message,
+        });
+    }
+});
+exports.schoolFeePayment = schoolFeePayment;

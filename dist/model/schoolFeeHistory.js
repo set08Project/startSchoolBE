@@ -1,8 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-const purchasedModel = new mongoose_1.Schema({
+const schoolFessHistoryModel = new mongoose_1.Schema({
     date: {
+        type: String,
+    },
+    image: {
+        type: String,
+    },
+    term: {
         type: String,
     },
     studentName: {
@@ -20,11 +26,8 @@ const purchasedModel = new mongoose_1.Schema({
     purchasedID: {
         type: String,
     },
-    delievered: {
+    confirm: {
         type: Boolean,
-    },
-    cart: {
-        type: [],
     },
     school: {
         type: mongoose_1.Types.ObjectId,
@@ -34,9 +37,5 @@ const purchasedModel = new mongoose_1.Schema({
         type: mongoose_1.Types.ObjectId,
         ref: "students",
     },
-    staff: {
-        type: mongoose_1.Types.ObjectId,
-        ref: "staffs",
-    },
 }, { timestamps: true });
-exports.default = (0, mongoose_1.model)("purchasedHistories", purchasedModel);
+exports.default = (0, mongoose_1.model)("schoolFeesHistories", schoolFessHistoryModel);

@@ -5,7 +5,9 @@ import {
   getBankAccount,
   makePayment,
   makeSplitPayment,
+  makeSplitSchoolfeePayment,
   paymentFromStore,
+  schoolFeePayment,
   storePayment,
   verifyTransaction,
   viewSchoolPayment,
@@ -24,7 +26,11 @@ router.route("/create-payment-account/:schoolID").post(createPaymentAccount);
 // selected
 router.route("/make-payment/:schoolID").post(makePayment);
 router.route("/verify-payment/:ref").get(verifyTransaction);
+
 router.route("/update-payment-info").post(makeSplitPayment);
 router.route("/make-store-payment").post(storePayment);
+
+router.route("/update-schoolfee-payment-info").post(makeSplitSchoolfeePayment);
+router.route("/make-schoolfee-payment").post(schoolFeePayment);
 
 export default router;

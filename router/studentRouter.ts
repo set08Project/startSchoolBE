@@ -1,18 +1,26 @@
 import { Router } from "express";
 import {
+  createSchoolFeePayment,
   createSchoolStudent,
   createStorePurchased,
+  createStorePurchasedTeacher,
   loginStudent,
   readSchoolStudents,
   readStudentCookie,
   readStudentDetail,
   updatePurchaseRecord,
+  updateSchoolSchoolFee,
+  updateSchoolStorePurchased,
   updateStudent1stFees,
   updateStudent2ndFees,
   updateStudent3rdFees,
   updateStudentAvatar,
   updateStudentParentEmail,
+  viewSchoolFeeRecord,
+  viewSchoolSchoolFeeRecord,
+  viewSchoolStorePurchased,
   viewStorePurchased,
+  viewStorePurchasedTeacher,
 } from "../controller/studentController";
 import multer from "multer";
 const upload = multer({
@@ -58,6 +66,25 @@ router
   .route("/update-parent-email/:schoolID/:studentID")
   .patch(updateStudentParentEmail);
 router.route("/purchase/:studentID").post(createStorePurchased);
+
+router.route("/pay-student-schoolfee/:studentID").post(createSchoolFeePayment);
+router
+  .route("/view-student-schoolfee-detail/:studentID")
+  .get(viewSchoolFeeRecord);
+
+router
+  .route("/view-school-schoolfee-detail/:schoolID")
+  .get(viewSchoolSchoolFeeRecord);
+
 router.route("/view-purchase/:studentID").get(viewStorePurchased);
+
+router
+  .route("/update-school-school-fee/:schoolFeeID")
+  .post(updateSchoolSchoolFee);
+
+router.route("/view-school-purchase/:schoolID").get(viewSchoolStorePurchased);
+
+router.route("/teacher-purchase/:staffID").post(createStorePurchasedTeacher);
+router.route("/view-teacher-purchase/:staffID").get(viewStorePurchasedTeacher);
 
 export default router;

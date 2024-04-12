@@ -150,5 +150,11 @@ const studentModel = new mongoose_1.Schema({
             ref: "purchasedHistories",
         },
     ],
+    schoolFeesHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "schoolFeesHistories",
+        },
+    ],
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("students", studentModel);

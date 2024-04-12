@@ -57,6 +57,12 @@ const schoolModel = new mongoose_2.Schema({
             ref: "academicSessions",
         },
     ],
+    schoolFeesHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "schoolFeesHistories",
+        },
+    ],
     historys: [
         {
             type: mongoose_1.Types.ObjectId,

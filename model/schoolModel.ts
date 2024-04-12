@@ -43,6 +43,7 @@ interface iSchool {
   reportCard: Array<{}>;
   classHistory: Array<{}>;
   purchaseHistory: Array<{}>;
+  schoolFeesHistory: Array<{}>;
 }
 
 interface iSchoolData extends iSchool, Document {}
@@ -106,6 +107,13 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "academicSessions",
+      },
+    ],
+
+    schoolFeesHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "schoolFeesHistories",
       },
     ],
     historys: [

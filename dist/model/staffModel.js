@@ -88,6 +88,12 @@ const staffModel = new mongoose_1.Schema({
             ref: "myReportCards",
         },
     ],
+    purchaseHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "purchasedHistories",
+        },
+    ],
     attendance: [
         {
             type: mongoose_1.Types.ObjectId,

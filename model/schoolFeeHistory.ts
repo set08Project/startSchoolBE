@@ -2,32 +2,48 @@ import { Document, Schema, Types, model } from "mongoose";
 
 interface iPurchased {
   date: string;
+
   studentName: string;
   studentClass: string;
-  cart: [];
+
+  term: string;
+
   reference: string;
   amount: number;
+
   purchasedID: string;
-  delievered: boolean;
+  image: string;
+
+  confirm: boolean;
 
   school: {};
   student: {};
-  staff: {};
 }
 
 interface iPurchasedData extends iPurchased, Document {}
 
-const purchasedModel = new Schema<iPurchasedData>(
+const schoolFessHistoryModel = new Schema<iPurchasedData>(
   {
     date: {
       type: String,
     },
+
+    image: {
+      type: String,
+    },
+
+    term: {
+      type: String,
+    },
+
     studentName: {
       type: String,
     },
+
     studentClass: {
       type: String,
     },
+
     amount: {
       type: Number,
     },
@@ -40,12 +56,8 @@ const purchasedModel = new Schema<iPurchasedData>(
       type: String,
     },
 
-    delievered: {
+    confirm: {
       type: Boolean,
-    },
-
-    cart: {
-      type: [],
     },
 
     school: {
@@ -57,13 +69,11 @@ const purchasedModel = new Schema<iPurchasedData>(
       type: Types.ObjectId,
       ref: "students",
     },
-
-    staff: {
-      type: Types.ObjectId,
-      ref: "staffs",
-    },
   },
   { timestamps: true }
 );
 
-export default model<iPurchasedData>("purchasedHistories", purchasedModel);
+export default model<iPurchasedData>(
+  "schoolFeesHistories",
+  schoolFessHistoryModel
+);
