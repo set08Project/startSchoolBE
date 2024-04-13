@@ -180,6 +180,7 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "performances",
+        default: [],
       },
     ],
 

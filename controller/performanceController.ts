@@ -35,7 +35,6 @@ export const createQuizPerformance = async (
         subjectTitle: quizData?.subjectTitle,
         studentScore,
         studentGrade,
-        // subjectTeacher: findTeacher?.staffName,
         performanceRating: parseInt(
           ((studentScore / quizData?.quiz[1]?.question.length) * 100).toFixed(2)
         ),
@@ -52,6 +51,7 @@ export const createQuizPerformance = async (
 
       findSubject?.performance.push(new Types.ObjectId(quizes._id));
       findSubject?.save();
+
       let view: number[] = [];
       let notView: number[] = [];
 
@@ -93,10 +93,11 @@ export const createQuizPerformance = async (
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating class subject quiz",
       status: 404,
+      data: error.message,
     });
   }
 };

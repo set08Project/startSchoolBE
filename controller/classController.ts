@@ -330,6 +330,7 @@ export const updateSchoolClassTeacher = async (
           getTeacher._id,
           {
             classesAssigned: subjects?.className!,
+            presentClassID: classID,
           },
           { new: true }
         );

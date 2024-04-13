@@ -637,6 +637,7 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             });
             if (!check) {
                 const store = yield schoolFeeHistory_1.default.create({
+                    studentID,
                     date,
                     amount,
                     reference,
@@ -735,6 +736,23 @@ const updateSchoolSchoolFee = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const item = yield schoolFeeHistory_1.default.findByIdAndUpdate(schoolFeeID, {
             confirm,
         }, { new: true });
+        let studentRecord = yield studentModel_1.default.findById(item.studentID);
+        let studetClass = yield classroomModel_1.default.findById(studentRecord === null || studentRecord === void 0 ? void 0 : studentRecord.presentClassID);
+        if ((studetClass === null || studetClass === void 0 ? void 0 : studetClass.presentTerm) === "1st Term") {
+            yield studentModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.studentID, {
+                feesPaid1st: true,
+            }, { new: true });
+        }
+        else if ((studetClass === null || studetClass === void 0 ? void 0 : studetClass.presentTerm) === "2nd Term") {
+            yield studentModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.studentID, {
+                feesPaid2nd: true,
+            }, { new: true });
+        }
+        else if ((studetClass === null || studetClass === void 0 ? void 0 : studetClass.presentTerm) === "3rd Term") {
+            yield studentModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.studentID, {
+                feesPaid3rd: true,
+            }, { new: true });
+        }
         return res.status(201).json({
             message: `schoolfee confirm successfully`,
             data: item,

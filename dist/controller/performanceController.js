@@ -39,7 +39,6 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
                 studentScore,
                 studentGrade,
-                // subjectTeacher: findTeacher?.staffName,
                 performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz[1]) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
@@ -89,6 +88,7 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
         return res.status(404).json({
             message: "Error creating class subject quiz",
             status: 404,
+            data: error.message,
         });
     }
 });

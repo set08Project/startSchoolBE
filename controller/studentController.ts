@@ -750,6 +750,7 @@ export const createSchoolFeePayment = async (
 
       if (!check) {
         const store = await schoolFeeHistory.create({
+          studentID,
           date,
           amount,
           reference,
@@ -858,13 +859,44 @@ export const updateSchoolSchoolFee = async (
     const { schoolFeeID } = req.params;
     const { confirm } = req.body;
 
-    const item = await schoolFeeHistory.findByIdAndUpdate(
+    const item: any = await schoolFeeHistory.findByIdAndUpdate(
       schoolFeeID,
       {
         confirm,
       },
       { new: true }
     );
+
+    let studentRecord = await studentModel.findById(item.studentID);
+    let studetClass = await classroomModel.findById(
+      studentRecord?.presentClassID
+    );
+
+    if (studetClass?.presentTerm === "1st Term") {
+      await studentModel.findByIdAndUpdate(
+        item?.studentID,
+        {
+          feesPaid1st: true,
+        },
+        { new: true }
+      );
+    } else if (studetClass?.presentTerm === "2nd Term") {
+      await studentModel.findByIdAndUpdate(
+        item?.studentID,
+        {
+          feesPaid2nd: true,
+        },
+        { new: true }
+      );
+    } else if (studetClass?.presentTerm === "3rd Term") {
+      await studentModel.findByIdAndUpdate(
+        item?.studentID,
+        {
+          feesPaid3rd: true,
+        },
+        { new: true }
+      );
+    }
 
     return res.status(201).json({
       message: `schoolfee confirm successfully`,

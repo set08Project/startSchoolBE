@@ -106,6 +106,7 @@ const studentModel = new mongoose_1.Schema({
         {
             type: mongoose_1.Types.ObjectId,
             ref: "performances",
+            default: [],
         },
     ],
     assignmentResolve: [

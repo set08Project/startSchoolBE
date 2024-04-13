@@ -7,6 +7,7 @@ interface iPurchased {
   studentClass: string;
 
   term: string;
+  studentID: string;
 
   reference: string;
   amount: number;
@@ -24,6 +25,9 @@ interface iPurchasedData extends iPurchased, Document {}
 
 const schoolFessHistoryModel = new Schema<iPurchasedData>(
   {
+    studentID: {
+      type: String,
+    },
     date: {
       type: String,
     },

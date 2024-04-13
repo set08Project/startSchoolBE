@@ -17,11 +17,6 @@ export const createReportCardEntry = async (
     const { subject, test1, test2, test3, test4, exam } = req.body;
 
     const teacher = await staffModel.findById(teacherID);
-
-    const subjectData = await subjectModel.findOne({
-      subjectTitle: subject,
-    });
-
     const school: any = await schoolModel
       .findById(teacher?.schoolIDs)
       .populate({
@@ -37,6 +32,8 @@ export const createReportCardEntry = async (
       path: "reportCard",
     });
 
+    const subjectData = await subjectModel.findOne({ subjectTitle: subject });
+
     const studentCheck = student?.reportCard.some((el: any) => {
       return (
         el.classInfo ===
@@ -44,8 +41,6 @@ export const createReportCardEntry = async (
           ?.year!}(${school?.session[0]?.presentTerm!})`
       );
     });
-
-    // console.log(studentCheck);
 
     if (teacher && student) {
       if (studentCheck) {
@@ -55,8 +50,6 @@ export const createReportCardEntry = async (
           .populate({
             path: "reportCard",
           });
-
-        // console.log("read: ", getReportSubject);
 
         const getData: any = getReportSubject?.reportCard?.find((el: any) => {
           return (
@@ -78,75 +71,42 @@ export const createReportCardEntry = async (
           });
         });
 
-        const read = dataFIle?.result?.find((el: any) => {
+        const read = dataFIle?.result.find((el: any) => {
           return el.subject === subject;
         });
 
         if (data) {
-          let mark = parseInt(
-            (!test1 ? read?.[`1st Test`] : test1 ? test1 : 0) +
-              (!test2 ? read?.[`2nd Test`] : test2 ? test2 : 0) +
-              (!test3 ? read?.[`3rd Test`] : test3 ? test3 : 0) +
-              (!test4 ? read?.[`4th Test`] : test4 ? test4 : 0) +
-              (!exam ? read?.exam : exam ? exam : 0)
-          );
+          let x1 = !test1 ? read?.test1 : test1 ? test1 : 0;
+          let x2 = !test2 ? read?.test2 : test2 ? test2 : 0;
+          let x3 = !test3 ? read?.test3 : test3 ? test3 : 0;
+          let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
+          let x5 = !exam ? read?.exam : exam ? exam : 0;
 
-          let myTest1: number = 0;
-          let myTest2: number = 0;
-          let myTest3: number = 0;
-          let myTest4: number = 0;
-          let examination: number = 0;
+          let y1 = x1 !== null ? x1 : 0;
+          let y2 = x2 !== null ? x2 : 0;
+          let y3 = x3 !== null ? x3 : 0;
+          let y4 = x4 !== null ? x4 : 0;
+          let y5 = x5 !== null ? x5 : 0;
 
-          // let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
-          // let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
-          // let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
-          // let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
-          // let w5 = x5 !== 0 ? (examination = 60) : 0;
+          let mark = y1 + y2 + y3 + y4 + y5;
 
-          if (test2 !== null && read?.[`2nd Test`]) {
-            myTest2 = 10;
-          } else {
-            myTest2 = 0;
-          }
+          let myTest1: number;
+          let myTest2: number;
+          let myTest3: number;
+          let myTest4: number;
+          let examination: number;
 
-          if (test3 !== null && read?.[`3rd Test`]) {
-            myTest3 = 10;
-          } else {
-            myTest3 = 0;
-          }
+          let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+          let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+          let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+          let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+          let w5 = x5 !== 0 ? (examination = 60) : 0;
 
-          if (test4 !== null && read?.[`4th Test`]) {
-            myTest4 = 10;
-          } else {
-            myTest4 = 0;
-          }
+          let score = w1 + w2 + w3 + w4 + w5;
 
-          if (exam !== null && read?.exam) {
-            examination = 60;
-          } else {
-            examination = 0;
-          }
-
-          let score = myTest1 + myTest2 + myTest3 + myTest4 + examination;
-          console.log(score);
           let updated = getData.result.filter((el: any) => {
             return el.subject !== subject;
           });
-
-          let total = lodash.sumBy(getData?.result, (el: any) => {
-            return el.mark;
-          });
-
-          let totalScore = lodash.sumBy(getData?.result, (el: any) => {
-            return el.score;
-          });
-
-          let sum = getData?.result.length;
-
-          let mainPoints = total / sum;
-
-          console.log(mainPoints, sum, totalScore, total);
-          let myGrade = (total / totalScore) * 100;
 
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
@@ -155,12 +115,13 @@ export const createReportCardEntry = async (
                 ...updated,
                 {
                   subject: !subject ? read?.subject : subject,
-                  "1st Test": !test1 ? read?.[`1st Test`] : test1,
-                  "2nd Test": !test2 ? read?.[`2nd Test`] : test2,
-                  "3rd Test": !test3 ? read?.[`3rd Test`] : test3,
-                  "4th Test": !test4 ? read?.[`4th Test`] : test4,
-                  exam: !exam ? read?.exam : exam,
-
+                  test1: y1,
+                  test2: y2,
+                  test3: y3,
+                  test4: y4,
+                  exam: y5,
+                  mark,
+                  score,
                   points: parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
                     (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
@@ -179,30 +140,7 @@ export const createReportCardEntry = async (
                       : null,
                 },
               ],
-              points: parseFloat(
-                (
-                  lodash.sumBy(getData?.result, (el: any) => {
-                    return el.points;
-                  }) / getData?.result.length
-                ).toFixed(2)
-              ),
-
-              grade:
-                myGrade >= 0 && myGrade <= 39
-                  ? "F"
-                  : myGrade >= 40 && myGrade <= 49
-                  ? "E"
-                  : myGrade >= 50 && myGrade <= 59
-                  ? "D"
-                  : myGrade >= 60 && myGrade <= 69
-                  ? "C"
-                  : myGrade >= 70 && myGrade <= 79
-                  ? "B"
-                  : myGrade >= 80 && myGrade <= 100
-                  ? "A"
-                  : null,
             },
-
             { new: true }
           );
 
@@ -212,51 +150,33 @@ export const createReportCardEntry = async (
             status: 201,
           });
         } else {
-          let mark = parseInt(
-            (!test1 ? read?.[`1st Test`] : test1 ? test1 : 0) +
-              (!test2 ? read?.[`2nd Test`] : test2 ? test2 : 0) +
-              (!test3 ? read?.[`3rd Test`] : test3 ? test3 : 0) +
-              (!test4 ? read?.[`4th Test`] : test4 ? test4 : 0) +
-              (!exam ? read?.exam : exam ? exam : 0)
-          );
+          let x1 = !test1 ? read?.test1 : test1 ? test1 : 0;
+          let x2 = !test2 ? read?.test2 : test2 ? test2 : 0;
+          let x3 = !test3 ? read?.test3 : test3 ? test3 : 0;
+          let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
+          let x5 = !exam ? read?.exam : exam ? exam : 0;
 
-          let myTest1: number = 0;
-          let myTest2: number = 0;
-          let myTest3: number = 0;
-          let myTest4: number = 0;
-          let examination: number = 0;
+          let y1 = x1 !== null ? x1 : 0;
+          let y2 = x2 !== null ? x2 : 0;
+          let y3 = x3 !== null ? x3 : 0;
+          let y4 = x4 !== null ? x4 : 0;
+          let y5 = x5 !== null ? x5 : 0;
 
-          // let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
-          // let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
-          // let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
-          // let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
-          // let w5 = x5 !== 0 ? (examination = 60) : 0;
+          let mark = y1 + y2 + y3 + y4 + y5;
 
-          // let score = w1 + w2 + w3 + w4 + w5;
+          let myTest1: number;
+          let myTest2: number;
+          let myTest3: number;
+          let myTest4: number;
+          let examination: number;
 
-          let total = lodash.sumBy(getData?.result, (el: any) => {
-            return el.mark;
-          });
+          let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+          let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+          let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+          let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+          let w5 = x5 !== 0 ? (examination = 60) : 0;
 
-          if (test4 !== null && read?.[`4th Test`]) {
-            myTest4 = 10;
-          } else {
-            myTest4 = 0;
-          }
-
-          if (exam !== null && read?.[`exam`]) {
-            examination = 60;
-          } else {
-            examination = 0;
-          }
-
-          let totalScore = lodash.sumBy(getData?.result, (el: any) => {
-            return el.score;
-          });
-
-          let score = myTest1 + myTest2 + myTest3 + myTest4 + examination;
-
-          let myGrade = (total / totalScore) * 100;
+          let score = w1 + w2 + w3 + w4 + w5;
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -264,11 +184,13 @@ export const createReportCardEntry = async (
                 ...getData.result,
                 {
                   subject: !subject ? read?.subject : subject,
-                  "1st Test": !test1 ? read?.[`1st Test`] : test1,
-                  "2nd Test": !test2 ? read?.[`2nd Test`] : test2,
-                  "3rd Test": !test3 ? read?.[`3rd Test`] : test3,
-                  "4th Test": !test4 ? read?.[`4th Test`] : test4,
-                  exam: !exam ? read?.exam : exam,
+                  test1: y1,
+                  test2: y2,
+                  test3: y3,
+                  test4: y4,
+                  exam: y5,
+                  mark,
+                  score,
                   points: parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
                     (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
@@ -287,28 +209,6 @@ export const createReportCardEntry = async (
                       : null,
                 },
               ],
-              points: parseFloat(
-                (
-                  lodash.sumBy(getData?.result, (el: any) => {
-                    return el.points;
-                  }) / getData?.result.length
-                ).toFixed(2)
-              ),
-
-              grade:
-                myGrade >= 0 && myGrade <= 39
-                  ? "F"
-                  : myGrade >= 40 && myGrade <= 49
-                  ? "E"
-                  : myGrade >= 50 && myGrade <= 59
-                  ? "D"
-                  : myGrade >= 60 && myGrade <= 69
-                  ? "C"
-                  : myGrade >= 70 && myGrade <= 79
-                  ? "B"
-                  : myGrade >= 80 && myGrade <= 100
-                  ? "A"
-                  : null,
             },
             { new: true }
           );
@@ -324,10 +224,10 @@ export const createReportCardEntry = async (
           result: [
             {
               subject,
-              "1st Test": test1,
-              "2nd Test": test2,
-              "3rd Test": test3,
-              "4th Test": test4,
+              test1,
+              test2,
+              test3,
+              test4,
               exam,
             },
           ],
@@ -338,7 +238,7 @@ export const createReportCardEntry = async (
         student?.reportCard.push(new Types.ObjectId(report._id));
         student?.save();
 
-        subjectData?.recordData.push(new Types.ObjectId(report._id));
+        subjectData?.reportCard.push(new Types.ObjectId(report._id));
         subjectData?.save();
 
         // school?.reportCard.push(new Types.ObjectId(report._id));

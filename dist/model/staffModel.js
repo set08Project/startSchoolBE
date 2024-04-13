@@ -8,6 +8,9 @@ const staffModel = new mongoose_1.Schema({
             ref: "complains",
         },
     ],
+    presentClassID: {
+        type: String,
+    },
     schoolIDs: {
         type: String,
     },
