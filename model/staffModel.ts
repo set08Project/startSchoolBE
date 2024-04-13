@@ -48,27 +48,34 @@ const staffModel = new Schema<iStaffData>(
         ref: "complains",
       },
     ],
+
     presentClassID: {
       type: String,
     },
+
     schoolIDs: {
       type: String,
     },
     gender: {
       type: String,
     },
+
     avatar: {
       type: String,
     },
+
     avatarID: {
       type: String,
     },
+
     salary: {
       type: Number,
     },
+
     schoolName: {
       type: String,
     },
+
     enrollmentID: {
       type: String,
     },

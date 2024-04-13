@@ -64,9 +64,9 @@ export const createNewSchoolSession = async (
       .findById(schoolID)
       .populate({ path: "classRooms" });
 
-    const schoolStudents: any = await schoolModel
-      .findById(schoolID)
-      .populate({ path: "students" });
+    // const schoolStudents: any = await schoolModel
+    //   .findById(schoolID)
+    //   .populate({ path: "students" });
 
     // const pushClass = await schoolModel.findById(schoolID).populate({
     //   path: "classHistory",
@@ -85,8 +85,8 @@ export const createNewSchoolSession = async (
           paid++;
           await studentModel.findByIdAndUpdate(
             i?._id,
-            { feesPaid1st: false, feesPaid2nd: false, feesPaid3rd: false },
-            { new: true }
+            { feesPaid1st: false, feesPaid2nd: false, feesPaid3rd: false }
+            // { new: true }
           );
         } else {
           notPaid++;
@@ -121,7 +121,7 @@ export const createNewSchoolSession = async (
           let myClass = await classroomModel.findByIdAndUpdate(
             i?._id,
             {
-              className: `${name[0].trim()}${num++} ${name[1].trim()}`,
+              className: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
             },
             { new: true }
           );
@@ -130,15 +130,15 @@ export const createNewSchoolSession = async (
         }
       }
 
-      for (let i of schoolStudents?.students) {
+      for (let i of students!) {
         let num: number = parseInt(`${i.classAssigned}`.match(/\d+/)![0]);
-        let name = i.classAssigned?.split(`${num}`);
+        let name = i.classAssigned.split(`${num}`);
 
         if (num < 4) {
-          await studentModel.findByIdAndUpdate(
+          const x = await studentModel.findByIdAndUpdate(
             i?._id,
             {
-              classAssigned: `${name[0].trim()} ${num++}${name[1].trim()}`,
+              classAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
               attendance: null,
               performance: null,
               feesPaid1st: false,
