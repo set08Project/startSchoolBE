@@ -64,6 +64,10 @@ export const createNewSchoolSession = async (
       .findById(schoolID)
       .populate({ path: "classRooms" });
 
+    const schoolTeacher: any = await schoolModel
+      .findById(schoolID)
+      .populate({ path: "staff" });
+
     // const schoolStudents: any = await schoolModel
     //   .findById(schoolID)
     //   .populate({ path: "students" });
@@ -118,7 +122,7 @@ export const createNewSchoolSession = async (
         let name = i.className.split(`${num}`);
 
         if (num < 4) {
-          let myClass = await classroomModel.findByIdAndUpdate(
+          await classroomModel.findByIdAndUpdate(
             i?._id,
             {
               className: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
@@ -135,7 +139,7 @@ export const createNewSchoolSession = async (
         let name = i.classAssigned.split(`${num}`);
 
         if (num < 4) {
-          const x = await studentModel.findByIdAndUpdate(
+          await studentModel.findByIdAndUpdate(
             i?._id,
             {
               classAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
@@ -144,6 +148,23 @@ export const createNewSchoolSession = async (
               feesPaid1st: false,
               feesPaid2nd: false,
               feesPaid3rd: false,
+            },
+            { new: true }
+          );
+        } else {
+          console.log("can't");
+        }
+      }
+
+      for (let i of schoolTeacher?.staff!) {
+        let num: number = parseInt(`${i.classesAssigned}`.match(/\d+/)![0]);
+        let name = i.classesAssigned.split(`${num}`);
+
+        if (num < 4) {
+          await studentModel.findByIdAndUpdate(
+            i?._id,
+            {
+              classesAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
             },
             { new: true }
           );
