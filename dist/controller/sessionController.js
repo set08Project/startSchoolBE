@@ -63,6 +63,9 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
         const schoolClass = yield schoolModel_1.default
             .findById(schoolID)
             .populate({ path: "classRooms" });
+        const schoolTeacher = yield schoolModel_1.default
+            .findById(schoolID)
+            .populate({ path: "staff" });
         // const schoolStudents: any = await schoolModel
         //   .findById(schoolID)
         //   .populate({ path: "students" });
@@ -106,7 +109,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 let num = parseInt(`${i.className}`.match(/\d+/)[0]);
                 let name = i.className.split(`${num}`);
                 if (num < 4) {
-                    let myClass = yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                    yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                         className: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
                     }, { new: true });
                 }
@@ -118,13 +121,25 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 let num = parseInt(`${i.classAssigned}`.match(/\d+/)[0]);
                 let name = i.classAssigned.split(`${num}`);
                 if (num < 4) {
-                    const x = yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                         classAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
                         attendance: null,
                         performance: null,
                         feesPaid1st: false,
                         feesPaid2nd: false,
                         feesPaid3rd: false,
+                    }, { new: true });
+                }
+                else {
+                    console.log("can't");
+                }
+            }
+            for (let i of schoolTeacher === null || schoolTeacher === void 0 ? void 0 : schoolTeacher.staff) {
+                let num = parseInt(`${i.classesAssigned}`.match(/\d+/)[0]);
+                let name = i.classesAssigned.split(`${num}`);
+                if (num < 4) {
+                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                        classesAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
                     }, { new: true });
                 }
                 else {
