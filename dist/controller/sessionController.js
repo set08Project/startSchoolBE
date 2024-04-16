@@ -146,6 +146,9 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                     console.log("can't");
                 }
             }
+            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                presentSession: year,
+            }, { new: true });
             return res.status(201).json({
                 message: "session created successfully",
                 data: session,
@@ -292,7 +295,7 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
                     session === null || session === void 0 ? void 0 : session.save();
                     // presentTerm
-                    yield sessionModel_1.default.findByIdAndUpdate(sessionID, { presentTerm: capitalizedText(term) }, { new: true });
+                    const sessionRecorde = yield sessionModel_1.default.findByIdAndUpdate(sessionID, { presentTerm: capitalizedText(term) }, { new: true });
                     for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
                         yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                             presentTerm: capitalizedText(term),
@@ -305,6 +308,9 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                             weekStudent: {},
                         }, { new: true });
                     }
+                    yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
+                        presentTerm: term,
+                    }, { new: true });
                     return res.status(200).json({
                         message: "creating session term",
                         data: sessionTerm,

@@ -173,6 +173,14 @@ export const createNewSchoolSession = async (
         }
       }
 
+      await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          presentSession: year,
+        },
+        { new: true }
+      );
+
       return res.status(201).json({
         message: "session created successfully",
         data: session,
@@ -349,7 +357,7 @@ export const termPerSession = async (
           session?.save();
           // presentTerm
 
-          await sessionModel.findByIdAndUpdate(
+          const sessionRecorde = await sessionModel.findByIdAndUpdate(
             sessionID,
             { presentTerm: capitalizedText(term) },
             { new: true }
@@ -371,6 +379,14 @@ export const termPerSession = async (
               { new: true }
             );
           }
+
+          await schoolModel.findByIdAndUpdate(
+            sessionRecorde?.schoolID,
+            {
+              presentTerm: term,
+            },
+            { new: true }
+          );
 
           return res.status(200).json({
             message: "creating session term",

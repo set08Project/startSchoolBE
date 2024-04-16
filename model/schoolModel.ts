@@ -8,6 +8,8 @@ interface iSchool {
   verify: boolean;
   enrollmentID: string;
   status: string;
+  presentTerm: string;
+  presentSession: string;
 
   schoolName: string;
   address: string;
@@ -61,6 +63,12 @@ const schoolModel = new Schema<iSchoolData>(
       default: false,
     },
     avatar: {
+      type: String,
+    },
+    presentTerm: {
+      type: String,
+    },
+    presentSession: {
       type: String,
     },
     avatarID: {

@@ -16,6 +16,12 @@ const schoolModel = new mongoose_2.Schema({
     avatar: {
         type: String,
     },
+    presentTerm: {
+        type: String,
+    },
+    presentSession: {
+        type: String,
+    },
     avatarID: {
         type: String,
     },

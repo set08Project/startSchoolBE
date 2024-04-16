@@ -6,7 +6,6 @@ import cardReportModel from "../model/cardReportModel";
 import studentModel from "../model/studentModel";
 import schoolModel from "../model/schoolModel";
 import classroomModel from "../model/classroomModel";
-import lodash from "lodash";
 
 export const createReportCardEntry = async (
   req: Request,
@@ -144,9 +143,47 @@ export const createReportCardEntry = async (
             { new: true }
           );
 
+          let genPoint = parseFloat(
+            (
+              report?.result
+                ?.map((el: any) => {
+                  return el.points;
+                })
+                .reduce((a: number, b: number) => {
+                  return a + b;
+                }, 0) / report?.result?.length!
+            ).toFixed(2)
+          );
+
+          let grade =
+            genPoint >= 0 && genPoint <= 39
+              ? "F"
+              : genPoint >= 40 && genPoint <= 49
+              ? "E"
+              : genPoint >= 50 && genPoint <= 59
+              ? "D"
+              : genPoint >= 60 && genPoint <= 69
+              ? "C"
+              : genPoint >= 70 && genPoint <= 79
+              ? "B"
+              : genPoint >= 80 && genPoint <= 100
+              ? "A"
+              : null;
+
+          let nice = await cardReportModel.findByIdAndUpdate(
+            report?.id,
+            {
+              points: genPoint,
+
+              grade,
+            },
+            { new: true }
+          );
+
           return res.status(201).json({
             message: "teacher updated report successfully",
-            data: report,
+            data: nice,
+
             status: 201,
           });
         } else {
@@ -177,6 +214,7 @@ export const createReportCardEntry = async (
           let w5 = x5 !== 0 ? (examination = 60) : 0;
 
           let score = w1 + w2 + w3 + w4 + w5;
+
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -213,9 +251,46 @@ export const createReportCardEntry = async (
             { new: true }
           );
 
+          let genPoint = parseFloat(
+            (
+              report?.result
+                ?.map((el: any) => {
+                  return el.points;
+                })
+                .reduce((a: number, b: number) => {
+                  return a + b;
+                }, 0) / report?.result?.length!
+            ).toFixed(2)
+          );
+
+          let grade =
+            genPoint >= 0 && genPoint <= 39
+              ? "F"
+              : genPoint >= 40 && genPoint <= 49
+              ? "E"
+              : genPoint >= 50 && genPoint <= 59
+              ? "D"
+              : genPoint >= 60 && genPoint <= 69
+              ? "C"
+              : genPoint >= 70 && genPoint <= 79
+              ? "B"
+              : genPoint >= 80 && genPoint <= 100
+              ? "A"
+              : null;
+
+          let nice = await cardReportModel.findByIdAndUpdate(
+            report?.id,
+            {
+              points: genPoint,
+
+              grade,
+            },
+            { new: true }
+          );
+
           return res.status(201).json({
             message: "can't report entry created successfully",
-            data: report,
+            data: nice,
             status: 201,
           });
         }
@@ -235,6 +310,42 @@ export const createReportCardEntry = async (
             ?.year!}(${school?.session[0]?.presentTerm!})`,
         });
 
+        let genPoint = parseFloat(
+          (
+            report?.result
+              ?.map((el: any) => {
+                return el.points;
+              })
+              .reduce((a: number, b: number) => {
+                return a + b;
+              }, 0) / report?.result?.length!
+          ).toFixed(2)
+        );
+
+        let grade =
+          genPoint >= 0 && genPoint <= 39
+            ? "F"
+            : genPoint >= 40 && genPoint <= 49
+            ? "E"
+            : genPoint >= 50 && genPoint <= 59
+            ? "D"
+            : genPoint >= 60 && genPoint <= 69
+            ? "C"
+            : genPoint >= 70 && genPoint <= 79
+            ? "B"
+            : genPoint >= 80 && genPoint <= 100
+            ? "A"
+            : null;
+
+        const nice = await cardReportModel.findByIdAndUpdate(
+          report?.id,
+          {
+            points: genPoint,
+            grade,
+          },
+          { new: true }
+        );
+
         student?.reportCard.push(new Types.ObjectId(report._id));
         student?.save();
 
@@ -246,7 +357,7 @@ export const createReportCardEntry = async (
 
         return res.status(201).json({
           message: "report entry created successfully",
-          data: { report, student },
+          data: { nice, student },
           status: 201,
         });
       }
@@ -350,9 +461,10 @@ export const adminReportRemark = async (
 
     const getReportSubject: any = student?.reportCard.find((el: any) => {
       return (
-        el?.classInfo ===
-        `${student?.classAssigned} session: ${school?.session[0]
-          ?.year!}(${school?.session[0]?.term!})`
+        el.classInfo ===
+        `${
+          student?.classAssigned
+        } session: ${school?.presentSession!}(${school?.presentTerm!})`
       );
     });
 
@@ -406,10 +518,14 @@ export const classTeacherReportRemark = async (
       });
 
     const getReportSubject: any = student?.reportCard.find((el: any) => {
-      return el?.classInfo === `JSS 1A session: 2024/2025(Second Term)`;
+      return (
+        el.classInfo ===
+        `${
+          student?.classAssigned
+        } session: ${school?.presentSession!}(${school?.presentTerm!})`
+      );
     });
-    //  `${student?.classAssigned} session: ${school?.session[0]
-    //           ?.year!}(${school?.session[0]?.presentTerm!})`
+
     const teacher = await staffModel.findById(teacherID);
 
     if (teacher?.classesAssigned === student?.classAssigned) {
