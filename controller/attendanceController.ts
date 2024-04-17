@@ -13,42 +13,80 @@ export const createAttendancePresent = async (req: Request, res: Response) => {
     const getTeacher = await staffModel.findById(req.params.teacherID);
     const getStudent = await studentModel.findById(req.params.studentID);
 
-    const getClass = await classroomModel.findOne({
-      className: getStudent!.classAssigned,
-    });
+    const getClass = await classroomModel.findById(getStudent?.presentClassID);
 
     if (getTeacher && getStudent) {
       const code = crypto.randomBytes(2).toString("hex");
       const dater = Date.now();
 
-      const attendance = await attendanceModel.create({
-        className: getStudent!.classAssigned,
-        classToken: code,
-        present: true,
-        absent: null,
-        studentFirstName: getStudent!.studentFirstName,
-        studentLastName: getStudent!.studentLastName,
-        classTeacher: getTeacher!.staffName,
-        dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format(
-          "MMMM Do YYYY"
-        )}`,
+      const getDateTime = await attendanceModel.find();
 
-        date: `${moment(dater).format("dddd")}`,
+      const checkDate = getDateTime.find((el) => {
+        return (
+          el.dateTime ===
+            `${moment(dater).format("dddd")}, ${moment(dater).format(
+              "MMMM Do YYYY"
+            )}` &&
+          el.studentFirstName === getStudent!.studentFirstName &&
+          el.studentLastName === getStudent!.studentLastName
+        );
       });
 
-      getTeacher!.attendance!.push(new Types.ObjectId(attendance._id));
-      getTeacher?.save();
+      if (checkDate) {
+        if (!checkDate?.present) {
+          await attendanceModel.findByIdAndUpdate(
+            checkDate?._id,
+            {
+              present: true,
+              absent: false,
+            },
+            { new: true }
+          );
+        } else {
+          await attendanceModel.findByIdAndUpdate(
+            checkDate?._id,
+            {
+              present: false,
+              absent: true,
+            },
+            { new: true }
+          );
+        }
 
-      getClass!.attendance!.push(new Types.ObjectId(attendance._id));
-      getClass?.save();
+        return res.status(201).json({
+          message: "student has been Attendance has been updated successfully",
+          data: checkDate,
+        });
+      } else {
+        const attendance = await attendanceModel.create({
+          className: getStudent!.classAssigned,
+          classToken: code,
+          present: true,
+          absent: null,
+          studentFirstName: getStudent!.studentFirstName,
+          studentLastName: getStudent!.studentLastName,
+          classTeacher: getTeacher!.staffName,
+          dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format(
+            "MMMM Do YYYY"
+          )}`,
 
-      getStudent!.attendance!.push(new Types.ObjectId(attendance._id));
-      getStudent?.save();
+          date: `${moment(dater).format("dddd")}`,
+        });
 
-      return res.status(201).json({
-        message: "student has been marked Present for today",
-        data: attendance,
-      });
+        getTeacher!.attendance!.push(new Types.ObjectId(attendance._id));
+        getTeacher?.save();
+
+        getClass!.attendance!.push(new Types.ObjectId(attendance._id));
+        getClass?.save();
+
+        getStudent!.attendance!.push(new Types.ObjectId(attendance._id));
+        getStudent?.save();
+
+        return res.status(201).json({
+          message: "student attendance has been marked for today",
+          data: attendance,
+        });
+      }
     } else {
       return res.status(404).json({ message: "student can't be found" });
     }
@@ -62,9 +100,97 @@ export const createAttendanceAbsent = async (req: Request, res: Response) => {
     const getTeacher = await staffModel.findById(req.params.teacherID);
     const getStudent = await studentModel.findById(req.params.studentID);
 
-    const getClass = await classroomModel.findOne({
-      className: getStudent!.classAssigned,
-    });
+    const getClass = await classroomModel.findById(getStudent?.presentClassID);
+
+    if (getTeacher && getStudent) {
+      const code = crypto.randomBytes(2).toString("hex");
+      const dater = Date.now();
+
+      const getDateTime = await attendanceModel.find();
+
+      const checkDate = getDateTime.find((el) => {
+        return (
+          el.dateTime ===
+            `${moment(dater).format("dddd")}, ${moment(dater).format(
+              "MMMM Do YYYY"
+            )}` &&
+          el.studentFirstName === getStudent!.studentFirstName &&
+          el.studentLastName === getStudent!.studentLastName
+        );
+      });
+
+      if (checkDate) {
+        if (!checkDate?.present) {
+          await attendanceModel.findByIdAndUpdate(
+            checkDate?._id,
+            {
+              present: true,
+              absent: false,
+            },
+            { new: true }
+          );
+        } else {
+          await attendanceModel.findByIdAndUpdate(
+            checkDate?._id,
+            {
+              present: false,
+              absent: true,
+            },
+            { new: true }
+          );
+        }
+
+        return res.status(201).json({
+          message: "student has been Attendance has been updated successfully",
+          data: checkDate,
+        });
+      } else {
+        const attendance = await attendanceModel.create({
+          className: getStudent!.classAssigned,
+          classToken: code,
+          present: false,
+          absent: true,
+          studentFirstName: getStudent!.studentFirstName,
+          studentLastName: getStudent!.studentLastName,
+          classTeacher: getTeacher!.staffName,
+          dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format(
+            "MMMM Do YYYY"
+          )}`,
+
+          date: `${moment(dater).format("dddd")}`,
+        });
+
+        getTeacher!.attendance!.push(new Types.ObjectId(attendance._id));
+        getTeacher?.save();
+
+        getClass!.attendance!.push(new Types.ObjectId(attendance._id));
+        getClass?.save();
+
+        getStudent!.attendance!.push(new Types.ObjectId(attendance._id));
+        getStudent?.save();
+
+        return res.status(201).json({
+          message: "student attendance has been marked Absent for today",
+          data: attendance,
+        });
+      }
+    } else {
+      return res.status(404).json({ message: "student can't be found" });
+    }
+  } catch (error) {
+    return res.status(404).json({ message: `Error: ${error}` });
+  }
+};
+
+export const createAttendanceAbsentMark = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const getTeacher = await staffModel.findById(req.params.teacherID);
+    const getStudent = await studentModel.findById(req.params.studentID);
+
+    const getClass = await classroomModel.findById(getStudent?.presentClassID);
 
     if (getTeacher && getStudent) {
       const code = crypto.randomBytes(2).toString("hex");

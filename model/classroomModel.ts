@@ -20,6 +20,9 @@ interface iClass {
   lessonNotes: Array<{}>;
   reportCard: Array<{}>;
   classHistory: Array<{}>;
+  schoolFeesHistory: Array<{}>;
+  schoolFeesHistory2: Array<{}>;
+  schoolFeesHistory3: Array<{}>;
 
   students: Array<{}>;
   classHistories: Array<{}>;
@@ -41,6 +44,27 @@ const classesModel = new Schema<iClassData>(
       {
         type: Types.ObjectId,
         ref: "lessonNotes",
+      },
+    ],
+
+    schoolFeesHistory: [
+      {
+        type: Types.ObjectId,
+        ref: "schoolFeesHistories",
+      },
+    ],
+
+    schoolFeesHistory2: [
+      {
+        type: Types.ObjectId,
+        ref: "schoolFeesHistories",
+      },
+    ],
+
+    schoolFeesHistory3: [
+      {
+        type: Types.ObjectId,
+        ref: "schoolFeesHistories",
       },
     ],
 

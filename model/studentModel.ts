@@ -35,6 +35,7 @@ interface iStudent {
   history: Array<{}>;
   reportCard: Array<{}>;
   pastQuestionHistory: Array<{}>;
+  schoolFeesHistory: Array<{}>;
 
   weekStudent: {};
 
@@ -45,7 +46,6 @@ interface iStudent {
   articles: Array<{}>;
   complain: Array<{}>;
   purchaseHistory: Array<{}>;
-  schoolFeesHistory: Array<{}>;
 }
 
 interface iStudentData extends iStudent, Document {}

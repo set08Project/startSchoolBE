@@ -768,6 +768,17 @@ export const createSchoolFeePayment = async (
         school?.schoolFeesHistory.push(new Types.ObjectId(store._id));
         school?.save();
 
+        if (classOne?.presentTerm === "1st Term") {
+          classOne?.schoolFeesHistory.push(new Types.ObjectId(store._id));
+          classOne?.save();
+        } else if (classOne?.presentTerm === "1st Term") {
+          classOne?.schoolFeesHistory2.push(new Types.ObjectId(store._id));
+          classOne?.save();
+        } else if (classOne?.presentTerm === "1st Term") {
+          classOne?.schoolFeesHistory3.push(new Types.ObjectId(store._id));
+          classOne?.save();
+        }
+
         return res.status(201).json({
           message: "schoolfee paid successfully",
           data: store,

@@ -6,9 +6,13 @@ interface iClass {
   studentFirstName?: string;
   studentLastName?: string;
   className?: string;
+
   classTeacher?: string;
+
   students?: {};
   classes?: {};
+  staff?: {};
+
   date?: string;
   dateTime?: string;
 }
@@ -53,6 +57,11 @@ const attendanceModel = new mongoose.Schema(
     dateTime: {
       type: String,
       require: true,
+    },
+
+    staffs: {
+      type: mongoose.Types.ObjectId,
+      ref: "staffs",
     },
 
     students: {
