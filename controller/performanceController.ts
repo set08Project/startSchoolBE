@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import { Types } from "mongoose";
 import studentModel from "../model/studentModel";
-import staffModel from "../model/staffModel";
 import quizModel from "../model/quizModel";
 import subjectModel from "../model/subjectModel";
 import performanceModel from "../model/performanceModel";
-import { number } from "joi";
 
 export const createQuizPerformance = async (
   req: Request,
@@ -59,6 +57,8 @@ export const createQuizPerformance = async (
         path: "performance",
       });
 
+      console.log(getStudent);
+
       let total = getStudent?.performance.map((el: any) => {
         if (el.performanceRating !== undefined) {
           return view.push(el.performanceRating);
@@ -84,7 +84,7 @@ export const createQuizPerformance = async (
 
       return res.status(201).json({
         message: "quiz entry created successfully",
-        data: { quizes, record },
+        // data: { quizes, record },
         status: 201,
       });
     } else {
@@ -142,7 +142,7 @@ export const readStudentQuizResult = async (
       path: "performance",
       options: {
         sort: {
-          time: 1,
+          createdAt: -1,
         },
       },
     });

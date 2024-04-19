@@ -38,9 +38,8 @@ export const createClasslessonNote = async (
 
     const school = await schoolModel.findById(schoolID);
     const staff = await staffModel.findById(staffID);
-    const classData = await classroomModel.findOne({
-      className: staff?.classesAssigned,
-    });
+
+    const classData = await classroomModel.findById(staff?.presentClassID);
 
     if (school && school.schoolName && staff) {
       const note = await lessonNoteModel.create({
@@ -280,6 +279,30 @@ export const readLessonNote = async (
     const { lessonID } = req.params;
 
     const lessonNote = await lessonNoteModel.findById(lessonID);
+
+    return res.status(200).json({
+      message: "lesson note ",
+      data: lessonNote,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating lesson Note",
+      status: 404,
+    });
+  }
+};
+
+export const readTeacherLessonNotesRate = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { teacherID } = req.params;
+
+    const lessonNote = await staffModel.findById(teacherID).populate({
+      path: "lessonNotes",
+    });
 
     return res.status(200).json({
       message: "lesson note ",

@@ -7,6 +7,7 @@ interface iPurchased {
   studentClass: string;
 
   term: string;
+  session: string;
   studentID: string;
 
   reference: string;
@@ -29,6 +30,9 @@ const schoolFessHistoryModel = new Schema<iPurchasedData>(
       type: String,
     },
     date: {
+      type: String,
+    },
+    session: {
       type: String,
     },
 

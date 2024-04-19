@@ -6,6 +6,7 @@ interface iCardReport {
   points: number;
   grade: string;
   classInfo: string;
+  studentID: string;
   adminComment: string;
   classTeacherComment: string;
 
@@ -33,6 +34,10 @@ const cardRportModel = new Schema<iCardReportData>(
     points: {
       type: Number,
       default: 0,
+    },
+
+    studentID: {
+      type: String,
     },
 
     classInfo: {

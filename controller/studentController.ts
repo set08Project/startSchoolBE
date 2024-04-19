@@ -739,7 +739,9 @@ export const createSchoolFeePayment = async (
       path: "schoolFeesHistory",
     });
 
-    const classOne = await classroomModel.findById(student?.presentClassID);
+    const classOne: any = await classroomModel.findById(
+      student?.presentClassID
+    );
 
     const school = await schoolModel.findById(student?.schoolIDs);
 
@@ -751,10 +753,7 @@ export const createSchoolFeePayment = async (
       if (!check) {
         const store = await schoolFeeHistory.create({
           studentID,
-          date,
-          amount,
-          reference,
-          purchasedID,
+          session: classOne?.presentSession!,
           confirm: false,
           term: classOne?.presentTerm,
           studentName: `${student?.studentFirstName} ${student?.studentLastName}`,

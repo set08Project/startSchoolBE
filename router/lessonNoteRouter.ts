@@ -8,6 +8,7 @@ import {
   readLessonNote,
   readTeacherClassLessonNote,
   readTeacherLessonNote,
+  readTeacherLessonNotesRate,
 } from "../controller/lessonNoteController";
 
 const router: Router = Router();
@@ -25,6 +26,9 @@ router.route("/admin-view-lesson-note/:schoolID/").get(readAdminLessonNote);
 router.route("/view-lesson-note-detail/:lessonID/").get(readLessonNote);
 
 router.route("/view-lesson-note/:schoolID/:staffID").get(readTeacherLessonNote);
+router
+  .route("/view-teacher-lesson-note/:teacherID")
+  .get(readTeacherLessonNotesRate);
 
 router
   .route("/view-class-lesson-note/:classID")
