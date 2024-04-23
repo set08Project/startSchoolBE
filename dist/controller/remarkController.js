@@ -28,8 +28,7 @@ const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (teacher && student) {
             const fridayDate = Date.now();
             const readDate = (0, moment_1.default)(fridayDate).days();
-            console.log(readDate);
-            if (readDate === 5) {
+            if (readDate === 5 || readDate === 6) {
                 const remarkData = yield studentRemark_1.default.create({
                     remark,
                 });
@@ -45,7 +44,7 @@ const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             }
             else {
                 return res.status(404).json({
-                    message: "Report can only be done on FRIDAYS",
+                    message: "Report can only be done on FRIDAYS or SATURDAYS",
                 });
             }
         }
@@ -68,6 +67,11 @@ const viewStudentRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const { studentID } = req.params;
         const student = yield studentModel_1.default.findById(studentID).populate({
             path: "remark",
+            options: {
+                sort: {
+                    createdAt: -1,
+                },
+            },
         });
         return res.status(200).json({
             message: "viewing school remark",
@@ -76,7 +80,8 @@ const viewStudentRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error viewing school session",
+            message: "Error viewing students remarks",
+            data: error.message,
         });
     }
 });

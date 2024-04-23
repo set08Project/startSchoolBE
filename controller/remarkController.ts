@@ -21,8 +21,8 @@ export const createRemark = async (
     if (teacher && student) {
       const fridayDate = Date.now();
       const readDate = moment(fridayDate).days();
-      console.log(readDate);
-      if (readDate === 5) {
+
+      if (readDate === 5 || readDate === 6) {
         const remarkData = await remarkModel.create({
           remark,
         });
@@ -40,7 +40,7 @@ export const createRemark = async (
         });
       } else {
         return res.status(404).json({
-          message: "Report can only be done on FRIDAYS",
+          message: "Report can only be done on FRIDAYS or SATURDAYS",
         });
       }
     } else {
@@ -65,15 +65,21 @@ export const viewStudentRemark = async (
 
     const student = await studentModel.findById(studentID).populate({
       path: "remark",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
     });
 
     return res.status(200).json({
       message: "viewing school remark",
       data: student?.remark,
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
-      message: "Error viewing school session",
+      message: "Error viewing students remarks",
+      data: error.message,
     });
   }
 };

@@ -15,6 +15,9 @@ const cardRportModel = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
+    studentID: {
+        type: String,
+    },
     classInfo: {
         type: String,
     },

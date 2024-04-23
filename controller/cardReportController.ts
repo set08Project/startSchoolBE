@@ -308,6 +308,7 @@ export const createReportCardEntry = async (
           ],
           classInfo: `${student?.classAssigned} session: ${school?.session[0]
             ?.year!}(${school?.session[0]?.presentTerm!})`,
+          studentID,
         });
 
         let genPoint = parseFloat(

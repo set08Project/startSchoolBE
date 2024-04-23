@@ -37,6 +37,10 @@ const attendanceModel = new mongoose_1.default.Schema({
         type: String,
         require: true,
     },
+    staffs: {
+        type: mongoose_1.default.Types.ObjectId,
+        ref: "staffs",
+    },
     students: {
         type: mongoose_1.default.Types.ObjectId,
         ref: "students",

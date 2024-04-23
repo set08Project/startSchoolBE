@@ -8,6 +8,9 @@ const schoolFessHistoryModel = new mongoose_1.Schema({
     date: {
         type: String,
     },
+    session: {
+        type: String,
+    },
     image: {
         type: String,
     },

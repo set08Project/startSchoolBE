@@ -194,7 +194,7 @@ const studentModel = new Schema<iStudentData>(
     remark: [
       {
         type: Types.ObjectId,
-        ref: "remarks",
+        ref: "remakes",
       },
     ],
 

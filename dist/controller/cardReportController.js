@@ -250,6 +250,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         },
                     ],
                     classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_h = school === null || school === void 0 ? void 0 : school.session[0]) === null || _h === void 0 ? void 0 : _h.year}(${(_j = school === null || school === void 0 ? void 0 : school.session[0]) === null || _j === void 0 ? void 0 : _j.presentTerm})`,
+                    studentID,
                 });
                 let genPoint = parseFloat((((_k = report === null || report === void 0 ? void 0 : report.result) === null || _k === void 0 ? void 0 : _k.map((el) => {
                     return el.points;

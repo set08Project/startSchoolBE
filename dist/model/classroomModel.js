@@ -11,6 +11,24 @@ const classesModel = new mongoose_1.Schema({
             ref: "lessonNotes",
         },
     ],
+    schoolFeesHistory: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "schoolFeesHistories",
+        },
+    ],
+    schoolFeesHistory2: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "schoolFeesHistories",
+        },
+    ],
+    schoolFeesHistory3: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "schoolFeesHistories",
+        },
+    ],
     class1stFee: {
         type: Number,
     },

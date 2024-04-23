@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rateLessonNote = exports.readLessonNote = exports.approveTeacherLessonNote = exports.readTeacherClassLessonNote = exports.readTeacherLessonNote = exports.readAdminLessonNote = exports.createAdminLessonNoteReply = exports.createClasslessonNote = void 0;
+exports.rateLessonNote = exports.readTeacherLessonNotesRate = exports.readLessonNote = exports.approveTeacherLessonNote = exports.readTeacherClassLessonNote = exports.readTeacherLessonNote = exports.readAdminLessonNote = exports.createAdminLessonNoteReply = exports.createClasslessonNote = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -25,9 +25,7 @@ const createClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const { week, endingAt, createDate, classes, subTopic, period, duration, instructionalMaterial, referenceMaterial, previousKnowledge, specificObjectives, content, evaluation, summary, presentation, assignment, topic, subject, } = req.body;
         const school = yield schoolModel_1.default.findById(schoolID);
         const staff = yield staffModel_1.default.findById(staffID);
-        const classData = yield classroomModel_1.default.findOne({
-            className: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
-        });
+        const classData = yield classroomModel_1.default.findById(staff === null || staff === void 0 ? void 0 : staff.presentClassID);
         if (school && school.schoolName && staff) {
             const note = yield lessonNoteModel_1.default.create({
                 teacher: staff === null || staff === void 0 ? void 0 : staff.staffName,
@@ -243,6 +241,26 @@ const readLessonNote = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.readLessonNote = readLessonNote;
+const readTeacherLessonNotesRate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { teacherID } = req.params;
+        const lessonNote = yield staffModel_1.default.findById(teacherID).populate({
+            path: "lessonNotes",
+        });
+        return res.status(200).json({
+            message: "lesson note ",
+            data: lessonNote,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating lesson Note",
+            status: 404,
+        });
+    }
+});
+exports.readTeacherLessonNotesRate = readTeacherLessonNotesRate;
 const rateLessonNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { lessonID, studentID } = req.params;

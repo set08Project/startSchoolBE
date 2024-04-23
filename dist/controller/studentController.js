@@ -638,10 +638,7 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             if (!check) {
                 const store = yield schoolFeeHistory_1.default.create({
                     studentID,
-                    date,
-                    amount,
-                    reference,
-                    purchasedID,
+                    session: classOne === null || classOne === void 0 ? void 0 : classOne.presentSession,
                     confirm: false,
                     term: classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm,
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
@@ -652,6 +649,18 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                 student === null || student === void 0 ? void 0 : student.save();
                 school === null || school === void 0 ? void 0 : school.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
                 school === null || school === void 0 ? void 0 : school.save();
+                if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
+                    classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                    classOne === null || classOne === void 0 ? void 0 : classOne.save();
+                }
+                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
+                    classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory2.push(new mongoose_1.Types.ObjectId(store._id));
+                    classOne === null || classOne === void 0 ? void 0 : classOne.save();
+                }
+                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
+                    classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory3.push(new mongoose_1.Types.ObjectId(store._id));
+                    classOne === null || classOne === void 0 ? void 0 : classOne.save();
+                }
                 return res.status(201).json({
                     message: "schoolfee paid successfully",
                     data: store,

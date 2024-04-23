@@ -112,7 +112,7 @@ const staffModel = new mongoose_1.Schema({
     remark: [
         {
             type: mongoose_1.Types.ObjectId,
-            ref: "remarks",
+            ref: "remakes",
         },
     ],
     quiz: [

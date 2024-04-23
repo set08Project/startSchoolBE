@@ -441,18 +441,21 @@ export const studentOfWeek = async (
     const teacher = await staffModel.findById(teacherID);
 
     const classRM = await classroomModel
-      .findOne({
-        className: teacher?.classesAssigned,
-      })
+      .findById(teacher?.presentClassID)
       .populate({
         path: "students",
       });
 
     const getStudent: any = classRM?.students.find((el: any) => {
-      return `${el.studentFirstName} ${el.studentFirstName}` === studentName;
+      return (
+        `${el.studentFirstName}` === studentName.trim().split(" ")[0] &&
+        `${el.studentLastName}` === studentName.trim().split(" ")[1]
+      );
     });
 
-    const studentData = await studentModel.findOne(getStudent?._id);
+    const studentData = await studentModel.findById(getStudent?._id);
+
+    // console.log(studentData);
 
     if (teacher?.status === "school-teacher" && classRM && studentData) {
       const week = await classroomModel.findByIdAndUpdate(

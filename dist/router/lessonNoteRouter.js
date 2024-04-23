@@ -13,6 +13,9 @@ router.route("/admin-view-lesson-note/:schoolID/").get(lessonNoteController_1.re
 router.route("/view-lesson-note-detail/:lessonID/").get(lessonNoteController_1.readLessonNote);
 router.route("/view-lesson-note/:schoolID/:staffID").get(lessonNoteController_1.readTeacherLessonNote);
 router
+    .route("/view-teacher-lesson-note/:teacherID")
+    .get(lessonNoteController_1.readTeacherLessonNotesRate);
+router
     .route("/view-class-lesson-note/:classID")
     .get(lessonNoteController_1.readTeacherClassLessonNote);
 router

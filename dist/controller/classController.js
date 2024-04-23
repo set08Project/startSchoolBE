@@ -375,16 +375,16 @@ const studentOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const { studentName, remark } = req.body;
         const teacher = yield staffModel_1.default.findById(teacherID);
         const classRM = yield classroomModel_1.default
-            .findOne({
-            className: teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned,
-        })
+            .findById(teacher === null || teacher === void 0 ? void 0 : teacher.presentClassID)
             .populate({
             path: "students",
         });
         const getStudent = classRM === null || classRM === void 0 ? void 0 : classRM.students.find((el) => {
-            return `${el.studentFirstName} ${el.studentFirstName}` === studentName;
+            return (`${el.studentFirstName}` === studentName.trim().split(" ")[0] &&
+                `${el.studentLastName}` === studentName.trim().split(" ")[1]);
         });
-        const studentData = yield studentModel_1.default.findOne(getStudent === null || getStudent === void 0 ? void 0 : getStudent._id);
+        const studentData = yield studentModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent._id);
+        // console.log(studentData);
         if ((teacher === null || teacher === void 0 ? void 0 : teacher.status) === "school-teacher" && classRM && studentData) {
             const week = yield classroomModel_1.default.findByIdAndUpdate(classRM === null || classRM === void 0 ? void 0 : classRM._id, {
                 weekStudent: {

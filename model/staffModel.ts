@@ -177,7 +177,7 @@ const staffModel = new Schema<iStaffData>(
     remark: [
       {
         type: Types.ObjectId,
-        ref: "remarks",
+        ref: "remakes",
       },
     ],
 
