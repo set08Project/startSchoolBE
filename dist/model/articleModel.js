@@ -5,6 +5,9 @@ const articleModel = new mongoose_1.Schema({
     content: {
         type: String,
     },
+    schoolID: {
+        type: String,
+    },
     title: {
         type: String,
     },

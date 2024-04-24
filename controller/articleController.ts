@@ -18,6 +18,7 @@ export const createArticle = async (
 
     if (school && student) {
       const article = await articleModel.create({
+        schoolID,
         title,
         content,
         desc,

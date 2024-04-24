@@ -5,6 +5,7 @@ interface iArticle {
   title: string;
   student: string;
   desc: string;
+  schoolID: string;
 }
 
 interface iArticleData extends iArticle, Document {}
@@ -12,6 +13,10 @@ interface iArticleData extends iArticle, Document {}
 const articleModel = new Schema<iArticleData>(
   {
     content: {
+      type: String,
+    },
+
+    schoolID: {
       type: String,
     },
 

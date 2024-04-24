@@ -25,6 +25,7 @@ const createArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const student = yield studentModel_1.default.findById(studentID);
         if (school && student) {
             const article = yield articleModel_1.default.create({
+                schoolID,
                 title,
                 content,
                 desc,
