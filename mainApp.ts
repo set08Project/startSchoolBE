@@ -28,6 +28,7 @@ import { HTTP } from "./utils/enums";
 import { mainError } from "./error/mianError";
 import { handleError } from "./error/handleError";
 import cron from "node-cron";
+import schoolModel from "./model/schoolModel";
 
 export const mainApp = (app: Application) => {
   try {
@@ -53,6 +54,17 @@ export const mainApp = (app: Application) => {
     app.use("/api", assignment);
     app.use("/api", gallary);
     app.use("/api", complain);
+
+    app.use(async (req: Request, res: Response) => {
+      try {
+        const getSchoolData = await schoolModel.find();
+        console.log(getSchoolData);
+      } catch (error) {
+        res.status(404).json({
+          message: "Error",
+        });
+      }
+    });
 
     app.get("/", (req: Request, res: Response) => {
       try {
