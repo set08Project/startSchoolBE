@@ -8,6 +8,7 @@ import classroomModel from "../model/classroomModel";
 import classHistoryModel from "../model/classHistory";
 import staffModel from "../model/staffModel";
 import axios from "axios";
+import { ideahub } from "googleapis/build/src/apis/ideahub";
 
 export const createSchoolSession = async (
   req: Request,
@@ -388,6 +389,15 @@ export const termPerSession = async (
             { new: true }
           );
 
+          if (schoolClass?.session?.length > 1 || session?.term?.length > 1) {
+            await schoolModel.findByIdAndUpdate(
+              sessionRecorde?.schoolID,
+              {
+                freeMode: false,
+              },
+              { new: true }
+            );
+          }
           return res.status(200).json({
             message: "creating session term",
             data: sessionTerm,

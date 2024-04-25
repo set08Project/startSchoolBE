@@ -16,6 +16,10 @@ const schoolModel = new mongoose_2.Schema({
     avatar: {
         type: String,
     },
+    freeMode: {
+        type: Boolean,
+        default: true,
+    },
     presentTerm: {
         type: String,
     },

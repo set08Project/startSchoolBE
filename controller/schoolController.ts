@@ -128,11 +128,6 @@ export const createSchool = async (
           await schoolModel.findByIdAndDelete(school._id);
         }
 
-        console.log("school detail: ", viewSchool?._id);
-        console.log("school detail: ", viewSchool?.staff?.length);
-        console.log("school detail: ", viewSchool?.students?.length);
-        console.log("school detail: ", viewSchool?.classRooms?.length);
-        console.log("school detail: ", viewSchool?.subjects?.length);
         job.stop();
       }, // onTick
       null, // onComplete
@@ -444,8 +439,6 @@ export const updateSchoolAccountDetail = async (req: any, res: Response) => {
     const { bankDetails } = req.body;
 
     const school: any = await schoolModel.findById(schoolID);
-
-    console.log(bankDetails);
 
     if (school.schoolName) {
       const updatedSchool = await schoolModel.findByIdAndUpdate(

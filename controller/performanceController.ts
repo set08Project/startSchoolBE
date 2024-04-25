@@ -57,8 +57,6 @@ export const createQuizPerformance = async (
         path: "performance",
       });
 
-      console.log(getStudent);
-
       let total = getStudent?.performance.map((el: any) => {
         if (el.performanceRating !== undefined) {
           return view.push(el.performanceRating);

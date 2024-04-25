@@ -254,6 +254,7 @@ const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.studentsPerSession = studentsPerSession;
 const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d;
     try {
         const { sessionID } = req.params;
         let { term } = req.body;
@@ -311,6 +312,11 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
                         presentTerm: term,
                     }, { new: true });
+                    if (((_c = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _c === void 0 ? void 0 : _c.length) > 1 || ((_d = session === null || session === void 0 ? void 0 : session.term) === null || _d === void 0 ? void 0 : _d.length) > 1) {
+                        yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
+                            freeMode: false,
+                        }, { new: true });
+                    }
                     return res.status(200).json({
                         message: "creating session term",
                         data: sessionTerm,

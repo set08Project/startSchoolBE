@@ -41,7 +41,6 @@ export const createStudentreportCard = async (
     const staff = await staffModel.findById(staffID);
     const student: any = await studentModel.findById(studentID);
 
-    console.log(student?.studentFirstName + student?.studentLastName);
     // const hold = ;
     const classData = await classroomModel.findOne({
       className: staff?.classesAssigned,

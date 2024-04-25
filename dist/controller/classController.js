@@ -384,7 +384,6 @@ const studentOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 `${el.studentLastName}` === studentName.trim().split(" ")[1]);
         });
         const studentData = yield studentModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent._id);
-        // console.log(studentData);
         if ((teacher === null || teacher === void 0 ? void 0 : teacher.status) === "school-teacher" && classRM && studentData) {
             const week = yield classroomModel_1.default.findByIdAndUpdate(classRM === null || classRM === void 0 ? void 0 : classRM._id, {
                 weekStudent: {

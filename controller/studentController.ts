@@ -252,7 +252,7 @@ export const updateStudentAvatar = async (req: any, res: Response) => {
     const { studentID } = req.params;
 
     const school = await studentModel.findById(studentID);
-    console.log(school);
+
     if (school) {
       const { secure_url, public_id }: any = await streamUpload(req);
 
@@ -455,8 +455,6 @@ export const updatePurchaseRecord = async (
     const student: any = await studentModel.findById(studentID);
     const school: any = await schoolModel.findById(student?.schoolIDs!);
 
-    console.log(student!.purchaseHistory, purchased);
-
     if (school?.status === "school-admin" && school) {
       await studentModel.findById(
         studentID,
@@ -647,8 +645,6 @@ export const createStorePurchasedTeacher = async (
     });
 
     const school = await schoolModel.findById(student?.schoolIDs);
-
-    console.log(student);
 
     if (school) {
       const check = student?.purchaseHistory.some((el: any) => {

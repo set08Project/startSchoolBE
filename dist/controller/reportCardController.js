@@ -26,7 +26,6 @@ const createStudentreportCard = (req, res) => __awaiter(void 0, void 0, void 0, 
         const school = yield schoolModel_1.default.findById(schoolID);
         const staff = yield staffModel_1.default.findById(staffID);
         const student = yield studentModel_1.default.findById(studentID);
-        console.log((student === null || student === void 0 ? void 0 : student.studentFirstName) + (student === null || student === void 0 ? void 0 : student.studentLastName));
         // const hold = ;
         const classData = yield classroomModel_1.default.findOne({
             className: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,

@@ -13,6 +13,7 @@ interface iSchool {
 
   schoolName: string;
   address: string;
+  freeMode: boolean;
 
   avatar: string;
   avatarID: string;
@@ -64,6 +65,11 @@ const schoolModel = new Schema<iSchoolData>(
     },
     avatar: {
       type: String,
+    },
+
+    freeMode: {
+      type: Boolean,
+      default: true,
     },
     presentTerm: {
       type: String,

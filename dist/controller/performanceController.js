@@ -55,7 +55,6 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             const getStudent = yield studentModel_1.default.findById(studentID).populate({
                 path: "performance",
             });
-            console.log(getStudent);
             let total = getStudent === null || getStudent === void 0 ? void 0 : getStudent.performance.map((el) => {
                 if (el.performanceRating !== undefined) {
                     return view.push(el.performanceRating);

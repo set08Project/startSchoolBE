@@ -226,7 +226,6 @@ const updateStudentAvatar = (req, res) => __awaiter(void 0, void 0, void 0, func
     try {
         const { studentID } = req.params;
         const school = yield studentModel_1.default.findById(studentID);
-        console.log(school);
         if (school) {
             const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
             const updatedStudent = yield studentModel_1.default.findByIdAndUpdate(studentID, {
@@ -391,7 +390,6 @@ const updatePurchaseRecord = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const { purchased } = req.body;
         const student = yield studentModel_1.default.findById(studentID);
         const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
-        console.log(student.purchaseHistory, purchased);
         if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
             yield studentModel_1.default.findById(studentID, {
                 purchaseHistory: (_d = student === null || student === void 0 ? void 0 : student.purchaseHistory) === null || _d === void 0 ? void 0 : _d.push(purchased),
@@ -550,7 +548,6 @@ const createStorePurchasedTeacher = (req, res) => __awaiter(void 0, void 0, void
             path: "purchaseHistory",
         });
         const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
-        console.log(student);
         if (school) {
             const check = student === null || student === void 0 ? void 0 : student.purchaseHistory.some((el) => {
                 return el.reference === reference;

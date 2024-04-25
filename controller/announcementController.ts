@@ -163,13 +163,6 @@ export const createSchoolPaynemtReceipt = async (
 
     let arr: number[] = [];
 
-    console.log(arr.some((el: any) => el === 3));
-
-    // console.log(
-    //   school?.receipt.some((el: any) => el.paymentRef === paymentRef)
-    // );
-    // console.log(confirm);
-
     if (school && school.schoolName && school.status === "school-admin") {
       if (confirm) {
         const confirmData = school?.receipt?.find(

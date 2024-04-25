@@ -455,8 +455,6 @@ export const studentOfWeek = async (
 
     const studentData = await studentModel.findById(getStudent?._id);
 
-    // console.log(studentData);
-
     if (teacher?.status === "school-teacher" && classRM && studentData) {
       const week = await classroomModel.findByIdAndUpdate(
         classRM?._id,

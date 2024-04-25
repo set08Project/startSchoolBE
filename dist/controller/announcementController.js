@@ -152,11 +152,6 @@ const createSchoolPaynemtReceipt = (req, res) => __awaiter(void 0, void 0, void 
             return el.paymentRef === paymentRef;
         });
         let arr = [];
-        console.log(arr.some((el) => el === 3));
-        // console.log(
-        //   school?.receipt.some((el: any) => el.paymentRef === paymentRef)
-        // );
-        // console.log(confirm);
         if (school && school.schoolName && school.status === "school-admin") {
             if (confirm) {
                 const confirmData = (_b = school === null || school === void 0 ? void 0 : school.receipt) === null || _b === void 0 ? void 0 : _b.find((el) => el.paymentRef === paymentRef);
