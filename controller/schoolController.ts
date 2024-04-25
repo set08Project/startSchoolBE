@@ -5,6 +5,7 @@ import { verifiedEmail } from "../utils/email";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
 import lodash from "lodash";
+import { CronJob } from "cron";
 
 export const viewSchoolTopStudent = async (
   req: Request,
@@ -108,6 +109,35 @@ export const createSchool = async (
     });
 
     verifiedEmail(school);
+
+    const job = new CronJob(
+      " * * * * 7", // cronTime
+      async () => {
+        const viewSchool = await schoolModel.findById(school._id);
+        console.log(
+          `Deleting school ${school?.schoolName} with email: ${school?.email}`
+        );
+        if (
+          viewSchool?.staff?.length === 0 &&
+          viewSchool?.students?.length === 0 &&
+          viewSchool?.classRooms?.length === 0 &&
+          viewSchool?.subjects?.length === 0 &&
+          !viewSchool?.started &&
+          !viewSchool?.verify
+        ) {
+          await schoolModel.findByIdAndDelete(school._id);
+        }
+
+        console.log("school detail: ", viewSchool?._id);
+        console.log("school detail: ", viewSchool?.staff?.length);
+        console.log("school detail: ", viewSchool?.students?.length);
+        console.log("school detail: ", viewSchool?.classRooms?.length);
+        console.log("school detail: ", viewSchool?.subjects?.length);
+        job.stop();
+      }, // onTick
+      null, // onComplete
+      true // start
+    );
 
     return res.status(201).json({
       message: "creating school",

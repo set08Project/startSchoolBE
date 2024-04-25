@@ -19,6 +19,7 @@ const email_1 = require("../utils/email");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const lodash_1 = __importDefault(require("lodash"));
+const cron_1 = require("cron");
 const viewSchoolTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -104,6 +105,29 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             status: "school-admin",
         });
         (0, email_1.verifiedEmail)(school);
+        const job = new cron_1.CronJob(" * * * * 7", // cronTime
+        () => __awaiter(void 0, void 0, void 0, function* () {
+            var _a, _b, _c, _d, _e, _f, _g, _h;
+            const viewSchool = yield schoolModel_1.default.findById(school._id);
+            console.log(`Deleting school ${school === null || school === void 0 ? void 0 : school.schoolName} with email: ${school === null || school === void 0 ? void 0 : school.email}`);
+            if (((_a = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.staff) === null || _a === void 0 ? void 0 : _a.length) === 0 &&
+                ((_b = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.students) === null || _b === void 0 ? void 0 : _b.length) === 0 &&
+                ((_c = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.classRooms) === null || _c === void 0 ? void 0 : _c.length) === 0 &&
+                ((_d = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.subjects) === null || _d === void 0 ? void 0 : _d.length) === 0 &&
+                !(viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.started) &&
+                !(viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.verify)) {
+                yield schoolModel_1.default.findByIdAndDelete(school._id);
+            }
+            console.log("school detail: ", viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool._id);
+            console.log("school detail: ", (_e = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.staff) === null || _e === void 0 ? void 0 : _e.length);
+            console.log("school detail: ", (_f = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.students) === null || _f === void 0 ? void 0 : _f.length);
+            console.log("school detail: ", (_g = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.classRooms) === null || _g === void 0 ? void 0 : _g.length);
+            console.log("school detail: ", (_h = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.subjects) === null || _h === void 0 ? void 0 : _h.length);
+            job.stop();
+        }), // onTick
+        null, // onComplete
+        true // start
+        );
         return res.status(201).json({
             message: "creating school",
             data: school,
