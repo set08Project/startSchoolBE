@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 import articleModel from "../model/articleModel";
 import studentModel from "../model/studentModel";
 import { viewStudentAttendance } from "./attendanceController";
+import { streamUpload } from "../utils/streamifier";
 
 export const createArticle = async (
   req: Request,
@@ -17,12 +18,16 @@ export const createArticle = async (
     const student = await studentModel.findById(studentID);
 
     if (school && student) {
+      const { secure_url }: any = await streamUpload(req);
       const article = await articleModel.create({
+        coverImage: secure_url,
         schoolID,
+        studentID,
         title,
         content,
         desc,
         student: `${student.studentFirstName} ${student.studentLastName}`,
+        avatar: student.avatar,
       });
 
       school.articles.push(new Types.ObjectId(article?._id));
@@ -94,6 +99,86 @@ export const readOneArticle = async (
       data: article,
       status: 201,
     });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating class subject quiz",
+      status: 404,
+    });
+  }
+};
+
+export const likeArticle = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { articleID, readerID } = req.params;
+    const article = await articleModel.findById(articleID);
+
+    const check = article?.like?.some((el: any) => {
+      return el === readerID;
+    });
+
+    if (!check) {
+      await articleModel.findByIdAndUpdate(
+        articleID,
+        {
+          like: [...article?.like!, readerID!],
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Reading one article",
+        data: article,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "can't like again",
+        status: 201,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating class subject quiz",
+      status: 404,
+    });
+  }
+};
+
+export const viewArticle = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { articleID, readerID } = req.params;
+    const article = await articleModel.findById(articleID);
+
+    const check = article?.view?.some((el: any) => {
+      return el === readerID;
+    });
+
+    if (!check) {
+      await articleModel.findByIdAndUpdate(
+        articleID,
+        {
+          view: [...article?.view!, readerID!],
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Reading one article",
+        data: article,
+        status: 201,
+      });
+    } else {
+      return res.status(200).json({
+        message: "can't reAdd",
+        status: 201,
+      });
+    }
   } catch (error) {
     return res.status(404).json({
       message: "Error creating class subject quiz",

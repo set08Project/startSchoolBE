@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -34,12 +25,9 @@ const gallaryRouter_1 = __importDefault(require("./router/gallaryRouter"));
 const complainRouter_1 = __importDefault(require("./router/complainRouter"));
 const reportCardRouter_1 = __importDefault(require("./router/reportCardRouter"));
 const pastQuestionRouter_1 = __importDefault(require("./router/pastQuestionRouter"));
-const cron_parser_1 = __importDefault(require("cron-parser"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
 const handleError_1 = require("./error/handleError");
-const node_cron_1 = __importDefault(require("node-cron"));
-const schoolModel_1 = __importDefault(require("./model/schoolModel"));
 const mainApp = (app) => {
     try {
         app.use("/api", schoolRouter_1.default);
@@ -63,48 +51,8 @@ const mainApp = (app) => {
         app.use("/api", assignmentResolveRouter_1.default);
         app.use("/api", gallaryRouter_1.default);
         app.use("/api", complainRouter_1.default);
-        app.use((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-            try {
-                const getSchoolData = yield schoolModel_1.default.find();
-                console.log(getSchoolData);
-            }
-            catch (error) {
-                res.status(404).json({
-                    message: "Error",
-                });
-            }
-        }));
         app.get("/", (req, res) => {
             try {
-                let { started } = req.body;
-                function addTimeToCron(cronExpression, additionalMinutes) {
-                    try {
-                        // Parse the cron expression
-                        const interval = cron_parser_1.default.parseExpression(cronExpression);
-                        // Get the next scheduled time
-                        const nextTime = interval.next().toDate();
-                        // Add additional minutes
-                        const newTime = new Date(
-                        // nextTime.getTime() + additionalMinutes * 60000
-                        nextTime.setFullYear(nextTime.getFullYear() + additionalMinutes));
-                        // Output the result
-                        console.log(`Original cron expression: ${cronExpression}`);
-                        console.log(`Next scheduled time: ${nextTime}`);
-                        console.log(`New time after adding ${additionalMinutes} minutes: ${newTime}`);
-                    }
-                    catch (err) {
-                        console.error(`Error parsing cron expression: ${err.message}`);
-                    }
-                }
-                // Example usage
-                const originalCronExpression = "0 0 0 0 0";
-                const additionalMinutes = started;
-                // addTimeToCron(originalCronExpression, additionalMinutes);
-                node_cron_1.default.schedule("0 0 0 * * *", () => {
-                    let currentDate = new Date();
-                    currentDate.setFullYear(currentDate.getFullYear() + 1);
-                    console.log("New date:", currentDate);
-                });
                 return res.status(200).json({
                     message: "School API",
                 });

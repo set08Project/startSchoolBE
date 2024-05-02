@@ -55,60 +55,8 @@ export const mainApp = (app: Application) => {
     app.use("/api", gallary);
     app.use("/api", complain);
 
-    app.use(async (req: Request, res: Response) => {
-      try {
-        const getSchoolData = await schoolModel.find();
-        console.log(getSchoolData);
-      } catch (error) {
-        res.status(404).json({
-          message: "Error",
-        });
-      }
-    });
-
     app.get("/", (req: Request, res: Response) => {
       try {
-        let { started } = req.body;
-
-        function addTimeToCron(cronExpression: any, additionalMinutes: any) {
-          try {
-            // Parse the cron expression
-            const interval = cronParser.parseExpression(cronExpression);
-
-            // Get the next scheduled time
-            const nextTime = interval.next().toDate();
-
-            // Add additional minutes
-            const newTime = new Date(
-              // nextTime.getTime() + additionalMinutes * 60000
-              nextTime.setFullYear(nextTime.getFullYear() + additionalMinutes)
-            );
-
-            // Output the result
-            console.log(`Original cron expression: ${cronExpression}`);
-            console.log(`Next scheduled time: ${nextTime}`);
-            console.log(
-              `New time after adding ${additionalMinutes} minutes: ${newTime}`
-            );
-          } catch (err: any) {
-            console.error(`Error parsing cron expression: ${err.message}`);
-          }
-        }
-
-        // Example usage
-        const originalCronExpression = "0 0 0 0 0";
-        const additionalMinutes = started;
-
-        // addTimeToCron(originalCronExpression, additionalMinutes);
-
-        cron.schedule("0 0 0 * * *", () => {
-          let currentDate = new Date();
-
-          currentDate.setFullYear(currentDate.getFullYear() + 1);
-
-          console.log("New date:", currentDate);
-        });
-
         return res.status(200).json({
           message: "School API",
         });

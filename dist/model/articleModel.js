@@ -5,7 +5,22 @@ const articleModel = new mongoose_1.Schema({
     content: {
         type: String,
     },
+    like: {
+        type: [],
+    },
+    view: {
+        type: [],
+    },
     schoolID: {
+        type: String,
+    },
+    coverImage: {
+        type: String,
+    },
+    avatar: {
+        type: String,
+    },
+    studentID: {
         type: String,
     },
     title: {

@@ -6,6 +6,11 @@ interface iArticle {
   student: string;
   desc: string;
   schoolID: string;
+  studentID: string;
+  avatar: string;
+  coverImage: string;
+  like: string[];
+  view: string[];
 }
 
 interface iArticleData extends iArticle, Document {}
@@ -16,7 +21,27 @@ const articleModel = new Schema<iArticleData>(
       type: String,
     },
 
+    like: {
+      type: [],
+    },
+
+    view: {
+      type: [],
+    },
+
     schoolID: {
+      type: String,
+    },
+
+    coverImage: {
+      type: String,
+    },
+
+    avatar: {
+      type: String,
+    },
+
+    studentID: {
       type: String,
     },
 
