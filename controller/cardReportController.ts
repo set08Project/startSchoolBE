@@ -323,6 +323,21 @@ export const createReportCardEntry = async (
           ).toFixed(2)
         );
 
+        let numb = [test1, test2, test3, test4, exam];
+        let count = 0;
+        let resultNumb = 0;
+        let resultNumbAva = 0;
+
+        for (let i = 0; i < numb.length; i++) {
+          if (numb[i] > 0) {
+            resultNumb += numb[i];
+
+            count++;
+          }
+        }
+
+        resultNumbAva = resultNumb / count;
+
         let grade =
           genPoint >= 0 && genPoint <= 39
             ? "F"
@@ -341,16 +356,16 @@ export const createReportCardEntry = async (
         const nice = await cardReportModel.findByIdAndUpdate(
           report?.id,
           {
-            points: genPoint,
-            grade,
+            points: resultNumb,
+            grade: "Nill",
           },
           { new: true }
         );
 
-        student?.reportCard.push(new Types.ObjectId(report._id));
+        student?.reportCard?.push(new Types.ObjectId(nice?._id));
         student?.save();
 
-        subjectData?.reportCard.push(new Types.ObjectId(report._id));
+        subjectData?.reportCard?.push(new Types.ObjectId(nice?._id));
         subjectData?.save();
 
         // school?.reportCard.push(new Types.ObjectId(report._id));

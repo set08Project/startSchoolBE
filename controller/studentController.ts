@@ -729,7 +729,7 @@ export const createSchoolFeePayment = async (
 ): Promise<Response> => {
   try {
     const { studentID } = req.params;
-    const { date, amount, reference, purchasedID } = req.body;
+    const { date, amount, purchasedID, reference } = req.body;
 
     const student = await studentModel.findById(studentID).populate({
       path: "schoolFeesHistory",
@@ -755,6 +755,10 @@ export const createSchoolFeePayment = async (
           studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
           studentClass: student?.classAssigned,
           image: student?.avatar,
+          date,
+          amount,
+          purchasedID,
+          reference,
         });
 
         student?.schoolFeesHistory.push(new Types.ObjectId(store._id));

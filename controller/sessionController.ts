@@ -7,8 +7,6 @@ import termModel from "../model/termModel";
 import classroomModel from "../model/classroomModel";
 import classHistoryModel from "../model/classHistory";
 import staffModel from "../model/staffModel";
-import axios from "axios";
-import { ideahub } from "googleapis/build/src/apis/ideahub";
 
 export const createSchoolSession = async (
   req: Request,
@@ -68,6 +66,16 @@ export const createNewSchoolSession = async (
     const schoolTeacher: any = await schoolModel
       .findById(schoolID)
       .populate({ path: "staff" });
+
+    const schl = await schoolModel.findByIdAndUpdate(
+      schoolID,
+      {
+        presentSession: year,
+      },
+      { new: true }
+    );
+
+    console.log("school:: ", schl);
 
     // const schoolStudents: any = await schoolModel
     //   .findById(schoolID)
@@ -173,14 +181,7 @@ export const createNewSchoolSession = async (
           console.log("can't");
         }
       }
-
-      await schoolModel.findByIdAndUpdate(
-        schoolID,
-        {
-          presentSession: year,
-        },
-        { new: true }
-      );
+      console.log("year: ", year, schoolID);
 
       return res.status(201).json({
         message: "session created successfully",
@@ -348,15 +349,27 @@ export const termPerSession = async (
             message: "Term Already exist",
           });
         } else {
-          const sessionTerm: any = await termModel.create({
-            term: capitalizedText(term),
-            year: session?.year,
-            presentTerm: term,
-          });
-
-          session?.term.push(new Types.ObjectId(sessionTerm?._id));
-          session?.save();
           // presentTerm
+
+          const viewDetail = await termModel.findById(
+            session?.term[session?.term.length - 1]?._id!
+          );
+
+          console.log("term: ", viewDetail);
+
+          let resultHist: any[] = [];
+
+          for (let i of schoolClass?.classRooms!) {
+            resultHist.push({ ...i });
+
+            await termModel.findByIdAndUpdate(
+              session?.term[session?.term.length - 1]?._id!,
+              {
+                classResult: resultHist,
+              },
+              { new: true }
+            );
+          }
 
           const sessionRecorde = await sessionModel.findByIdAndUpdate(
             sessionID,
@@ -398,6 +411,16 @@ export const termPerSession = async (
               { new: true }
             );
           }
+
+          const sessionTerm: any = await termModel.create({
+            term: capitalizedText(term),
+            year: session?.year,
+            presentTerm: term,
+          });
+
+          session?.term.push(new Types.ObjectId(sessionTerm?._id));
+          session?.save();
+
           return res.status(200).json({
             message: "creating session term",
             data: sessionTerm,
@@ -481,6 +504,76 @@ export const updateTermPay = async (
 
     return res.status(200).json({
       message: "Term payment has been recorded successfully",
+      data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
+    });
+  }
+};
+
+export const createSessionHistory = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+    const { text } = req.body;
+
+    const getClassRoom = await classroomModel.findById(classID);
+    const teacher = await staffModel.findById(getClassRoom?.teacherID);
+
+    const getSchool: any = await schoolModel
+      .findById(teacher?.schoolIDs)
+      .populate({ path: "session" });
+
+    let history = [];
+
+    for (let i of getClassRoom?.students!) {
+      let getStudentsData = await studentModel
+        .findById(i)
+        .populate({ path: "reportCard" });
+
+      history.push(getStudentsData);
+    }
+
+    const getAll = await classHistoryModel.create({
+      resultHistory: history,
+      session: getSchool?.session[0]?.year!,
+      term: getSchool?.session[0]?.presentTerm!,
+      classTeacherName: getClassRoom?.classTeacherName,
+      className: getClassRoom?.className,
+      principalsRemark: text,
+    });
+
+    getClassRoom?.classHistory.push(new Types.ObjectId(getAll?._id));
+    getClassRoom?.save();
+
+    return res.status(200).json({
+      message: "all session gotten",
+      data: getAll,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "error getting session",
+      data: error.message,
+    });
+  }
+};
+
+export const getAllClassSessionResults = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+    const getAll = await classroomModel.findById(classID).populate({
+      path: "classHistory",
+    });
+    return res.status(200).json({
+      message: "all session gotten",
       data: getAll,
     });
   } catch (error: any) {

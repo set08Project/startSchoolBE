@@ -38,6 +38,8 @@ export const createSchoolClasses = async (
           class2ndFee,
           class3rdFee,
           class1stFee,
+
+          presentTerm: school?.presentTerm,
         });
 
         school.historys.push(new Types.ObjectId(classes._id));

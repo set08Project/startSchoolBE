@@ -2,8 +2,8 @@ import { Router } from "express";
 import {
   createNewSchoolSession,
   createSchoolSession,
-  // createSessionHistory,
-  // getAllClassSessionResults,
+  createSessionHistory,
+  getAllClassSessionResults,
   getAllSession,
   studentsPerSession,
   termPerSession,
@@ -38,10 +38,12 @@ router
 router.route("/view-school-term/:termID").get(viewSchoolPresentSessionTerm);
 
 router.route("/view-all-session").get(getAllSession);
-// router
-//   .route("/view-class-result-history/:classID")
-//   .get(getAllClassSessionResults);
-// router.route("/create-history-session/:classID").post(createSessionHistory);
+
+router
+  .route("/view-class-result-history/:classID")
+  .get(getAllClassSessionResults);
+
+router.route("/create-history-session/:classID").post(createSessionHistory);
 
 // router
 //   .route("/create-school-history-session/:schoolID")
@@ -49,3 +51,4 @@ router.route("/view-all-session").get(getAllSession);
 
 // router.route("/create-school-term-history/:session").post(createSessionHistory);
 export default router;
+// create-new-school-session

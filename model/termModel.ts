@@ -8,6 +8,7 @@ interface iSessionTerm {
 
   plan: boolean;
   costPaid: number;
+  classResult: any;
 
   totalStudents: number;
   studentFeesPaid: number;
@@ -25,6 +26,10 @@ const termModel = new Schema<iSessionTermData>(
   {
     year: {
       type: String,
+    },
+
+    classResult: {
+      type: [],
     },
 
     presentTerm: {

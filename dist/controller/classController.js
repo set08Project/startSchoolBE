@@ -39,6 +39,7 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
                     class2ndFee,
                     class3rdFee,
                     class1stFee,
+                    presentTerm: school === null || school === void 0 ? void 0 : school.presentTerm,
                 });
                 school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
                 school.classRooms.push(new mongoose_1.Types.ObjectId(classes._id));

@@ -21,7 +21,7 @@ const studentModel_1 = __importDefault(require("../model/studentModel"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     try {
         const { teacherID, studentID } = req.params;
         const { subject, test1, test2, test3, test4, exam } = req.body;
@@ -257,6 +257,17 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 }).reduce((a, b) => {
                     return a + b;
                 }, 0)) / ((_l = report === null || report === void 0 ? void 0 : report.result) === null || _l === void 0 ? void 0 : _l.length)).toFixed(2));
+                let numb = [test1, test2, test3, test4, exam];
+                let count = 0;
+                let resultNumb = 0;
+                let resultNumbAva = 0;
+                for (let i = 0; i < numb.length; i++) {
+                    if (numb[i] > 0) {
+                        resultNumb += numb[i];
+                        count++;
+                    }
+                }
+                resultNumbAva = resultNumb / count;
                 let grade = genPoint >= 0 && genPoint <= 39
                     ? "F"
                     : genPoint >= 40 && genPoint <= 49
@@ -271,12 +282,12 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                         ? "A"
                                         : null;
                 const nice = yield cardReportModel_1.default.findByIdAndUpdate(report === null || report === void 0 ? void 0 : report.id, {
-                    points: genPoint,
-                    grade,
+                    points: resultNumb,
+                    grade: "Nill",
                 }, { new: true });
-                student === null || student === void 0 ? void 0 : student.reportCard.push(new mongoose_1.Types.ObjectId(report._id));
+                (_m = student === null || student === void 0 ? void 0 : student.reportCard) === null || _m === void 0 ? void 0 : _m.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
                 student === null || student === void 0 ? void 0 : student.save();
-                subjectData === null || subjectData === void 0 ? void 0 : subjectData.reportCard.push(new mongoose_1.Types.ObjectId(report._id));
+                (_o = subjectData === null || subjectData === void 0 ? void 0 : subjectData.reportCard) === null || _o === void 0 ? void 0 : _o.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
                 subjectData === null || subjectData === void 0 ? void 0 : subjectData.save();
                 // school?.reportCard.push(new Types.ObjectId(report._id));
                 // school?.save();

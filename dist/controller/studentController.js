@@ -622,7 +622,7 @@ exports.viewStorePurchasedTeacher = viewStorePurchasedTeacher;
 const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { studentID } = req.params;
-        const { date, amount, reference, purchasedID } = req.body;
+        const { date, amount, purchasedID, reference } = req.body;
         const student = yield studentModel_1.default.findById(studentID).populate({
             path: "schoolFeesHistory",
         });
@@ -641,6 +641,10 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
                     studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
                     image: student === null || student === void 0 ? void 0 : student.avatar,
+                    date,
+                    amount,
+                    purchasedID,
+                    reference,
                 });
                 student === null || student === void 0 ? void 0 : student.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
                 student === null || student === void 0 ? void 0 : student.save();
