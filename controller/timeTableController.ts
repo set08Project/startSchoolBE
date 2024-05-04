@@ -22,9 +22,7 @@ export const createClassTimeTable = async (
       return el.subjectTitle === subject;
     });
 
-    const findTeacher = await staffModel.findById({
-      _id: classRoom?.teacherID,
-    });
+    const findTeacher = await staffModel.findById(classRoom?.teacherID);
 
     //  || "Assembly" || "Short Break" || "Long Break"
     if (school && school.schoolName && school.status === "school-admin") {

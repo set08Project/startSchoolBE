@@ -29,9 +29,7 @@ const createClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const checkForSubject = classRoom === null || classRoom === void 0 ? void 0 : classRoom.classSubjects.some((el) => {
             return el.subjectTitle === subject;
         });
-        const findTeacher = yield staffModel_1.default.findById({
-            _id: classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID,
-        });
+        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
         //  || "Assembly" || "Short Break" || "Long Break"
         if (school && school.schoolName && school.status === "school-admin") {
             if (checkForSubject) {
