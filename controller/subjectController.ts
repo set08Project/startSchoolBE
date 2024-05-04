@@ -21,7 +21,7 @@ export const createSchoolSubject = async (
       path: "subjects",
     });
 
-    const getClassRooms = school?.classRooms.find((el: any) => {
+    const getClassRooms: any = school?.classRooms.find((el: any) => {
       return el.className === designated;
     });
 
@@ -29,7 +29,9 @@ export const createSchoolSubject = async (
       return el.subjectTitle === subjectTitle && el.designated === designated;
     });
 
-    const getClassRM = await classroomModel.findOne({ className: designated });
+    const getClassRM = await classroomModel.findOne({
+      className: getClassRooms?.designated,
+    });
 
     if (getClassRooms) {
       if (school && school.schoolName && school.status === "school-admin") {
