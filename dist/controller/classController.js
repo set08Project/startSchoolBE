@@ -30,7 +30,7 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
         const checkClass = school === null || school === void 0 ? void 0 : school.classRooms.some((el) => {
             return el.className === className;
         });
-        if (school && school.schoolName && school.status === "school-admin") {
+        if (school && school.status === "school-admin") {
             if (!checkClass) {
                 const classes = yield classroomModel_1.default.create({
                     schoolName: school.schoolName,

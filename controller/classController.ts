@@ -29,7 +29,7 @@ export const createSchoolClasses = async (
       return el.className === className;
     });
 
-    if (school && school.schoolName && school.status === "school-admin") {
+    if (school && school.status === "school-admin") {
       if (!checkClass) {
         const classes = await classroomModel.create({
           schoolName: school.schoolName,
