@@ -29,9 +29,7 @@ export const createSchoolSubject = async (
       return el.subjectTitle === subjectTitle && el.designated === designated;
     });
 
-    const getClassRM = await classroomModel.findOne({
-      className: getClassRooms?.designated,
-    });
+    const getClassRM = await classroomModel.findById(getClassRooms?._id);
 
     if (getClassRooms) {
       if (school && school.schoolName && school.status === "school-admin") {
