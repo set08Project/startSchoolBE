@@ -96,6 +96,88 @@ export const createClasslessonNote = async (
     });
   }
 };
+
+export const editClasslessonNote = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { staffID, lessonNodeID } = req.params;
+
+    const {
+      week,
+      endingAt,
+      createDate,
+      classes,
+      subTopic,
+      period,
+      duration,
+      instructionalMaterial,
+      referenceMaterial,
+      previousKnowledge,
+      specificObjectives,
+      content,
+      evaluation,
+      summary,
+      presentation,
+      assignment,
+      topic,
+      subject,
+    } = req.body;
+
+    const staff = await staffModel.findById(staffID);
+
+    if (staff) {
+      const note = await lessonNoteModel.findByIdAndUpdate(
+        lessonNodeID,
+        {
+          teacher: staff?.staffName,
+          teacherClass: staff?.classesAssigned,
+          teacherID: staff?._id,
+
+          subject,
+          topic,
+          week,
+          endingAt,
+          createDate,
+          classes,
+          subTopic,
+          period,
+          duration,
+          instructionalMaterial,
+          referenceMaterial,
+          previousKnowledge,
+          specificObjectives,
+          content,
+          evaluation,
+          summary,
+          presentation,
+          assignment,
+          adminSignation: false,
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "lesson note updated successfully",
+        data: note,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "staff not found",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating lesson Note",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
+
 export const createAdminLessonNoteReply = async (
   req: Request,
   res: Response

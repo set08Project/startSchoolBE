@@ -3,6 +3,7 @@ import {
   approveTeacherLessonNote,
   createAdminLessonNoteReply,
   createClasslessonNote,
+  editClasslessonNote,
   rateLessonNote,
   readAdminLessonNote,
   readLessonNote,
@@ -16,6 +17,10 @@ const router: Router = Router();
 router
   .route("/create-lesson-note/:schoolID/:staffID")
   .post(createClasslessonNote);
+
+router
+  .route("/update-lesson-note/:staffID/:lessonNodeID")
+  .patch(editClasslessonNote);
 
 router
   .route("/reply-lesson-note/:schoolID/:lessonNotedID")

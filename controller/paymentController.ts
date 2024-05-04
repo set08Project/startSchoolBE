@@ -10,6 +10,7 @@ import axios from "axios";
 import env from "dotenv";
 env.config();
 
+const URL = process.env.APP_URL_DEPLOY;
 const https = require("https");
 
 export const makePaymentWithCron = async (
@@ -507,9 +508,9 @@ export const storePayment = async (req: Request, res: Response) => {
       email,
       amount: `${amount * 100}`,
       subaccount: subAccountCode,
-      callback_url: `http://localhost:5173/purchase-history`,
+      callback_url: `${URL}/purchase-history`,
       meta: {
-        cancel: `http://localhost:5173`,
+        cancel: `${URL}`,
       },
     });
 
@@ -616,9 +617,9 @@ export const schoolFeePayment = async (req: Request, res: Response) => {
       email,
       amount: `${amount * 100}`,
       subaccount: subAccountCode,
-      callback_url: `http://localhost:5173/school-fee-payment`,
+      callback_url: `${URL}/school-fee-payment`,
       meta: {
-        cancel: `http://localhost:5173`,
+        cancel: `${URL}`,
       },
     });
 
