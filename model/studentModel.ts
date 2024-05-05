@@ -13,6 +13,7 @@ interface iStudent {
   avatarID: string;
 
   presentClassID: string;
+  monitor: boolean;
 
   records: any;
 
@@ -53,6 +54,11 @@ interface iStudentData extends iStudent, Document {}
 const studentModel = new Schema<iStudentData>(
   {
     feesPaid1st: {
+      type: Boolean,
+      default: false,
+    },
+
+    monitor: {
       type: Boolean,
       default: false,
     },

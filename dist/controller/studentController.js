@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
+exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -777,3 +777,35 @@ const updateSchoolSchoolFee = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.updateSchoolSchoolFee = updateSchoolSchoolFee;
+const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e;
+    try {
+        const { teacherID, studentID } = req.params;
+        const teacher = yield staffModel_1.default.findById(teacherID);
+        const getClass = yield classroomModel_1.default
+            .findById(teacher === null || teacher === void 0 ? void 0 : teacher.presentClassID)
+            .populate({
+            path: "students",
+        });
+        let readStudent = (_e = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _e === void 0 ? void 0 : _e.find((el) => {
+            return (el === null || el === void 0 ? void 0 : el.monitor) === true;
+        });
+        yield studentModel_1.default.findByIdAndUpdate(readStudent === null || readStudent === void 0 ? void 0 : readStudent._id, {
+            monitor: false,
+        }, { new: true });
+        const student = yield studentModel_1.default.findByIdAndUpdate(studentID, {
+            monitor: true,
+        }, { new: true });
+        return res.status(201).json({
+            message: `class monitor assigned to ${student === null || student === void 0 ? void 0 : student.studentFirstName} `,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating class's monitor",
+            data: error.message,
+        });
+    }
+});
+exports.assignClassMonitor = assignClassMonitor;

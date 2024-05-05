@@ -55,4 +55,7 @@ router
 router.route("/view-school-purchase/:schoolID").get(studentController_1.viewSchoolStorePurchased);
 router.route("/teacher-purchase/:staffID").post(studentController_1.createStorePurchasedTeacher);
 router.route("/view-teacher-purchase/:staffID").get(studentController_1.viewStorePurchasedTeacher);
+router
+    .route("/assign-class-monitor/:teacherID/:studentID")
+    .patch(studentController_1.assignClassMonitor);
 exports.default = router;

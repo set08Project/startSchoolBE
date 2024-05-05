@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  assignClassMonitor,
   createSchoolFeePayment,
   createSchoolStudent,
   createStorePurchased,
@@ -61,13 +62,16 @@ router
   .patch(upload, updateStudentAvatar);
 
 router.route("/login-student").post(loginStudent);
+
 router.route("/read-student-cookie").get(readStudentCookie);
 router
   .route("/update-parent-email/:schoolID/:studentID")
   .patch(updateStudentParentEmail);
+
 router.route("/purchase/:studentID").post(createStorePurchased);
 
 router.route("/pay-student-schoolfee/:studentID").post(createSchoolFeePayment);
+
 router
   .route("/view-student-schoolfee-detail/:studentID")
   .get(viewSchoolFeeRecord);
@@ -85,6 +89,11 @@ router
 router.route("/view-school-purchase/:schoolID").get(viewSchoolStorePurchased);
 
 router.route("/teacher-purchase/:staffID").post(createStorePurchasedTeacher);
+
 router.route("/view-teacher-purchase/:staffID").get(viewStorePurchasedTeacher);
+
+router
+  .route("/assign-class-monitor/:teacherID/:studentID")
+  .patch(assignClassMonitor);
 
 export default router;

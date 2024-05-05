@@ -920,3 +920,50 @@ export const updateSchoolSchoolFee = async (
     });
   }
 };
+
+export const assignClassMonitor = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { teacherID, studentID } = req.params;
+
+    const teacher = await staffModel.findById(teacherID);
+
+    const getClass = await classroomModel
+      .findById(teacher?.presentClassID)
+      .populate({
+        path: "students",
+      });
+
+    let readStudent: any = getClass?.students?.find((el: any) => {
+      return el?.monitor === true;
+    });
+
+    await studentModel.findByIdAndUpdate(
+      readStudent?._id,
+      {
+        monitor: false,
+      },
+      { new: true }
+    );
+
+    const student = await studentModel.findByIdAndUpdate(
+      studentID,
+      {
+        monitor: true,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: `class monitor assigned to ${student?.studentFirstName} `,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error updating class's monitor",
+      data: error.message,
+    });
+  }
+};

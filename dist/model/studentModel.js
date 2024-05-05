@@ -6,6 +6,10 @@ const studentModel = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    monitor: {
+        type: Boolean,
+        default: false,
+    },
     records: {
         type: (Array),
     },
