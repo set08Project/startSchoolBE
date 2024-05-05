@@ -332,6 +332,7 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     return res.status(200).json({
                         message: "creating session term",
                         data: sessionTerm,
+                        status: 201,
                     });
                 }
             }

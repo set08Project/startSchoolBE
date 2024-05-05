@@ -422,6 +422,7 @@ export const termPerSession = async (
           return res.status(200).json({
             message: "creating session term",
             data: sessionTerm,
+            status: 201,
           });
         }
       } else {
