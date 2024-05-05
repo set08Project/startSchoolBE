@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rateLessonNote = exports.readTeacherLessonNotesRate = exports.readLessonNote = exports.approveTeacherLessonNote = exports.readTeacherClassLessonNote = exports.readTeacherLessonNote = exports.readAdminLessonNote = exports.createAdminLessonNoteReply = exports.createClasslessonNote = void 0;
+exports.rateLessonNote = exports.readTeacherLessonNotesRate = exports.readLessonNote = exports.approveTeacherLessonNote = exports.readTeacherClassLessonNote = exports.readTeacherLessonNote = exports.readAdminLessonNote = exports.createAdminLessonNoteReply = exports.editClasslessonNote = exports.createClasslessonNote = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -79,6 +79,58 @@ const createClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.createClasslessonNote = createClasslessonNote;
+const editClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { staffID, lessonNodeID } = req.params;
+        const { week, endingAt, createDate, classes, subTopic, period, duration, instructionalMaterial, referenceMaterial, previousKnowledge, specificObjectives, content, evaluation, summary, presentation, assignment, topic, subject, } = req.body;
+        const staff = yield staffModel_1.default.findById(staffID);
+        if (staff) {
+            const note = yield lessonNoteModel_1.default.findByIdAndUpdate(lessonNodeID, {
+                teacher: staff === null || staff === void 0 ? void 0 : staff.staffName,
+                teacherClass: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
+                teacherID: staff === null || staff === void 0 ? void 0 : staff._id,
+                subject,
+                topic,
+                week,
+                endingAt,
+                createDate,
+                classes,
+                subTopic,
+                period,
+                duration,
+                instructionalMaterial,
+                referenceMaterial,
+                previousKnowledge,
+                specificObjectives,
+                content,
+                evaluation,
+                summary,
+                presentation,
+                assignment,
+                adminSignation: false,
+            }, { new: true });
+            return res.status(201).json({
+                message: "lesson note updated successfully",
+                data: note,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "staff not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating lesson Note",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.editClasslessonNote = editClasslessonNote;
 const createAdminLessonNoteReply = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;

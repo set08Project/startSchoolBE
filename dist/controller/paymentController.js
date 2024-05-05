@@ -23,6 +23,7 @@ const axios_1 = __importDefault(require("axios"));
 // import https from "https";
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
+const URL = process.env.APP_URL_DEPLOY;
 const https = require("https");
 const makePaymentWithCron = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -450,9 +451,9 @@ const storePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             email,
             amount: `${amount * 100}`,
             subaccount: subAccountCode,
-            callback_url: `http://localhost:5173/purchase-history`,
+            callback_url: `${URL}/purchase-history`,
             meta: {
-                cancel: `http://localhost:5173`,
+                cancel: `${URL}`,
             },
         });
         const options = {
@@ -546,9 +547,9 @@ const schoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
             email,
             amount: `${amount * 100}`,
             subaccount: subAccountCode,
-            callback_url: `http://localhost:5173/school-fee-payment`,
+            callback_url: `${URL}/school-fee-payment`,
             meta: {
-                cancel: `http://localhost:5173`,
+                cancel: `${URL}`,
             },
         });
         const options = {

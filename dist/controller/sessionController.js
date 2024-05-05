@@ -294,7 +294,6 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 else {
                     // presentTerm
                     const viewDetail = yield termModel_1.default.findById((_c = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 1]) === null || _c === void 0 ? void 0 : _c._id);
-                    console.log("term: ", viewDetail);
                     let resultHist = [];
                     for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
                         resultHist.push(Object.assign({}, i));
@@ -318,11 +317,6 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
                         presentTerm: term,
                     }, { new: true });
-                    if (((_e = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _e === void 0 ? void 0 : _e.length) > 1 || ((_f = session === null || session === void 0 ? void 0 : session.term) === null || _f === void 0 ? void 0 : _f.length) > 1) {
-                        yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
-                            freeMode: false,
-                        }, { new: true });
-                    }
                     const sessionTerm = yield termModel_1.default.create({
                         term: capitalizedText(term),
                         year: session === null || session === void 0 ? void 0 : session.year,
@@ -330,6 +324,11 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     });
                     session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
                     session === null || session === void 0 ? void 0 : session.save();
+                    if (((_e = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _e === void 0 ? void 0 : _e.length) > 1 || ((_f = session === null || session === void 0 ? void 0 : session.term) === null || _f === void 0 ? void 0 : _f.length) > 1) {
+                        yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
+                            freeMode: false,
+                        }, { new: true });
+                    }
                     return res.status(200).json({
                         message: "creating session term",
                         data: sessionTerm,

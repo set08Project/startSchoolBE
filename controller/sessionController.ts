@@ -355,8 +355,6 @@ export const termPerSession = async (
             session?.term[session?.term.length - 1]?._id!
           );
 
-          console.log("term: ", viewDetail);
-
           let resultHist: any[] = [];
 
           for (let i of schoolClass?.classRooms!) {
@@ -402,6 +400,15 @@ export const termPerSession = async (
             { new: true }
           );
 
+          const sessionTerm: any = await termModel.create({
+            term: capitalizedText(term),
+            year: session?.year,
+            presentTerm: term,
+          });
+
+          session?.term.push(new Types.ObjectId(sessionTerm?._id));
+          session?.save();
+
           if (schoolClass?.session?.length > 1 || session?.term?.length > 1) {
             await schoolModel.findByIdAndUpdate(
               sessionRecorde?.schoolID,
@@ -411,15 +418,6 @@ export const termPerSession = async (
               { new: true }
             );
           }
-
-          const sessionTerm: any = await termModel.create({
-            term: capitalizedText(term),
-            year: session?.year,
-            presentTerm: term,
-          });
-
-          session?.term.push(new Types.ObjectId(sessionTerm?._id));
-          session?.save();
 
           return res.status(200).json({
             message: "creating session term",

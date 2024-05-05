@@ -7,6 +7,9 @@ router
     .route("/create-lesson-note/:schoolID/:staffID")
     .post(lessonNoteController_1.createClasslessonNote);
 router
+    .route("/update-lesson-note/:staffID/:lessonNodeID")
+    .patch(lessonNoteController_1.editClasslessonNote);
+router
     .route("/reply-lesson-note/:schoolID/:lessonNotedID")
     .patch(lessonNoteController_1.createAdminLessonNoteReply);
 router.route("/admin-view-lesson-note/:schoolID/").get(lessonNoteController_1.readAdminLessonNote);
