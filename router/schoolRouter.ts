@@ -10,6 +10,7 @@ import {
   readSchoolCookie,
   updateSchoolAccountDetail,
   updateSchoolAvatar,
+  updateSchoolName,
   updateSchoolStartPossition,
   verifySchool,
   viewAllSchools,
@@ -60,6 +61,7 @@ router
   .patch(upload, updateSchoolAvatar);
 
 router.route("/change-school-tag/:schoolID").patch(changeSchoolTag);
+router.route("/change-school-name/:schoolID").patch(updateSchoolName);
 router
   .route("/change-school-started/:schoolID")
   .patch(updateSchoolStartPossition);

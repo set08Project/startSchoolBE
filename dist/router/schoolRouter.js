@@ -37,6 +37,7 @@ router
     .route("/upload-school-avatar/:schoolID")
     .patch(upload, schoolController_1.updateSchoolAvatar);
 router.route("/change-school-tag/:schoolID").patch(schoolController_1.changeSchoolTag);
+router.route("/change-school-name/:schoolID").patch(schoolController_1.updateSchoolName);
 router
     .route("/change-school-started/:schoolID")
     .patch(schoolController_1.updateSchoolStartPossition);
