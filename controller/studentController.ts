@@ -11,6 +11,7 @@ import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
 import purchasedModel from "../model/historyModel";
 import schoolFeeHistory from "../model/schoolFeeHistory";
+import subjectModel from "../model/subjectModel";
 
 export const createSchoolStudent = async (
   req: Request,
@@ -958,6 +959,46 @@ export const assignClassMonitor = async (
 
     return res.status(201).json({
       message: `class monitor assigned to ${student?.studentFirstName} `,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error updating class's monitor",
+      data: error.message,
+    });
+  }
+};
+
+export const changeStudentClass = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+    const { classID } = req.body;
+
+    const getClass = await classroomModel.findById(classID).populate({
+      path: "students",
+    });
+
+    const student = await studentModel.findByIdAndUpdate(
+      studentID,
+      {
+        classAssigned: getClass?.className,
+        presentClassID: getClass?._id,
+      },
+      { new: true }
+    );
+
+    getClass?.students?.push(new Types.ObjectId(student?._id));
+    getClass?.save();
+
+    console.log(student);
+    console.log(getClass);
+
+    return res.status(201).json({
+      message: `class monitor assigned to ${student?.studentFirstName} `,
+      data: student,
       status: 201,
     });
   } catch (error: any) {

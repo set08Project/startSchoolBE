@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   assignClassMonitor,
+  changeStudentClass,
   createSchoolFeePayment,
   createSchoolStudent,
   createStorePurchased,
@@ -95,5 +96,7 @@ router.route("/view-teacher-purchase/:staffID").get(viewStorePurchasedTeacher);
 router
   .route("/assign-class-monitor/:teacherID/:studentID")
   .patch(assignClassMonitor);
+
+router.route("/change-student-class/:schoolID").patch(changeStudentClass);
 
 export default router;

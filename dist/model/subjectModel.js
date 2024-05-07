@@ -35,6 +35,9 @@ const subjectModel = new mongoose_1.Schema({
     teacherID: {
         type: String,
     },
+    classID: {
+        type: String,
+    },
     schoolName: {
         type: String,
     },

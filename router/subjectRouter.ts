@@ -5,7 +5,9 @@ import {
   viewSchoolSubjects,
   deleteSchoolSubject,
   viewSubjectDetail,
+  removeSubjectFromTeacher,
 } from "../controller/subjectController";
+import { changeStudentClass } from "../controller/studentController";
 
 const router: Router = Router();
 
@@ -18,9 +20,9 @@ router
   .route("/update-subject-teacher/:schoolID/:subjectID")
   .patch(updateSchoolSubjectTeacher);
 
-// router
-//   .route("/update-subject-teacher/:schoolID/:subjectID")
-//   .patch(updateSchoolSubjectTeacher);
+router
+  .route("/remove-teacher-subject/:schoolID/:teacherID/:subjectID")
+  .patch(removeSubjectFromTeacher);
 
 router
   .route("/delete-subject/:schoolID/:subjectID")

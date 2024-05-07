@@ -219,13 +219,21 @@ export const deleteSchoolSubject = async (
 ): Promise<Response> => {
   try {
     const { schoolID, subjectID } = req.params;
-
     const school: any = await schoolModel.findById(schoolID);
 
     if (school && school.schoolName && school.status === "school-admin") {
-      const subjects = await subjectModel.findByIdAndDelete(subjectID);
-      school.subjects.pull(new Types.ObjectId(subjects?._id!));
+      const subjects = await subjectModel.findById(subjectID);
+      // const subjects = await subjectModel.findByIdAndDelete(subjectID);
+
+      const classRM: any = await classroomModel.findById(
+        subjects?.classDetails
+      );
+
+      school?.subjects?.pull(new Types.ObjectId(subjects?._id!));
       school.save();
+
+      classRM?.classSubjects?.pull(new Types.ObjectId(subjects?._id!));
+      classRM?.save();
 
       return res.status(201).json({
         message: "subjects  deleted successfully",
@@ -240,7 +248,7 @@ export const deleteSchoolSubject = async (
     }
   } catch (error) {
     return res.status(404).json({
-      message: "Error creating school session",
+      message: "Error cdeleting subject",
       status: 404,
     });
   }
@@ -263,6 +271,59 @@ export const viewSubjectDetail = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error creating subject session",
+      status: 404,
+    });
+  }
+};
+
+export const removeSubjectFromTeacher = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, teacherID, subjectID } = req.params;
+    const school: any = await schoolModel.findById(schoolID);
+    const teacher: any = await staffModel.findById(teacherID);
+
+    if (school && school.schoolName && school.status === "school-admin") {
+      const subjects = await subjectModel.findById(subjectID);
+      let read = [...teacher?.subjectAssigned];
+
+      let subj = read?.filter((el: any) => {
+        return el.id.toString() !== subjectID;
+      });
+
+      await staffModel?.findByIdAndUpdate(
+        teacherID,
+        {
+          subjectAssigned: subj,
+        },
+        { new: true }
+      );
+
+      await subjectModel.findByIdAndUpdate(
+        subjectID,
+        {
+          subjectTeacherName: "",
+          teacherID: "",
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "subjects  deleted successfully",
+        data: subjects,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error cdeleting subject",
       status: 404,
     });
   }

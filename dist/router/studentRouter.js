@@ -58,4 +58,5 @@ router.route("/view-teacher-purchase/:staffID").get(studentController_1.viewStor
 router
     .route("/assign-class-monitor/:teacherID/:studentID")
     .patch(studentController_1.assignClassMonitor);
+router.route("/change-student-class/:schoolID").patch(studentController_1.changeStudentClass);
 exports.default = router;

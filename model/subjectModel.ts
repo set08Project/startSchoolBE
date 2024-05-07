@@ -3,6 +3,7 @@ import { Document, Model, Schema, Types, model } from "mongoose";
 interface iSubject {
   schoolName: string;
   teacherID: string;
+  classID: string;
   subjectTeacherName: string;
   subjectTitle: string;
   designated: string;
@@ -56,6 +57,9 @@ const subjectModel = new Schema<iSubjectData>(
       },
     ],
     teacherID: {
+      type: String,
+    },
+    classID: {
       type: String,
     },
     schoolName: {

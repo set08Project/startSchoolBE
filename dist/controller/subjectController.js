@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.viewSubjectDetail = exports.deleteSchoolSubject = exports.viewSchoolSubjects = exports.updateSchoolSubjectTeacher = exports.updateSchoolSubjectTitle = exports.createSchoolSubject = void 0;
+exports.removeSubjectFromTeacher = exports.viewSubjectDetail = exports.deleteSchoolSubject = exports.viewSchoolSubjects = exports.updateSchoolSubjectTeacher = exports.updateSchoolSubjectTitle = exports.createSchoolSubject = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -193,13 +193,18 @@ const viewSchoolSubjects = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.viewSchoolSubjects = viewSchoolSubjects;
 const deleteSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const { schoolID, subjectID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const subjects = yield subjectModel_1.default.findByIdAndDelete(subjectID);
-            school.subjects.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
+            const subjects = yield subjectModel_1.default.findById(subjectID);
+            // const subjects = await subjectModel.findByIdAndDelete(subjectID);
+            const classRM = yield classroomModel_1.default.findById(subjects === null || subjects === void 0 ? void 0 : subjects.classDetails);
+            (_a = school === null || school === void 0 ? void 0 : school.subjects) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
             school.save();
+            (_b = classRM === null || classRM === void 0 ? void 0 : classRM.classSubjects) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
+            classRM === null || classRM === void 0 ? void 0 : classRM.save();
             return res.status(201).json({
                 message: "subjects  deleted successfully",
                 data: subjects,
@@ -215,7 +220,7 @@ const deleteSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating school session",
+            message: "Error cdeleting subject",
             status: 404,
         });
     }
@@ -239,3 +244,42 @@ const viewSubjectDetail = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.viewSubjectDetail = viewSubjectDetail;
+const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, teacherID, subjectID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        const teacher = yield staffModel_1.default.findById(teacherID);
+        if (school && school.schoolName && school.status === "school-admin") {
+            const subjects = yield subjectModel_1.default.findById(subjectID);
+            let read = [...teacher === null || teacher === void 0 ? void 0 : teacher.subjectAssigned];
+            let subj = read === null || read === void 0 ? void 0 : read.filter((el) => {
+                return el.id.toString() !== subjectID;
+            });
+            yield (staffModel_1.default === null || staffModel_1.default === void 0 ? void 0 : staffModel_1.default.findByIdAndUpdate(teacherID, {
+                subjectAssigned: subj,
+            }, { new: true }));
+            yield subjectModel_1.default.findByIdAndUpdate(subjectID, {
+                subjectTeacherName: "",
+                teacherID: "",
+            }, { new: true });
+            return res.status(201).json({
+                message: "subjects  deleted successfully",
+                data: subjects,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error cdeleting subject",
+            status: 404,
+        });
+    }
+});
+exports.removeSubjectFromTeacher = removeSubjectFromTeacher;

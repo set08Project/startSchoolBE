@@ -439,7 +439,7 @@ const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, fu
             const updatedSchool = yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
                 activeStatus: true,
             }, { new: true });
-            const timing = 45 * 60 * 1000;
+            const timing = 40 * 60 * 1000;
             const taskId = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
                 yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
                     activeStatus: false,

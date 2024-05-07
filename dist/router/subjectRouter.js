@@ -9,9 +9,9 @@ router.route("/view-subjects-info/:subjectID").get(subjectController_1.viewSubje
 router
     .route("/update-subject-teacher/:schoolID/:subjectID")
     .patch(subjectController_1.updateSchoolSubjectTeacher);
-// router
-//   .route("/update-subject-teacher/:schoolID/:subjectID")
-//   .patch(updateSchoolSubjectTeacher);
+router
+    .route("/remove-teacher-subject/:schoolID/:teacherID/:subjectID")
+    .patch(subjectController_1.removeSubjectFromTeacher);
 router
     .route("/delete-subject/:schoolID/:subjectID")
     .delete(subjectController_1.deleteSchoolSubject);

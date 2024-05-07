@@ -506,7 +506,7 @@ export const updateStaffActiveness = async (req: any, res: Response) => {
         { new: true }
       );
 
-      const timing = 45 * 60 * 1000;
+      const timing = 40 * 60 * 1000;
 
       const taskId = setTimeout(async () => {
         await staffModel.findByIdAndUpdate(
