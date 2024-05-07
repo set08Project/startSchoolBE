@@ -25,16 +25,13 @@ const port = parseInt(portServer);
 // cors headers starts
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header(
-    "Access-Control-Allow-Origin",
-    `${process.env.APP_URL_DEPLOY} https://just-next.onrender.com`
-  );
+  res.header("Access-Control-Allow-Origin", process.env.APP_URL_DEPLOY);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type");
   next();
 });
-
+// [`${process.env.APP_URL_DEPLOY}`, "https://just-next.onrender.com"]
 // cors headers ends
 
 // const limiter = rateLimit({
@@ -47,7 +44,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // });
 app.use(
   cors({
-    origin: [`${process.env.APP_URL_DEPLOY}`, "https://just-next.onrender.com"],
+    origin: process.env.APP_URL_DEPLOY,
   })
 );
 app.use(express.json());
