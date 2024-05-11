@@ -13,6 +13,9 @@ const schoolModel = new mongoose_2.Schema({
         type: Boolean,
         default: false,
     },
+    phone: {
+        type: String,
+    },
     avatar: {
         type: String,
     },
@@ -24,6 +27,12 @@ const schoolModel = new mongoose_2.Schema({
         type: String,
     },
     presentSession: {
+        type: String,
+    },
+    name: {
+        type: String,
+    },
+    name2: {
         type: String,
     },
     avatarID: {

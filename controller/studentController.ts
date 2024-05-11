@@ -421,6 +421,7 @@ export const updateStudent3rdFees = async (
           { new: true }
         );
         verifySchoolFees(student, 3);
+
         return res.status(201).json({
           message: "student fees updated successfully",
           data: student,

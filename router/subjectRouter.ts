@@ -7,7 +7,6 @@ import {
   viewSubjectDetail,
   removeSubjectFromTeacher,
 } from "../controller/subjectController";
-import { changeStudentClass } from "../controller/studentController";
 
 const router: Router = Router();
 

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeSchoolTag = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.changeSchoolTag = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -309,6 +309,59 @@ const changeSchoolAddress = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.changeSchoolAddress = changeSchoolAddress;
+const changeSchoolPhoneNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { phone } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { phone }, { new: true });
+            return res.status(201).json({
+                message: "school phone number changes successfully",
+                data: verified,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "error finding school",
+                data: school,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error verifying school",
+        });
+    }
+});
+exports.changeSchoolPhoneNumber = changeSchoolPhoneNumber;
+const changeSchoolPersonalName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { name, name2 } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { name, name2 }, { new: true });
+            console.log(verified === null || verified === void 0 ? void 0 : verified.name);
+            return res.status(201).json({
+                message: "school name changes successfully",
+                data: verified,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "error finding school",
+                data: school,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error verifying school",
+        });
+    }
+});
+exports.changeSchoolPersonalName = changeSchoolPersonalName;
 // school Image/Logo
 const updateSchoolAvatar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

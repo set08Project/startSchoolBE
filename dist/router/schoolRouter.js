@@ -36,6 +36,10 @@ router.route("/update-account-info/:schoolID").patch(schoolController_1.updateSc
 router
     .route("/upload-school-avatar/:schoolID")
     .patch(upload, schoolController_1.updateSchoolAvatar);
+router.route("/change-school-phone/:schoolID").patch(schoolController_1.changeSchoolPhoneNumber);
+router
+    .route("/change-school-personal-name/:schoolID")
+    .patch(schoolController_1.changeSchoolPersonalName);
 router.route("/change-school-tag/:schoolID").patch(schoolController_1.changeSchoolTag);
 router.route("/change-school-name/:schoolID").patch(schoolController_1.updateSchoolName);
 router

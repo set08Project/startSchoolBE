@@ -7,7 +7,6 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
-import { CronJob } from "cron";
 import studentModel from "../model/studentModel";
 
 export const loginTeacher = async (

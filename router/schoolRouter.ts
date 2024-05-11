@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   changeSchoolAddress,
   changeSchoolName,
+  changeSchoolPersonalName,
+  changeSchoolPhoneNumber,
   changeSchoolTag,
   createSchool,
   deleteSchool,
@@ -59,6 +61,11 @@ router.route("/update-account-info/:schoolID").patch(updateSchoolAccountDetail);
 router
   .route("/upload-school-avatar/:schoolID")
   .patch(upload, updateSchoolAvatar);
+
+router.route("/change-school-phone/:schoolID").patch(changeSchoolPhoneNumber);
+router
+  .route("/change-school-personal-name/:schoolID")
+  .patch(changeSchoolPersonalName);
 
 router.route("/change-school-tag/:schoolID").patch(changeSchoolTag);
 router.route("/change-school-name/:schoolID").patch(updateSchoolName);

@@ -363,6 +363,78 @@ export const changeSchoolAddress = async (
   }
 };
 
+export const changeSchoolPhoneNumber = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { phone } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const verified = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        { phone },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "school phone number changes successfully",
+        data: verified,
+      });
+    } else {
+      return res.status(404).json({
+        message: "error finding school",
+        data: school,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error verifying school",
+    });
+  }
+};
+
+export const changeSchoolPersonalName = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { name, name2 } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const verified: any = await schoolModel.findByIdAndUpdate(
+        schoolID,
+
+        { name, name2 },
+
+        { new: true }
+      );
+
+      console.log(verified?.name);
+
+      return res.status(201).json({
+        message: "school name changes successfully",
+        data: verified,
+      });
+    } else {
+      return res.status(404).json({
+        message: "error finding school",
+        data: school,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error verifying school",
+    });
+  }
+};
+
 // school Image/Logo
 
 export const updateSchoolAvatar = async (req: any, res: Response) => {

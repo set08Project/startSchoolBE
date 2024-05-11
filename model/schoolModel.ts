@@ -11,6 +11,9 @@ interface iSchool {
   presentTerm: string;
   presentSession: string;
 
+  name: string;
+  name2: string;
+
   schoolName: string;
   address: string;
   freeMode: boolean;
@@ -19,6 +22,7 @@ interface iSchool {
   avatarID: string;
 
   plan: string;
+  phone: string;
 
   bankDetails: {};
 
@@ -63,6 +67,9 @@ const schoolModel = new Schema<iSchoolData>(
       type: Boolean,
       default: false,
     },
+    phone: {
+      type: String,
+    },
     avatar: {
       type: String,
     },
@@ -77,6 +84,15 @@ const schoolModel = new Schema<iSchoolData>(
     presentSession: {
       type: String,
     },
+
+    name: {
+      type: String,
+    },
+
+    name2: {
+      type: String,
+    },
+
     avatarID: {
       type: String,
     },
