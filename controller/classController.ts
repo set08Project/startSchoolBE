@@ -331,7 +331,10 @@ export const updateSchoolClassTeacher = async (
         await staffModel.findByIdAndUpdate(
           getTeacher._id,
           {
-            classesAssigned: subjects?.className!,
+            classesAssigned: [
+              ...getTeacher?.classesAssigned,
+              { className: subjects?.className!, classID },
+            ],
             presentClassID: classID,
           },
           { new: true }

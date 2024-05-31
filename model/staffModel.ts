@@ -17,7 +17,7 @@ interface iStaff {
   staffAvatarID: string;
   enrollmentID: string;
   activeStatus: boolean;
-  classesAssigned: string;
+  classesAssigned: [];
 
   subjectAssigned: Array<{}>;
   schedule: Array<{}>;
@@ -119,7 +119,7 @@ const staffModel = new Schema<iStaffData>(
     },
 
     classesAssigned: {
-      type: String,
+      type: [],
     },
 
     subjectAssigned: {

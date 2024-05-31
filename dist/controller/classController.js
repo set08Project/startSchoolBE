@@ -283,7 +283,10 @@ const updateSchoolClassTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
                     teacherID: getTeacher._id,
                 }, { new: true });
                 yield staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
-                    classesAssigned: subjects === null || subjects === void 0 ? void 0 : subjects.className,
+                    classesAssigned: [
+                        ...getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.classesAssigned,
+                        { className: subjects === null || subjects === void 0 ? void 0 : subjects.className, classID },
+                    ],
                     presentClassID: classID,
                 }, { new: true });
                 return res.status(201).json({

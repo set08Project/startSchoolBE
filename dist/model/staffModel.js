@@ -62,7 +62,7 @@ const staffModel = new mongoose_1.Schema({
         default: 0,
     },
     classesAssigned: {
-        type: String,
+        type: [],
     },
     subjectAssigned: {
         type: [],
