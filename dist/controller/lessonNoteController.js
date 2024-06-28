@@ -29,10 +29,8 @@ const createClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
         if (school && school.schoolName && staff) {
             const note = yield lessonNoteModel_1.default.create({
                 teacher: staff === null || staff === void 0 ? void 0 : staff.staffName,
-                teacherClass: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
+                // teacherClass: staff?.classesAssigned,
                 teacherID: staff === null || staff === void 0 ? void 0 : staff._id,
-                subject,
-                topic,
                 week,
                 endingAt,
                 createDate,
@@ -49,6 +47,8 @@ const createClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 summary,
                 presentation,
                 assignment,
+                topic,
+                subject,
                 adminSignation: false,
             });
             school === null || school === void 0 ? void 0 : school.lessonNotes.push(new mongoose_1.Types.ObjectId(note === null || note === void 0 ? void 0 : note._id));

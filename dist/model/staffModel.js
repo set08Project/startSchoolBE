@@ -2,6 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const staffModel = new mongoose_1.Schema({
+    articles: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "articles",
+        },
+    ],
     complain: [
         {
             type: mongoose_1.Types.ObjectId,

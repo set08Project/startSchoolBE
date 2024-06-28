@@ -35,6 +35,7 @@ interface iStaff {
   status: string;
   phone: string;
   gender: string;
+  articles: Array<{}>;
   school: {};
 }
 
@@ -42,6 +43,12 @@ interface iStaffData extends iStaff, Document {}
 
 const staffModel = new Schema<iStaffData>(
   {
+    articles: [
+      {
+        type: Types.ObjectId,
+        ref: "articles",
+      },
+    ],
     complain: [
       {
         type: Types.ObjectId,

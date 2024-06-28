@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createArticle,
+  createTeacherArticle,
   deleteOneArticle,
   likeArticle,
   readAllArticles,
@@ -28,6 +29,10 @@ const router: Router = Router();
 router
   .route("/create-article/:schoolID/:studentID")
   .post(upload, createArticle);
+
+router
+  .route("/create-article/:schoolID/:teacherID")
+  .post(upload, createTeacherArticle);
 
 router.route("/view-article/:articleID").get(readOneArticle);
 router.route("/view-school-article/:schoolID").get(readAllArticles);

@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteOneArticle = exports.viewArticle = exports.likeArticle = exports.readOneArticle = exports.readAllArticles = exports.createArticle = void 0;
+exports.deleteOneArticle = exports.viewArticle = exports.likeArticle = exports.readOneArticle = exports.readAllArticles = exports.createTeacherArticle = exports.createArticle = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const mongoose_1 = require("mongoose");
 const articleModel_1 = __importDefault(require("../model/articleModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const streamifier_1 = require("../utils/streamifier");
+const staffModel_1 = __importDefault(require("../model/staffModel"));
 const createArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, studentID } = req.params;
@@ -61,6 +62,49 @@ const createArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.createArticle = createArticle;
+const createTeacherArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, teacherID } = req.params;
+        const { title, content, desc } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        const student = yield staffModel_1.default.findById(teacherID);
+        if (school && student) {
+            const { secure_url } = yield (0, streamifier_1.streamUpload)(req);
+            const article = yield articleModel_1.default.create({
+                coverImage: secure_url,
+                schoolID,
+                studentID: teacherID,
+                title,
+                content,
+                desc,
+                student: `${student.staffName} `,
+                avatar: student.avatar,
+            });
+            school.articles.push(new mongoose_1.Types.ObjectId(article === null || article === void 0 ? void 0 : article._id));
+            school === null || school === void 0 ? void 0 : school.save();
+            student.articles.push(new mongoose_1.Types.ObjectId(article === null || article === void 0 ? void 0 : article._id));
+            student === null || student === void 0 ? void 0 : student.save();
+            return res.status(201).json({
+                message: "Article created successfully",
+                data: article,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Error creating article",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating class subject quiz",
+            status: 404,
+        });
+    }
+});
+exports.createTeacherArticle = createTeacherArticle;
 const readAllArticles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;

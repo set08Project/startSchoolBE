@@ -23,6 +23,9 @@ const router = (0, express_1.Router)();
 router
     .route("/create-article/:schoolID/:studentID")
     .post(upload, articleController_1.createArticle);
+router
+    .route("/create-article/:schoolID/:teacherID")
+    .post(upload, articleController_1.createTeacherArticle);
 router.route("/view-article/:articleID").get(articleController_1.readOneArticle);
 router.route("/view-school-article/:schoolID").get(articleController_1.readAllArticles);
 router.route("/like-article/:articleID/:readerID").patch(articleController_1.likeArticle);

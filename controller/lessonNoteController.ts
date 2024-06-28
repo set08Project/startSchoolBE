@@ -44,11 +44,9 @@ export const createClasslessonNote = async (
     if (school && school.schoolName && staff) {
       const note = await lessonNoteModel.create({
         teacher: staff?.staffName,
-        teacherClass: staff?.classesAssigned,
+        // teacherClass: staff?.classesAssigned,
         teacherID: staff?._id,
 
-        subject,
-        topic,
         week,
         endingAt,
         createDate,
@@ -65,6 +63,8 @@ export const createClasslessonNote = async (
         summary,
         presentation,
         assignment,
+        topic,
+        subject,
         adminSignation: false,
       });
 

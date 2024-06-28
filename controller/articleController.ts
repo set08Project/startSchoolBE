@@ -5,6 +5,7 @@ import articleModel from "../model/articleModel";
 import studentModel from "../model/studentModel";
 import { viewStudentAttendance } from "./attendanceController";
 import { streamUpload } from "../utils/streamifier";
+import staffModel from "../model/staffModel";
 
 export const createArticle = async (
   req: Request,
@@ -27,6 +28,54 @@ export const createArticle = async (
         content,
         desc,
         student: `${student.studentFirstName} ${student.studentLastName}`,
+        avatar: student.avatar,
+      });
+
+      school.articles.push(new Types.ObjectId(article?._id));
+      school?.save();
+      student.articles.push(new Types.ObjectId(article?._id));
+      student?.save();
+
+      return res.status(201).json({
+        message: "Article created successfully",
+        data: article,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Error creating article",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating class subject quiz",
+      status: 404,
+    });
+  }
+};
+
+export const createTeacherArticle = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, teacherID } = req.params;
+    const { title, content, desc } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    const student = await staffModel.findById(teacherID);
+
+    if (school && student) {
+      const { secure_url }: any = await streamUpload(req);
+      const article = await articleModel.create({
+        coverImage: secure_url,
+        schoolID,
+        studentID: teacherID,
+        title,
+        content,
+        desc,
+        student: `${student.staffName} `,
         avatar: student.avatar,
       });
 
