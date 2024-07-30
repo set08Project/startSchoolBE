@@ -6,6 +6,7 @@ import {
   createSchoolStudent,
   createStorePurchased,
   createStorePurchasedTeacher,
+  deleteStudent,
   loginStudent,
   readSchoolStudents,
   readStudentCookie,
@@ -25,6 +26,7 @@ import {
   viewStorePurchasedTeacher,
 } from "../controller/studentController";
 import multer from "multer";
+
 const upload = multer({
   fileFilter: (req, file, cb) => {
     if (
@@ -98,5 +100,7 @@ router
   .patch(assignClassMonitor);
 
 router.route("/change-student-class/:schoolID").patch(changeStudentClass);
+
+router.route("/delete-student/:schoolID/:studentID").delete(deleteStudent);
 
 export default router;
