@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginTeacher = void 0;
+exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -465,3 +465,34 @@ const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.updateStaffActiveness = updateStaffActiveness;
+const deleteStaff = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    try {
+        const { schoolID, staffID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findByIdAndDelete(staffID);
+            (_c = school === null || school === void 0 ? void 0 : school.staff) === null || _c === void 0 ? void 0 : _c.pull(new mongoose_1.Types.ObjectId(staffID));
+            school.save();
+            return res.status(200).json({
+                message: "Successfully Deleted Staff",
+                status: 200,
+                data: staff,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "No School Found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error deleting Staff",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.deleteStaff = deleteStaff;

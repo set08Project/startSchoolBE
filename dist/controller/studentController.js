@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
+exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -839,3 +839,34 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.changeStudentClass = changeStudentClass;
+const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _g;
+    try {
+        const { schoolID, studentID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findByIdAndDelete(studentID);
+            (_g = school === null || school === void 0 ? void 0 : school.students) === null || _g === void 0 ? void 0 : _g.pull(new mongoose_1.Types.ObjectId(studentID));
+            school.save();
+            return res.status(200).json({
+                message: "Successfully Deleted Student",
+                status: 200,
+                data: student,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "No School Found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error deleting student",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.deleteStudent = deleteStudent;
