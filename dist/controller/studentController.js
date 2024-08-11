@@ -384,7 +384,7 @@ const updateStudent3rdFees = (req, res) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.updateStudent3rdFees = updateStudent3rdFees;
 const updatePurchaseRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _a;
     try {
         const { studentID } = req.params;
         const { purchased } = req.body;
@@ -392,7 +392,7 @@ const updatePurchaseRecord = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
         if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
             yield studentModel_1.default.findById(studentID, {
-                purchaseHistory: (_d = student === null || student === void 0 ? void 0 : student.purchaseHistory) === null || _d === void 0 ? void 0 : _d.push(purchased),
+                purchaseHistory: (_a = student === null || student === void 0 ? void 0 : student.purchaseHistory) === null || _a === void 0 ? void 0 : _a.push(purchased),
             }, { new: true });
             return res.status(201).json({
                 message: "student purchase recorded successfully",
@@ -778,7 +778,7 @@ const updateSchoolSchoolFee = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.updateSchoolSchoolFee = updateSchoolSchoolFee;
 const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _a;
     try {
         const { teacherID, studentID } = req.params;
         const teacher = yield staffModel_1.default.findById(teacherID);
@@ -787,7 +787,7 @@ const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, funct
             .populate({
             path: "students",
         });
-        let readStudent = (_e = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _e === void 0 ? void 0 : _e.find((el) => {
+        let readStudent = (_a = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _a === void 0 ? void 0 : _a.find((el) => {
             return (el === null || el === void 0 ? void 0 : el.monitor) === true;
         });
         yield studentModel_1.default.findByIdAndUpdate(readStudent === null || readStudent === void 0 ? void 0 : readStudent._id, {
@@ -810,7 +810,7 @@ const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.assignClassMonitor = assignClassMonitor;
 const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _a;
     try {
         const { studentID } = req.params;
         const { classID } = req.body;
@@ -821,7 +821,7 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
             classAssigned: getClass === null || getClass === void 0 ? void 0 : getClass.className,
             presentClassID: getClass === null || getClass === void 0 ? void 0 : getClass._id,
         }, { new: true });
-        (_f = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _f === void 0 ? void 0 : _f.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
+        (_a = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
         getClass === null || getClass === void 0 ? void 0 : getClass.save();
         console.log(student);
         console.log(getClass);
@@ -840,13 +840,13 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.changeStudentClass = changeStudentClass;
 const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _g;
+    var _a;
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = yield studentModel_1.default.findByIdAndDelete(studentID);
-            (_g = school === null || school === void 0 ? void 0 : school.students) === null || _g === void 0 ? void 0 : _g.pull(new mongoose_1.Types.ObjectId(studentID));
+            (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
             school.save();
             return res.status(200).json({
                 message: "Successfully Deleted Student",
