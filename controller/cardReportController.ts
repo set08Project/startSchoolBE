@@ -542,9 +542,12 @@ export const classTeacherReportRemark = async (
       );
     });
 
-    const teacher = await staffModel.findById(teacherID);
+    const teacher: any = await staffModel.findById(teacherID);
 
-    if (teacher?.classesAssigned === student?.classAssigned) {
+    console.log("student: ", student?.classAssigned);
+    console.log("teacher: ", teacher?.classesAssigned[0].className);
+
+    if (teacher?.classesAssigned[0].className === student?.classAssigned) {
       const report = await cardReportModel.findByIdAndUpdate(
         getReportSubject?._id,
         {
