@@ -6,6 +6,7 @@ import {
   createSchoolTeacherByPrincipal,
   createSchoolTeacherByVicePrincipal,
   createSchoolVicePrincipal,
+  deleteStaff,
   loginTeacher,
   readSchooTeacher,
   readTeacherCookie,
@@ -61,5 +62,7 @@ router
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);
+
+router.route("/delete-staff/:schoolID/:staffID").delete(deleteStaff);
 
 export default router;

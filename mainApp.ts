@@ -77,7 +77,6 @@ export const mainApp = (app: Application) => {
         })
       );
     });
-
     app.use(handleError);
   } catch (error) {
     return error;

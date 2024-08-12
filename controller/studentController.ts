@@ -1009,3 +1009,37 @@ export const changeStudentClass = async (
     });
   }
 };
+
+export const deleteStudent = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const school: any = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const student = await studentModel.findByIdAndDelete(studentID);
+
+      school?.students?.pull(new Types.ObjectId(studentID));
+      school.save();
+
+      return res.status(200).json({
+        message: "Successfully Deleted Student",
+        status: 200,
+        data: student,
+      });
+    } else {
+      return res.status(404).json({
+        message: "No School Found",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error deleting student",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
