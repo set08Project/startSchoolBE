@@ -16,6 +16,7 @@ interface iStudent {
   monitor: boolean;
 
   records: any;
+  classTermFee: number;
 
   feesPaid1st: boolean;
   feesPaid2nd: boolean;
@@ -64,6 +65,9 @@ const studentModel = new Schema<iStudentData>(
     },
     records: {
       type: Array<any>,
+    },
+    classTermFee: {
+      type: Number,
     },
 
     feesPaid2nd: {

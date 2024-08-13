@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClassTeacher = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
+exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClass1stFee = exports.updateSchoolClassTeacher = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -317,6 +317,49 @@ const updateSchoolClassTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.updateSchoolClassTeacher = updateSchoolClassTeacher;
+const updateSchoolClass1stFee = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, classID } = req.params;
+        const { class1stFee, class2ndFee, class3rdFee } = req.body;
+        // console.log(class1stFee);
+        const school = yield schoolModel_1.default.findById(schoolID);
+        const getClass = yield classroomModel_1.default.findById(classID);
+        if (school && school.schoolName && school.status === "school-admin") {
+            if (getClass) {
+                const update = yield classroomModel_1.default.findByIdAndUpdate(getClass._id, {
+                    class1stFee,
+                    class2ndFee,
+                    class3rdFee,
+                }, { new: true });
+                return res.status(201).json({
+                    message: "class term fee updated successfully",
+                    data: update,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "unable to find class",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.updateSchoolClass1stFee = updateSchoolClass1stFee;
 const deleteSchoolClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, classID } = req.params;
