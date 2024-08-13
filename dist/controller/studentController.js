@@ -810,21 +810,27 @@ const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.assignClassMonitor = assignClassMonitor;
 const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+
+    var _a, _b;
+
     try {
         const { studentID } = req.params;
         const { classID } = req.body;
         const getClass = yield classroomModel_1.default.findById(classID).populate({
             path: "students",
         });
+        const studentData = yield studentModel_1.default.findById(studentID);
+        const getStudentClass = yield classroomModel_1.default.findById(studentData === null || studentData === void 0 ? void 0 : studentData.presentClassID);
+        (_a = getStudentClass === null || getStudentClass === void 0 ? void 0 : getStudentClass.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
+        getStudentClass === null || getStudentClass === void 0 ? void 0 : getStudentClass.save();
         const student = yield studentModel_1.default.findByIdAndUpdate(studentID, {
             classAssigned: getClass === null || getClass === void 0 ? void 0 : getClass.className,
             presentClassID: getClass === null || getClass === void 0 ? void 0 : getClass._id,
         }, { new: true });
-        (_a = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
+
+        (_b = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
+
         getClass === null || getClass === void 0 ? void 0 : getClass.save();
-        console.log(student);
-        console.log(getClass);
         return res.status(201).json({
             message: `class monitor assigned to ${student === null || student === void 0 ? void 0 : student.studentFirstName} `,
             data: student,

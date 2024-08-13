@@ -129,17 +129,38 @@ export const createNewSchoolSession = async (
       for (let i of schoolClass?.classRooms) {
         let num: number = parseInt(`${i.className}`.match(/\d+/)![0]);
         let name = i.className.split(`${num}`);
+        // {name[0].trim()} ${num + 1}${name[1].trim()}
 
-        if (num < 4) {
+        if (num < 4 && name[0].trim() === "JSS") {
           await classroomModel.findByIdAndUpdate(
             i?._id,
             {
-              className: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
+              className: `
+              ${
+                num + 1 > 3
+                  ? `SSS ${1}${name[1].trim()}`
+                  : `${name[0].trim()} ${num + 1}${name[1].trim()}`
+              }
+              
+              `,
+            },
+            { new: true }
+          );
+        } else if (num < 3 && name[0].trim() === "SSS") {
+          await classroomModel.findByIdAndUpdate(
+            i?._id,
+            {
+              className: `
+              ${name[0].trim()} ${num + 1}${name[1].trim()}
+
+              `,
             },
             { new: true }
           );
         } else {
-          console.log("can't");
+          await classroomModel.findByIdAndDelete(i?._id);
+          schoolClass.classRooms.pull(new Types.ObjectId(i?._id));
+          // schoolClass.save();
         }
       }
 
@@ -392,19 +413,20 @@ export const termPerSession = async (
             );
           }
 
-          await schoolModel.findByIdAndUpdate(
-            sessionRecorde?.schoolID,
-            {
-              presentTerm: term,
-            },
-            { new: true }
-          );
-
           const sessionTerm: any = await termModel.create({
             term: capitalizedText(term),
             year: session?.year,
             presentTerm: term,
           });
+
+          await schoolModel.findByIdAndUpdate(
+            sessionRecorde?.schoolID,
+            {
+              presentTermID: sessionTerm?._id?.toString(),
+              presentTerm: term,
+            },
+            { new: true }
+          );
 
           session?.term.push(new Types.ObjectId(sessionTerm?._id));
           session?.save();
@@ -413,6 +435,7 @@ export const termPerSession = async (
             await schoolModel.findByIdAndUpdate(
               sessionRecorde?.schoolID,
               {
+                presentTermID: sessionTerm?._id?.toString(),
                 freeMode: false,
               },
               { new: true }

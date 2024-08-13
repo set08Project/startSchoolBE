@@ -114,13 +114,29 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
                 let num = parseInt(`${i.className}`.match(/\d+/)[0]);
                 let name = i.className.split(`${num}`);
-                if (num < 4) {
+                // {name[0].trim()} ${num + 1}${name[1].trim()}
+                if (num < 4 && name[0].trim() === "JSS") {
                     yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        className: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
+                        className: `
+              ${num + 1 > 3
+                            ? `SSS ${1}${name[1].trim()}`
+                            : `${name[0].trim()} ${num + 1}${name[1].trim()}`}
+              
+              `,
+                    }, { new: true });
+                }
+                else if (num < 3 && name[0].trim() === "SSS") {
+                    yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                        className: `
+              ${name[0].trim()} ${num + 1}${name[1].trim()}
+
+              `,
                     }, { new: true });
                 }
                 else {
-                    console.log("can't");
+                    yield classroomModel_1.default.findByIdAndDelete(i === null || i === void 0 ? void 0 : i._id);
+                    schoolClass.classRooms.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
+                    // schoolClass.save();
                 }
             }
             for (let i of students) {
@@ -258,7 +274,9 @@ const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.studentsPerSession = studentsPerSession;
 const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+
+    var _a, _b, _c, _d, _e, _f;
+
     try {
         const { sessionID } = req.params;
         let { term } = req.body;
@@ -314,18 +332,22 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                             weekStudent: {},
                         }, { new: true });
                     }
-                    yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
-                        presentTerm: term,
-                    }, { new: true });
                     const sessionTerm = yield termModel_1.default.create({
                         term: capitalizedText(term),
                         year: session === null || session === void 0 ? void 0 : session.year,
                         presentTerm: term,
                     });
+                    yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
+                        presentTermID: (_c = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _c === void 0 ? void 0 : _c.toString(),
+                        presentTerm: term,
+                    }, { new: true });
                     session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
                     session === null || session === void 0 ? void 0 : session.save();
-                    if (((_c = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _c === void 0 ? void 0 : _c.length) > 1 || ((_d = session === null || session === void 0 ? void 0 : session.term) === null || _d === void 0 ? void 0 : _d.length) > 1) {
+
+                    if (((_d = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _d === void 0 ? void 0 : _d.length) > 1 || ((_e = session === null || session === void 0 ? void 0 : session.term) === null || _e === void 0 ? void 0 : _e.length) > 1) {
+
                         yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
+                            presentTermID: (_f = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _f === void 0 ? void 0 : _f.toString(),
                             freeMode: false,
                         }, { new: true });
                     }
