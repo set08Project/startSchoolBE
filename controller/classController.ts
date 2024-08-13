@@ -6,6 +6,7 @@ import classroomModel from "../model/classroomModel";
 import staffModel from "../model/staffModel";
 import lodash from "lodash";
 import studentModel from "../model/studentModel";
+import { log } from "console";
 
 export const createSchoolClasses = async (
   req: Request,
@@ -361,6 +362,54 @@ export const updateSchoolClassTeacher = async (
     return res.status(404).json({
       message: "Error creating school session",
       status: 404,
+    });
+  }
+};
+
+export const updateSchoolClass1stFee = async (req: Request, res: Response) => {
+  try {
+    const { schoolID, classID } = req.params;
+    const { class1stFee, class2ndFee, class3rdFee } = req.body;
+
+    // console.log(class1stFee);
+
+    const school = await schoolModel.findById(schoolID);
+    const getClass = await classroomModel.findById(classID);
+
+    if (school && school.schoolName && school.status === "school-admin") {
+      if (getClass) {
+        const update = await classroomModel.findByIdAndUpdate(
+          getClass._id,
+          {
+            class1stFee,
+            class2ndFee,
+            class3rdFee,
+          },
+          { new: true }
+        );
+
+        return res.status(201).json({
+          message: "class term fee updated successfully",
+          data: update,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "unable to find class",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      status: 404,
+      data: error.message,
     });
   }
 };
