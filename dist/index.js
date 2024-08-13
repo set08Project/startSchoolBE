@@ -16,7 +16,7 @@ dotenv_1.default.config();
 const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
 const MongoDBStore = (0, connect_mongodb_session_1.default)(express_session_1.default);
 const store = new MongoDBStore({
-    uri: process.env.MONGO_DB_URL_ONLINE,
+    uri: process.env.MONGO_DB_URL_LOCAL,
     collection: "sessions",
 });
 const app = (0, express_1.default)();

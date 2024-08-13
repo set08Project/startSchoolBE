@@ -54,6 +54,9 @@ const schoolModel = new mongoose_2.Schema({
     status: {
         type: String,
     },
+    presentTermID: {
+        type: String,
+    },
     enrollmentID: {
         type: String,
     },

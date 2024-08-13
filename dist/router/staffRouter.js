@@ -42,4 +42,5 @@ router
     .post(staffController_1.createSchoolTeacherByVicePrincipal);
 router.route("/upload-staff-avatar/:staffID").patch(upload, staffController_1.updateStaffAvatar);
 router.route("/staff-active/:studentID").patch(staffController_1.updateStaffActiveness);
+router.route("/delete-staff/:schoolID/:staffID").delete(staffController_1.deleteStaff);
 exports.default = router;

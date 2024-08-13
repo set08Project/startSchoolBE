@@ -6,6 +6,7 @@ import moment from "moment";
 import crypto from "crypto";
 import { CronJob } from "cron";
 import axios from "axios";
+import jwt from "jsonwebtoken";
 // import https from "https";
 import env from "dotenv";
 env.config();
@@ -366,14 +367,18 @@ export const makePayment = async (req: Request, res: Response) => {
     const { email } = req.body;
     const { schoolID } = req.params;
 
-    const school = await schoolModel.findById(schoolID);
+    const school: any = await schoolModel.findById(schoolID);
 
     let amount = school?.students!.length! * 1000;
+    let termID = school?.presentTermID;
+    let token = jwt.sign({ termID }, process.env.API_SECRET_KEY as string, {
+      expiresIn: "3d",
+    });
 
     const params = JSON.stringify({
       email,
       amount: (amount * 100).toString(),
-      callback_url: `${process.env.APP_URL_DEPLOY}/successful-payment`,
+      callback_url: `${process.env.APP_URL_DEPLOY}/${token}/successful-payment`,
       metadata: {
         cancel_action: `${process.env.APP_URL_DEPLOY}`,
       },

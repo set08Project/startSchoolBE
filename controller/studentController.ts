@@ -982,6 +982,14 @@ export const changeStudentClass = async (
       path: "students",
     });
 
+    const studentData = await studentModel.findById(studentID);
+    const getStudentClass: any = await classroomModel.findById(
+      studentData?.presentClassID
+    );
+
+    getStudentClass?.students?.pull(new Types.ObjectId(studentID));
+    getStudentClass?.save();
+
     const student = await studentModel.findByIdAndUpdate(
       studentID,
       {
@@ -993,9 +1001,6 @@ export const changeStudentClass = async (
 
     getClass?.students?.push(new Types.ObjectId(student?._id));
     getClass?.save();
-
-    console.log(student);
-    console.log(getClass);
 
     return res.status(201).json({
       message: `class monitor assigned to ${student?.studentFirstName} `,

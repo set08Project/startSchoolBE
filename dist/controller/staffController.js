@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginTeacher = void 0;
+exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -261,7 +261,7 @@ const createSchoolTeacherByAdmin = (req, res) => __awaiter(void 0, void 0, void 
 });
 exports.createSchoolTeacherByAdmin = createSchoolTeacherByAdmin;
 const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _a;
     try {
         const { schoolID } = req.params;
         const { staffName, gender, salary, staffAddress, role, subjectTitle } = req.body;
@@ -288,7 +288,7 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
                 gender,
                 email: `${staffName
                     .replace(/ /gi, "")
-                    .toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
+                    .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
                 enrollmentID,
                 password: hashed,
                 staffAddress,
@@ -465,3 +465,34 @@ const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.updateStaffActiveness = updateStaffActiveness;
+const deleteStaff = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { schoolID, staffID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findByIdAndDelete(staffID);
+            (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(staffID));
+            school.save();
+            return res.status(200).json({
+                message: "Successfully Deleted Staff",
+                status: 200,
+                data: staff,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "No School Found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error deleting Staff",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.deleteStaff = deleteStaff;
