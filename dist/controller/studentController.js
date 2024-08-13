@@ -46,6 +46,13 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
                 const student = yield studentModel_1.default.create({
                     schoolIDs: schoolID,
                     presentClassID: findClass === null || findClass === void 0 ? void 0 : findClass._id,
+                    classTermFee: (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "1st Term"
+                        ? findClass === null || findClass === void 0 ? void 0 : findClass.class1stFee
+                        : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "2nd Term"
+                            ? findClass === null || findClass === void 0 ? void 0 : findClass.class2ndFee
+                            : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "3rd Term"
+                                ? findClass === null || findClass === void 0 ? void 0 : findClass.class3rdFee
+                                : null,
                     gender,
                     enrollmentID,
                     schoolID: school === null || school === void 0 ? void 0 : school.enrollmentID,
@@ -826,6 +833,13 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const student = yield studentModel_1.default.findByIdAndUpdate(studentID, {
             classAssigned: getClass === null || getClass === void 0 ? void 0 : getClass.className,
             presentClassID: getClass === null || getClass === void 0 ? void 0 : getClass._id,
+            classTermFee: (getClass === null || getClass === void 0 ? void 0 : getClass.presentTerm) === "1st Term"
+                ? getClass === null || getClass === void 0 ? void 0 : getClass.class1stFee
+                : (getClass === null || getClass === void 0 ? void 0 : getClass.presentTerm) === "2nd Term"
+                    ? getClass === null || getClass === void 0 ? void 0 : getClass.class2ndFee
+                    : (getClass === null || getClass === void 0 ? void 0 : getClass.presentTerm) === "3rd Term"
+                        ? getClass === null || getClass === void 0 ? void 0 : getClass.class3rdFee
+                        : null,
         }, { new: true });
 
         (_b = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
