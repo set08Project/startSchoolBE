@@ -3,6 +3,7 @@ import {
   createSchoolClasses,
   deleteSchoolClass,
   studentOfWeek,
+  updateSchoolClass1stFee,
   updateSchoolClassTeacher,
   viewClassRM,
   viewClassTopStudent,
@@ -32,6 +33,9 @@ router.route("/view-classroom-info-student/:classID").get(viewClassesByStudent);
 
 router.route("/view-classroom-info-name/").post(viewSchoolClassesByName);
 router.route("/view-classroom-performance/:classID").get(viewClassTopStudent);
+router
+  .route("/update-term-fees/:schoolID/:classID")
+  .patch(updateSchoolClass1stFee);
 
 router
   .route("/update-classrooms-teacher/:schoolID/:classID")
