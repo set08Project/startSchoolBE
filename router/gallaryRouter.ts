@@ -4,6 +4,7 @@ import multer from "multer";
 import {
   createRestrictedSchoolGallary,
   createSchoolGallary,
+  deleteSchoolGallary,
   viewSchoolGallary,
 } from "../controller/gallaryController";
 const upload = multer({
@@ -24,6 +25,9 @@ const upload = multer({
 const router: Router = Router();
 
 router.route("/create-gallary/:schoolID").post(upload, createSchoolGallary);
+router
+  .route("/delete-gallary/:schoolID/:gallaryID")
+  .delete(deleteSchoolGallary);
 router
   .route("/create-restrict-gallary/:schoolID")
   .post(upload, createRestrictedSchoolGallary);
