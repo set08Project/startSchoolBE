@@ -20,6 +20,7 @@ const moment_1 = __importDefault(require("moment"));
 const crypto_1 = __importDefault(require("crypto"));
 const cron_1 = require("cron");
 const axios_1 = __importDefault(require("axios"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // import https from "https";
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -324,10 +325,14 @@ const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const { schoolID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         let amount = (school === null || school === void 0 ? void 0 : school.students.length) * 1000;
+        let termID = school === null || school === void 0 ? void 0 : school.presentTermID;
+        let token = jsonwebtoken_1.default.sign({ termID }, process.env.API_SECRET_KEY, {
+            expiresIn: "3d",
+        });
         const params = JSON.stringify({
             email,
             amount: (amount * 100).toString(),
-            callback_url: `${process.env.APP_URL_DEPLOY}/successful-payment`,
+            callback_url: `${process.env.APP_URL_DEPLOY}/${token}/successful-payment`,
             metadata: {
                 cancel_action: `${process.env.APP_URL_DEPLOY}`,
             },

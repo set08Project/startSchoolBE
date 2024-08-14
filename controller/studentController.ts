@@ -50,6 +50,15 @@ export const createSchoolStudent = async (
         const student = await studentModel.create({
           schoolIDs: schoolID,
           presentClassID: findClass?._id,
+          classTermFee:
+            findClass?.presentTerm === "1st Term"
+              ? findClass?.class1stFee
+              : findClass?.presentTerm === "2nd Term"
+              ? findClass?.class2ndFee
+              : findClass?.presentTerm === "3rd Term"
+              ? findClass?.class3rdFee
+              : null,
+
           gender,
           enrollmentID,
           schoolID: school?.enrollmentID,
@@ -982,20 +991,33 @@ export const changeStudentClass = async (
       path: "students",
     });
 
+    const studentData = await studentModel.findById(studentID);
+    const getStudentClass: any = await classroomModel.findById(
+      studentData?.presentClassID
+    );
+
+    getStudentClass?.students?.pull(new Types.ObjectId(studentID));
+    getStudentClass?.save();
+
     const student = await studentModel.findByIdAndUpdate(
       studentID,
       {
         classAssigned: getClass?.className,
         presentClassID: getClass?._id,
+        classTermFee:
+          getClass?.presentTerm === "1st Term"
+            ? getClass?.class1stFee
+            : getClass?.presentTerm === "2nd Term"
+            ? getClass?.class2ndFee
+            : getClass?.presentTerm === "3rd Term"
+            ? getClass?.class3rdFee
+            : null,
       },
       { new: true }
     );
 
     getClass?.students?.push(new Types.ObjectId(student?._id));
     getClass?.save();
-
-    console.log(student);
-    console.log(getClass);
 
     return res.status(201).json({
       message: `class monitor assigned to ${student?.studentFirstName} `,

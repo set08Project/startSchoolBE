@@ -99,7 +99,7 @@ router
   .route("/assign-class-monitor/:teacherID/:studentID")
   .patch(assignClassMonitor);
 
-router.route("/change-student-class/:schoolID").patch(changeStudentClass);
+router.route("/change-student-class/:studentID").patch(changeStudentClass);
 
 router.route("/delete-student/:schoolID/:studentID").delete(deleteStudent);
 

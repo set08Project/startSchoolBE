@@ -13,6 +13,9 @@ const studentModel = new mongoose_1.Schema({
     records: {
         type: (Array),
     },
+    classTermFee: {
+        type: Number,
+    },
     feesPaid2nd: {
         type: Boolean,
         default: false,

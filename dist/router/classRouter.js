@@ -15,6 +15,9 @@ router.route("/view-classroom-info-student/:classID").get(classController_1.view
 router.route("/view-classroom-info-name/").post(classController_1.viewSchoolClassesByName);
 router.route("/view-classroom-performance/:classID").get(classController_1.viewClassTopStudent);
 router
+    .route("/update-term-fees/:schoolID/:classID")
+    .patch(classController_1.updateSchoolClass1stFee);
+router
     .route("/update-classrooms-teacher/:schoolID/:classID")
     .patch(classController_1.updateSchoolClassTeacher);
 router.route("/delete-classrooms/:schoolID/:classID").delete(classController_1.deleteSchoolClass);
