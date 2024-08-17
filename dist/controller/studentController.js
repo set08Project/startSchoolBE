@@ -817,9 +817,7 @@ const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.assignClassMonitor = assignClassMonitor;
 const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-
     var _a, _b;
-
     try {
         const { studentID } = req.params;
         const { classID } = req.body;
@@ -841,9 +839,7 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         ? getClass === null || getClass === void 0 ? void 0 : getClass.class3rdFee
                         : null,
         }, { new: true });
-
         (_b = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
-
         getClass === null || getClass === void 0 ? void 0 : getClass.save();
         return res.status(201).json({
             message: `class monitor assigned to ${student === null || student === void 0 ? void 0 : student.studentFirstName} `,

@@ -53,7 +53,7 @@ const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.createSchoolSession = createSchoolSession;
 const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
     try {
         const { schoolID } = req.params;
         const { year } = req.body;
@@ -71,16 +71,15 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
         const schl = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
             presentSession: year,
         }, { new: true });
-        console.log("school:: ", schl);
         // const schoolStudents: any = await schoolModel
         //   .findById(schoolID)
         //   .populate({ path: "students" });
         // const pushClass = await schoolModel.findById(schoolID).populate({
         //   path: "classHistory",
         // });
-        let totalStudent = 0;
-        const totalStaff = (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.length;
-        const totalSubjects = (_b = school === null || school === void 0 ? void 0 : school.subjects) === null || _b === void 0 ? void 0 : _b.length;
+        let totalStudent = (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.length;
+        let totalStaff = (_b = school === null || school === void 0 ? void 0 : school.staff) === null || _b === void 0 ? void 0 : _b.length;
+        let totalSubjects = (_c = school === null || school === void 0 ? void 0 : school.subjects) === null || _c === void 0 ? void 0 : _c.length;
         const students = school === null || school === void 0 ? void 0 : school.students;
         if (school && school.schoolName) {
             for (let i of students) {
@@ -112,23 +111,23 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 return;
             });
             for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
-                let num = parseInt(`${i.className}`.match(/\d+/)[0]);
-                let name = i.className.split(`${num}`);
+                let num = parseInt((_d = `${i.className}`) === null || _d === void 0 ? void 0 : _d.match(/\d+/)[0]);
+                let name = (_e = i === null || i === void 0 ? void 0 : i.className) === null || _e === void 0 ? void 0 : _e.split(`${num}`);
                 // {name[0].trim()} ${num + 1}${name[1].trim()}
                 if (num < 4 && name[0].trim() === "JSS") {
                     yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                         className: `
               ${num + 1 > 3
-                            ? `SSS ${1}${name[1].trim()}`
-                            : `${name[0].trim()} ${num + 1}${name[1].trim()}`}
+                            ? `SSS ${1}${(_f = name[1]) === null || _f === void 0 ? void 0 : _f.trim()}`
+                            : `${(_g = name[0]) === null || _g === void 0 ? void 0 : _g.trim()} ${num + 1}${(_h = name[1]) === null || _h === void 0 ? void 0 : _h.trim()}`}
               
               `,
                     }, { new: true });
                 }
-                else if (num < 3 && name[0].trim() === "SSS") {
+                else if (num < 3 && ((_j = name[0]) === null || _j === void 0 ? void 0 : _j.trim()) === "SSS") {
                     yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                         className: `
-              ${name[0].trim()} ${num + 1}${name[1].trim()}
+              ${(_k = name[0]) === null || _k === void 0 ? void 0 : _k.trim()} ${num + 1}${(_l = name[1]) === null || _l === void 0 ? void 0 : _l.trim()}
 
               `,
                     }, { new: true });
@@ -140,11 +139,23 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 }
             }
             for (let i of students) {
-                let num = parseInt(`${i.classAssigned}`.match(/\d+/)[0]);
-                let name = i.classAssigned.split(`${num}`);
-                if (num < 4) {
+                let num = parseInt((_m = `${i.classAssigned}`) === null || _m === void 0 ? void 0 : _m.match(/\d+/)[0]);
+                let name = (_o = i === null || i === void 0 ? void 0 : i.classAssigned) === null || _o === void 0 ? void 0 : _o.split(`${num}`);
+                if (num < 4 && name[0].trim() === "JSS") {
                     yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        classAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
+                        classAssigned: ` ${num + 1 > 3
+                            ? `SSS ${1}${(_p = name[1]) === null || _p === void 0 ? void 0 : _p.trim()}`
+                            : `${(_q = name[0]) === null || _q === void 0 ? void 0 : _q.trim()} ${num + 1}${(_r = name[1]) === null || _r === void 0 ? void 0 : _r.trim()}`}`,
+                        attendance: null,
+                        performance: null,
+                        feesPaid1st: false,
+                        feesPaid2nd: false,
+                        feesPaid3rd: false,
+                    }, { new: true });
+                }
+                else if (num < 3 && ((_s = name[0]) === null || _s === void 0 ? void 0 : _s.trim()) === "SSS") {
+                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                        classAssigned: ` ${`${(_t = name[0]) === null || _t === void 0 ? void 0 : _t.trim()} ${num + 1}${(_u = name[1]) === null || _u === void 0 ? void 0 : _u.trim()}`}`,
                         attendance: null,
                         performance: null,
                         feesPaid1st: false,
@@ -153,22 +164,33 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                     }, { new: true });
                 }
                 else {
-                    console.log("can't");
+                    yield studentModel_1.default.findByIdAndDelete(i === null || i === void 0 ? void 0 : i._id);
+                    schoolClass.students.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
                 }
             }
             for (let i of schoolTeacher === null || schoolTeacher === void 0 ? void 0 : schoolTeacher.staff) {
-                let num = parseInt(`${i.classesAssigned}`.match(/\d+/)[0]);
-                let name = i.classesAssigned.split(`${num}`);
-                if (num < 4) {
-                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        classesAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
-                    }, { new: true });
-                }
-                else {
-                    console.log("can't");
-                }
+                i === null || i === void 0 ? void 0 : i.classesAssigned.map((el) => __awaiter(void 0, void 0, void 0, function* () {
+                    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+                    let num = parseInt((_a = `${el === null || el === void 0 ? void 0 : el.className}`) === null || _a === void 0 ? void 0 : _a.match(/\d+/)[0])
+                        ? parseInt((_b = `${el === null || el === void 0 ? void 0 : el.className}`) === null || _b === void 0 ? void 0 : _b.match(/\d+/)[0])
+                        : 0;
+                    let name = (_c = el === null || el === void 0 ? void 0 : el.className) === null || _c === void 0 ? void 0 : _c.split(`${num}`);
+                    if (num < 4 && name[0].trim() === "JSS") {
+                        el.className = ` ${num + 1 > 3
+                            ? `SSS ${1}${(_d = name[1]) === null || _d === void 0 ? void 0 : _d.trim()}`
+                            : `${(_e = name[0]) === null || _e === void 0 ? void 0 : _e.trim()} ${num + 1}${(_f = name[1]) === null || _f === void 0 ? void 0 : _f.trim()}`}`;
+                        console.log(el.className);
+                    }
+                    else if (num < 3 && ((_g = name[0]) === null || _g === void 0 ? void 0 : _g.trim()) === "SSS") {
+                        el.className = ` ${`${(_h = name[0]) === null || _h === void 0 ? void 0 : _h.trim()} ${num + 1}${(_j = name[1]) === null || _j === void 0 ? void 0 : _j.trim()}`}`;
+                    }
+                    else {
+                        console.log("Ended successfully");
+                    }
+                }));
+                i.save();
             }
-            console.log("year: ", year, schoolID);
+            schoolTeacher.save();
             return res.status(201).json({
                 message: "session created successfully",
                 data: session,
@@ -183,7 +205,8 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
     catch (error) {
         return res.status(404).json({
             message: "Error creating school session",
-            data: error.message,
+            data: error,
+            error: error.stack,
         });
     }
 });
@@ -274,9 +297,7 @@ const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.studentsPerSession = studentsPerSession;
 const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-
     var _a, _b, _c, _d, _e, _f;
-
     try {
         const { sessionID } = req.params;
         let { term } = req.body;
@@ -343,9 +364,7 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     }, { new: true });
                     session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
                     session === null || session === void 0 ? void 0 : session.save();
-
                     if (((_d = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _d === void 0 ? void 0 : _d.length) > 1 || ((_e = session === null || session === void 0 ? void 0 : session.term) === null || _e === void 0 ? void 0 : _e.length) > 1) {
-
                         yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
                             presentTermID: (_f = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _f === void 0 ? void 0 : _f.toString(),
                             freeMode: false,
