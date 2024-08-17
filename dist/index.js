@@ -40,7 +40,10 @@ app.use((req, res, next) => {
 //   // legacyHeaders: false, process.env.APP_URL_DEPLOY
 // });
 app.use((0, cors_1.default)({
-    origin: "*",
+    origin: [
+        process.env.APP_URL_DEPLOY,
+        "https://justnext-dev.vercel.app",
+    ],
 }));
 app.use(express_1.default.json());
 app.use((0, helmet_1.default)());
