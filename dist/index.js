@@ -24,7 +24,7 @@ const portServer = process.env.PORT;
 const port = parseInt(portServer);
 // cors headers starts
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", process.env.APP_URL_DEPLOY || "https://justnext-dev.vercel.app");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
     res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 //   // legacyHeaders: false, process.env.APP_URL_DEPLOY
 // });
 app.use((0, cors_1.default)({
-    origin: process.env.APP_URL_DEPLOY || "https://justnext-dev.vercel.app",
+    origin: "*",
 }));
 app.use(express_1.default.json());
 app.use((0, helmet_1.default)());
