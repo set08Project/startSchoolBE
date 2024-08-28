@@ -1042,9 +1042,17 @@ export const deleteStudent = async (
 
     if (school) {
       const student = await studentModel.findByIdAndDelete(studentID);
+      const checkClass = await classroomModel.find();
 
-      school?.students?.pull(new Types.ObjectId(studentID));
-      school.save();
+      if (checkClass.length > 0) {
+        const teacherClass: any = checkClass[0];
+
+        school?.students?.pull(new Types.ObjectId(studentID));
+        teacherClass?.students?.pull(new Types.ObjectId(studentID));
+
+        school.save();
+        teacherClass.save();
+      }
 
       return res.status(200).json({
         message: "Successfully Deleted Student",
