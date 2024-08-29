@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setTermlyBudget = exports.readTermExpenditure = exports.createExpenditure = void 0;
+exports.setTermlyBudget = exports.readTermBudget = exports.readTermExpenditure = exports.createExpenditure = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const termModel_1 = __importDefault(require("../model/termModel"));
 const expenseModel_1 = __importDefault(require("../model/expenseModel"));
@@ -93,6 +93,39 @@ const readTermExpenditure = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.readTermExpenditure = readTermExpenditure;
+const readTermBudget = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const getTerm = yield termModel_1.default.findById(school.presentTermID).populate({
+                path: "expense",
+                options: {
+                    sort: {
+                        createdAt: -1,
+                    },
+                },
+            });
+            return res.status(201).json({
+                message: "retriving term budget successfully",
+                data: getTerm === null || getTerm === void 0 ? void 0 : getTerm.budget,
+                status: 200,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            data: error.message,
+        });
+    }
+});
+exports.readTermBudget = readTermBudget;
 const setTermlyBudget = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;

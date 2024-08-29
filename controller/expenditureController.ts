@@ -88,6 +88,42 @@ export const readTermExpenditure = async (
   }
 };
 
+export const readTermBudget = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const getTerm = await termModel.findById(school.presentTermID).populate({
+        path: "expense",
+        options: {
+          sort: {
+            createdAt: -1,
+          },
+        },
+      });
+
+      return res.status(201).json({
+        message: "retriving term budget successfully",
+        data: getTerm?.budget,
+        status: 200,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      data: error.message,
+    });
+  }
+};
+
 export const setTermlyBudget = async (
   req: Request,
   res: Response
