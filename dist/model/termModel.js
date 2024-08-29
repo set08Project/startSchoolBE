@@ -11,6 +11,15 @@ const termModel = new mongoose_1.Schema({
     presentTerm: {
         type: String,
     },
+    budget: {
+        type: Number,
+    },
+    expense: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "expenses",
+        },
+    ],
     payRef: {
         type: String,
         default: "",

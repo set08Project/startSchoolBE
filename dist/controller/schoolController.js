@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeSchoolTag = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.changeSchoolTag = exports.approvedRegisteration = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -104,7 +104,7 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             enrollmentID: id,
             status: "school-admin",
         });
-        (0, email_1.verifiedEmail)(school);
+        // verifiedEmail(school);
         const job = new cron_1.CronJob(" * * * * 7", // cronTime
         () => __awaiter(void 0, void 0, void 0, function* () {
             var _a, _b, _c, _d;
@@ -474,6 +474,63 @@ const updateSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.updateSchoolName = updateSchoolName;
+const updateRegisterationStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolName, email, schoolPhoneNumber, schoolCategory, schoolLocation, schoolOrganization, } = req.body;
+        const school = yield schoolModel_1.default.findOne({ email });
+        if (school) {
+            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
+                schoolName,
+                phone: schoolPhoneNumber,
+                categoryType: schoolCategory,
+                address: schoolLocation,
+                organizationType: schoolOrganization,
+            }, { new: true });
+            return res.status(200).json({
+                message: "school detail has been updated successfully",
+                data: updatedSchool,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating account details",
+        });
+    }
+});
+exports.updateRegisterationStatus = updateRegisterationStatus;
+const approvedRegisteration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        const school = yield schoolModel_1.default.findOne({ email });
+        if (school) {
+            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
+                started: true,
+            }, { new: true });
+            (0, email_1.verifiedEmail)(school);
+            return res.status(200).json({
+                message: "school Has Approved",
+                // data: updatedSchool,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating account details",
+        });
+    }
+});
+exports.approvedRegisteration = approvedRegisteration;
 const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;

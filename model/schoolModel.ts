@@ -24,6 +24,8 @@ interface iSchool {
 
   plan: string;
   phone: string;
+  organizationType: string;
+  categoryType: string;
 
   bankDetails: {};
 
@@ -68,6 +70,15 @@ const schoolModel = new Schema<iSchoolData>(
       type: Boolean,
       default: false,
     },
+
+    categoryType: {
+      type: String,
+    },
+
+    organizationType: {
+      type: String,
+    },
+
     phone: {
       type: String,
     },
