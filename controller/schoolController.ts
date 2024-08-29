@@ -571,7 +571,6 @@ export const updateSchoolName = async (req: any, res: Response) => {
 
 export const updateRegisterationStatus = async (req: any, res: Response) => {
   try {
-    const { schoolID } = req.params;
     const {
       schoolName,
       email,
@@ -582,10 +581,9 @@ export const updateRegisterationStatus = async (req: any, res: Response) => {
     } = req.body;
 
     const school: any = await schoolModel.findOne({ email });
-
-    if (school.schoolName) {
+    if (school) {
       const updatedSchool = await schoolModel.findByIdAndUpdate(
-        schoolID,
+        school?._id,
         {
           schoolName,
           phone: schoolPhoneNumber,
@@ -596,9 +594,10 @@ export const updateRegisterationStatus = async (req: any, res: Response) => {
         { new: true }
       );
 
-      return res.status(200).json({
-        message: "school name has been updated successfully",
+      return res.status(201).json({
+        message: "school detail has been updated successfully",
         data: updatedSchool,
+        status: 201,
       });
     } else {
       return res.status(404).json({
@@ -630,7 +629,8 @@ export const approvedRegisteration = async (req: any, res: Response) => {
 
       return res.status(200).json({
         message: "school Has Approved",
-        // data: updatedSchool,
+        data: updatedSchool,
+        status: 201,
       });
     } else {
       return res.status(404).json({
