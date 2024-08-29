@@ -13,6 +13,12 @@ const schoolModel = new mongoose_2.Schema({
         type: Boolean,
         default: false,
     },
+    categoryType: {
+        type: String,
+    },
+    organizationType: {
+        type: String,
+    },
     phone: {
         type: String,
     },
