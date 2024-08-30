@@ -108,7 +108,7 @@ export const createSchool = async (
       status: "school-admin",
     });
 
-    verifiedEmail(school);
+    // verifiedEmail(school);
 
     const job = new CronJob(
       " * * * * 7", // cronTime
