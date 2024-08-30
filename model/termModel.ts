@@ -17,6 +17,8 @@ interface iSessionTerm {
   numberOfSubjects: number;
   totalAmountRecieved: number;
   profit: number;
+  budget: number;
+  expense: Array<{}>;
   session: {};
 }
 
@@ -35,6 +37,18 @@ const termModel = new Schema<iSessionTermData>(
     presentTerm: {
       type: String,
     },
+
+    budget: {
+      type: Number,
+    },
+
+    expense: [
+      {
+        type: Types.ObjectId,
+        ref: "expenses",
+      },
+    ],
+
     payRef: {
       type: String,
       default: "",

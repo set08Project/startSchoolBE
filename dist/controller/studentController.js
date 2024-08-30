@@ -856,14 +856,20 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.changeStudentClass = changeStudentClass;
 const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = yield studentModel_1.default.findByIdAndDelete(studentID);
-            (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
-            school.save();
+            const checkClass = yield classroomModel_1.default.find();
+            if (checkClass.length > 0) {
+                const teacherClass = checkClass[0];
+                (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
+                (_b = teacherClass === null || teacherClass === void 0 ? void 0 : teacherClass.students) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(studentID));
+                school.save();
+                teacherClass.save();
+            }
             return res.status(200).json({
                 message: "Successfully Deleted Student",
                 status: 200,

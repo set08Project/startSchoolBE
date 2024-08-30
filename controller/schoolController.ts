@@ -569,6 +569,81 @@ export const updateSchoolName = async (req: any, res: Response) => {
   }
 };
 
+export const updateRegisterationStatus = async (req: any, res: Response) => {
+  try {
+    const {
+      schoolName,
+      email,
+      schoolPhoneNumber,
+      schoolCategory,
+      schoolLocation,
+      schoolOrganization,
+    } = req.body;
+
+    const school: any = await schoolModel.findOne({ email });
+    if (school) {
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        school?._id,
+        {
+          schoolName,
+          phone: schoolPhoneNumber,
+          categoryType: schoolCategory,
+          address: schoolLocation,
+          organizationType: schoolOrganization,
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "school detail has been updated successfully",
+        data: updatedSchool,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating account details",
+    });
+  }
+};
+
+export const approvedRegisteration = async (req: any, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    const school: any = await schoolModel.findOne({ email });
+
+    if (school) {
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        school?._id,
+        {
+          started: true,
+        },
+        { new: true }
+      );
+      verifiedEmail(school);
+
+      return res.status(200).json({
+        message: "school Has Approved",
+        data: updatedSchool,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating account details",
+    });
+  }
+};
+
 export const changeSchoolTag = async (
   req: Request,
   res: Response

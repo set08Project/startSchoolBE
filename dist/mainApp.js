@@ -25,6 +25,7 @@ const gallaryRouter_1 = __importDefault(require("./router/gallaryRouter"));
 const complainRouter_1 = __importDefault(require("./router/complainRouter"));
 const reportCardRouter_1 = __importDefault(require("./router/reportCardRouter"));
 const pastQuestionRouter_1 = __importDefault(require("./router/pastQuestionRouter"));
+const expenseRouter_1 = __importDefault(require("./router/expenseRouter"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
 const handleError_1 = require("./error/handleError");
@@ -46,6 +47,7 @@ const mainApp = (app) => {
         app.use("/api", articleRouter_1.default);
         app.use("/api", reportCardRouter_1.default);
         app.use("/api", pastQuestionRouter_1.default);
+        app.use("/api", expenseRouter_1.default);
         app.use("/api", studentRouter_1.default);
         app.use("/api", timeTableRouter_1.default);
         app.use("/api", assignmentResolveRouter_1.default);
