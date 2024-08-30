@@ -75,8 +75,6 @@ export const createNewSchoolSession = async (
       { new: true }
     );
 
-    console.log("school:: ", schl);
-
     // const schoolStudents: any = await schoolModel
     //   .findById(schoolID)
     //   .populate({ path: "students" });
@@ -85,9 +83,9 @@ export const createNewSchoolSession = async (
     //   path: "classHistory",
     // });
 
-    let totalStudent = 0;
-    const totalStaff = school?.staff?.length;
-    const totalSubjects = school?.subjects?.length;
+    let totalStudent = school?.students?.length;
+    let totalStaff = school?.staff?.length;
+    let totalSubjects = school?.subjects?.length;
 
     const students: any = school?.students;
 
@@ -127,8 +125,8 @@ export const createNewSchoolSession = async (
       });
 
       for (let i of schoolClass?.classRooms) {
-        let num: number = parseInt(`${i.className}`.match(/\d+/)![0]);
-        let name = i.className.split(`${num}`);
+        let num: number = parseInt(`${i.className}`?.match(/\d+/)![0]);
+        let name = i?.className?.split(`${num}`);
         // {name[0].trim()} ${num + 1}${name[1].trim()}
 
         if (num < 4 && name[0].trim() === "JSS") {
@@ -138,20 +136,20 @@ export const createNewSchoolSession = async (
               className: `
               ${
                 num + 1 > 3
-                  ? `SSS ${1}${name[1].trim()}`
-                  : `${name[0].trim()} ${num + 1}${name[1].trim()}`
+                  ? `SSS ${1}${name[1]?.trim()}`
+                  : `${name[0]?.trim()} ${num + 1}${name[1]?.trim()}`
               }
               
               `,
             },
             { new: true }
           );
-        } else if (num < 3 && name[0].trim() === "SSS") {
+        } else if (num < 3 && name[0]?.trim() === "SSS") {
           await classroomModel.findByIdAndUpdate(
             i?._id,
             {
               className: `
-              ${name[0].trim()} ${num + 1}${name[1].trim()}
+              ${name[0]?.trim()} ${num + 1}${name[1]?.trim()}
 
               `,
             },
@@ -165,14 +163,33 @@ export const createNewSchoolSession = async (
       }
 
       for (let i of students!) {
-        let num: number = parseInt(`${i.classAssigned}`.match(/\d+/)![0]);
-        let name = i.classAssigned.split(`${num}`);
+        let num: number = parseInt(`${i.classAssigned}`?.match(/\d+/)![0]);
+        let name = i?.classAssigned?.split(`${num}`);
 
-        if (num < 4) {
+        if (num < 4 && name[0].trim() === "JSS") {
           await studentModel.findByIdAndUpdate(
             i?._id,
             {
-              classAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
+              classAssigned: ` ${
+                num + 1 > 3
+                  ? `SSS ${1}${name[1]?.trim()}`
+                  : `${name[0]?.trim()} ${num + 1}${name[1]?.trim()}`
+              }`,
+              attendance: null,
+              performance: null,
+              feesPaid1st: false,
+              feesPaid2nd: false,
+              feesPaid3rd: false,
+            },
+            { new: true }
+          );
+        } else if (num < 3 && name[0]?.trim() === "SSS") {
+          await studentModel.findByIdAndUpdate(
+            i?._id,
+            {
+              classAssigned: ` ${`${name[0]?.trim()} ${
+                num + 1
+              }${name[1]?.trim()}`}`,
               attendance: null,
               performance: null,
               feesPaid1st: false,
@@ -182,27 +199,37 @@ export const createNewSchoolSession = async (
             { new: true }
           );
         } else {
-          console.log("can't");
+          await studentModel.findByIdAndDelete(i?._id);
+          schoolClass.students.pull(new Types.ObjectId(i?._id));
         }
       }
 
       for (let i of schoolTeacher?.staff!) {
-        let num: number = parseInt(`${i.classesAssigned}`.match(/\d+/)![0]);
-        let name = i.classesAssigned.split(`${num}`);
+        i?.classesAssigned.map(async (el: any) => {
+          let num: number = parseInt(`${el?.className}`?.match(/\d+/)![0])
+            ? parseInt(`${el?.className}`?.match(/\d+/)![0])
+            : 0;
+          let name = el?.className?.split(`${num}`);
 
-        if (num < 4) {
-          await studentModel.findByIdAndUpdate(
-            i?._id,
-            {
-              classesAssigned: `${name[0].trim()} ${num + 1}${name[1].trim()}`,
-            },
-            { new: true }
-          );
-        } else {
-          console.log("can't");
-        }
+          if (num < 4 && name[0].trim() === "JSS") {
+            el.className = ` ${
+              num + 1 > 3
+                ? `SSS ${1}${name[1]?.trim()}`
+                : `${name[0]?.trim()} ${num + 1}${name[1]?.trim()}`
+            }`;
+            console.log(el.className);
+          } else if (num < 3 && name[0]?.trim() === "SSS") {
+            el.className = ` ${`${name[0]?.trim()} ${
+              num + 1
+            }${name[1]?.trim()}`}`;
+          } else {
+            console.log("Ended successfully");
+          }
+        });
+        i.save();
       }
-      console.log("year: ", year, schoolID);
+
+      schoolTeacher.save();
 
       return res.status(201).json({
         message: "session created successfully",
@@ -216,7 +243,8 @@ export const createNewSchoolSession = async (
   } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school session",
-      data: error.message,
+      data: error,
+      error: error.stack,
     });
   }
 };
