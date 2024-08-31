@@ -22,6 +22,7 @@ import complain from "./router/complainRouter";
 import reportCard from "./router/reportCardRouter";
 import pastQuestion from "./router/pastQuestionRouter";
 import expense from "./router/expenseRouter";
+import social from "./router/passportRoute";
 
 import cronParser from "cron-parser";
 
@@ -51,6 +52,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", pastQuestion);
 
     app.use("/api", expense);
+    app.use("/api", social);
 
     app.use("/api", student);
     app.use("/api", timetable);

@@ -9,6 +9,7 @@ interface iSchool {
   enrollmentID: string;
   status: string;
   presentTerm: string;
+  
   presentSession: string;
   presentSessionID: string;
   presentTermID: string;
