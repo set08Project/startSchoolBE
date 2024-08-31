@@ -642,7 +642,9 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             if (!check) {
                 const store = yield schoolFeeHistory_1.default.create({
                     studentID,
-                    session: classOne === null || classOne === void 0 ? void 0 : classOne.presentSession,
+                    session: school === null || school === void 0 ? void 0 : school.presentSession,
+                    sessionID: "",
+                    // termID: school?.presentTermID,
                     confirm: false,
                     term: classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm,
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,

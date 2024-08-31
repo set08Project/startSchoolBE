@@ -70,6 +70,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             .populate({ path: "staff" });
         const schl = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
             presentSession: year,
+            // presentSessionID: year,
         }, { new: true });
         // const schoolStudents: any = await schoolModel
         //   .findById(schoolID)

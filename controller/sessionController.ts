@@ -71,6 +71,7 @@ export const createNewSchoolSession = async (
       schoolID,
       {
         presentSession: year,
+        // presentSessionID: year,
       },
       { new: true }
     );
