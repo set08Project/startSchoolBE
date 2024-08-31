@@ -133,7 +133,9 @@ export const setTermlyBudget = async (
     const { budget } = req.body;
 
     const school = await schoolModel.findById(schoolID);
+
     if (school) {
+      console.log(school.presentTermID);
       const getTerm = await termModel.findByIdAndUpdate(
         school.presentTermID,
         {
@@ -143,7 +145,7 @@ export const setTermlyBudget = async (
       );
 
       return res.status(201).json({
-        message: "retriving expense successfully",
+        message: "budget set successfully",
         data: getTerm,
         status: 200,
       });
