@@ -760,7 +760,11 @@ export const createSchoolFeePayment = async (
       if (!check) {
         const store = await schoolFeeHistory.create({
           studentID,
-          session: classOne?.presentSession!,
+          session: school?.presentSession!,
+
+          sessionID: "",
+          // termID: school?.presentTermID,
+
           confirm: false,
           term: classOne?.presentTerm,
           studentName: `${student?.studentFirstName} ${student?.studentLastName}`,

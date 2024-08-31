@@ -10,6 +10,7 @@ interface iSchool {
   status: string;
   presentTerm: string;
   presentSession: string;
+  presentSessionID: string;
   presentTermID: string;
 
   name: string;
@@ -69,6 +70,10 @@ const schoolModel = new Schema<iSchoolData>(
     started: {
       type: Boolean,
       default: false,
+    },
+
+    presentSessionID: {
+      type: String,
     },
 
     categoryType: {
