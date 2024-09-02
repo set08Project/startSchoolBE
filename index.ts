@@ -2,6 +2,7 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 
+import cookieParser from "cookie-parser";
 import session from "express-session";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -59,9 +60,10 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 // app.use(limiter)
+app.use(cookieParser(process.env.SESSION_SECRET as string));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET as string,
     resave: false,
     saveUninitialized: false,
 

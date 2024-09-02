@@ -132,11 +132,12 @@ const setTermlyBudget = (req, res) => __awaiter(void 0, void 0, void 0, function
         const { budget } = req.body;
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
+            console.log(school.presentTermID);
             const getTerm = yield termModel_1.default.findByIdAndUpdate(school.presentTermID, {
                 budget,
             }, { new: true });
             return res.status(201).json({
-                message: "retriving expense successfully",
+                message: "budget set successfully",
                 data: getTerm,
                 status: 200,
             });

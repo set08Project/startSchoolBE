@@ -53,7 +53,7 @@ const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.createSchoolSession = createSchoolSession;
 const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
     try {
         const { schoolID } = req.params;
         const { year } = req.body;
@@ -70,6 +70,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             .populate({ path: "staff" });
         const schl = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
             presentSession: year,
+            // presentSessionID: year,
         }, { new: true });
         // const schoolStudents: any = await schoolModel
         //   .findById(schoolID)
@@ -104,6 +105,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 studentFeesNotPaid: notPaid,
                 studentFeesPaid: paid,
             });
+            const schoolData = schoolModel_1.default.findByIdAndUpdate(schoolID, { presentSessionID: session === null || session === void 0 ? void 0 : session._id.toString() }, { new: true });
             school.session.push(new mongoose_1.Types.ObjectId(session._id));
             school.classHistory.push(new mongoose_1.Types.ObjectId(session === null || session === void 0 ? void 0 : session._id));
             school.save();
@@ -135,17 +137,18 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 else {
                     yield classroomModel_1.default.findByIdAndDelete(i === null || i === void 0 ? void 0 : i._id);
                     schoolClass.classRooms.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
-                    // schoolClass.save();
+                    (_m = school === null || school === void 0 ? void 0 : school.classRooms) === null || _m === void 0 ? void 0 : _m.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
+                    school.save();
                 }
             }
             for (let i of students) {
-                let num = parseInt((_m = `${i.classAssigned}`) === null || _m === void 0 ? void 0 : _m.match(/\d+/)[0]);
-                let name = (_o = i === null || i === void 0 ? void 0 : i.classAssigned) === null || _o === void 0 ? void 0 : _o.split(`${num}`);
+                let num = parseInt((_o = `${i.classAssigned}`) === null || _o === void 0 ? void 0 : _o.match(/\d+/)[0]);
+                let name = (_p = i === null || i === void 0 ? void 0 : i.classAssigned) === null || _p === void 0 ? void 0 : _p.split(`${num}`);
                 if (num < 4 && name[0].trim() === "JSS") {
                     yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                         classAssigned: ` ${num + 1 > 3
-                            ? `SSS ${1}${(_p = name[1]) === null || _p === void 0 ? void 0 : _p.trim()}`
-                            : `${(_q = name[0]) === null || _q === void 0 ? void 0 : _q.trim()} ${num + 1}${(_r = name[1]) === null || _r === void 0 ? void 0 : _r.trim()}`}`,
+                            ? `SSS ${1}${(_q = name[1]) === null || _q === void 0 ? void 0 : _q.trim()}`
+                            : `${(_r = name[0]) === null || _r === void 0 ? void 0 : _r.trim()} ${num + 1}${(_s = name[1]) === null || _s === void 0 ? void 0 : _s.trim()}`}`,
                         attendance: null,
                         performance: null,
                         feesPaid1st: false,
@@ -153,9 +156,9 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                         feesPaid3rd: false,
                     }, { new: true });
                 }
-                else if (num < 3 && ((_s = name[0]) === null || _s === void 0 ? void 0 : _s.trim()) === "SSS") {
+                else if (num < 3 && ((_t = name[0]) === null || _t === void 0 ? void 0 : _t.trim()) === "SSS") {
                     yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        classAssigned: ` ${`${(_t = name[0]) === null || _t === void 0 ? void 0 : _t.trim()} ${num + 1}${(_u = name[1]) === null || _u === void 0 ? void 0 : _u.trim()}`}`,
+                        classAssigned: ` ${`${(_u = name[0]) === null || _u === void 0 ? void 0 : _u.trim()} ${num + 1}${(_v = name[1]) === null || _v === void 0 ? void 0 : _v.trim()}`}`,
                         attendance: null,
                         performance: null,
                         feesPaid1st: false,
@@ -166,6 +169,8 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 else {
                     yield studentModel_1.default.findByIdAndDelete(i === null || i === void 0 ? void 0 : i._id);
                     schoolClass.students.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
+                    school === null || school === void 0 ? void 0 : school.students.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
+                    school === null || school === void 0 ? void 0 : school.save();
                 }
             }
             for (let i of schoolTeacher === null || schoolTeacher === void 0 ? void 0 : schoolTeacher.staff) {
@@ -360,6 +365,7 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     });
                     yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
                         presentTermID: (_c = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _c === void 0 ? void 0 : _c.toString(),
+                        presentSessionID: sessionID,
                         presentTerm: term,
                     }, { new: true });
                     session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));

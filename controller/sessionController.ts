@@ -71,6 +71,7 @@ export const createNewSchoolSession = async (
       schoolID,
       {
         presentSession: year,
+        // presentSessionID: year,
       },
       { new: true }
     );
@@ -115,6 +116,12 @@ export const createNewSchoolSession = async (
         studentFeesPaid: paid,
       });
 
+      const schoolData = schoolModel.findByIdAndUpdate(
+        schoolID,
+        { presentSessionID: session?._id.toString() },
+        { new: true }
+      );
+
       school.session.push(new Types.ObjectId(session._id));
 
       school.classHistory.push(new Types.ObjectId(session?._id));
@@ -158,7 +165,9 @@ export const createNewSchoolSession = async (
         } else {
           await classroomModel.findByIdAndDelete(i?._id);
           schoolClass.classRooms.pull(new Types.ObjectId(i?._id));
-          // schoolClass.save();
+
+          school?.classRooms?.pull(new Types.ObjectId(i?._id));
+          school.save();
         }
       }
 
@@ -201,6 +210,8 @@ export const createNewSchoolSession = async (
         } else {
           await studentModel.findByIdAndDelete(i?._id);
           schoolClass.students.pull(new Types.ObjectId(i?._id));
+          school?.students.pull(new Types.ObjectId(i?._id));
+          school?.save();
         }
       }
 
@@ -451,6 +462,7 @@ export const termPerSession = async (
             sessionRecorde?.schoolID,
             {
               presentTermID: sessionTerm?._id?.toString(),
+              presentSessionID: sessionID,
               presentTerm: term,
             },
             { new: true }

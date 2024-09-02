@@ -486,9 +486,10 @@ const updateRegisterationStatus = (req, res) => __awaiter(void 0, void 0, void 0
                 address: schoolLocation,
                 organizationType: schoolOrganization,
             }, { new: true });
-            return res.status(200).json({
+            return res.status(201).json({
                 message: "school detail has been updated successfully",
                 data: updatedSchool,
+                status: 201,
             });
         }
         else {
@@ -515,7 +516,8 @@ const approvedRegisteration = (req, res) => __awaiter(void 0, void 0, void 0, fu
             (0, email_1.verifiedEmail)(school);
             return res.status(200).json({
                 message: "school Has Approved",
-                // data: updatedSchool,
+                data: updatedSchool,
+                status: 201,
             });
         }
         else {
