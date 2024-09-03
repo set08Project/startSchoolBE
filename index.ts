@@ -2,6 +2,7 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 
+import cookieParser from "cookie-parser";
 import session from "express-session";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -10,6 +11,7 @@ import { dbConfig } from "./utils/dbConfig";
 dotenv.config();
 
 // import { rateLimit } from "express-rate-limit";
+
 import MongoDB from "connect-mongodb-session";
 const MongoDBStore = MongoDB(session);
 const store = new MongoDBStore({
@@ -58,9 +60,10 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 // app.use(limiter)
+app.use(cookieParser(process.env.SESSION_SECRET as string));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET as string,
     resave: false,
     saveUninitialized: false,
 

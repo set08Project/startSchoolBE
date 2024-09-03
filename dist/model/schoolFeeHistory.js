@@ -5,6 +5,12 @@ const schoolFessHistoryModel = new mongoose_1.Schema({
     studentID: {
         type: String,
     },
+    termID: {
+        type: String,
+    },
+    sessionID: {
+        type: String,
+    },
     date: {
         type: String,
     },

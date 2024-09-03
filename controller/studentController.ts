@@ -760,7 +760,11 @@ export const createSchoolFeePayment = async (
       if (!check) {
         const store = await schoolFeeHistory.create({
           studentID,
-          session: classOne?.presentSession!,
+          session: school?.presentSession!,
+
+          sessionID: school?.presentSessionID,
+          termID: school?.presentTermID,
+
           confirm: false,
           term: classOne?.presentTerm,
           studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
@@ -781,12 +785,105 @@ export const createSchoolFeePayment = async (
         if (classOne?.presentTerm === "1st Term") {
           classOne?.schoolFeesHistory.push(new Types.ObjectId(store._id));
           classOne?.save();
-        } else if (classOne?.presentTerm === "1st Term") {
+        } else if (classOne?.presentTerm === "2nd Term") {
           classOne?.schoolFeesHistory2.push(new Types.ObjectId(store._id));
           classOne?.save();
-        } else if (classOne?.presentTerm === "1st Term") {
+        } else if (classOne?.presentTerm === "3rd Term") {
           classOne?.schoolFeesHistory3.push(new Types.ObjectId(store._id));
           classOne?.save();
+        }
+
+        if (classOne?.presentTerm === "1st Term") {
+          const classData: any = await classroomModel
+            .findById(student?.presentClassID)
+            .populate({
+              path: "schoolFeesHistory",
+            });
+
+          const amount = classData?.schoolFeesHistory
+            ?.filter((el: any) => {
+              return (
+                el.sessionID === school?.presentSessionID &&
+                el.termID === school?.presentTermID &&
+                el.term === "1st Term"
+              );
+            })
+            .map((el: any) => {
+              return el.amount;
+            })
+            .reduce((a: number, b: number) => {
+              return a + b;
+            }, 0);
+
+          const real = await classroomModel.findByIdAndUpdate(
+            classData?._id,
+            {
+              class1stFee: amount,
+            },
+            { new: true }
+          );
+
+          console.log(classData);
+          console.log(amount);
+          console.log(real);
+        } else if (classOne?.presentTerm === "2nd Term") {
+          const classData: any = await classroomModel
+            .findById(student?.presentClassID)
+            .populate({
+              path: "schoolFeesHistory2",
+            });
+
+          const amount = classData?.schoolFeesHistory
+            ?.filter((el: any) => {
+              return (
+                el.sessionID === school?.presentSessionID &&
+                el.termID === school?.presentTermID &&
+                el.term === "2nd Term"
+              );
+            })
+            .map((el: any) => {
+              return el.amount;
+            })
+            .reduce((a: number, b: number) => {
+              return a + b;
+            }, 0);
+
+          classroomModel.findByIdAndUpdate(
+            classData?._id,
+            {
+              class2ndFee: amount,
+            },
+            { new: true }
+          );
+        } else if (classOne?.presentTerm === "3rd Term") {
+          const classData: any = await classroomModel
+            .findById(student?.presentClassID)
+            .populate({
+              path: "schoolFeesHistory3",
+            });
+
+          const amount = classData?.schoolFeesHistory
+            ?.filter((el: any) => {
+              return (
+                el.sessionID === school?.presentSessionID &&
+                el.termID === school?.presentTermID &&
+                el.term === "3rd Term"
+              );
+            })
+            .map((el: any) => {
+              return el.amount;
+            })
+            .reduce((a: number, b: number) => {
+              return a + b;
+            }, 0);
+
+          classroomModel.findByIdAndUpdate(
+            classData?._id,
+            {
+              class3rdFee: amount,
+            },
+            { new: true }
+          );
         }
 
         return res.status(201).json({

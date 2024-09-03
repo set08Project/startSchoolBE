@@ -627,6 +627,7 @@ const viewStorePurchasedTeacher = (req, res) => __awaiter(void 0, void 0, void 0
 });
 exports.viewStorePurchasedTeacher = viewStorePurchasedTeacher;
 const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
     try {
         const { studentID } = req.params;
         const { date, amount, purchasedID, reference } = req.body;
@@ -642,7 +643,9 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             if (!check) {
                 const store = yield schoolFeeHistory_1.default.create({
                     studentID,
-                    session: classOne === null || classOne === void 0 ? void 0 : classOne.presentSession,
+                    session: school === null || school === void 0 ? void 0 : school.presentSession,
+                    sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                    termID: school === null || school === void 0 ? void 0 : school.presentTermID,
                     confirm: false,
                     term: classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm,
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
@@ -661,13 +664,73 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                     classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
                     classOne === null || classOne === void 0 ? void 0 : classOne.save();
                 }
-                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
+                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "2nd Term") {
                     classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory2.push(new mongoose_1.Types.ObjectId(store._id));
                     classOne === null || classOne === void 0 ? void 0 : classOne.save();
                 }
-                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
+                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "3rd Term") {
                     classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory3.push(new mongoose_1.Types.ObjectId(store._id));
                     classOne === null || classOne === void 0 ? void 0 : classOne.save();
+                }
+                if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
+                    const classData = yield classroomModel_1.default
+                        .findById(student === null || student === void 0 ? void 0 : student.presentClassID)
+                        .populate({
+                        path: "schoolFeesHistory",
+                    });
+                    const amount = (_a = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _a === void 0 ? void 0 : _a.filter((el) => {
+                        return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
+                            el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
+                            el.term === "1st Term");
+                    }).map((el) => {
+                        return el.amount;
+                    }).reduce((a, b) => {
+                        return a + b;
+                    }, 0);
+                    const real = yield classroomModel_1.default.findByIdAndUpdate(classData === null || classData === void 0 ? void 0 : classData._id, {
+                        class1stFee: amount,
+                    }, { new: true });
+                    console.log(classData);
+                    console.log(amount);
+                    console.log(real);
+                }
+                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "2nd Term") {
+                    const classData = yield classroomModel_1.default
+                        .findById(student === null || student === void 0 ? void 0 : student.presentClassID)
+                        .populate({
+                        path: "schoolFeesHistory2",
+                    });
+                    const amount = (_b = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _b === void 0 ? void 0 : _b.filter((el) => {
+                        return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
+                            el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
+                            el.term === "2nd Term");
+                    }).map((el) => {
+                        return el.amount;
+                    }).reduce((a, b) => {
+                        return a + b;
+                    }, 0);
+                    classroomModel_1.default.findByIdAndUpdate(classData === null || classData === void 0 ? void 0 : classData._id, {
+                        class2ndFee: amount,
+                    }, { new: true });
+                }
+                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "3rd Term") {
+                    const classData = yield classroomModel_1.default
+                        .findById(student === null || student === void 0 ? void 0 : student.presentClassID)
+                        .populate({
+                        path: "schoolFeesHistory3",
+                    });
+                    const amount = (_c = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _c === void 0 ? void 0 : _c.filter((el) => {
+                        return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
+                            el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
+                            el.term === "3rd Term");
+                    }).map((el) => {
+                        return el.amount;
+                    }).reduce((a, b) => {
+                        return a + b;
+                    }, 0);
+                    classroomModel_1.default.findByIdAndUpdate(classData === null || classData === void 0 ? void 0 : classData._id, {
+                        class3rdFee: amount,
+                    }, { new: true });
                 }
                 return res.status(201).json({
                     message: "schoolfee paid successfully",

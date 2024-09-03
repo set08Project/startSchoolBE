@@ -13,6 +13,9 @@ const schoolModel = new mongoose_2.Schema({
         type: Boolean,
         default: false,
     },
+    presentSessionID: {
+        type: String,
+    },
     categoryType: {
         type: String,
     },
