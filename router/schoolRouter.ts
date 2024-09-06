@@ -8,6 +8,7 @@ import {
   changeSchoolTag,
   createSchool,
   deleteSchool,
+  getSchoolRegistered,
   loginSchool,
   logoutSchool,
   readSchoolCookie,
@@ -60,6 +61,7 @@ router.route("/view-school/:schoolID").get(viewSchoolStatus);
 router.route("/view-all-school").get(viewAllSchools);
 
 router.route("/logout-school").delete(logoutSchool);
+router.route("/get-school").get(getSchoolRegistered);
 router.route("/read-school-cookie").get(readSchoolCookie);
 
 router.route("/change-school-name/:schoolID").patch(changeSchoolName);

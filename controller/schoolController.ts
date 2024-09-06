@@ -644,6 +644,22 @@ export const updateRegisterationStatus = async (req: any, res: Response) => {
 //   }
 // };
 
+export const getSchoolRegistered = async (req: Request, res: Response) => {
+  try {
+    const school: any = await schoolModel.find();
+
+    return res.status(200).json({
+      message: "school Has Approved",
+      data: school,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating account details",
+    });
+  }
+};
+
 export const approveRegistration = async (req: Request, res: Response) => {
   try {
     const { schoolID } = req.params;
