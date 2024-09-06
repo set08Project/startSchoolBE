@@ -6,6 +6,7 @@ interface iExpense {
   paymentMode: string;
   paymentCategory: string;
   amount: number;
+
   term: {};
 }
 
@@ -28,6 +29,7 @@ const expenseModel = new Schema<iExpenseData>(
     amount: {
       type: Number,
     },
+
     term: {
       type: Types.ObjectId,
       ref: "academicSessionsTerms",
