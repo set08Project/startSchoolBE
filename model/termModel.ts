@@ -19,6 +19,7 @@ interface iSessionTerm {
   profit: number;
   budget: number;
   expense: Array<{}>;
+  recordPayments: Array<{}>;
   session: {};
 }
 
@@ -91,6 +92,12 @@ const termModel = new Schema<iSessionTermData>(
       type: Number,
       default: 0,
     },
+    recordPayments: [
+      {
+        type: Types.ObjectId,
+        ref: "recordPayments",
+      },
+    ],
 
     totalAmountRecieved: {
       type: Number,

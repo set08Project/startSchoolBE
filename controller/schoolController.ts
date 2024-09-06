@@ -634,7 +634,8 @@ export const approvedRegisteration = async (req: any, res: Response) => {
       });
     } else {
       return res.status(404).json({
-        message: "Something went wrong",
+        message: "Something went wrong, No school found",
+        status: 404,
       });
     }
   } catch (error) {
