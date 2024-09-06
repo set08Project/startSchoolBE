@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  approvedRegisteration,
+  approveRegistration,
   changeSchoolAddress,
   changeSchoolName,
   changeSchoolPersonalName,
@@ -40,7 +40,9 @@ const upload = multer({
 
 const router: Router = Router();
 
-router.route("/approved-school-registration").patch(approvedRegisteration);
+router
+  .route("/approved-school-registration/:schoolID")
+  .patch(approveRegistration);
 
 router.route("/school-request-registration").patch(updateRegisterationStatus);
 
