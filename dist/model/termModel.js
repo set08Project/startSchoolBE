@@ -54,6 +54,12 @@ const termModel = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
+    recordPayments: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "recordPayments",
+        },
+    ],
     totalAmountRecieved: {
         type: Number,
         default: 0,

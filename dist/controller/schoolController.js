@@ -522,7 +522,8 @@ const approvedRegisteration = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
         else {
             return res.status(404).json({
-                message: "Something went wrong",
+                message: "Something went wrong, No school found",
+                status: 404,
             });
         }
     }

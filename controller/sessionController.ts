@@ -603,8 +603,10 @@ export const createSessionHistory = async (
 
     const getAll = await classHistoryModel.create({
       resultHistory: history,
-      session: getSchool?.session[0]?.year!,
-      term: getSchool?.session[0]?.presentTerm!,
+      // session: getSchool?.session[0]?.year!,
+      // term: getSchool?.session[0]?.presentTerm!,
+      session: getSchool?.presentSession!,
+      term: getSchool?.presentTerm!,
       classTeacherName: getClassRoom?.classTeacherName,
       className: getClassRoom?.className,
       principalsRemark: text,

@@ -3,7 +3,6 @@ import schoolModel from "../model/schoolModel";
 import studentModel from "../model/studentModel";
 import recordPaymentModel from "../model/recordPaymentModel";
 import { Types } from "mongoose";
-import { compare } from "bcrypt";
 
 export const recordFeesPayment = async (
   req: Request,

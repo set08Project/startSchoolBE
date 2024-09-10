@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginTeacher = void 0;
+exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -75,6 +75,53 @@ const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.loginTeacher = loginTeacher;
+const loginStaffWithToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token } = req.body;
+        const getTeacher = yield staffModel_1.default.findOne({
+            enrollmentID: token,
+        });
+        const school = yield schoolModel_1.default.findOne({
+            schoolName: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName,
+        });
+        if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName)) {
+            if (school.verify) {
+                const token = jsonwebtoken_1.default.sign({ status: school.status }, "student", {
+                    expiresIn: "1d",
+                });
+                req.session.isAuth = true;
+                req.session.isSchoolID = getTeacher._id;
+                return res.status(201).json({
+                    message: "welcome back",
+                    user: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.status,
+                    data: token,
+                    id: req.session.isSchoolID,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "please confirm with your school admin",
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "Error finding school",
+            });
+        }
+        return res.status(201).json({
+            message: "creating school",
+            data: school,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error logging you in",
+        });
+    }
+});
+exports.loginStaffWithToken = loginStaffWithToken;
 const readTeacherCookie = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const readSchool = req.session.isSchoolID;
