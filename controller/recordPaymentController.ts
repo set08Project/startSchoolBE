@@ -96,7 +96,7 @@ export const recordSecondFeePayment = async (
             return accumulator + currentVal;
           }
         );
-        const lastFeePaid = getRecord[getRecord.length - 1];
+        const lastFeePaid = getRecord[getRecord?.length - 1];
         const getClassFees = record?.classFees;
 
         if (totalFees === getClassFees) {

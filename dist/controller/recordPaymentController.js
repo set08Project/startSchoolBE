@@ -92,7 +92,7 @@ const recordSecondFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                 const totalFees = getRecord === null || getRecord === void 0 ? void 0 : getRecord.reduce((accumulator, currentVal) => {
                     return accumulator + currentVal;
                 });
-                const lastFeePaid = getRecord[getRecord.length - 1];
+                const lastFeePaid = getRecord[(getRecord === null || getRecord === void 0 ? void 0 : getRecord.length) - 1];
                 const getClassFees = record === null || record === void 0 ? void 0 : record.classFees;
                 if (totalFees === getClassFees) {
                     const update = yield recordPaymentModel_1.default.findByIdAndUpdate(record._id, { feePaymentComplete: true, feeBalance: totalFees }, { new: true });
