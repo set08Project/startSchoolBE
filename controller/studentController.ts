@@ -801,14 +801,25 @@ export const createSchoolFeePayment = async (
       student?.presentClassID
     );
 
-    const school = await schoolModel.findById(student?.schoolIDs);
+    const school: any = await schoolModel.findById(student?.schoolIDs);
 
     if (school) {
       const check = student?.schoolFeesHistory.some((el: any) => {
         return el.reference === reference;
       });
 
-      if (!check) {
+      const payment = student?.schoolFeesHistory.some((el: any) => {
+        return (
+          el.sessionID === school?.presentSessionID &&
+          el.session === school?.presentSession &&
+          el.termID === school?.presentTermID &&
+          el.term === school?.presentTerm
+        );
+      });
+
+      console.log(student?.schoolFeesHistory);
+
+      if (!payment) {
         const store = await schoolFeeHistory.create({
           studentID,
           session: school?.presentSession!,
