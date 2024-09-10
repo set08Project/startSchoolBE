@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const recordPaymentModel = new mongoose_1.Schema({
-    feePaid: {
-        type: Number,
-    },
+    feePaid: [
+        {
+            type: Number,
+        },
+    ],
     feePaidDate: {
         type: String,
     },

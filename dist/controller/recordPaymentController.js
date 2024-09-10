@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFeesRecord = exports.getAllFeeRecords = exports.recordFeesPayment = void 0;
+exports.deleteFeesRecord = exports.getOneFeeRecord = exports.getAllFeeRecords = exports.recordSecondFeePayment = exports.recordFeesPayment = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const recordPaymentModel_1 = __importDefault(require("../model/recordPaymentModel"));
@@ -79,11 +79,79 @@ const recordFeesPayment = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.recordFeesPayment = recordFeesPayment;
+const recordSecondFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { feePaid } = req.body;
+        const { recordID } = req.params;
+        const record = yield recordPaymentModel_1.default.findById(recordID);
+        if (record) {
+            const pushRecord = (_a = record === null || record === void 0 ? void 0 : record.feePaid) === null || _a === void 0 ? void 0 : _a.push(feePaid);
+            if (pushRecord) {
+                const getRecord = record === null || record === void 0 ? void 0 : record.feePaid;
+                const totalFees = getRecord === null || getRecord === void 0 ? void 0 : getRecord.reduce((accumulator, currentVal) => {
+                    return accumulator + currentVal;
+                });
+                const lastFeePaid = getRecord[getRecord.length - 1];
+                const getClassFees = record === null || record === void 0 ? void 0 : record.classFees;
+                if (totalFees === getClassFees) {
+                    const update = yield recordPaymentModel_1.default.findByIdAndUpdate(record._id, { feePaymentComplete: true, feeBalance: totalFees }, { new: true });
+                    yield record.save();
+                    return res.status(201).json({
+                        message: "Successfully Recorded New Payment. Payment Now Complete",
+                        data: {
+                            main: update,
+                            total: totalFees,
+                        },
+                        status: 201,
+                    });
+                }
+                else {
+                    const convertNum = Number(totalFees);
+                    const balance = getClassFees - convertNum;
+                    yield record.save();
+                    return res.status(201).json({
+                        message: "Successfully Recorded New Payment.",
+                        data: {
+                            paid: lastFeePaid,
+                            totalPaid: totalFees,
+                            balance: balance,
+                        },
+                        status: 201,
+                    });
+                }
+            }
+            else {
+                return res.status(404).json({
+                    message: "No Payment Added",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "Error Recording New Payment",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Recording Second Fees Payment",
+            errorData: {
+                errorMessage: error.message,
+                errorStack: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.recordSecondFeePayment = recordSecondFeePayment;
 const getAllFeeRecords = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
         const getAll = yield schoolModel_1.default.findById(schoolID).populate({
-            path: "school",
+            path: "recordPayments",
             options: {
                 sort: {
                     createdAt: -1,
@@ -108,17 +176,49 @@ const getAllFeeRecords = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getAllFeeRecords = getAllFeeRecords;
+const getOneFeeRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID } = req.params;
+        const getAll = yield studentModel_1.default.findById(studentID).populate({
+            path: "recordPayments",
+            options: {
+                sort: {
+                    createdAt: -1,
+                },
+            },
+        });
+        return res.status(200).json({
+            message: "Successfully Gotten All The Fees Data",
+            data: getAll,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Getting ALL Fees Records",
+            errorData: {
+                errorMessage: error.message,
+                errorStack: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.getOneFeeRecord = getOneFeeRecord;
 const deleteFeesRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const { schoolID } = req.params;
+        const { studentID } = req.params;
         const { recordID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
+        const student = yield studentModel_1.default.findById(studentID);
         if (school) {
             const findRecord = yield recordPaymentModel_1.default.findByIdAndDelete(recordID);
             (_a = school === null || school === void 0 ? void 0 : school.recordPayments) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(recordID));
-            (_b = school === null || school === void 0 ? void 0 : school.students) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(recordID));
-            school.save();
+            (_b = student === null || student === void 0 ? void 0 : student.recordPayments) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(recordID));
+            yield school.save();
+            yield student.save();
             return res.status(200).json({
                 message: "Successfully Deleted Fees Record",
                 data: findRecord,
