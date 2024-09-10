@@ -2,7 +2,7 @@ import { Document, model, Schema, Types } from "mongoose";
 
 interface irecordPayment {
   // creating
-  feePaid: number;
+  feePaid: Array<Number>;
   feePaidDate: string;
   feeBalance: number;
   paidByWho: string;
@@ -30,9 +30,11 @@ interface irecordPaymentData extends irecordPayment, Document {}
 
 const recordPaymentModel = new Schema<irecordPaymentData>(
   {
-    feePaid: {
-      type: Number,
-    },
+    feePaid: [
+      {
+        type: Number,
+      },
+    ],
     feePaidDate: {
       type: String,
     },
