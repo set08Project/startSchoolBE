@@ -26,6 +26,7 @@ const complainRouter_1 = __importDefault(require("./router/complainRouter"));
 const reportCardRouter_1 = __importDefault(require("./router/reportCardRouter"));
 const pastQuestionRouter_1 = __importDefault(require("./router/pastQuestionRouter"));
 const expenseRouter_1 = __importDefault(require("./router/expenseRouter"));
+const recordPaymentRouter_1 = __importDefault(require("./router/recordPaymentRouter"));
 const passportRoute_1 = __importDefault(require("./router/passportRoute"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
@@ -49,6 +50,7 @@ const mainApp = (app) => {
         app.use("/api", reportCardRouter_1.default);
         app.use("/api", pastQuestionRouter_1.default);
         app.use("/api", expenseRouter_1.default);
+        app.use("/api", recordPaymentRouter_1.default);
         app.use("/api", passportRoute_1.default);
         app.use("/api", studentRouter_1.default);
         app.use("/api", timeTableRouter_1.default);

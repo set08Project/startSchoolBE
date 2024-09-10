@@ -8,6 +8,7 @@ import {
   createStorePurchasedTeacher,
   deleteStudent,
   loginStudent,
+  loginStudentWithToken,
   readSchoolStudents,
   readStudentCookie,
   readStudentDetail,
@@ -64,6 +65,7 @@ router
   .route("/upload-student-avatar/:studentID")
   .patch(upload, updateStudentAvatar);
 
+router.route("/login-student-token").post(loginStudentWithToken);
 router.route("/login-student").post(loginStudent);
 
 router.route("/read-student-cookie").get(readStudentCookie);

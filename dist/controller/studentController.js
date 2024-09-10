@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
+exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -199,6 +199,51 @@ const loginStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.loginStudent = loginStudent;
+const loginStudentWithToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token } = req.body;
+        const getStudent = yield studentModel_1.default.findOne({ enrollmentID: token });
+        const school = yield schoolModel_1.default.findOne({
+            schoolName: getStudent === null || getStudent === void 0 ? void 0 : getStudent.schoolName,
+        });
+        if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getStudent === null || getStudent === void 0 ? void 0 : getStudent.schoolName)) {
+            if (school.verify) {
+                const token = jsonwebtoken_1.default.sign({ status: school.status }, "student", {
+                    expiresIn: "1d",
+                });
+                req.session.isAuth = true;
+                req.session.isSchoolID = getStudent._id;
+                return res.status(201).json({
+                    message: "welcome back",
+                    user: getStudent === null || getStudent === void 0 ? void 0 : getStudent.status,
+                    data: token,
+                    id: req.session.isSchoolID,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "please confirm with your school admin",
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "Error finding school",
+            });
+        }
+        return res.status(201).json({
+            message: "creating school",
+            data: school,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error logging you in",
+        });
+    }
+});
+exports.loginStudentWithToken = loginStudentWithToken;
 const readStudentCookie = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const readSchool = req.session.isSchoolID;
@@ -690,9 +735,6 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                     const real = yield classroomModel_1.default.findByIdAndUpdate(classData === null || classData === void 0 ? void 0 : classData._id, {
                         class1stFee: amount,
                     }, { new: true });
-                    console.log(classData);
-                    console.log(amount);
-                    console.log(real);
                 }
                 else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "2nd Term") {
                     const classData = yield classroomModel_1.default

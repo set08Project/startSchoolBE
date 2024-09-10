@@ -7,6 +7,7 @@ import {
   createSchoolTeacherByVicePrincipal,
   createSchoolVicePrincipal,
   deleteStaff,
+  loginStaffWithToken,
   loginTeacher,
   readSchooTeacher,
   readTeacherCookie,
@@ -37,6 +38,7 @@ router.route("/create-school-teacher/:schoolID").post(createSchoolTeacher);
 router.route("/view-school-teacher/:schoolID").get(readSchooTeacher);
 
 router.route("/login-teacher").post(loginTeacher);
+router.route("/login-teacher-token").post(loginStaffWithToken);
 router.route("/read-teacher-cookie").get(readTeacherCookie);
 
 router.route("/view-teacher-detail/:staffID").get(readTeacherDetail);
