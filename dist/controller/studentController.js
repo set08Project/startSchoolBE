@@ -685,7 +685,14 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             const check = student === null || student === void 0 ? void 0 : student.schoolFeesHistory.some((el) => {
                 return el.reference === reference;
             });
-            if (!check) {
+            const payment = student === null || student === void 0 ? void 0 : student.schoolFeesHistory.some((el) => {
+                return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
+                    el.session === (school === null || school === void 0 ? void 0 : school.presentSession) &&
+                    el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
+                    el.term === (school === null || school === void 0 ? void 0 : school.presentTerm));
+            });
+            console.log(student === null || student === void 0 ? void 0 : student.schoolFeesHistory);
+            if (!payment) {
                 const store = yield schoolFeeHistory_1.default.create({
                     studentID,
                     session: school === null || school === void 0 ? void 0 : school.presentSession,
