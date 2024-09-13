@@ -66,6 +66,59 @@ export const loginTeacher = async (
   }
 };
 
+export const loginStaffWithToken = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { token } = req.body;
+
+    const getTeacher = await staffModel.findOne({
+      enrollmentID: token,
+    });
+
+    const school = await schoolModel.findOne({
+      schoolName: getTeacher?.schoolName,
+    });
+
+    if (school?.schoolName && getTeacher?.schoolName) {
+      if (school.verify) {
+        const token = jwt.sign({ status: school.status }, "student", {
+          expiresIn: "1d",
+        });
+
+        req.session.isAuth = true;
+        req.session.isSchoolID = getTeacher._id;
+
+        return res.status(201).json({
+          message: "welcome back",
+          user: getTeacher?.status,
+          data: token,
+          id: req.session.isSchoolID,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "please confirm with your school admin",
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "Error finding school",
+      });
+    }
+
+    return res.status(201).json({
+      message: "creating school",
+      data: school,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error logging you in",
+    });
+  }
+};
+
 export const readTeacherCookie = async (
   req: any,
   res: Response

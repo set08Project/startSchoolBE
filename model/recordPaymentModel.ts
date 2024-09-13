@@ -2,13 +2,14 @@ import { Document, model, Schema, Types } from "mongoose";
 
 interface irecordPayment {
   // creating
-  feePaid: number;
+  feePaid: Array<Number>;
   feePaidDate: string;
   feeBalance: number;
   paidByWho: string;
   paymentMode: string;
 
   // returning
+  studentID: string;
   studentFirstName: string;
   studentLastName: string;
   studentClass: string;
@@ -30,9 +31,11 @@ interface irecordPaymentData extends irecordPayment, Document {}
 
 const recordPaymentModel = new Schema<irecordPaymentData>(
   {
-    feePaid: {
-      type: Number,
-    },
+    feePaid: [
+      {
+        type: Number,
+      },
+    ],
     feePaidDate: {
       type: String,
     },
@@ -43,6 +46,9 @@ const recordPaymentModel = new Schema<irecordPaymentData>(
       type: String,
     },
     paymentMode: {
+      type: String,
+    },
+    studentID: {
       type: String,
     },
     studentFirstName: {

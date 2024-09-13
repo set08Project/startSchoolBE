@@ -221,6 +221,57 @@ export const loginStudent = async (
   }
 };
 
+export const loginStudentWithToken = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { token } = req.body;
+
+    const getStudent = await studentModel.findOne({ enrollmentID: token });
+
+    const school = await schoolModel.findOne({
+      schoolName: getStudent?.schoolName,
+    });
+
+    if (school?.schoolName && getStudent?.schoolName) {
+      if (school.verify) {
+        const token = jwt.sign({ status: school.status }, "student", {
+          expiresIn: "1d",
+        });
+
+        req.session.isAuth = true;
+        req.session.isSchoolID = getStudent._id;
+
+        return res.status(201).json({
+          message: "welcome back",
+          user: getStudent?.status,
+          data: token,
+          id: req.session.isSchoolID,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "please confirm with your school admin",
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "Error finding school",
+      });
+    }
+
+    return res.status(201).json({
+      message: "creating school",
+      data: school,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error logging you in",
+    });
+  }
+};
+
 export const readStudentCookie = async (
   req: any,
   res: Response
@@ -750,14 +801,25 @@ export const createSchoolFeePayment = async (
       student?.presentClassID
     );
 
-    const school = await schoolModel.findById(student?.schoolIDs);
+    const school: any = await schoolModel.findById(student?.schoolIDs);
 
     if (school) {
       const check = student?.schoolFeesHistory.some((el: any) => {
         return el.reference === reference;
       });
 
-      if (!check) {
+      const payment = student?.schoolFeesHistory.some((el: any) => {
+        return (
+          el.sessionID === school?.presentSessionID &&
+          el.session === school?.presentSession &&
+          el.termID === school?.presentTermID &&
+          el.term === school?.presentTerm
+        );
+      });
+
+      console.log(student?.schoolFeesHistory);
+
+      if (!payment) {
         const store = await schoolFeeHistory.create({
           studentID,
           session: school?.presentSession!,
@@ -822,10 +884,6 @@ export const createSchoolFeePayment = async (
             },
             { new: true }
           );
-
-          console.log(classData);
-          console.log(amount);
-          console.log(real);
         } else if (classOne?.presentTerm === "2nd Term") {
           const classData: any = await classroomModel
             .findById(student?.presentClassID)

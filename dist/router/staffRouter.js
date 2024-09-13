@@ -23,6 +23,7 @@ const router = (0, express_1.Router)();
 router.route("/create-school-teacher/:schoolID").post(staffController_1.createSchoolTeacher);
 router.route("/view-school-teacher/:schoolID").get(staffController_1.readSchooTeacher);
 router.route("/login-teacher").post(staffController_1.loginTeacher);
+router.route("/login-teacher-token").post(staffController_1.loginStaffWithToken);
 router.route("/read-teacher-cookie").get(staffController_1.readTeacherCookie);
 router.route("/view-teacher-detail/:staffID").get(staffController_1.readTeacherDetail);
 router.route("/update-teacher-salery/:staffID").patch(staffController_1.updateTeacherSalary);
