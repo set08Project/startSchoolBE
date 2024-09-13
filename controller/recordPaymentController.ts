@@ -31,6 +31,7 @@ export const recordFeesPayment = async (
           feeBalance: currentBalance,
           classFees: getStudentClassFee,
           getTerm: getTerm,
+          studentID: student?._id,
           studentFirstName: student?.studentFirstName,
           studentLastName: student?.studentLastName,
           studentClass: student?.classAssigned,

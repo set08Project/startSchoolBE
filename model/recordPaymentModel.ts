@@ -9,6 +9,7 @@ interface irecordPayment {
   paymentMode: string;
 
   // returning
+  studentID: string;
   studentFirstName: string;
   studentLastName: string;
   studentClass: string;
@@ -45,6 +46,9 @@ const recordPaymentModel = new Schema<irecordPaymentData>(
       type: String,
     },
     paymentMode: {
+      type: String,
+    },
+    studentID: {
       type: String,
     },
     studentFirstName: {
