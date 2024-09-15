@@ -19,6 +19,9 @@ const recordPaymentModel = new mongoose_1.Schema({
     paymentMode: {
         type: String,
     },
+    studentID: {
+        type: String,
+    },
     studentFirstName: {
         type: String,
     },

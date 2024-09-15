@@ -32,6 +32,12 @@ const subjectModel = new mongoose_1.Schema({
             ref: "performances",
         },
     ],
+    subjectClassIDs: {
+        type: String,
+    },
+    subjectClassID: {
+        type: String,
+    },
     teacherID: {
         type: String,
     },

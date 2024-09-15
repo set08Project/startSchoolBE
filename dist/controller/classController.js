@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClass1stFee = exports.updateSchoolClassTeacher = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
+exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClass1stFee = exports.updateSchoolClassTeacher = exports.updateSchoolClassName = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -268,6 +268,62 @@ const viewClassRM = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.viewClassRM = viewClassRM;
+const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, classID } = req.params;
+        const { className } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school && school.schoolName && school.status === "school-admin") {
+            const subjects = yield classroomModel_1.default.findByIdAndUpdate(classID, {
+                className,
+            }, { new: true });
+            for (let i of school.students) {
+                let student = yield studentModel_1.default.findById(i);
+                if ((student === null || student === void 0 ? void 0 : student.presentClassID) === classID) {
+                    yield studentModel_1.default.findByIdAndUpdate(i, { classAssigned: className }, { new: true });
+                }
+            }
+            for (let i of school.staff) {
+                let staff = yield staffModel_1.default.findById(i);
+                if ((staff === null || staff === void 0 ? void 0 : staff.presentClassID) === classID) {
+                    let myClass = staff === null || staff === void 0 ? void 0 : staff.classesAssigned.find((el) => {
+                        return el.classID === classID;
+                    });
+                    myClass = { className, classID };
+                    yield staffModel_1.default.findByIdAndUpdate(i, { classesAssigned: Object.assign({}, myClass) }, { new: true });
+                }
+            }
+            for (let i of school.subjects) {
+                let subject = yield subjectModel_1.default.findById(i);
+                if ((subject === null || subject === void 0 ? void 0 : subject.subjectClassID) === classID) {
+                    yield subjectModel_1.default.findByIdAndUpdate(i, { designated: className }, { new: true });
+                }
+                else {
+                    console.log("nothing to do!");
+                }
+            }
+            return res.status(201).json({
+                message: "class name updated successfully",
+                data: subjects,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(404).json({
+            message: "Error creating updating class name",
+            status: 404,
+        });
+    }
+});
+exports.updateSchoolClassName = updateSchoolClassName;
 const updateSchoolClassTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, classID } = req.params;
