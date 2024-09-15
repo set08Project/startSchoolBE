@@ -44,6 +44,8 @@ const createSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
                         subjectTitle,
                         designated,
                         classDetails: getClassRooms,
+                        subjectClassID: getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM._id,
+                        subjectClassIDs: getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id,
                     });
                     school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
                     school.save();

@@ -4,6 +4,7 @@ import {
   deleteSchoolClass,
   studentOfWeek,
   updateSchoolClass1stFee,
+  updateSchoolClassName,
   updateSchoolClassTeacher,
   viewClassRM,
   viewClassTopStudent,
@@ -18,6 +19,9 @@ import {
 const router: Router = Router();
 
 router.route("/create-classroom/:schoolID").post(createSchoolClasses);
+router
+  .route("/update-classname/:schoolID/:classID")
+  .patch(updateSchoolClassName);
 
 router.route("/view-classrooms/:schoolID").get(viewSchoolClasses);
 router.route("/view-classroom-info/:classID").get(viewClassRM);
