@@ -4,6 +4,9 @@ const express_1 = require("express");
 const classController_1 = require("../controller/classController");
 const router = (0, express_1.Router)();
 router.route("/create-classroom/:schoolID").post(classController_1.createSchoolClasses);
+router
+    .route("/update-classname/:schoolID/:classID")
+    .patch(classController_1.updateSchoolClassName);
 router.route("/view-classrooms/:schoolID").get(classController_1.viewSchoolClasses);
 router.route("/view-classroom-info/:classID").get(classController_1.viewClassRM);
 router.route("/view-one-classroom-info/:classID").get(classController_1.viewOneClassRM);

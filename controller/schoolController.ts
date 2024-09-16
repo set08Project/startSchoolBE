@@ -689,6 +689,8 @@ export const approveRegistration = async (req: Request, res: Response) => {
     } else {
       return res.status(404).json({
         message: "School not found",
+
+        status: 404,
       });
     }
   } catch (error: any) {

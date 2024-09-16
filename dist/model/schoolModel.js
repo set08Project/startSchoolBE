@@ -160,6 +160,12 @@ const schoolModel = new mongoose_2.Schema({
             ref: "payments",
         },
     ],
+    recordPayments: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "recordPayments",
+        },
+    ],
     students: [
         {
             type: mongoose_1.Types.ObjectId,

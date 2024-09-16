@@ -158,6 +158,12 @@ const studentModel = new mongoose_1.Schema({
             ref: "purchasedHistories",
         },
     ],
+    recordPayments: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "recordPayments",
+        },
+    ],
     schoolFeesHistory: [
         {
             type: mongoose_1.Types.ObjectId,

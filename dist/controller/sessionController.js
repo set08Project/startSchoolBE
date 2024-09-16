@@ -460,7 +460,6 @@ const updateTermPay = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.updateTermPay = updateTermPay;
 const createSessionHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     try {
         const { classID } = req.params;
         const { text } = req.body;
@@ -478,8 +477,10 @@ const createSessionHistory = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         const getAll = yield classHistory_1.default.create({
             resultHistory: history,
-            session: (_a = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _a === void 0 ? void 0 : _a.year,
-            term: (_b = getSchool === null || getSchool === void 0 ? void 0 : getSchool.session[0]) === null || _b === void 0 ? void 0 : _b.presentTerm,
+            // session: getSchool?.session[0]?.year!,
+            // term: getSchool?.session[0]?.presentTerm!,
+            session: getSchool === null || getSchool === void 0 ? void 0 : getSchool.presentSession,
+            term: getSchool === null || getSchool === void 0 ? void 0 : getSchool.presentTerm,
             classTeacherName: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.classTeacherName,
             className: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.className,
             principalsRemark: text,

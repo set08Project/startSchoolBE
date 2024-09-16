@@ -9,7 +9,7 @@ interface iSchool {
   enrollmentID: string;
   status: string;
   presentTerm: string;
-  
+
   presentSession: string;
   presentSessionID: string;
   presentTermID: string;
@@ -53,6 +53,7 @@ interface iSchool {
   gallaries: Array<{}>;
   complain: Array<{}>;
   reportCard: Array<{}>;
+  recordPayments: Array<{}>;
   classHistory: Array<{}>;
   purchaseHistory: Array<{}>;
   schoolFeesHistory: Array<{}>;
@@ -240,6 +241,12 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "payments",
+      },
+    ],
+    recordPayments: [
+      {
+        type: Types.ObjectId,
+        ref: "recordPayments",
       },
     ],
 
