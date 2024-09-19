@@ -136,6 +136,7 @@ const updateSchoolSubjectTeacher = (req, res) => __awaiter(void 0, void 0, void 
                         title: subjects === null || subjects === void 0 ? void 0 : subjects.subjectTitle,
                         id: subjects === null || subjects === void 0 ? void 0 : subjects._id,
                         classMeant: subjects === null || subjects === void 0 ? void 0 : subjects.designated,
+                        classID: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.presentClassID,
                     },
                 ];
                 yield staffModel_1.default.findByIdAndUpdate(getTeacher._id, {

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createSchoolStudent = void 0;
+exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -25,6 +25,7 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const historyModel_1 = __importDefault(require("../model/historyModel"));
 const schoolFeeHistory_1 = __importDefault(require("../model/schoolFeeHistory"));
+const csvtojson_1 = __importDefault(require("csvtojson"));
 const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
@@ -103,6 +104,81 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createSchoolStudent = createSchoolStudent;
+const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    try {
+        const { schoolID } = req.params;
+        const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        console.log(data);
+        for (let i of data) {
+            console.log(i);
+            const school = yield schoolModel_1.default.findById(schoolID).populate({
+                path: "classRooms",
+            });
+            const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
+            const salt = yield bcrypt_1.default.genSalt(10);
+            const hashed = yield bcrypt_1.default.hash(`${i === null || i === void 0 ? void 0 : i.studentFirstName.replace(/ /gi, "").toLowerCase()}${i === null || i === void 0 ? void 0 : i.studentLastName.replace(/ /gi, "").toLowerCase()}`, salt);
+            const findClass = (_a = school === null || school === void 0 ? void 0 : school.classRooms) === null || _a === void 0 ? void 0 : _a.find((el) => {
+                return el.className === (i === null || i === void 0 ? void 0 : i.classAssigned);
+            });
+            if (school && school.schoolName && school.status === "school-admin") {
+                if (findClass) {
+                    const student = yield studentModel_1.default.create({
+                        schoolIDs: schoolID,
+                        presentClassID: findClass === null || findClass === void 0 ? void 0 : findClass._id,
+                        classTermFee: (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "1st Term"
+                            ? findClass === null || findClass === void 0 ? void 0 : findClass.class1stFee
+                            : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "2nd Term"
+                                ? findClass === null || findClass === void 0 ? void 0 : findClass.class2ndFee
+                                : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "3rd Term"
+                                    ? findClass === null || findClass === void 0 ? void 0 : findClass.class3rdFee
+                                    : null,
+                        gender: i === null || i === void 0 ? void 0 : i.gender,
+                        enrollmentID,
+                        schoolID: school === null || school === void 0 ? void 0 : school.enrollmentID,
+                        studentFirstName: i === null || i === void 0 ? void 0 : i.studentFirstName,
+                        studentLastName: i === null || i === void 0 ? void 0 : i.studentLastName,
+                        schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
+                        studentAddress: i === null || i === void 0 ? void 0 : i.studentAddress,
+                        classAssigned: i === null || i === void 0 ? void 0 : i.classAssigned,
+                        email: `${i === null || i === void 0 ? void 0 : i.studentFirstName.replace(/ /gi, "").toLowerCase()}${i === null || i === void 0 ? void 0 : i.studentLastName.replace(/ /gi, "").toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
+                        password: hashed,
+                        status: "school-student",
+                    });
+                    school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
+                    (_c = school === null || school === void 0 ? void 0 : school.historys) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(student._id));
+                    yield school.save();
+                    findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
+                    yield findClass.save();
+                }
+                else {
+                    return res.status(404).json({
+                        message: "class must exist",
+                        status: 404,
+                    });
+                }
+            }
+            else {
+                return res.status(404).json({
+                    message: "school not found",
+                    status: 404,
+                });
+            }
+        }
+        return res.status(201).json({
+            message: "done with class entry",
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.createBulkSchoolStudent = createBulkSchoolStudent;
 const readSchoolStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -968,17 +1044,19 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.changeStudentClass = changeStudentClass;
 const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = yield studentModel_1.default.findByIdAndDelete(studentID);
             const checkClass = yield classroomModel_1.default.find();
+            const checkStudentClass = yield classroomModel_1.default.findOne(student === null || student === void 0 ? void 0 : student.presentClassID);
             if (checkClass.length > 0) {
                 const teacherClass = checkClass[0];
                 (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
                 (_b = teacherClass === null || teacherClass === void 0 ? void 0 : teacherClass.students) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(studentID));
+                (_c = checkStudentClass === null || checkStudentClass === void 0 ? void 0 : checkStudentClass.students) === null || _c === void 0 ? void 0 : _c.pull(new mongoose_1.Types.ObjectId(studentID));
                 school.save();
                 teacherClass.save();
             }
