@@ -210,10 +210,10 @@ export const loginStudent = async (
       });
     }
 
-    return res.status(201).json({
-      message: "creating school",
-      data: school,
-    });
+    // return res.status(201).json({
+    //   message: "creating school",
+    //   data: school,
+    // });
   } catch (error) {
     return res.status(404).json({
       message: "Error logging you in",
@@ -261,10 +261,6 @@ export const loginStudentWithToken = async (
       });
     }
 
-    return res.status(201).json({
-      message: "creating school",
-      data: school,
-    });
   } catch (error) {
     return res.status(404).json({
       message: "Error logging you in",
