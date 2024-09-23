@@ -337,6 +337,7 @@ export const updateSchoolClassName = async (
 
       for (let i of school.staff) {
         let staff = await staffModel.findById(i);
+
         if (staff?.presentClassID === classID) {
           let myClass: any = staff?.classesAssigned.find((el: any) => {
             return el.classID === classID;
@@ -344,9 +345,33 @@ export const updateSchoolClassName = async (
 
           myClass = { className, classID };
 
+          let xx = staff?.classesAssigned.filter((el: any) => {
+            return el.classID !== classID;
+          });
+
+          let subj = staff?.subjectAssigned.find((el: any) => {
+            return el.classID === classID;
+          });
+
+          subj = { ...subj, classMeant: className };
+
+          let yy = staff?.subjectAssigned.filter((el: any) => {
+            return el.classID !== classID;
+          });
+
+          console.log(staff?.subjectAssigned);
+
           await staffModel.findByIdAndUpdate(
             i,
-            { classesAssigned: { ...myClass } },
+            {
+              classesAssigned: [...xx, myClass],
+              subjectAssigned: [
+                ...staff?.subjectAssigned.filter((el: any) => {
+                  return el.classID !== classID;
+                }),
+                subj,
+              ],
+            },
             { new: true }
           );
         }
@@ -361,8 +386,6 @@ export const updateSchoolClassName = async (
             { designated: className! },
             { new: true }
           );
-        } else {
-          console.log("nothing to do!");
         }
       }
 

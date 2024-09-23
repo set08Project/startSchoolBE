@@ -12,6 +12,7 @@ import classroomModel from "../model/classroomModel";
 import purchasedModel from "../model/historyModel";
 import schoolFeeHistory from "../model/schoolFeeHistory";
 import subjectModel from "../model/subjectModel";
+import csv from "csvtojson";
 
 export const createSchoolStudent = async (
   req: Request,
@@ -103,6 +104,106 @@ export const createSchoolStudent = async (
         status: 404,
       });
     }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
+
+export const createBulkSchoolStudent = async (
+  req: Request | any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    const data = await csv().fromFile(req.file.path);
+    console.log(data);
+
+    for (let i of data) {
+      console.log(i);
+
+      const school = await schoolModel.findById(schoolID).populate({
+        path: "classRooms",
+      });
+
+      const enrollmentID = crypto.randomBytes(3).toString("hex");
+
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(
+        `${i?.studentFirstName
+          .replace(/ /gi, "")
+          .toLowerCase()}${i?.studentLastName
+          .replace(/ /gi, "")
+          .toLowerCase()}`,
+        salt
+      );
+
+      const findClass: any = school?.classRooms?.find((el: any) => {
+        return el.className === i?.classAssigned;
+      });
+
+      if (school && school.schoolName && school.status === "school-admin") {
+        if (findClass) {
+          const student = await studentModel.create({
+            schoolIDs: schoolID,
+            presentClassID: findClass?._id,
+            classTermFee:
+              findClass?.presentTerm === "1st Term"
+                ? findClass?.class1stFee
+                : findClass?.presentTerm === "2nd Term"
+                ? findClass?.class2ndFee
+                : findClass?.presentTerm === "3rd Term"
+                ? findClass?.class3rdFee
+                : null,
+
+            gender: i?.gender,
+            enrollmentID,
+            schoolID: school?.enrollmentID,
+            studentFirstName: i?.studentFirstName,
+            studentLastName: i?.studentLastName,
+            schoolName: school?.schoolName,
+            studentAddress: i?.studentAddress,
+            classAssigned: i?.classAssigned,
+            email: `${i?.studentFirstName
+              .replace(/ /gi, "")
+              .toLowerCase()}${i?.studentLastName
+              .replace(/ /gi, "")
+              .toLowerCase()}@${school?.schoolName
+              ?.replace(/ /gi, "")
+              .toLowerCase()}.com`,
+            password: hashed,
+            status: "school-student",
+          });
+
+          school?.students.push(new Types.ObjectId(student._id));
+
+          school?.historys?.push(new Types.ObjectId(student._id));
+          await school.save();
+
+          findClass?.students.push(new Types.ObjectId(student._id));
+          await findClass.save();
+        } else {
+          return res.status(404).json({
+            message: "class must exist",
+            status: 404,
+          });
+        }
+      } else {
+        return res.status(404).json({
+          message: "school not found",
+          status: 404,
+        });
+      }
+    }
+
+    return res.status(201).json({
+      message: "done with class entry",
+      status: 201,
+    });
   } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school session",
@@ -1192,14 +1293,18 @@ export const deleteStudent = async (
     const school: any = await schoolModel.findById(schoolID);
 
     if (school) {
-      const student = await studentModel.findByIdAndDelete(studentID);
+      const student: any = await studentModel.findByIdAndDelete(studentID);
       const checkClass = await classroomModel.find();
+      const checkStudentClass: any = await classroomModel.findOne(
+        student?.presentClassID
+      );
 
       if (checkClass.length > 0) {
         const teacherClass: any = checkClass[0];
 
         school?.students?.pull(new Types.ObjectId(studentID));
         teacherClass?.students?.pull(new Types.ObjectId(studentID));
+        checkStudentClass?.students?.pull(new Types.ObjectId(studentID));
 
         school.save();
         teacherClass.save();

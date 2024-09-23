@@ -150,6 +150,7 @@ export const updateSchoolSubjectTeacher = async (
             title: subjects?.subjectTitle,
             id: subjects?._id,
             classMeant: subjects?.designated,
+            classID: getTeacher?.presentClassID,
           },
         ];
 
