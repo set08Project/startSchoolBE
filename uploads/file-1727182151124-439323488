@@ -1,0 +1,553 @@
+[
+    {
+      "_id": "1",
+      "weeks": "1",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": "Revision of last term work and Resumption test",
+      "learningObjects": "By the end of the lesson, Students should be able to: Recall some of the lessons taught last term.",
+      "learningActivities": [
+        {
+            "id": "1",
+            "value": "Students participate in the Resumption test"
+        },
+        {
+            "id": "2",
+            "value": "Group discussion/revision of last session work"
+        }
+      ],
+      "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "Critical thinking and Problem Solving"
+        }
+      ],
+      "learningResources": "First term examination questions, students Note"
+    },
+
+    {
+      "_id": "2",
+      "weeks": "2",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": "Farm Power: -definition, different sources, advantages and disadvantages Application of farm power.",
+      "learningObjects": [
+        {
+          "id": "i",
+          "value": "describe farm power"
+        },
+        {
+          "id": "ii",
+          "value": "outline different sources of farm power"
+        },
+        {
+          "id": "iii",
+          "value": "evaluate the relevance of farm power to the development of farming activities."
+        }
+      ],
+      "learningActivities": [
+        {
+            "id": "1",
+            "value": "As a class, students discuss the meaning of farm power,"
+        },
+        {
+            "id": "2",
+            "value": "Students in pairs examine the sources of farm power."
+        },
+        {
+            "id": "3",
+            "value": "Students, in small group, discuss and evaluate the relevance of farm power to farming development."
+        }
+      ],
+      "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "•Communication and Collaboration"
+        },
+        {
+          "id": ".",
+          "value": "LeaderShip and Personal development"
+        }
+      ],
+      "learningResources": [
+        "-picture of a farmer working on the farm with crude tools. -Real object- hoe, rakes,  cutlass. -Picture of tractor working on the farm. :",
+        {
+            "id": "i",
+            "value": "https://youtu.be/qxWPmT5L6w0"
+          }
+      ]
+    },
+
+
+    {
+      "_id": "3",
+      "weeks": "3",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": "Farm Machinery and Implements: -Farm machinery: Tractor, bulldozer, dryers, shelters, incubators, milking, machine, combined harvest Ers etc –Tractor coupled Implements: ploughs, harrow ridgers planter harvesters, sprayer etc., -General maintenance and precautionary measures: iv, analyse the advantages. i,reasons for maintenance farm machinery.practices maintenance of farm machinery",
+      "learningObjects": [
+        {
+          "id": "i",
+          "value": "identify the different types of farm machinery, "
+        },
+        {
+          "id": "ii",
+          "value": "ouine functions of the different types of farm machinery,"
+        },
+        {
+          "id": "iii",
+          "value": "carryout some.precautionary, measures in the use of, farm machinery,"
+        }
+      ],
+      "learningActivities": [
+        {
+            "id": "1",
+            "value": "Students, as a class, identify and name some farm machinery on chats provided by the teacher."
+        },
+        {
+            "id": "2",
+            "value": [
+              "2, Students in small groups:",
+                {
+                    "id": "i",
+                    "value": "discuss the functions of each farm machine"
+                },
+                {
+                    "id": "ii",
+                    "value": "analyse the advantages-of each farm machine;"
+                },
+                {
+                    "id": "iii",
+                    "value": "demonstrate the use of ridgers, sprayer and some other farm power."
+                }
+            ]
+        }
+      ],
+      "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "Communication and Collaboration"
+        },
+        {
+          "id": ".",
+          "value": "Leadership and personal development."
+        },
+        {
+          "id": ".",
+          "value": "Critical thinking and problem solving Digital literacy"
+        }
+      ],
+      "learningResources":"http://youtu.be/aULFqb0sak"
+    },
+
+    {
+      "_id": "4",
+      "weeks": "4&5",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": [
+        {
+          "id": "-",
+          "value": "Definition of farm mechanization"
+        },
+        {
+          "id": "-",
+          "value": "-Definition of farm mechanization.agricultural production"
+        },
+        {
+          "id": "-",
+          "value": "– Advantages and disadvantages of farm mechanization."
+        },
+        {
+          "id": "-",
+          "value": "– Limitations of agricutural mechanization"
+        }
+      ],
+      "learningObjects": [
+        {
+          "id": "i",
+          "value": " explain farm mechanization"
+        },
+        {
+          "id": "ii",
+          "value": "give examples of farm activities that can be mechanized,"
+        },
+        {
+          "id": "iii",
+          "value": "compare the advantages and disadvantages of farm mechanization."
+        },
+        {
+          "id": "iv",
+          "value": "proffer possible ways of improving agriculture through mechanization,"
+        }
+      ],
+      "learningActivities": [
+        {
+            "id": "1",
+            "value": "Students, as a class, brainstorm on the definition of farm mechanization."
+        },
+        {
+            "id": "2",
+            "value": " Students pair with a partner to identify farm activities that can be mechanized."
+        },
+        {
+            "id": "3",
+            "value": "Students, in small groups, compare the advantages and disadvantages of farm mechanization."
+        },
+        {
+            "id": "4",
+            "value": "Students, in the same groups, visit the site below and write an essay on the solution to improving agriculture through mechanization. http://infoguidenigeria.com/farm-mechanization-nigeria/"
+        }
+    
+      ],
+    "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "•Communication and Collaboration"
+        },
+        {
+          "id": ".",
+          "value": "LeaderShip and Personal development"
+        },
+        {
+          "id": ".",
+          "value": "Critical thinking and Problem Solving Creativity and imagination"
+        }
+      ],
+      "learningResources": "https://www.google.com/url?sa=t&amp;source-web&amp;rct=j&amp;url=http://fao.org/tc/exact/sustainable-agriculture-platform-pilot-website/energe-management/mechanization/en/&amp;ved=2ahUKEwjHloeV7rAhWmQEEAHaCDAFAQFjANegQlFBAJ&amp;us=gAOvVaw20uGkhAVJ-KwS-VOuAHZ"
+    },
+
+
+    {
+      "_id": "5",
+      "weeks": "5",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": [
+        {
+            "id": "-",
+            "value": "Anatomy and Physiology of Farm Animals"
+          },
+        {
+            "id": "-",
+            "value": "-identification of important organs of farm animals and their functions e.g. digestive (monogastrid & ruminant), circulating reproductive, respiratory and nervous systems of farm animals."
+          },
+        {
+            "id": "-",
+            "value": "Dissection of farm animals to show various organs e.g. rabbit"
+          }
+
+      ],
+      "learningObjects": [
+        {
+          "id": "i",
+          "value": "identify parts and some important organs of farm animals;"
+        },
+        {
+          "id": "ii",
+          "value": "outline the functions of some of the organs of farm animals"
+        },
+        {
+          "id": "iii",
+          "value": "differentiate between the digestive system of monogastric and ruminants"
+        },
+        {
+          "id": "iv",
+          "value": "dissect a named farm animal"
+        }
+      ],
+      "learningActivities": [
+        {
+            "id": "1",
+            "value": "Students, as a class, identify some important organs of dissected farm animal from charts provided by the teacher "
+          },
+          {
+            "id": "2",
+            "value": " Whole class brainstorming on the functions of some of the important organs of farm animals."
+          },
+          {
+            "id": "3",
+            "value": " Students, in small groups, discuss the differences between the digestive systems of monogastric and ruminants."
+          },
+          {
+            "id": "4",
+            "value": "Students, in pairs dissect a rabbit/fish in each group."
+          }
+      ],
+      "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "•Communication and Collaboration"
+        },
+        {
+          "id": ".",
+          "value": "LeaderShip and Personal development"
+        },
+        {
+          "id": ".",
+          "value": "Critical thinking and Problem Solving Creativity and imagination"
+        }
+      ],
+      "learningResources": [
+        {
+            "id": "i",
+            "value": "https://www.google.com/url?sa=t&amp;source=web&amp;rct=j&amp;url=https://www.acs.edu.au/courses/animal-anatomy-and-physiology-animal-husbandry-i–164.aspx&amp;ved=2ahUKEwiH8ZLNo8DrAhU3REEAHXARD08QFiANegQlGhAJ&amp;usg=AOvVaw2uC7SHePsCU2ANKyKgkk51"
+        }
+      ]
+    },
+
+
+    {
+      "_id": "6",
+      "weeks": "6",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": [
+        "Types and classification of farm animals: -Types of farm animals e.g. sheep, goat, cattle, poultry, pig, rabbit, fish etc. -classification of farm animal according to:",
+        {
+            "id": "i",
+            "value": "habitat: terrestrial and aquatic."
+        },
+        {
+            "id": "ii",
+            "value": "Uses: food, protectior, pet etc."
+        },
+        {
+            "id": "iii",
+            "value": "Size micro and macro iv. Nutrition: ruminant and non-ruminant."
+        },
+        {
+            "id": "iv",
+            "value": "Reproduction: Aves, mammals."
+        }
+      ],
+      "learningObjects":"By the end of the lesson, students should be able to : identify various farm animals, recognize the importance of farm animals, classify farm animals based on habitat, uses, sizes, nutrition and reproduction.",
+      "learningActivities": [
+        {
+            "id": "1",
+            "value":"1. Students, as a class, give names of different farm animals they know."
+        },
+        {
+            "id": "2",
+            "value":"2. Whole class discussion on the benefits derived from farm animals."
+        },
+        {
+            "id": "3",
+            "value":"3. Students, in small groups classify based on habitat, uses, nutrition and reproduction."
+        }
+      ],
+      "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "•Communication and Collaboration"
+        },
+        {
+          "id": ".",
+          "value": "LeaderShip and Personal development"
+        },
+        {
+          "id": ".",
+          "value": "Critical thinking and Problem Solving Creativity and imagination"
+        }
+      ],
+      "learningResources": [
+        {
+            "id": "i",
+            "value": "https://youtu.be/l-EPNYket8o"
+        }
+      ]
+    },
+
+
+    {
+      "_id": "7",
+      "weeks": "7",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "Status": "Mid-term Break"
+    },
+
+
+    {
+      "_id": "8",
+      "weeks": "8&9",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": [
+        {
+            "id": "-",
+            "value": "-Study should include the following:"
+        },
+        {
+            "id": "-",
+            "value": "Oestrus cycle, heat period, gestation period, mating, colostrum, parturition, lactation."
+        },
+        {
+            "id": "-",
+            "value": "-Process of egg formation in poultry."
+        },
+        {
+            "id": "-",
+            "value": "-Main reproductive hormones and their functions."
+        },
+        {
+            "id": "-",
+            "value": "-Diagram of an egg with labels"
+        }
+      ],
+      "learningObjects": [
+        {
+          "id": "i",
+          "value": "explain the following:  Oestrus cycle, heat period, mating, lactation, parturition, gestation period, colostrum"
+        },
+        {
+          "id": "ii",
+          "value": "identify the process of egg formation in poultry,"
+        },
+        {
+          "id": "iii",
+          "value": " evaluate the roles of hormones in reproduction of poultry"
+        },
+        {
+          "id": "iv",
+          "value": "sketch and label an egg."
+        }
+    ],
+    "learningActivities": [
+            {
+              "id": "1",
+              "value": "Students, as a class, discuss meaning of Oestrus cycle, heat period, mating, lactation, parturition, gestation period and colostrum."
+            },
+            {
+              "id": "2",
+              "value": "In pair, students examine the process of egg formation in poultry."
+            },
+            {
+              "id": "3",
+              "value": "Students, in small groups, discuss the roles of hormones in reproduction of poultry brds and a leader presents it to the class."
+            },
+            {
+              "id": "4",
+              "value": "Individual students draw and label a poultry egg"
+            }
+      ],
+      "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "•Communication and Collaboration"
+        },
+        {
+          "id": ".",
+          "value": "LeaderShip and Personal development"
+        }
+      ],
+
+      "learningResources": "https://youtu.be/dRpX2Lx4Mg"
+    },
+
+
+    {
+      "_id": "10",
+      "weeks": "10",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": [
+        "Livestock Management:",
+         {
+            "id": "a",
+            "value": "Rearing of at least one ruminant and mongastric animals from birth to market size with emphasis on housing, feeding, hygiene, debeaking, creep feeding, adlibitum, flushing etc."
+         },
+         {
+            "id": "b",
+            "value": "management systems-extensive, intensive, semi-intensive"
+         },
+         {
+            "id": "c",
+            "value": "management practices and importance-routine and daily maintenance practices"
+         }
+      ],
+      "learningObjects":[
+        {
+          "id": "i",
+          "value": "explain the following procedures in livestock management: debeaking, creep feeding, ad-libitum, flushing, culling, candling, delousing, deworming, castration,"
+        }, 
+        {
+          "id": "ii",
+          "value": "identify different systems of raising livestock"
+        },
+        {
+          "id": "iii",
+          "value": "carryout feeding procedures in livestock,"
+        },
+        {
+          "id": "iv",
+          "value": "demonstrate the daily and routine maintenance practices,"
+        },
+        {
+          "id": "v",
+          "value": "rear a named ruminant or monogastric animal from birth to adulthood"
+        }
+       
+      ],
+      "learningActivities": [
+        {
+            "id": "1",
+            "value": "Whole class brainstorming of the meaning of debeaking, creep feeding, ad-ligitum, flushing, culling, deworming, castration."
+        },
+        {
+            "id": "2",
+            "value": [
+                {
+                    "id": "i",
+                    "value": "identify systems of raising livestock and feed the livestock; and"
+                },
+                {
+                    "id": "ii",
+                    "value": "carryout daily maintenance practices."
+                }
+            ]
+        }
+      ],
+      "embeddedCoreSkills": [
+        {
+          "id": ".",
+          "value": "•Communication and Collaboration"
+        },
+        {
+          "id": ".",
+          "value": "LeaderShip and Personal development"
+        },
+        {
+          "id": ".",
+          "value": "Critical thinking and Problem Solving Creativity and imagination"
+        }
+      ],
+      "learningResources": "https://www.google.com/url?sa=t&amp;source=web&amp;rct=j&amp;url=https://m.farms.com/livestock-management/%23:~:text%3DLivestock%2520management%2520involves%2520managing%2520farm,financial%2520records%2520for%2520their%2520operations&amp;ved=2ahUKEwjMi7iR1MDrAhXzQD1cQFjANegQiDhAx&amp;usq=AOvVaw2CyOAiYU70fwslGCpAgzE2"
+    },
+
+    {
+      "_id": "11",
+      "weeks": "11",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": "Revision"
+    },
+
+    {
+      "_id": "12",
+      "weeks": "12",
+      "subject": "Agricultural Science",
+      "class": "SS1",
+      "term": "Third term",
+      "topics": "Examination"
+    }
+  ]

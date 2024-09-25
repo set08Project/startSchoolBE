@@ -11,7 +11,7 @@ import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
 import purchasedModel from "../model/historyModel";
 import schoolFeeHistory from "../model/schoolFeeHistory";
-import subjectModel from "../model/subjectModel";
+// import subjectModel from "../model/subjectModel";
 import csv from "csvtojson";
 
 export const createSchoolStudent = async (
