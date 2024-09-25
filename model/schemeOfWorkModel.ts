@@ -9,7 +9,7 @@ interface iScheme {
   weeks: string;
   subject: string;
   classType: string;
-  topics: string;
+  topics: string ;
   term: string;
   learningObject: Array<LearningItem>; 
   learningActivities: Array<LearningItem>; 
@@ -23,7 +23,6 @@ const LearningItemSchema = new Schema<LearningItem>({
   id: { type: String },
   value: {
     type: [String, Object] || String,  
-    required: true
   },
 });
 
