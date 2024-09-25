@@ -24,6 +24,7 @@ import pastQuestion from "./router/pastQuestionRouter";
 import expense from "./router/expenseRouter";
 import recordPay from "./router/recordPaymentRouter";
 import social from "./router/passportRoute";
+import scheme from "./router/schemeOfWorkRouter";
 
 import cronParser from "cron-parser";
 
@@ -36,6 +37,7 @@ import schoolModel from "./model/schoolModel";
 export const mainApp = (app: Application) => {
   try {
     app.use("/api", school);
+    app.use("/api", scheme);
     app.use("/api", session);
     app.use("/api", staff);
     app.use("/api", payment);

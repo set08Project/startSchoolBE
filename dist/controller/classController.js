@@ -290,16 +290,32 @@ const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         return el.classID === classID;
                     });
                     myClass = { className, classID };
-                    yield staffModel_1.default.findByIdAndUpdate(i, { classesAssigned: Object.assign({}, myClass) }, { new: true });
+                    let xx = staff === null || staff === void 0 ? void 0 : staff.classesAssigned.filter((el) => {
+                        return el.classID !== classID;
+                    });
+                    let subj = staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.find((el) => {
+                        return el.classID === classID;
+                    });
+                    subj = Object.assign(Object.assign({}, subj), { classMeant: className });
+                    let yy = staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.filter((el) => {
+                        return el.classID !== classID;
+                    });
+                    console.log(staff === null || staff === void 0 ? void 0 : staff.subjectAssigned);
+                    yield staffModel_1.default.findByIdAndUpdate(i, {
+                        classesAssigned: [...xx, myClass],
+                        subjectAssigned: [
+                            ...staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.filter((el) => {
+                                return el.classID !== classID;
+                            }),
+                            subj,
+                        ],
+                    }, { new: true });
                 }
             }
             for (let i of school.subjects) {
                 let subject = yield subjectModel_1.default.findById(i);
                 if ((subject === null || subject === void 0 ? void 0 : subject.subjectClassID) === classID) {
                     yield subjectModel_1.default.findByIdAndUpdate(i, { designated: className }, { new: true });
-                }
-                else {
-                    console.log("nothing to do!");
                 }
             }
             return res.status(201).json({

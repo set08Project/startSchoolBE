@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const studentController_1 = require("../controller/studentController");
 const multer_1 = __importDefault(require("multer"));
+const multer_2 = require("../utils/multer");
 const upload = (0, multer_1.default)({
     fileFilter: (req, file, cb) => {
         if (file.mimetype == "image/png" ||
@@ -30,6 +31,9 @@ router
     .route("/update-student-fees-3rd/:schoolID/:studentID")
     .patch(studentController_1.updateStudent3rdFees);
 router.route("/create-student/:schoolID").post(studentController_1.createSchoolStudent);
+router
+    .route("/create-bulk-student/:schoolID/")
+    .post(multer_2.fileUpload, studentController_1.createBulkSchoolStudent);
 router.route("/read-student/:schoolID").get(studentController_1.readSchoolStudents);
 router.route("/read-student-info/:studentID").get(studentController_1.readStudentDetail);
 router

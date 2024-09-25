@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
 import lodash from "lodash";
 import { CronJob } from "cron";
+import { verifiedaccess_v1 } from "googleapis";
 
 export const viewSchoolTopStudent = async (
   req: Request,
@@ -611,36 +612,91 @@ export const updateRegisterationStatus = async (req: any, res: Response) => {
   }
 };
 
-export const approvedRegisteration = async (req: any, res: Response) => {
-  try {
-    const { email } = req.body;
+// export const approvedRegisteration = async (req: any, res: Response) => {
+//   try {
+//     const { email } = req.body;
 
-    const school: any = await schoolModel.findOne({ email });
+//     const school: any = await schoolModel.findOne({ email });
+//     if (school) {
+//       const updatedSchool = await schoolModel.findByIdAndUpdate(
+//         school?._id,
+//         {
+//           started: true,
+//         },
+//         { new: true }
+//       );
+//       verifiedEmail(school);
+
+//       return res.status(200).json({
+//         message: "school Has Approved",
+//         data: updatedSchool,
+//         status: 201,
+//       });
+//     } else {
+//       return res.status(404).json({
+//         message: "Something went wrong",
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(404).json({
+//       message: "Error updating account details",
+//     });
+//   }
+// };
+
+export const getSchoolRegistered = async (req: Request, res: Response) => {
+  try {
+    const school: any = await schoolModel.find();
+
+    return res.status(200).json({
+      message: "school Has Approved",
+      data: school,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating account details",
+    });
+  }
+};
+
+export const approveRegistration = async (req: Request, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+
+    const school: any = await schoolModel.findById(schoolID);
+
+    console.log(school);
 
     if (school) {
+      const { email } = school;
+
       const updatedSchool = await schoolModel.findByIdAndUpdate(
-        school?._id,
+        school._id,
         {
           started: true,
         },
         { new: true }
       );
-      verifiedEmail(school);
+
+      await verifiedEmail(email);
 
       return res.status(200).json({
-        message: "school Has Approved",
+        message: "School has been approved",
         data: updatedSchool,
-        status: 201,
+        status: 200,
       });
     } else {
       return res.status(404).json({
-        message: "Something went wrong, No school found",
+        message: "School not found",
+
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
-      message: "Error updating account details",
+      message: "Error approving registration",
+      error: error.message,
     });
   }
 };
