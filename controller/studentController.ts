@@ -11,7 +11,7 @@ import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
 import purchasedModel from "../model/historyModel";
 import schoolFeeHistory from "../model/schoolFeeHistory";
-import subjectModel from "../model/subjectModel";
+// import subjectModel from "../model/subjectModel";
 import csv from "csvtojson";
 
 export const createSchoolStudent = async (
@@ -311,10 +311,10 @@ export const loginStudent = async (
       });
     }
 
-    return res.status(201).json({
-      message: "creating school",
-      data: school,
-    });
+    // return res.status(201).json({
+    //   message: "creating school",
+    //   data: school,
+    // });
   } catch (error) {
     return res.status(404).json({
       message: "Error logging you in",
@@ -362,10 +362,6 @@ export const loginStudentWithToken = async (
       });
     }
 
-    return res.status(201).json({
-      message: "creating school",
-      data: school,
-    });
   } catch (error) {
     return res.status(404).json({
       message: "Error logging you in",

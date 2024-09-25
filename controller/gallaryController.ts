@@ -120,3 +120,29 @@ export const viewSchoolGallary = async (
     });
   }
 };
+
+export const deleteSchoolGallary = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, galleryID } = req.params;
+    const gallary = await schoolModel.findById(schoolID);
+
+    if (gallary) {
+      const gallery = await gallaryModel.findByIdAndDelete(galleryID);
+      return res.status(200).json({
+        message: "delete school gallaries",
+        data: gallery,
+      });
+    } else {
+      return res.status(404).json({
+        message: "error finding schoolID",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error deleting school gallery",
+    });
+  }
+};
