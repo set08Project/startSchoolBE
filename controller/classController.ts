@@ -353,7 +353,7 @@ export const updateSchoolClassName = async (
       }
 
       for (let i of school.subjects) {
-        let subject = await subjectModel.findById(i);
+        let subject: any = await subjectModel.findById(i);
 
         if (subject?.subjectClassID === classID) {
           await subjectModel.findByIdAndUpdate(
