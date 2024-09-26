@@ -305,6 +305,110 @@ export const viewClassRM = async (
   }
 };
 
+export const updateSchoolClassName = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, classID } = req.params;
+    const { className } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school && school.schoolName && school.status === "school-admin") {
+      const subjects = await classroomModel.findByIdAndUpdate(
+        classID,
+        {
+          className,
+        },
+        { new: true }
+      );
+
+      for (let i of school.students) {
+        let student = await studentModel.findById(i);
+        if (student?.presentClassID === classID) {
+          await studentModel.findByIdAndUpdate(
+            i,
+            { classAssigned: className },
+            { new: true }
+          );
+        }
+      }
+
+      for (let i of school.staff) {
+        let staff = await staffModel.findById(i);
+
+        if (staff?.presentClassID === classID) {
+          let myClass: any = staff?.classesAssigned.find((el: any) => {
+            return el.classID === classID;
+          });
+
+          myClass = { className, classID };
+
+          let xx = staff?.classesAssigned.filter((el: any) => {
+            return el.classID !== classID;
+          });
+
+          let subj = staff?.subjectAssigned.find((el: any) => {
+            return el.classID === classID;
+          });
+
+          subj = { ...subj, classMeant: className };
+
+          let yy = staff?.subjectAssigned.filter((el: any) => {
+            return el.classID !== classID;
+          });
+
+          console.log(staff?.subjectAssigned);
+
+          await staffModel.findByIdAndUpdate(
+            i,
+            {
+              classesAssigned: [...xx, myClass],
+              subjectAssigned: [
+                ...staff?.subjectAssigned.filter((el: any) => {
+                  return el.classID !== classID;
+                }),
+                subj,
+              ],
+            },
+            { new: true }
+          );
+        }
+      }
+
+      for (let i of school.subjects) {
+        let subject = await subjectModel.findById(i);
+
+        if (subject?.subjectClassID === classID) {
+          await subjectModel.findByIdAndUpdate(
+            i,
+            { designated: className! },
+            { new: true }
+          );
+        }
+      }
+
+      return res.status(201).json({
+        message: "class name updated successfully",
+        data: subjects,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({
+      message: "Error creating updating class name",
+      status: 404,
+    });
+  }
+};
+
 export const updateSchoolClassTeacher = async (
   req: Request,
   res: Response

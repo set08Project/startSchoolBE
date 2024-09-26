@@ -40,6 +40,8 @@ export const createSchoolSubject = async (
             subjectTitle,
             designated,
             classDetails: getClassRooms,
+            subjectClassID: getClassRM?._id,
+            subjectClassIDs: getClassRooms?._id,
           });
 
           school.subjects.push(new Types.ObjectId(subjects._id));
@@ -148,6 +150,7 @@ export const updateSchoolSubjectTeacher = async (
             title: subjects?.subjectTitle,
             id: subjects?._id,
             classMeant: subjects?.designated,
+            classID: getTeacher?.presentClassID,
           },
         ];
 

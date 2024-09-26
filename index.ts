@@ -15,7 +15,7 @@ dotenv.config();
 import MongoDB from "connect-mongodb-session";
 const MongoDBStore = MongoDB(session);
 const store = new MongoDBStore({
-  uri: process.env.MONGO_DB_URL_LOCAL!,
+  uri: process.env.MONGO_DB_URL_ONLINE!,
   collection: "sessions",
 });
 
@@ -44,6 +44,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 //   // legacyHeaders: false, process.env.APP_URL_DEPLOY
 
 // });
+// app.use(
+//   cors({
+//     origin: [
+//       process.env.APP_URL_DEPLOY as string,
+//       "https://justnext-dev.vercel.app",
+//       "https://justnext-dev.netlify.app",
+//     ],
+//   })
+// );
 app.use(
   cors({
     origin: [

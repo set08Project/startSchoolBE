@@ -37,6 +37,7 @@ const recordFeesPayment = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     feeBalance: currentBalance,
                     classFees: getStudentClassFee,
                     getTerm: getTerm,
+                    studentID: student === null || student === void 0 ? void 0 : student._id,
                     studentFirstName: student === null || student === void 0 ? void 0 : student.studentFirstName,
                     studentLastName: student === null || student === void 0 ? void 0 : student.studentLastName,
                     studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,

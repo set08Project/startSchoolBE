@@ -7,6 +7,8 @@ interface iSubject {
   subjectTeacherName: string;
   subjectTitle: string;
   designated: string;
+  subjectClassIDs: string;
+  subjectClassID: string;
   quiz: Array<{}>;
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
@@ -56,6 +58,12 @@ const subjectModel = new Schema<iSubjectData>(
         ref: "performances",
       },
     ],
+    subjectClassIDs: {
+      type: String,
+    },
+    subjectClassID: {
+      type: String,
+    },
     teacherID: {
       type: String,
     },

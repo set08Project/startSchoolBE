@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  approvedRegisteration,
+  approveRegistration,
   changeSchoolAddress,
   changeSchoolName,
   changeSchoolPersonalName,
@@ -8,6 +8,7 @@ import {
   changeSchoolTag,
   createSchool,
   deleteSchool,
+  getSchoolRegistered,
   loginSchool,
   logoutSchool,
   readSchoolCookie,
@@ -40,7 +41,9 @@ const upload = multer({
 
 const router: Router = Router();
 
-router.route("/approved-school-registration").patch(approvedRegisteration);
+router
+  .route("/approved-school-registration/:schoolID")
+  .patch(approveRegistration);
 
 router.route("/school-request-registration").patch(updateRegisterationStatus);
 
@@ -58,6 +61,7 @@ router.route("/view-school/:schoolID").get(viewSchoolStatus);
 router.route("/view-all-school").get(viewAllSchools);
 
 router.route("/logout-school").delete(logoutSchool);
+router.route("/get-school").get(getSchoolRegistered);
 router.route("/read-school-cookie").get(readSchoolCookie);
 
 router.route("/change-school-name/:schoolID").patch(changeSchoolName);
