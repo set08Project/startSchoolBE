@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   assignClassMonitor,
   changeStudentClass,
+  createBulkSchoolStudent,
   createSchoolFeePayment,
   createSchoolStudent,
   createStorePurchased,
@@ -27,6 +28,7 @@ import {
   viewStorePurchasedTeacher,
 } from "../controller/studentController";
 import multer from "multer";
+import { fileUpload } from "../utils/multer";
 
 const upload = multer({
   fileFilter: (req, file, cb) => {
@@ -56,6 +58,9 @@ router
   .patch(updateStudent3rdFees);
 
 router.route("/create-student/:schoolID").post(createSchoolStudent);
+router
+  .route("/create-bulk-student/:schoolID/")
+  .post(fileUpload, createBulkSchoolStudent);
 
 router.route("/read-student/:schoolID").get(readSchoolStudents);
 
