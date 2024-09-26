@@ -14,6 +14,7 @@ import {
   readTeacherDetail,
   updateStaffActiveness,
   updateStaffAvatar,
+  updateStaffName,
   updateTeacherSalary,
 } from "../controller/staffController";
 import multer from "multer";
@@ -61,6 +62,7 @@ router
   .route("/create-school-teacher-vice-prinicipal/:schoolID")
   .post(createSchoolTeacherByVicePrincipal);
 
+router.route("/update-staffName/:schoolID/:staffID").patch(updateStaffName);
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);

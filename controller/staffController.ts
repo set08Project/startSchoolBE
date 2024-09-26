@@ -413,6 +413,53 @@ export const createSchoolTeacher = async (
 
 
 
+export const updateStaffName = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+    const { staffName } = req.body;
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+      if (staff) {
+        const updatedStaffName = await staffModel.findByIdAndUpdate(staff._id, {
+          staffName: staffName,
+        });
+
+        return res.status(201).json({
+          message: "Staff Name Updated Successfully",
+          data: updatedStaffName,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Staff Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Staff Name",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
+
 export const readSchooTeacher = async (
   req: Request,
   res: Response
