@@ -410,6 +410,9 @@ export const createSchoolTeacher = async (
   }
 };
 
+
+
+
 export const readSchooTeacher = async (
   req: Request,
   res: Response
