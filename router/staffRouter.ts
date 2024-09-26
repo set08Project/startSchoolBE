@@ -12,9 +12,9 @@ import {
   readSchooTeacher,
   readTeacherCookie,
   readTeacherDetail,
-  updateGender,
   updateStaffActiveness,
   updateStaffAvatar,
+  updateStaffGender,
   updateStaffName,
   updateTeacherSalary,
 } from "../controller/staffController";
@@ -64,7 +64,7 @@ router
   .post(createSchoolTeacherByVicePrincipal);
 
 router.route("/update-staffName/:schoolID/:staffID").patch(updateStaffName);
-router.route("/update-staffgender/:schoolID/:staffID").patch(updateGender);
+router.route("/update-staffgender/:schoolID/:staffID").patch(updateStaffGender);
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);

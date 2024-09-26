@@ -668,7 +668,7 @@ export const deleteStaff = async (
   }
 };
 
-export const updateGender = async (
+export const updateStaffGender = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -717,3 +717,6 @@ export const updateGender = async (
     });
   }
 };
+
+
+
