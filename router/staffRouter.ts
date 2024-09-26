@@ -12,6 +12,7 @@ import {
   readSchooTeacher,
   readTeacherCookie,
   readTeacherDetail,
+  updatePhoneNumber,
   updateStaffActiveness,
   updateStaffAvatar,
   updateStaffName,
@@ -63,6 +64,7 @@ router
   .post(createSchoolTeacherByVicePrincipal);
 
 router.route("/update-staffName/:schoolID/:staffID").patch(updateStaffName);
+router.route("/update-phoneNumber/:schoolID/:staffID").patch(updatePhoneNumber);
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);

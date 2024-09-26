@@ -456,6 +456,55 @@ export const updateStaffName = async (
   }
 };
 
+export const updatePhoneNumber = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+    const { phone } = req.body;
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+      if (staff) {
+        const updatedPhoneNumber = await staffModel.findByIdAndUpdate(
+          staff._id,
+          {
+            phone: phone,
+          }
+        );
+
+        return res.status(201).json({
+          message: "Staff Phone Number Updated Successfully",
+          data: updatedPhoneNumber,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Staff Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Staff Phone Number",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
 export const readSchooTeacher = async (
   req: Request,
   res: Response
