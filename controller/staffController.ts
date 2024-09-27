@@ -667,3 +667,94 @@ export const deleteStaff = async (
     });
   }
 };
+
+export const updateStaffGender = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+    const { gender } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+      if (staff) {
+        const updateStaffGender = await staffModel.findByIdAndUpdate(
+          staff._id,
+          {
+            gender: gender,
+          }
+        );
+
+        return res.status(201).json({
+          message: "Staff Gender Updated Successfully",
+          data: updateStaffGender,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          mesaage: "Staff Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Staff Gender",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
+export const updateStaffAdress = async (req: Request, res: Response) => {
+  try {
+    const {schoolID} = req.params
+    const {staffID} = req.params
+
+    const {staffAddress} = req.body
+
+    const school = await schoolModel.findById(schoolID);
+
+    if(school){
+      const staff = await staffModel.findByIdAndUpdate(staffID)
+      if(staff){
+        const updateStaffDetails = await staffModel.findByIdAndUpdate(staff._id, {staffAddress: staffAddress})
+        return res.status(201).json({
+          message: "StaffAddress Updated Successfully",
+          data: updateStaffDetails,
+          status: 201
+        })
+      }else{
+        return res.status(404).json({
+          message: "Staff Does Not Exist",
+          status: 404
+        })
+      }
+    }else{
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404
+      })
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating StaffAddress",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack
+      }
+    })
+  }
+}
