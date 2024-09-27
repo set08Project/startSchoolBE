@@ -14,7 +14,9 @@ import {
   readTeacherDetail,
   updatePhoneNumber,
   updateStaffActiveness,
+  updateStaffAdress,
   updateStaffAvatar,
+  updateStaffGender,
   updateStaffName,
   updateTeacherSalary,
 } from "../controller/staffController";
@@ -45,6 +47,9 @@ router.route("/read-teacher-cookie").get(readTeacherCookie);
 
 router.route("/view-teacher-detail/:staffID").get(readTeacherDetail);
 router.route("/update-teacher-salery/:staffID").patch(updateTeacherSalary);
+router
+  .route("/update-staffAddress/:schoolID/:stafffID")
+  .patch(updateStaffAdress);
 
 // others
 
@@ -65,6 +70,7 @@ router
 
 router.route("/update-staffName/:schoolID/:staffID").patch(updateStaffName);
 router.route("/update-phoneNumber/:schoolID/:staffID").patch(updatePhoneNumber);
+router.route("/update-staffgender/:schoolID/:staffID").patch(updateStaffGender);
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);
