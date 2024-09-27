@@ -13,6 +13,7 @@ import {
   readTeacherCookie,
   readTeacherDetail,
   updateStaffActiveness,
+  updateStaffAdress,
   updateStaffAvatar,
   updateStaffGender,
   updateStaffName,
@@ -45,6 +46,7 @@ router.route("/read-teacher-cookie").get(readTeacherCookie);
 
 router.route("/view-teacher-detail/:staffID").get(readTeacherDetail);
 router.route("/update-teacher-salery/:staffID").patch(updateTeacherSalary);
+router.route("/update-staffAddress/:schoolID/:stafffID").patch(updateStaffAdress);
 
 // others
 
