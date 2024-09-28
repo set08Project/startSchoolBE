@@ -427,6 +427,11 @@ export const updateStaffName = async (
           staff._id,
           {
             staffName: staffName,
+            email: `${staffName
+              .replace(/ /gi, "")
+              .toLowerCase()}@${school?.schoolName
+              ?.replace(/ /gi, "")
+              .toLowerCase()}.com`,
           },
           { new: true }
         );
