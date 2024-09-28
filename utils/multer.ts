@@ -12,3 +12,12 @@ const storage = multer.diskStorage({
 });
 
 export const fileUpload = multer({ storage: storage }).single("file");
+
+export const fileUploads = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    file.mimetype === "application/json";
+    cb(null, true);
+  },
+}).single("file");
