@@ -1,48 +1,44 @@
 import { Document, Schema, model } from "mongoose";
 
-
 interface LearningItem {
   id: string;
-  value: Array<any> | string; 
+  value: string;
 }
-
 
 interface iScheme {
   weeks: string;
   subject: string;
   classType: string;
-  topics: Array<any>; 
+  status: string;
+  topics: LearningItem[];
   term: string;
-  learningObject: Array<LearningItem>;
-  learningActivities: Array<LearningItem>;
-  embeddedCoreSkills: Array<LearningItem>;
-  learningResource: Array<LearningItem>;
+  learningObject: LearningItem[];
+  learningActivities: LearningItem[];
+  embeddedCoreSkills: LearningItem[];
+  learningResource: LearningItem[];
 }
-
 
 interface iSchemeData extends iScheme, Document {}
 
-
 const LearningItemSchema = new Schema<LearningItem>({
   id: { type: String, required: true },
-  value: { type: Schema.Types.Mixed, required: true }, 
+  value: { type: String, required: true },
 });
-
 
 const SchemeModel = new Schema<iSchemeData>(
   {
     classType: { type: String, required: true },
     weeks: { type: String, required: true },
-    topics: [{ type: Schema.Types.Mixed, required: true }], 
+    status: { type: String },
+    topics: { type: [LearningItemSchema], required: true },
     subject: { type: String, required: true },
     term: { type: String },
-    learningObject: [LearningItemSchema], 
-    learningActivities: [LearningItemSchema],
-    learningResource: [LearningItemSchema],
-    embeddedCoreSkills: [LearningItemSchema],
+    learningObject: { type: [LearningItemSchema], default: [] },
+    learningActivities: { type: [LearningItemSchema], default: [] },
+    learningResource: { type: [LearningItemSchema], default: [] },
+    embeddedCoreSkills: { type: [LearningItemSchema], default: [] },
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
-
 
 export default model<iSchemeData>("Scheme", SchemeModel);
