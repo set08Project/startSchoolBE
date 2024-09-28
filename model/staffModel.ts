@@ -19,6 +19,11 @@ interface iStaff {
   activeStatus: boolean;
   classesAssigned: [];
 
+  facebookAcct: string;
+  instagramAcct: string;
+  xAcct: string;
+  linkedinAcct: string;
+
   subjectAssigned: Array<{}>;
   schedule: Array<{}>;
   reportCard: Array<{}>;
@@ -113,6 +118,22 @@ const staffModel = new Schema<iStaffData>(
     },
 
     staffName: {
+      type: String,
+    },
+
+    facebookAcct: {
+      type: String,
+    },
+
+    instagramAcct: {
+      type: String,
+    },
+
+    xAcct: {
+      type: String,
+    },
+
+    linkedinAcct: {
       type: String,
     },
 

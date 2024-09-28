@@ -758,3 +758,23 @@ export const updateStaffAdress = async (req: Request, res: Response) => {
     })
   }
 }
+
+
+export const updateFacebookAccount = async (req: Request, res: Response): Promise<Response> => {
+try {
+  const {schoolID} = req.params
+  const {staffID} =  req.params
+
+  const {facebookAcct} = req.body
+
+  const school =await schoo
+} catch (error: any) {
+  return res.status(404).json({
+    message: "Error Updating Facebook Social",
+    data: {
+      errorMessage: error.message,
+      errorType: error.stack
+    }
+  })
+}
+}
