@@ -611,6 +611,99 @@ export const updateStaffAdress = async (req: Request, res: Response) => {
   }
 };
 
+export const updateFacebookAccount = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+
+    const { facebookAcct } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+      if (staff) {
+        const updateStaffFacebookAcct = await staffModel.findByIdAndUpdate(
+          staff._id,
+          { facebookAcct: facebookAcct },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Staff Facebook Account Updated Successfully",
+          data: updateStaffFacebookAcct,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Staff Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Facebook Social",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+export const updateStaffXAcct = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+
+    const { xAcct } = req.body;
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+      if (staff) {
+        const updateStaffXAcct = await staffModel.findByIdAndUpdate(
+          staff._id,
+          { xAcct: xAcct },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Staff X Acctount Updated Succesfully",
+          data: updateStaffXAcct,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Staff DOes Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Staff X account",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
 export const readSchooTeacher = async (
   req: Request,
   res: Response
@@ -656,7 +749,7 @@ export const readTeacherDetail = async (
     });
   } catch (error) {
     return res.status(404).json({
-      message: "Error creating school staff",
+      message: "Error Reading Teachers Details",
       status: 404,
     });
   }
