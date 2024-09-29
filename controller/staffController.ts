@@ -611,6 +611,8 @@ export const updateStaffAdress = async (req: Request, res: Response) => {
   }
 };
 
+//Update Socials
+
 export const updateFacebookAccount = async (
   req: Request,
   res: Response
@@ -703,6 +705,103 @@ export const updateStaffXAcct = async (
     });
   }
 };
+
+export const updateStaffInstagramAcct = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+
+    const { instagramAcct } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+
+      if (staff) {
+        const updateStaffInstagramAcct = await staffModel.findByIdAndUpdate(
+          staff._id,
+          { instagramAcct: instagramAcct },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Staff IG Acct Updated Succesfully",
+          data: updateStaffInstagramAcct,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "No Staff Found",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "No School Found",
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating IG Account",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
+export const updateStaffLinkedinAcct = async (req: Request, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+
+    const { linkedinAcct } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+
+      if (staff) {
+        const updateStaffLinkedinAcct = await staffModel.findByIdAndUpdate(
+          staff._id,
+          { linkedinAcct: linkedinAcct },
+          { new: true }
+        );
+
+        return res.status(210).json({
+          message: "Staff Linkedin Updated Successfully",
+          data: updateStaffLinkedinAcct,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Staff Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating LinkedinAcct",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+//Update Socials Ends Here
 
 export const readSchooTeacher = async (
   req: Request,
