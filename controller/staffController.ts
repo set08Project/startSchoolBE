@@ -659,6 +659,51 @@ export const updateFacebookAccount = async (
   }
 };
 
+export const updateStaffXAcct = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { staffID } = req.params;
+
+    const { xAcct } = req.body;
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const staff = await staffModel.findById(staffID);
+      if (staff) {
+        const updateStaffXAcct = await staffModel.findByIdAndUpdate(
+          staff._id,
+          { xAcct: xAcct },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Staff X Acctount Updated Succesfully",
+          data: updateStaffXAcct,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Staff DOes Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Staff X account",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
 export const readSchooTeacher = async (
   req: Request,
   res: Response

@@ -19,6 +19,7 @@ import {
   updateStaffAvatar,
   updateStaffGender,
   updateStaffName,
+  updateStaffXAcct,
   updateTeacherSalary,
 } from "../controller/staffController";
 import multer from "multer";
@@ -75,6 +76,7 @@ router.route("/update-staffgender/:schoolID/:staffID").patch(updateStaffGender);
 router
   .route("/update-staff-facebook/:schoolID/:staffID")
   .patch(updateFacebookAccount);
+router.route("/update-staff-x/:schoolID/:staffID").patch(updateStaffXAcct);
 router
   .route("/update-staff-address/:schoolID/:staffID")
   .patch(updateStaffAdress);
