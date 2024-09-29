@@ -704,7 +704,7 @@ export const readTeacherDetail = async (
     });
   } catch (error) {
     return res.status(404).json({
-      message: "Error creating school staff",
+      message: "Error Reading Teachers Details",
       status: 404,
     });
   }
