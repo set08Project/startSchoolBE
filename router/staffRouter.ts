@@ -12,8 +12,16 @@ import {
   readSchooTeacher,
   readTeacherCookie,
   readTeacherDetail,
+  updateFacebookAccount,
+  updatePhoneNumber,
   updateStaffActiveness,
+  updateStaffAdress,
   updateStaffAvatar,
+  updateStaffGender,
+  updateStaffInstagramAcct,
+  updateStaffLinkedinAcct,
+  updateStaffName,
+  updateStaffXAcct,
   updateTeacherSalary,
 } from "../controller/staffController";
 import multer from "multer";
@@ -43,6 +51,9 @@ router.route("/read-teacher-cookie").get(readTeacherCookie);
 
 router.route("/view-teacher-detail/:staffID").get(readTeacherDetail);
 router.route("/update-teacher-salery/:staffID").patch(updateTeacherSalary);
+router
+  .route("/update-staffAddress/:schoolID/:stafffID")
+  .patch(updateStaffAdress);
 
 // others
 
@@ -61,6 +72,23 @@ router
   .route("/create-school-teacher-vice-prinicipal/:schoolID")
   .post(createSchoolTeacherByVicePrincipal);
 
+router.route("/update-staffName/:schoolID/:staffID").patch(updateStaffName);
+router.route("/update-phoneNumber/:schoolID/:staffID").patch(updatePhoneNumber);
+router.route("/update-staffgender/:schoolID/:staffID").patch(updateStaffGender);
+router
+  .route("/update-staff-facebook/:schoolID/:staffID")
+  .patch(updateFacebookAccount);
+router.route("/update-staff-x/:schoolID/:staffID").patch(updateStaffXAcct);
+router
+  .route("/update-staff-address/:schoolID/:staffID")
+  .patch(updateStaffAdress);
+
+router
+  .route("/update-staff-linkedin/:schoolID/:staffID")
+  .patch(updateStaffLinkedinAcct);
+router
+  .route("/update-staff-instagram/:schoolID/:staffID")
+  .patch(updateStaffInstagramAcct);
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);
