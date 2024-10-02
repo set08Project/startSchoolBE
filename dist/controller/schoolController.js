@@ -553,10 +553,9 @@ exports.getSchoolRegistered = getSchoolRegistered;
 const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
+        const { email } = req.body;
         const school = yield schoolModel_1.default.findById(schoolID);
-        console.log(school);
         if (school) {
-            const { email } = school;
             const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school._id, {
                 started: true,
             }, { new: true });

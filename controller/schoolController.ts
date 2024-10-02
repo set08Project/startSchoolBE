@@ -663,14 +663,11 @@ export const getSchoolRegistered = async (req: Request, res: Response) => {
 export const approveRegistration = async (req: Request, res: Response) => {
   try {
     const { schoolID } = req.params;
+    const { email } = req.body;
 
     const school: any = await schoolModel.findById(schoolID);
 
-    console.log(school);
-
     if (school) {
-      const { email } = school;
-
       const updatedSchool = await schoolModel.findByIdAndUpdate(
         school._id,
         {
