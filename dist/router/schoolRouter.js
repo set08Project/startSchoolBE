@@ -20,7 +20,9 @@ const upload = (0, multer_1.default)({
     },
 }).single("avatar");
 const router = (0, express_1.Router)();
-router.route("/approved-school-registration").patch(schoolController_1.approvedRegisteration);
+router
+    .route("/approved-school-registration/:schoolID")
+    .patch(schoolController_1.approveRegistration);
 router.route("/school-request-registration").patch(schoolController_1.updateRegisterationStatus);
 router.route("/view-school-top-student/:schoolID").get(schoolController_1.viewSchoolTopStudent);
 router.route("/register-school/").post(schoolController_1.createSchool);
@@ -31,6 +33,7 @@ router.route("/verify-school/:schoolID").get(schoolController_1.verifySchool);
 router.route("/view-school/:schoolID").get(schoolController_1.viewSchoolStatus);
 router.route("/view-all-school").get(schoolController_1.viewAllSchools);
 router.route("/logout-school").delete(schoolController_1.logoutSchool);
+router.route("/get-school").get(schoolController_1.getSchoolRegistered);
 router.route("/read-school-cookie").get(schoolController_1.readSchoolCookie);
 router.route("/change-school-name/:schoolID").patch(schoolController_1.changeSchoolName);
 router.route("/change-school-location/:schoolID").patch(schoolController_1.changeSchoolAddress);

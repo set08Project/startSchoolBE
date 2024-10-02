@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
+exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.updateStaffLinkedinAcct = exports.updateStaffInstagramAcct = exports.updateStaffXAcct = exports.updateFacebookAccount = exports.updateStaffAdress = exports.updateStaffGender = exports.updatePhoneNumber = exports.updateStaffName = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -370,6 +370,348 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createSchoolTeacher = createSchoolTeacher;
+const updateStaffName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { staffName } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findById(staffID);
+            if (staff) {
+                const updatedStaffName = yield staffModel_1.default.findByIdAndUpdate(staff._id, {
+                    staffName: staffName,
+                    email: `${staffName
+                        .replace(/ /gi, "")
+                        .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                }, { new: true });
+                return res.status(201).json({
+                    message: "Staff Name Updated Successfully",
+                    data: updatedStaffName,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Staff Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Staff Name",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStaffName = updateStaffName;
+const updatePhoneNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { phone } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findById(staffID);
+            if (staff) {
+                const updatedPhoneNumber = yield staffModel_1.default.findByIdAndUpdate(staff._id, {
+                    phone: phone,
+                }, { new: true });
+                return res.status(201).json({
+                    message: "Staff Phone Number Updated Successfully",
+                    data: updatedPhoneNumber,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Staff Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Staff Phone Number",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updatePhoneNumber = updatePhoneNumber;
+const updateStaffGender = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { gender } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findById(staffID);
+            if (staff) {
+                const updateStaffGender = yield staffModel_1.default.findByIdAndUpdate(staff._id, {
+                    gender: gender,
+                }, { new: true });
+                return res.status(201).json({
+                    message: "Staff Gender Updated Successfully",
+                    data: updateStaffGender,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    mesaage: "Staff Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Staff Gender",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStaffGender = updateStaffGender;
+const updateStaffAdress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { staffAddress } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findByIdAndUpdate(staffID);
+            if (staff) {
+                const updateStaffDetails = yield staffModel_1.default.findByIdAndUpdate(staff._id, { staffAddress: staffAddress }, { new: true });
+                return res.status(201).json({
+                    message: "StaffAddress Updated Successfully",
+                    data: updateStaffDetails,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Staff Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating StaffAddress",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateStaffAdress = updateStaffAdress;
+//Update Socials
+const updateFacebookAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { facebookAcct } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findById(staffID);
+            if (staff) {
+                const updateStaffFacebookAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { facebookAcct: facebookAcct }, { new: true });
+                return res.status(201).json({
+                    message: "Staff Facebook Account Updated Successfully",
+                    data: updateStaffFacebookAcct,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Staff Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Facebook Social",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateFacebookAccount = updateFacebookAccount;
+const updateStaffXAcct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { xAcct } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findById(staffID);
+            if (staff) {
+                const updateStaffXAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { xAcct: xAcct }, { new: true });
+                return res.status(201).json({
+                    message: "Staff X Acctount Updated Succesfully",
+                    data: updateStaffXAcct,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Staff DOes Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Staff X account",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateStaffXAcct = updateStaffXAcct;
+const updateStaffInstagramAcct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { instagramAcct } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findById(staffID);
+            if (staff) {
+                const updateStaffInstagramAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { instagramAcct: instagramAcct }, { new: true });
+                return res.status(201).json({
+                    message: "Staff IG Acct Updated Succesfully",
+                    data: updateStaffInstagramAcct,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "No Staff Found",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "No School Found",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating IG Account",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStaffInstagramAcct = updateStaffInstagramAcct;
+const updateStaffLinkedinAcct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { staffID } = req.params;
+        const { linkedinAcct } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const staff = yield staffModel_1.default.findById(staffID);
+            if (staff) {
+                const updateStaffLinkedinAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { linkedinAcct: linkedinAcct }, { new: true });
+                return res.status(210).json({
+                    message: "Staff Linkedin Updated Successfully",
+                    data: updateStaffLinkedinAcct,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Staff Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating LinkedinAcct",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateStaffLinkedinAcct = updateStaffLinkedinAcct;
+//Update Socials Ends Here
 const readSchooTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -407,7 +749,7 @@ const readTeacherDetail = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating school staff",
+            message: "Error Reading Teachers Details",
             status: 404,
         });
     }

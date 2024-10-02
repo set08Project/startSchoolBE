@@ -25,6 +25,7 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const historyModel_1 = __importDefault(require("../model/historyModel"));
 const schoolFeeHistory_1 = __importDefault(require("../model/schoolFeeHistory"));
+// import subjectModel from "../model/subjectModel";
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
@@ -111,7 +112,6 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
         const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
         console.log(data);
         for (let i of data) {
-            console.log(i);
             const school = yield schoolModel_1.default.findById(schoolID).populate({
                 path: "classRooms",
             });
@@ -263,10 +263,10 @@ const loginStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 message: "Error finding school",
             });
         }
-        return res.status(201).json({
-            message: "creating school",
-            data: school,
-        });
+        // return res.status(201).json({
+        //   message: "creating school",
+        //   data: school,
+        // });
     }
     catch (error) {
         return res.status(404).json({
@@ -308,10 +308,6 @@ const loginStudentWithToken = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 message: "Error finding school",
             });
         }
-        return res.status(201).json({
-            message: "creating school",
-            data: school,
-        });
     }
     catch (error) {
         return res.status(404).json({

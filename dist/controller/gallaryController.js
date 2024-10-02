@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.viewSchoolGallary = exports.createRestrictedSchoolGallary = exports.createSchoolGallary = void 0;
+exports.deleteSchoolGallary = exports.viewSchoolGallary = exports.createRestrictedSchoolGallary = exports.createSchoolGallary = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const mongoose_1 = require("mongoose");
 const streamifier_1 = require("../utils/streamifier");
@@ -121,3 +121,27 @@ const viewSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.viewSchoolGallary = viewSchoolGallary;
+const deleteSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, galleryID } = req.params;
+        const gallary = yield schoolModel_1.default.findById(schoolID);
+        if (gallary) {
+            const gallery = yield gallaryModel_1.default.findByIdAndDelete(galleryID);
+            return res.status(200).json({
+                message: "delete school gallaries",
+                data: gallery,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "error finding schoolID",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error deleting school gallery",
+        });
+    }
+});
+exports.deleteSchoolGallary = deleteSchoolGallary;

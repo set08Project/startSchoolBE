@@ -22,6 +22,9 @@ const upload = (0, multer_1.default)({
 const router = (0, express_1.Router)();
 router.route("/create-gallary/:schoolID").post(upload, gallaryController_1.createSchoolGallary);
 router
+    .route("/delete-gallary/:schoolID/:gallaryID")
+    .delete(gallaryController_1.deleteSchoolGallary);
+router
     .route("/create-restrict-gallary/:schoolID")
     .post(upload, gallaryController_1.createRestrictedSchoolGallary);
 router.route("/view-gallary/:schoolID").get(gallaryController_1.viewSchoolGallary);

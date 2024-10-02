@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeSchoolTag = exports.approvedRegisteration = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -505,27 +505,43 @@ const updateRegisterationStatus = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.updateRegisterationStatus = updateRegisterationStatus;
-const approvedRegisteration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// export const approvedRegisteration = async (req: any, res: Response) => {
+//   try {
+//     const { email } = req.body;
+//     const school: any = await schoolModel.findOne({ email });
+//     if (school) {
+//       const updatedSchool = await schoolModel.findByIdAndUpdate(
+//         school?._id,
+//         {
+//           started: true,
+//         },
+//         { new: true }
+//       );
+//       verifiedEmail(school);
+//       return res.status(200).json({
+//         message: "school Has Approved",
+//         data: updatedSchool,
+//         status: 201,
+//       });
+//     } else {
+//       return res.status(404).json({
+//         message: "Something went wrong",
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(404).json({
+//       message: "Error updating account details",
+//     });
+//   }
+// };
+const getSchoolRegistered = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { email } = req.body;
-        const school = yield schoolModel_1.default.findOne({ email });
-        if (school) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
-                started: true,
-            }, { new: true });
-            (0, email_1.verifiedEmail)(school);
-            return res.status(200).json({
-                message: "school Has Approved",
-                data: updatedSchool,
-                status: 201,
-            });
-        }
-        else {
-            return res.status(404).json({
-                message: "Something went wrong, No school found",
-                status: 404,
-            });
-        }
+        const school = yield schoolModel_1.default.find();
+        return res.status(200).json({
+            message: "school Has Approved",
+            data: school,
+            status: 201,
+        });
     }
     catch (error) {
         return res.status(404).json({
@@ -533,7 +549,39 @@ const approvedRegisteration = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
 });
-exports.approvedRegisteration = approvedRegisteration;
+exports.getSchoolRegistered = getSchoolRegistered;
+const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        console.log(school);
+        if (school) {
+            const { email } = school;
+            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school._id, {
+                started: true,
+            }, { new: true });
+            yield (0, email_1.verifiedEmail)(email);
+            return res.status(200).json({
+                message: "School has been approved",
+                data: updatedSchool,
+                status: 200,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "School not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error approving registration",
+            error: error.message,
+        });
+    }
+});
+exports.approveRegistration = approveRegistration;
 const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
