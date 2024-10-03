@@ -1341,7 +1341,14 @@ export const deleteAllStudents = async (
       const getAllStudents: any = school?.students;
       console.log(getAllStudents);
 
-      return getAllStudents;
+      getAllStudents.pull(new Types.ObjectId());
+      school.save();
+
+      return res.status(200).json({
+        message: "Successfully deleted all students",
+        data: getAllStudents,
+        status: 200,
+      });
     } else {
       return res.status(404).json({
         message: "School Does Not Exist",
