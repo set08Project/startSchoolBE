@@ -361,7 +361,6 @@ export const loginStudentWithToken = async (
         message: "Error finding school",
       });
     }
-
   } catch (error) {
     return res.status(404).json({
       message: "Error logging you in",
@@ -1326,6 +1325,34 @@ export const deleteStudent = async (
       message: "Error deleting student",
       status: 404,
       data: error.message,
+    });
+  }
+};
+
+export const deleteAllStudents = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const getAllStudents: any = school?.students;
+      console.log(getAllStudents);
+
+      return getAllStudents;
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Deleting All Students",
+      status: 404,
+      data: error.message && error.stack,
     });
   }
 };
