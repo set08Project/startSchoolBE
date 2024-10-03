@@ -18,6 +18,8 @@ import {
   updateStaffAdress,
   updateStaffAvatar,
   updateStaffGender,
+  updateStaffInstagramAcct,
+  updateStaffLinkedinAcct,
   updateStaffName,
   updateStaffXAcct,
   updateTeacherSalary,
@@ -80,6 +82,13 @@ router.route("/update-staff-x/:schoolID/:staffID").patch(updateStaffXAcct);
 router
   .route("/update-staff-address/:schoolID/:staffID")
   .patch(updateStaffAdress);
+
+router
+  .route("/update-staff-linkedin/:schoolID/:staffID")
+  .patch(updateStaffLinkedinAcct);
+router
+  .route("/update-staff-instagram/:schoolID/:staffID")
+  .patch(updateStaffInstagramAcct);
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);
