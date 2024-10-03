@@ -1338,15 +1338,25 @@ export const deleteAllStudents = async (
     const school = await schoolModel.findById(schoolID);
 
     if (school) {
-      const getAllStudents: any = school?.students;
-      console.log(getAllStudents);
+      const allStudentIDs = school?.students;
 
-      getAllStudents.pull(new Types.ObjectId());
-      school.save();
+      for (const studentID of allStudentIDs) {
+        const student = await studentModel.findByIdAndDelete(studentID);
+
+        if (student) {
+          await classroomModel.updateMany(
+            { students: studentID },
+            { $pull: { students: studentID } }
+          );
+        }
+      }
+
+      school.students = [];
+      await school.save();
 
       return res.status(200).json({
         message: "Successfully deleted all students",
-        data: getAllStudents,
+        data: allStudentIDs,
         status: 200,
       });
     } else {
@@ -1359,7 +1369,7 @@ export const deleteAllStudents = async (
     return res.status(404).json({
       message: "Error Deleting All Students",
       status: 404,
-      data: error.message && error.stack,
+      error: error.message,
     });
   }
 };
