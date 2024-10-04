@@ -658,10 +658,56 @@ export const updateStudentGender = async (
         errorMessage: error.message,
         errorTypes: error.stack,
       },
+      status: 404,
     });
   }
 };
 
+export const updateStudentPhone = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { phone } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const updatePhone = await studentModel.findByIdAndUpdate(
+          student._id,
+          { phone: phone },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student Phone Number Updated Successfully",
+          data: updatePhone,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Phone Number",
+      data: {
+        errorMessage: error.mesaage,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
 export const updateStudent1stFees = async (
   req: Request,
   res: Response
