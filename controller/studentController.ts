@@ -570,6 +570,98 @@ export const updateStudentAddress = async (
   }
 };
 
+export const updateStudentLastName = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { studentLastName } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const studentUpdateLastName = await studentModel.findByIdAndUpdate(
+          student._id,
+          { studentLastName: studentLastName },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student LastName Updated",
+          data: studentUpdateLastName,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Last Name",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+export const updateStudentGender = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+
+    const { gender } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const updateGender = await studentModel.findByIdAndUpdate(
+          student._id,
+          { gender: gender },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student Gender Updated Succed=sfully",
+          data: updateGender,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Gender",
+      data: {
+        errorMessage: error.message,
+        errorTypes: error.stack,
+      },
+    });
+  }
+};
+
 export const updateStudent1stFees = async (
   req: Request,
   res: Response
