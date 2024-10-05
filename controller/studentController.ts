@@ -1329,6 +1329,7 @@ export const deleteStudent = async (
   }
 };
 
+// Delete ALL students in one click endpoint
 export const deleteAllStudents = async (
   req: Request,
   res: Response
