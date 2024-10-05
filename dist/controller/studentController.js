@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = void 0;
+exports.deleteAllStudents = exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -1078,3 +1078,40 @@ const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.deleteStudent = deleteStudent;
+// Delete ALL students in one click endpoint
+const deleteAllStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const allStudentIDs = school === null || school === void 0 ? void 0 : school.students;
+            for (const studentID of allStudentIDs) {
+                const student = yield studentModel_1.default.findByIdAndDelete(studentID);
+                if (student) {
+                    yield classroomModel_1.default.updateMany({ students: studentID }, { $pull: { students: studentID } });
+                }
+            }
+            school.students = [];
+            yield school.save();
+            return res.status(200).json({
+                message: "Successfully deleted all students",
+                data: allStudentIDs,
+                status: 200,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Deleting All Students",
+            status: 404,
+            error: error.message,
+        });
+    }
+});
+exports.deleteAllStudents = deleteAllStudents;

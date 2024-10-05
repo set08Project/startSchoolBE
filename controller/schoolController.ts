@@ -821,6 +821,7 @@ export const createSchoolTimetableRecord = async (
       return res.status(201).json({
         message: "school time-table structure created successfully",
         data: classStructure,
+        status: 201,
       });
     } else {
       return res.status(404).json({

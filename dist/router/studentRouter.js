@@ -65,4 +65,5 @@ router
     .patch(studentController_1.assignClassMonitor);
 router.route("/change-student-class/:studentID").patch(studentController_1.changeStudentClass);
 router.route("/delete-student/:schoolID/:studentID").delete(studentController_1.deleteStudent);
+router.route("/delete-all-students/:schoolID").delete(studentController_1.deleteAllStudents);
 exports.default = router;

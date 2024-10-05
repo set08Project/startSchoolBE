@@ -663,6 +663,7 @@ const createSchoolTimetableRecord = (req, res) => __awaiter(void 0, void 0, void
             return res.status(201).json({
                 message: "school time-table structure created successfully",
                 data: classStructure,
+                status: 201,
             });
         }
         else {
