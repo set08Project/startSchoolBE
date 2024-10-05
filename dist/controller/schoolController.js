@@ -617,17 +617,24 @@ const createSchoolTimetableRecord = (req, res) => __awaiter(void 0, void 0, void
             const timeSlots = [];
             let [startHour, startMinute] = startTime.split(":").map(Number);
             let [endHour, endMinute] = endTime.split(":").map(Number);
+            // Convert everything to minutes
             let currentMinutes = startHour * 60 + startMinute;
             const endMinutes = endHour * 60 + endMinute;
             while (currentMinutes < endMinutes) {
+                // Calculate start time
                 let startHours = Math.floor(currentMinutes / 60);
                 let startMinutes = currentMinutes % 60;
+                // Increment current time by interval (40 minutes)
                 currentMinutes += interval;
+                // Calculate end time
                 let endHours = Math.floor(currentMinutes / 60);
                 let endMinutes = currentMinutes % 60;
+                // Convert to 12-hour format with AM/PM for both start and end
                 const startPeriod = startHours >= 12 ? "PM" : "AM";
+                startHours = startHours % 12 || 12; // Handle 12-hour format
                 const endPeriod = endHours >= 12 ? "PM" : "AM";
                 endHours = endHours % 12 || 12;
+                // Format the times and push to the result
                 const startFormatted = `${startHours
                     .toString()
                     .padStart(2, "0")}:${startMinutes
