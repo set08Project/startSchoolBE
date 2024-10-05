@@ -50,4 +50,7 @@ router.route("/change-school-name/:schoolID").patch(schoolController_1.updateSch
 router
     .route("/change-school-started/:schoolID")
     .patch(schoolController_1.updateSchoolStartPossition);
+router
+    .route("/create-school-time-table/:schoolID")
+    .patch(schoolController_1.createSchoolTimetableRecord);
 exports.default = router;

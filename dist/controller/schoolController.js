@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -53,6 +53,7 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const school = yield schoolModel_1.default.findOne({
             email,
         });
+        console.log(school);
         if (school) {
             if (school.enrollmentID === enrollmentID) {
                 if (school.verify) {
@@ -607,3 +608,67 @@ const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.changeSchoolTag = changeSchoolTag;
+const createSchoolTimetableRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { startBreak, startClass, endClass, endBreak, peroid } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        const timeStructure = (startTime, endTime, interval) => {
+            const timeSlots = [];
+            let [startHour, startMinute] = startTime.split(":").map(Number);
+            let [endHour, endMinute] = endTime.split(":").map(Number);
+            let currentMinutes = startHour * 60 + startMinute;
+            const endMinutes = endHour * 60 + endMinute;
+            while (currentMinutes < endMinutes) {
+                let startHours = Math.floor(currentMinutes / 60);
+                let startMinutes = currentMinutes % 60;
+                currentMinutes += interval;
+                let endHours = Math.floor(currentMinutes / 60);
+                let endMinutes = currentMinutes % 60;
+                const startPeriod = startHours >= 12 ? "PM" : "AM";
+                const endPeriod = endHours >= 12 ? "PM" : "AM";
+                endHours = endHours % 12 || 12;
+                const startFormatted = `${startHours
+                    .toString()
+                    .padStart(2, "0")}:${startMinutes
+                    .toString()
+                    .padStart(2, "0")}${startPeriod}`;
+                const endFormatted = `${endHours
+                    .toString()
+                    .padStart(2, "0")}:${endMinutes
+                    .toString()
+                    .padStart(2, "0")}${endPeriod}`;
+                timeSlots.push(`${startFormatted} - ${endFormatted}`);
+            }
+            return timeSlots;
+        };
+        const startPeriod = parseInt(startBreak) >= 12 ? "PM" : "AM";
+        const endPeriod = parseInt(endBreak) >= 12 ? "PM" : "AM";
+        if (school) {
+            const classStructure = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                startBreak,
+                startClass,
+                endClass,
+                endBreak,
+                peroid,
+                timeTableStructure: timeStructure(startClass, startBreak, parseInt(peroid)).concat(`${startBreak}${startPeriod} - ${endBreak}${endPeriod}`, timeStructure(endBreak, endClass, parseInt(peroid))),
+            }, { new: true });
+            return res.status(201).json({
+                message: "school time-table structure created successfully",
+                data: classStructure,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "error finding school",
+                data: school,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school timetable",
+        });
+    }
+});
+exports.createSchoolTimetableRecord = createSchoolTimetableRecord;

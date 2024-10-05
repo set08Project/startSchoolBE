@@ -55,6 +55,8 @@ export const loginSchool = async (
       email,
     });
 
+    console.log(school);
+
     if (school) {
       if (school.enrollmentID === enrollmentID) {
         if (school.verify) {
@@ -728,6 +730,99 @@ export const changeSchoolTag = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error verifying school",
+    });
+  }
+};
+
+export const createSchoolTimetableRecord = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { startBreak, startClass, endClass, endBreak, peroid } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    const timeStructure = (
+      startTime: string,
+      endTime: string,
+      interval: number
+    ): Array<string> => {
+      const timeSlots = [];
+      let [startHour, startMinute] = startTime.split(":").map(Number);
+      let [endHour, endMinute] = endTime.split(":").map(Number);
+
+      let currentMinutes = startHour * 60 + startMinute;
+      const endMinutes = endHour * 60 + endMinute;
+
+      while (currentMinutes < endMinutes) {
+        let startHours = Math.floor(currentMinutes / 60);
+        let startMinutes = currentMinutes % 60;
+
+        currentMinutes += interval;
+
+        let endHours = Math.floor(currentMinutes / 60);
+        let endMinutes = currentMinutes % 60;
+        const startPeriod = startHours >= 12 ? "PM" : "AM";
+
+        const endPeriod = endHours >= 12 ? "PM" : "AM";
+        endHours = endHours % 12 || 12;
+
+        const startFormatted = `${startHours
+          .toString()
+          .padStart(2, "0")}:${startMinutes
+          .toString()
+          .padStart(2, "0")}${startPeriod}`;
+        const endFormatted = `${endHours
+          .toString()
+          .padStart(2, "0")}:${endMinutes
+          .toString()
+          .padStart(2, "0")}${endPeriod}`;
+
+        timeSlots.push(`${startFormatted} - ${endFormatted}`);
+      }
+
+      return timeSlots;
+    };
+
+    const startPeriod = parseInt(startBreak) >= 12 ? "PM" : "AM";
+    const endPeriod = parseInt(endBreak) >= 12 ? "PM" : "AM";
+
+    if (school) {
+      const classStructure = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          startBreak,
+          startClass,
+          endClass,
+          endBreak,
+          peroid,
+          timeTableStructure: timeStructure(
+            startClass,
+            startBreak,
+            parseInt(peroid!)
+          ).concat(
+            `${startBreak}${startPeriod} - ${endBreak}${endPeriod}`,
+            timeStructure(endBreak, endClass, parseInt(peroid!))
+          ),
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "school time-table structure created successfully",
+        data: classStructure,
+      });
+    } else {
+      return res.status(404).json({
+        message: "error finding school",
+        data: school,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school timetable",
     });
   }
 };
