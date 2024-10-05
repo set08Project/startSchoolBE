@@ -19,8 +19,14 @@ import {
   updateStudent1stFees,
   updateStudent2ndFees,
   updateStudent3rdFees,
+  updateStudentAddress,
   updateStudentAvatar,
+  updateStudentFirstName,
+  updateStudentGender,
+  updateStudentLastName,
   updateStudentParentEmail,
+  updateStudentParentNumber,
+  updateStudentPhone,
   viewSchoolFeeRecord,
   viewSchoolSchoolFeeRecord,
   viewSchoolStorePurchased,
@@ -109,5 +115,27 @@ router
 router.route("/change-student-class/:studentID").patch(changeStudentClass);
 
 router.route("/delete-student/:schoolID/:studentID").delete(deleteStudent);
+router
+  .route("/update-student-firstname/:schoolID/:studentID")
+  .patch(updateStudentFirstName);
+router
+  .route("/update-student-lastname/:schoolID/:studentID")
+  .patch(updateStudentLastName);
+
+router
+  .route("/update-student-address/:schoolID/:studentID")
+  .patch(updateStudentAddress);
+
+router
+  .route("/update-parent-number/:schoolID/:studentID")
+  .patch(updateStudentParentNumber);
+
+router
+  .route("/update-student-gender/:schoolID/:studentID")
+  .patch(updateStudentGender);
+
+router
+  .route("/update-student-phone/:schoolID/:studentID")
+  .patch(updateStudentPhone);
 
 export default router;

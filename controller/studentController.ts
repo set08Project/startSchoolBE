@@ -440,7 +440,7 @@ export const updateStudentAvatar = async (req: any, res: Response) => {
   }
 };
 
-//Student Updates
+//Student Updates settings
 
 export const updateStudentParentEmail = async (
   req: Request,
@@ -708,6 +708,54 @@ export const updateStudentPhone = async (
     });
   }
 };
+
+export const updateStudentParentNumber = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schollID, studentID } = req.params;
+    const { parentPhoneNumber } = req.body;
+
+    const school = await schoolModel.findById(schollID);
+
+    if (school) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const updateParentNumber = await studentModel.findByIdAndUpdate(
+          student._id,
+          { parentPhoneNumber: parentPhoneNumber },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student Phone Number Updated Succesfully",
+          data: updateParentNumber,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "SchoolDoes Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Parents Phone Number",
+      data: {
+        errorMessage: error.message,
+        messageType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
 export const updateStudent1stFees = async (
   req: Request,
   res: Response
@@ -744,6 +792,8 @@ export const updateStudent1stFees = async (
     });
   }
 };
+
+//Student Updates settings ends here
 
 export const updateStudent2ndFees = async (
   req: Request,
