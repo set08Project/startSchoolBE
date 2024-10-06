@@ -27,6 +27,9 @@ router.route("/login-teacher-token").post(staffController_1.loginStaffWithToken)
 router.route("/read-teacher-cookie").get(staffController_1.readTeacherCookie);
 router.route("/view-teacher-detail/:staffID").get(staffController_1.readTeacherDetail);
 router.route("/update-teacher-salery/:staffID").patch(staffController_1.updateTeacherSalary);
+router
+    .route("/update-staffAddress/:schoolID/:stafffID")
+    .patch(staffController_1.updateStaffAdress);
 // others
 router.route("/create-school-principal/:schoolID").post(staffController_1.createSchoolPrincipal);
 router
@@ -41,6 +44,22 @@ router
 router
     .route("/create-school-teacher-vice-prinicipal/:schoolID")
     .post(staffController_1.createSchoolTeacherByVicePrincipal);
+router.route("/update-staffName/:schoolID/:staffID").patch(staffController_1.updateStaffName);
+router.route("/update-phoneNumber/:schoolID/:staffID").patch(staffController_1.updatePhoneNumber);
+router.route("/update-staffgender/:schoolID/:staffID").patch(staffController_1.updateStaffGender);
+router
+    .route("/update-staff-facebook/:schoolID/:staffID")
+    .patch(staffController_1.updateFacebookAccount);
+router.route("/update-staff-x/:schoolID/:staffID").patch(staffController_1.updateStaffXAcct);
+router
+    .route("/update-staff-address/:schoolID/:staffID")
+    .patch(staffController_1.updateStaffAdress);
+router
+    .route("/update-staff-linkedin/:schoolID/:staffID")
+    .patch(staffController_1.updateStaffLinkedinAcct);
+router
+    .route("/update-staff-instagram/:schoolID/:staffID")
+    .patch(staffController_1.updateStaffInstagramAcct);
 router.route("/upload-staff-avatar/:staffID").patch(upload, staffController_1.updateStaffAvatar);
 router.route("/staff-active/:studentID").patch(staffController_1.updateStaffActiveness);
 router.route("/delete-staff/:schoolID/:staffID").delete(staffController_1.deleteStaff);

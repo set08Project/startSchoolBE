@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeSchoolTag = exports.approvedRegisteration = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -53,6 +53,7 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const school = yield schoolModel_1.default.findOne({
             email,
         });
+        console.log(school);
         if (school) {
             if (school.enrollmentID === enrollmentID) {
                 if (school.verify) {
@@ -99,9 +100,11 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const { email } = req.body;
         const id = crypto_1.default.randomBytes(4).toString("hex");
+        const adminCode = crypto_1.default.randomBytes(6).toString("hex");
         const school = yield schoolModel_1.default.create({
             email,
             enrollmentID: id,
+            adminCode,
             status: "school-admin",
         });
         // verifiedEmail(school);
@@ -447,6 +450,34 @@ const updateSchoolAccountDetail = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.updateSchoolAccountDetail = updateSchoolAccountDetail;
+const updateAdminCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { adminCode } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        // const adminCode = crypto.randomBytes(6).toString("hex");
+        if (school.schoolName) {
+            const updatedSchoolAdminCode = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                adminCode,
+            }, { new: true });
+            return res.status(200).json({
+                message: "school admin code has been updated successfully",
+                data: updatedSchoolAdminCode,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating admin code details",
+        });
+    }
+});
+exports.updateAdminCode = updateAdminCode;
 const updateSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -505,27 +536,43 @@ const updateRegisterationStatus = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.updateRegisterationStatus = updateRegisterationStatus;
-const approvedRegisteration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// export const approvedRegisteration = async (req: any, res: Response) => {
+//   try {
+//     const { email } = req.body;
+//     const school: any = await schoolModel.findOne({ email });
+//     if (school) {
+//       const updatedSchool = await schoolModel.findByIdAndUpdate(
+//         school?._id,
+//         {
+//           started: true,
+//         },
+//         { new: true }
+//       );
+//       verifiedEmail(school);
+//       return res.status(200).json({
+//         message: "school Has Approved",
+//         data: updatedSchool,
+//         status: 201,
+//       });
+//     } else {
+//       return res.status(404).json({
+//         message: "Something went wrong",
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(404).json({
+//       message: "Error updating account details",
+//     });
+//   }
+// };
+const getSchoolRegistered = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { email } = req.body;
-        const school = yield schoolModel_1.default.findOne({ email });
-        if (school) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
-                started: true,
-            }, { new: true });
-            (0, email_1.verifiedEmail)(school);
-            return res.status(200).json({
-                message: "school Has Approved",
-                data: updatedSchool,
-                status: 201,
-            });
-        }
-        else {
-            return res.status(404).json({
-                message: "Something went wrong, No school found",
-                status: 404,
-            });
-        }
+        const school = yield schoolModel_1.default.find();
+        return res.status(200).json({
+            message: "school Has Approved",
+            data: school,
+            status: 201,
+        });
     }
     catch (error) {
         return res.status(404).json({
@@ -533,7 +580,38 @@ const approvedRegisteration = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
 });
-exports.approvedRegisteration = approvedRegisteration;
+exports.getSchoolRegistered = getSchoolRegistered;
+const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { email } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school._id, {
+                started: true,
+            }, { new: true });
+            yield (0, email_1.verifiedEmail)(email);
+            return res.status(200).json({
+                message: "School has been approved",
+                data: updatedSchool,
+                status: 200,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "School not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error approving registration",
+            error: error.message,
+        });
+    }
+});
+exports.approveRegistration = approveRegistration;
 const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -560,3 +638,75 @@ const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.changeSchoolTag = changeSchoolTag;
+const createSchoolTimetableRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { startBreak, startClass, endClass, endBreak, peroid } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        const timeStructure = (startTime, endTime, interval) => {
+            const timeSlots = [];
+            let [startHour, startMinute] = startTime.split(":").map(Number);
+            let [endHour, endMinute] = endTime.split(":").map(Number);
+            // Convert everything to minutes
+            let currentMinutes = startHour * 60 + startMinute;
+            const endMinutes = endHour * 60 + endMinute;
+            while (currentMinutes < endMinutes) {
+                // Calculate start time
+                let startHours = Math.floor(currentMinutes / 60);
+                let startMinutes = currentMinutes % 60;
+                // Increment current time by interval (40 minutes)
+                currentMinutes += interval;
+                // Calculate end time
+                let endHours = Math.floor(currentMinutes / 60);
+                let endMinutes = currentMinutes % 60;
+                // Convert to 12-hour format with AM/PM for both start and end
+                const startPeriod = startHours >= 12 ? "PM" : "AM";
+                startHours = startHours % 12 || 12; // Handle 12-hour format
+                const endPeriod = endHours >= 12 ? "PM" : "AM";
+                endHours = endHours % 12 || 12;
+                // Format the times and push to the result
+                const startFormatted = `${startHours
+                    .toString()
+                    .padStart(2, "0")}:${startMinutes
+                    .toString()
+                    .padStart(2, "0")}${startPeriod}`;
+                const endFormatted = `${endHours
+                    .toString()
+                    .padStart(2, "0")}:${endMinutes
+                    .toString()
+                    .padStart(2, "0")}${endPeriod}`;
+                timeSlots.push(`${startFormatted} - ${endFormatted}`);
+            }
+            return timeSlots;
+        };
+        const startPeriod = parseInt(startBreak) >= 12 ? "PM" : "AM";
+        const endPeriod = parseInt(endBreak) >= 12 ? "PM" : "AM";
+        if (school) {
+            const classStructure = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                startBreak,
+                startClass,
+                endClass,
+                endBreak,
+                peroid,
+                timeTableStructure: timeStructure(startClass, startBreak, parseInt(peroid)).concat(`${startBreak}${startPeriod} - ${endBreak}${endPeriod}`, timeStructure(endBreak, endClass, parseInt(peroid))),
+            }, { new: true });
+            return res.status(201).json({
+                message: "school time-table structure created successfully",
+                data: classStructure,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "error finding school",
+                data: school,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school timetable",
+        });
+    }
+});
+exports.createSchoolTimetableRecord = createSchoolTimetableRecord;
