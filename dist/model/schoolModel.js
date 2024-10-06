@@ -19,7 +19,28 @@ const schoolModel = new mongoose_2.Schema({
     categoryType: {
         type: String,
     },
+    startClass: {
+        type: String,
+    },
+    endClass: {
+        type: String,
+    },
+    startBreak: {
+        type: String,
+    },
+    endBreak: {
+        type: String,
+    },
+    peroid: {
+        type: String,
+    },
+    timeTableStructure: {
+        type: [],
+    },
     organizationType: {
+        type: String,
+    },
+    adminCode: {
         type: String,
     },
     phone: {

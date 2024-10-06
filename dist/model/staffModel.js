@@ -60,6 +60,18 @@ const staffModel = new mongoose_1.Schema({
     staffName: {
         type: String,
     },
+    facebookAcct: {
+        type: String,
+    },
+    instagramAcct: {
+        type: String,
+    },
+    xAcct: {
+        type: String,
+    },
+    linkedinAcct: {
+        type: String,
+    },
     staffRole: {
         type: String,
     },
