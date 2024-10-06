@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -100,9 +100,11 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const { email } = req.body;
         const id = crypto_1.default.randomBytes(4).toString("hex");
+        const adminCode = crypto_1.default.randomBytes(6).toString("hex");
         const school = yield schoolModel_1.default.create({
             email,
             enrollmentID: id,
+            adminCode,
             status: "school-admin",
         });
         // verifiedEmail(school);
@@ -448,6 +450,34 @@ const updateSchoolAccountDetail = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.updateSchoolAccountDetail = updateSchoolAccountDetail;
+const updateAdminCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { adminCode } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        // const adminCode = crypto.randomBytes(6).toString("hex");
+        if (school.schoolName) {
+            const updatedSchoolAdminCode = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                adminCode,
+            }, { new: true });
+            return res.status(200).json({
+                message: "school admin code has been updated successfully",
+                data: updatedSchoolAdminCode,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating admin code details",
+        });
+    }
+});
+exports.updateAdminCode = updateAdminCode;
 const updateSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;

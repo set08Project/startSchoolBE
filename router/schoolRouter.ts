@@ -13,6 +13,7 @@ import {
   loginSchool,
   logoutSchool,
   readSchoolCookie,
+  updateAdminCode,
   updateRegisterationStatus,
   updateSchoolAccountDetail,
   updateSchoolAvatar,
@@ -88,5 +89,7 @@ router
 router
   .route("/create-school-time-table/:schoolID")
   .patch(createSchoolTimetableRecord);
+
+router.route("/update-school-admin-code/:schoolID").patch(updateAdminCode);
 
 export default router;

@@ -40,6 +40,9 @@ const schoolModel = new mongoose_2.Schema({
     organizationType: {
         type: String,
     },
+    adminCode: {
+        type: String,
+    },
     phone: {
         type: String,
     },

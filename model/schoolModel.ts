@@ -32,6 +32,7 @@ interface iSchool {
   avatar: string;
   avatarID: string;
 
+  adminCode: string;
   plan: string;
   phone: string;
   organizationType: string;
@@ -118,6 +119,9 @@ const schoolModel = new Schema<iSchoolData>(
       type: String,
     },
 
+    adminCode: {
+      type: String,
+    },
     phone: {
       type: String,
     },

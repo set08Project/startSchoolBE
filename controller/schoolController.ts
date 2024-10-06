@@ -105,9 +105,12 @@ export const createSchool = async (
     const { email } = req.body;
 
     const id = crypto.randomBytes(4).toString("hex");
+    const adminCode = crypto.randomBytes(6).toString("hex");
+
     const school = await schoolModel.create({
       email,
       enrollmentID: id,
+      adminCode,
       status: "school-admin",
     });
 
@@ -536,6 +539,39 @@ export const updateSchoolAccountDetail = async (req: any, res: Response) => {
   } catch (error) {
     return res.status(404).json({
       message: "Error updating account details",
+    });
+  }
+};
+
+export const updateAdminCode = async (req: any, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+    const { adminCode } = req.body;
+
+    const school: any = await schoolModel.findById(schoolID);
+    // const adminCode = crypto.randomBytes(6).toString("hex");
+
+    if (school.schoolName) {
+      const updatedSchoolAdminCode = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          adminCode,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "school admin code has been updated successfully",
+        data: updatedSchoolAdminCode,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating admin code details",
     });
   }
 };
