@@ -714,10 +714,10 @@ export const updateStudentParentNumber = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { schollID, studentID } = req.params;
+    const { schoolID, studentID } = req.params;
     const { parentPhoneNumber } = req.body;
 
-    const school = await schoolModel.findById(schollID);
+    const school = await schoolModel.findById(schoolID);
 
     if (school) {
       const student = await studentModel.findById(studentID);
@@ -740,7 +740,7 @@ export const updateStudentParentNumber = async (
       }
     } else {
       return res.status(404).json({
-        message: "SchoolDoes Not Exist",
+        message: "School Does Not Exist",
         status: 404,
       });
     }
