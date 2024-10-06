@@ -7,6 +7,7 @@ import {
   createSchoolStudent,
   createStorePurchased,
   createStorePurchasedTeacher,
+  deleteAllStudents,
   deleteStudent,
   loginStudent,
   loginStudentWithToken,
@@ -115,6 +116,7 @@ router
 router.route("/change-student-class/:studentID").patch(changeStudentClass);
 
 router.route("/delete-student/:schoolID/:studentID").delete(deleteStudent);
+<<<<<<< HEAD
 router
   .route("/update-student-firstname/:schoolID/:studentID")
   .patch(updateStudentFirstName);
@@ -137,5 +139,8 @@ router
 router
   .route("/update-student-phone/:schoolID/:studentID")
   .patch(updateStudentPhone);
+=======
+router.route("/delete-all-students/:schoolID").delete(deleteAllStudents);
+>>>>>>> 882e412986534dc5785f2c99fea171b136082c1e
 
 export default router;

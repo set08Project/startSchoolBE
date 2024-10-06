@@ -1610,3 +1610,49 @@ export const deleteStudent = async (
     });
   }
 };
+
+// Delete ALL students in one click endpoint
+export const deleteAllStudents = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const allStudentIDs = school?.students;
+
+      for (const studentID of allStudentIDs) {
+        const student = await studentModel.findByIdAndDelete(studentID);
+
+        if (student) {
+          await classroomModel.updateMany(
+            { students: studentID },
+            { $pull: { students: studentID } }
+          );
+        }
+      }
+
+      school.students = [];
+      await school.save();
+
+      return res.status(200).json({
+        message: "Successfully deleted all students",
+        data: allStudentIDs,
+        status: 200,
+      });
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Deleting All Students",
+      status: 404,
+      error: error.message,
+    });
+  }
+};
