@@ -125,6 +125,7 @@ export const createScheme = async (req: Request, res: Response) => {
         weeks: item.weeks,
         topics: item.topics || [],
         subject: item.subject,
+        status: item.status,
         classType: item.class,
         term: item.term,
         learningObject: item.learningObjects || [],
@@ -189,7 +190,6 @@ export const getSchemeByClassAndSubject = async (
     });
   }
 };
-
 export const getSchemeOfWork = async (req: Request, res: Response) => {
   try {
     const getScheme = await schemeOfWorkModel.find();
