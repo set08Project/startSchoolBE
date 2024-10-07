@@ -59,6 +59,7 @@ app.use(
       process.env.APP_URL_DEPLOY as string,
       "https://justnext-dev.vercel.app",
       "https://justnext-dev.netlify.app",
+      "https://just-next.web.app"
       "https://just-next.netlify.app",
       "http://localhost:5173/",
     ],
