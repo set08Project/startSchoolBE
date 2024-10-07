@@ -484,38 +484,114 @@ export const updateStudentFirstName = async (
 ): Promise<Response> => {
   try {
     const { schoolID, studentID } = req.params;
-    const { studentFirstName } = req.body;
+    const { studentFirstName, studentLastName } = req.body;
 
     const school = await schoolModel.findById(schoolID);
-
-    if (school) {
-      const student = await studentModel.findById(studentID);
-      if (student) {
-        const updateStudentFirstName = await studentModel.findByIdAndUpdate(
-          student._id,
-          { studentFirstName: studentFirstName },
-          { new: true }
-        );
-        return res.status(201).json({
-          message: "Student FirstName Updated SuccessFully",
-          data: updateStudentFirstName,
-          status: 201,
-        });
-      } else {
-        return res.status(404).json({
-          message: "Student Does Not Exist",
-          status: 404,
-        });
-      }
-    } else {
+    if (!school) {
       return res.status(404).json({
         message: "School Does Not Exist",
         status: 404,
       });
     }
+
+    const student = await studentModel.findById(studentID);
+    if (!student) {
+      return res.status(404).json({
+        message: "Student Does Not Exist",
+        status: 404,
+      });
+    }
+
+    const updatedFields: any = {};
+    if (studentFirstName) updatedFields.studentFirstName = studentFirstName;
+    if (studentLastName) updatedFields.studentLastName = studentLastName;
+
+    const updatedFirstName = studentFirstName || student.studentFirstName;
+    const updatedLastName = studentLastName || student.studentLastName;
+    const email = `${updatedFirstName
+      .replace(/ /gi, "")
+      .toLowerCase()}${updatedLastName
+      .replace(/ /gi, "")
+      .toLowerCase()}@${school.schoolName
+      .replace(/ /gi, "")
+      .toLowerCase()}.com`;
+
+    updatedFields.email = email;
+
+    const updatedStudent = await studentModel.findByIdAndUpdate(
+      student._id,
+      updatedFields,
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "Student Information Updated Successfully",
+      data: updatedStudent,
+      status: 201,
+    });
   } catch (error: any) {
-    return res.status(404).json({
-      message: "Error Updating Student FirstName",
+    return res.status(500).json({
+      message: "Error Updating Student Information",
+      error: {
+        errorMessage: error.message,
+        errorStack: error.stack,
+      },
+    });
+  }
+};
+
+export const updateStudentLastName = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { studentLastName } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (!school) {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+
+    const student = await studentModel.findById(studentID);
+    if (!student) {
+      return res.status(404).json({
+        message: "Student Does Not Exist",
+        status: 404,
+      });
+    }
+
+    const updatedFirstName = student.studentFirstName;
+    const updatedLastName = studentLastName || student.studentLastName;
+
+    const email = `${updatedFirstName
+      .replace(/ /gi, "")
+      .toLowerCase()}${updatedLastName
+      .replace(/ /gi, "")
+      .toLowerCase()}@${school.schoolName
+      .replace(/ /gi, "")
+      .toLowerCase()}.com`;
+
+    const studentUpdateLastName = await studentModel.findByIdAndUpdate(
+      student._id,
+      {
+        studentLastName: updatedLastName,
+        email: email,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "Student LastName Updated Successfully",
+      data: studentUpdateLastName,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error Updating Student Last Name",
       data: {
         errorMessage: error.message,
         errorType: error.stack,
@@ -562,52 +638,6 @@ export const updateStudentAddress = async (
   } catch (error: any) {
     return res.status(404).json({
       message: "Error Updating Student Address",
-      data: {
-        errorMessage: error.message,
-        errorType: error.stack,
-      },
-    });
-  }
-};
-
-export const updateStudentLastName = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  try {
-    const { schoolID, studentID } = req.params;
-    const { studentLastName } = req.body;
-
-    const school = await schoolModel.findById(schoolID);
-
-    if (school) {
-      const student = await studentModel.findById(studentID);
-      if (student) {
-        const studentUpdateLastName = await studentModel.findByIdAndUpdate(
-          student._id,
-          { studentLastName: studentLastName },
-          { new: true }
-        );
-        return res.status(201).json({
-          message: "Student LastName Updated",
-          data: studentUpdateLastName,
-          status: 201,
-        });
-      } else {
-        return res.status(404).json({
-          message: "Student Does Not Exist",
-          status: 404,
-        });
-      }
-    } else {
-      return res.status(404).json({
-        message: "School Does Not Exist",
-        status: 404,
-      });
-    }
-  } catch (error: any) {
-    return res.status(404).json({
-      message: "Error Updating Student Last Name",
       data: {
         errorMessage: error.message,
         errorType: error.stack,
