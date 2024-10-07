@@ -15,6 +15,14 @@ interface iStudent {
   presentClassID: string;
   monitor: boolean;
 
+  //Student/Parent Socials
+
+  facebookAccount: string;
+  instagramAccount: string;
+  linkedinAccout: string;
+  xAccount: string;
+  //Student/Parent Socials Ends Here
+
   records: any;
   classTermFee: number;
 
