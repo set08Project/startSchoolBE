@@ -54,7 +54,7 @@ app.use((0, cors_1.default)({
         process.env.APP_URL_DEPLOY,
         "https://justnext-dev.vercel.app",
         "https://justnext-dev.netlify.app",
-        "https://just-next.netlify.app",
+        "https://just-next.web.app",
     ],
 }));
 app.use(express_1.default.json());
