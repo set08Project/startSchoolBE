@@ -7,11 +7,13 @@ import {
   changeSchoolPhoneNumber,
   changeSchoolTag,
   createSchool,
+  createSchoolTimetableRecord,
   deleteSchool,
   getSchoolRegistered,
   loginSchool,
   logoutSchool,
   readSchoolCookie,
+  updateAdminCode,
   updateRegisterationStatus,
   updateSchoolAccountDetail,
   updateSchoolAvatar,
@@ -83,5 +85,11 @@ router.route("/change-school-name/:schoolID").patch(updateSchoolName);
 router
   .route("/change-school-started/:schoolID")
   .patch(updateSchoolStartPossition);
+
+router
+  .route("/create-school-time-table/:schoolID")
+  .patch(createSchoolTimetableRecord);
+
+router.route("/update-school-admin-code/:schoolID").patch(updateAdminCode);
 
 export default router;

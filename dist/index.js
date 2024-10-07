@@ -17,7 +17,7 @@ dotenv_1.default.config();
 const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
 const MongoDBStore = (0, connect_mongodb_session_1.default)(express_session_1.default);
 const store = new MongoDBStore({
-    uri: process.env.MONGO_DB_URL_LOCAL,
+    uri: process.env.MONGO_DB_URL_ONLINE,
     collection: "sessions",
 });
 const app = (0, express_1.default)();
@@ -40,6 +40,15 @@ app.use((req, res, next) => {
 //   // standardHeaders: "draft-7",
 //   // legacyHeaders: false, process.env.APP_URL_DEPLOY
 // });
+// app.use(
+//   cors({
+//     origin: [
+//       process.env.APP_URL_DEPLOY as string,
+//       "https://justnext-dev.vercel.app",
+//       "https://justnext-dev.netlify.app",
+//     ],
+//   })
+// );
 app.use((0, cors_1.default)({
     origin: [
         process.env.APP_URL_DEPLOY,

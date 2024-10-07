@@ -17,6 +17,14 @@ interface iSchool {
   name: string;
   name2: string;
 
+  peroid: string;
+  startClass: string;
+  endClass: string;
+  startBreak: string;
+  endBreak: string;
+
+  timeTableStructure: Array<string>;
+
   schoolName: string;
   address: string;
   freeMode: boolean;
@@ -24,6 +32,7 @@ interface iSchool {
   avatar: string;
   avatarID: string;
 
+  adminCode: string;
   plan: string;
   phone: string;
   organizationType: string;
@@ -82,10 +91,37 @@ const schoolModel = new Schema<iSchoolData>(
       type: String,
     },
 
+    startClass: {
+      type: String,
+    },
+
+    endClass: {
+      type: String,
+    },
+
+    startBreak: {
+      type: String,
+    },
+
+    endBreak: {
+      type: String,
+    },
+
+    peroid: {
+      type: String,
+    },
+
+    timeTableStructure: {
+      type: [],
+    },
+
     organizationType: {
       type: String,
     },
 
+    adminCode: {
+      type: String,
+    },
     phone: {
       type: String,
     },

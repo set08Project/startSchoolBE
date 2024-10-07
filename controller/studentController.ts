@@ -124,8 +124,6 @@ export const createBulkSchoolStudent = async (
     console.log(data);
 
     for (let i of data) {
-      console.log(i);
-
       const school = await schoolModel.findById(schoolID).populate({
         path: "classRooms",
       });
@@ -148,6 +146,9 @@ export const createBulkSchoolStudent = async (
 
       if (school && school.schoolName && school.status === "school-admin") {
         if (findClass) {
+
+          
+
           const student = await studentModel.create({
             schoolIDs: schoolID,
             presentClassID: findClass?._id,
@@ -186,6 +187,7 @@ export const createBulkSchoolStudent = async (
 
           findClass?.students.push(new Types.ObjectId(student._id));
           await findClass.save();
+
         } else {
           return res.status(404).json({
             message: "class must exist",
