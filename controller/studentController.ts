@@ -870,6 +870,50 @@ export const updateStudentFacebookAcct = async (
     });
   }
 };
+
+export const updateInstagramAccout = async (req: Request, res: Response) => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { instagramAccount } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const student = await studentModel.findById(studentID);
+
+      if (student) {
+        const updateStudentInstagram = await studentModel.findByIdAndUpdate(
+          student._id,
+          { instagramAccount: instagramAccount },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "IG Account Updated Successfully",
+          data: updateStudentInstagram,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating IG Account",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
 //Student/Parent Socials Ends Here
 
 export const updateStudent2ndFees = async (
