@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import schoolModel from "../model/schoolModel";
 import studentModel from "../model/studentModel";
-import { Types } from "mongoose";
+import { AnyArray, Types } from "mongoose";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -146,9 +146,6 @@ export const createBulkSchoolStudent = async (
 
       if (school && school.schoolName && school.status === "school-admin") {
         if (findClass) {
-
-          
-
           const student = await studentModel.create({
             schoolIDs: schoolID,
             presentClassID: findClass?._id,
@@ -187,7 +184,6 @@ export const createBulkSchoolStudent = async (
 
           findClass?.students.push(new Types.ObjectId(student._id));
           await findClass.save();
-
         } else {
           return res.status(404).json({
             message: "class must exist",
@@ -826,6 +822,55 @@ export const updateStudent1stFees = async (
 };
 
 //Student Updates settings ends here
+
+//Student/Parent Socials
+
+export const updateStudentFacebookAcct = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { facebookAccount } = req.body;
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findById(studentID);
+
+      if (student) {
+        const updateStudentFacebook = await studentModel.findByIdAndUpdate(
+          student._id,
+          { facebookAccount: facebookAccount },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student Facebook Account Updated Successfuly",
+          data: updateStudentFacebook,
+          status: 404,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Facebook Account",
+      data: {
+        errorMessage: error.message,
+        messageType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+//Student/Parent Socials Ends Here
 
 export const updateStudent2ndFees = async (
   req: Request,
