@@ -914,6 +914,54 @@ export const updateInstagramAccout = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const updateXAcctount = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { xAccount } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findById(studentID);
+
+      if (student) {
+        const updateXhandle = await studentModel.findByIdAndUpdate(
+          student._id,
+          { xAccount: xAccount },
+          { new: true }
+        );
+
+        return res.status(201).json({
+          message: "X Account Updated Succsfully",
+          data: updateXhandle,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating X Account",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
 //Student/Parent Socials Ends Here
 
 export const updateStudent2ndFees = async (
