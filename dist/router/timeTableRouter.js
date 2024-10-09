@@ -8,4 +8,7 @@ router
     .post(timeTableController_1.createClassTimeTable);
 router.route("/view-time-table/:classID").get(timeTableController_1.readClassTimeTable);
 router.route("/view-teacher-schedule/:teacherID").get(timeTableController_1.readTeacherSchedule);
+router
+    .route("/update-time-table/:schoolID/:classID/:tableID/")
+    .patch(timeTableController_1.readTeacherAndTimeTableSubject);
 exports.default = router;
