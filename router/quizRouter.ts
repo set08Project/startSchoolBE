@@ -4,7 +4,6 @@ import {
   readQuiz,
   readSubjectQuiz,
   readTeacherSubjectQuiz,
-  updateQuiz,
 } from "../controller/quizController";
 
 const router: Router = Router();
@@ -14,6 +13,5 @@ router
   .post(createSubjectQuiz);
 router.route("/view-subject-quiz/:subjectID").get(readSubjectQuiz);
 router.route("/view-subject-quiz/:quizID").get(readTeacherSubjectQuiz);
-router.route("/update-quiz/:subjectID/:quizID").patch(updateQuiz);
 router.route("/view-quiz/:quizID").get(readQuiz);
 export default router;

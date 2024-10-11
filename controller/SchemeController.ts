@@ -205,3 +205,20 @@ export const getSchemeOfWork = async (req: Request, res: Response) => {
     });
   }
 };
+export const deleteScheme = async (req: Request, res: Response) => {
+  try {
+    const { schemeID } = req.params;
+    const deletes = await schemeOfWorkModel.findByIdAndDelete(schemeID);
+
+    return res.status(200).json({
+      message: "Successfully deleting scheme of work.",
+      status: 201,
+      data: deletes,
+    });
+  } catch (error) {
+    return res.status(200).json({
+      message: "error deleting scheme of work entry.",
+      status: 201,
+    });
+  }
+};
