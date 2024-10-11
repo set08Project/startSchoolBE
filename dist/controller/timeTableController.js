@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readTeacherAndTimeTableSubject = exports.readTeacherSchedule = exports.readClassTimeTable = exports.createClassTimeTable = void 0;
+exports.deleteTeacherAndTimeTableSubject = exports.readTeacherAndTimeTableSubject = exports.readTeacherSchedule = exports.readClassTimeTable = exports.createClassTimeTable = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const mongoose_1 = require("mongoose");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
@@ -195,3 +195,36 @@ const readTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0, v
     }
 });
 exports.readTeacherAndTimeTableSubject = readTeacherAndTimeTableSubject;
+const deleteTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { tableID, schoolID } = req.params;
+        const time = yield timetableModel_1.default.findById(tableID);
+        const school = yield schoolModel_1.default.findById(schoolID);
+        const findOldTeacher = yield staffModel_1.default.findById(time === null || time === void 0 ? void 0 : time.subjectTeacherID);
+        if (school) {
+            const updateSubject = yield timetableModel_1.default.findByIdAndDelete(tableID);
+            (_a = findOldTeacher === null || findOldTeacher === void 0 ? void 0 : findOldTeacher.schedule) === null || _a === void 0 ? void 0 : _a.pull(tableID);
+            findOldTeacher === null || findOldTeacher === void 0 ? void 0 : findOldTeacher.save();
+            return res.status(201).json({
+                message: "timetable subject entry deleted successfully",
+                data: updateSubject,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "School not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating timetable",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.deleteTeacherAndTimeTableSubject = deleteTeacherAndTimeTableSubject;

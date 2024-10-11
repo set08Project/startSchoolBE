@@ -11,4 +11,7 @@ router.route("/view-teacher-schedule/:teacherID").get(timeTableController_1.read
 router
     .route("/update-time-table/:schoolID/:classID/:tableID/")
     .patch(timeTableController_1.readTeacherAndTimeTableSubject);
+router
+    .route("/delete-time-table/:schoolID/:tableID/")
+    .delete(timeTableController_1.deleteTeacherAndTimeTableSubject);
 exports.default = router;

@@ -213,3 +213,43 @@ export const readTeacherAndTimeTableSubject = async (
     });
   }
 };
+
+export const deleteTeacherAndTimeTableSubject = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { tableID, schoolID } = req.params;
+
+    const time = await timetableModel.findById(tableID);
+    const school = await schoolModel.findById(schoolID);
+
+    const findOldTeacher: any = await staffModel.findById(
+      time?.subjectTeacherID
+    );
+
+    if (school) {
+      const updateSubject = await timetableModel.findByIdAndDelete(tableID);
+
+      findOldTeacher?.schedule?.pull(tableID);
+      findOldTeacher?.save();
+
+      return res.status(201).json({
+        message: "timetable subject entry deleted successfully",
+        data: updateSubject,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "School not found",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating timetable",
+      data: error.message,
+      status: 404,
+    });
+  }
+};

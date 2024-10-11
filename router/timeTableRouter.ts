@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createClassTimeTable,
+  deleteTeacherAndTimeTableSubject,
   readClassTimeTable,
   readTeacherAndTimeTableSubject,
   readTeacherSchedule,
@@ -17,4 +18,8 @@ router.route("/view-teacher-schedule/:teacherID").get(readTeacherSchedule);
 router
   .route("/update-time-table/:schoolID/:classID/:tableID/")
   .patch(readTeacherAndTimeTableSubject);
+
+router
+  .route("/delete-time-table/:schoolID/:tableID/")
+  .delete(deleteTeacherAndTimeTableSubject);
 export default router;
