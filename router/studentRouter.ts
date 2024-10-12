@@ -157,7 +157,7 @@ router
   .route("/update-student-xAccount/:schoolID/:studentID")
   .patch(updateXAcctount);
 router
-  .route("/update-student-Instagram/:schoolID/:studentID")
+  .route("/update-student-instagram/:schoolID/:studentID")
   .patch(updateInstagramAccout);
 
 //Socials Route Ends Here!

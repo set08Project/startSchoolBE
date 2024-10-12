@@ -19,7 +19,7 @@ interface iStudent {
 
   facebookAccount: string;
   instagramAccount: string;
-  linkedinAccout: string;
+  linkedinAccount: string;
   xAccount: string;
   //Student/Parent Socials Ends Here
 
@@ -103,6 +103,19 @@ const studentModel = new Schema<iStudentData>(
     },
 
     avatar: {
+      type: String,
+    },
+
+    facebookAccount: {
+      type: String,
+    },
+    xAccount: {
+      type: String,
+    },
+    instagramAccount: {
+      type: String,
+    },
+    linkedinAccount: {
       type: String,
     },
 

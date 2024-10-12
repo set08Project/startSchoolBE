@@ -968,7 +968,7 @@ export const updateStudentLinkedinAccount = async (
 ): Promise<Response> => {
   try {
     const { schoolID, studentID } = req.params;
-    const { linkedinAccout } = req.body;
+    const { linkedinAccount } = req.body;
 
     const school = await schoolModel.findById(schoolID);
 
@@ -976,15 +976,15 @@ export const updateStudentLinkedinAccount = async (
       const student = await studentModel.findById(studentID);
 
       if (student) {
-        const updateLinkedinAccout = await studentModel.findByIdAndUpdate(
+        const updateLinkedinAccount = await studentModel.findByIdAndUpdate(
           student._id,
-          { linkedinAccout: linkedinAccout },
+          { linkedinAccount: linkedinAccount },
           { new: true }
         );
 
         return res.status(201).json({
           message: "Linkedin Account Updated Successfully",
-          data: updateLinkedinAccout,
+          data: updateLinkedinAccount,
           status: 201,
         });
       } else {
