@@ -149,9 +149,7 @@ router.route("/delete-all-students/:schoolID").delete(deleteAllStudents);
 router
   .route("/update-student-facebook/:schoolID/:studentID")
   .patch(updateStudentFacebookAcct);
-router
-  .route("/update-student-facebook/:schoolID/:studentID")
-  .patch(updateStudentFacebookAcct);
+
 router
   .route("/update-student-linkedin/:schoolID/:studentID")
   .patch(updateStudentLinkedinAccount);
