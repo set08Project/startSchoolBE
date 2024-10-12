@@ -14,6 +14,7 @@ import {
   readSchoolStudents,
   readStudentCookie,
   readStudentDetail,
+  updateInstagramAccout,
   updatePurchaseRecord,
   updateSchoolSchoolFee,
   updateSchoolStorePurchased,
@@ -22,12 +23,15 @@ import {
   updateStudent3rdFees,
   updateStudentAddress,
   updateStudentAvatar,
+  updateStudentFacebookAcct,
   updateStudentFirstName,
   updateStudentGender,
   updateStudentLastName,
+  updateStudentLinkedinAccount,
   updateStudentParentEmail,
   updateStudentParentNumber,
   updateStudentPhone,
+  updateXAcctount,
   viewSchoolFeeRecord,
   viewSchoolSchoolFeeRecord,
   viewSchoolStorePurchased,
@@ -141,5 +145,21 @@ router
   .patch(updateStudentPhone);
 
 router.route("/delete-all-students/:schoolID").delete(deleteAllStudents);
+//Socials Route
+router
+  .route("/update-student-facebook/:schoolID/:studentID")
+  .patch(updateStudentFacebookAcct);
+
+router
+  .route("/update-student-linkedin/:schoolID/:studentID")
+  .patch(updateStudentLinkedinAccount);
+router
+  .route("/update-student-xAccount/:schoolID/:studentID")
+  .patch(updateXAcctount);
+router
+  .route("/update-student-instagram/:schoolID/:studentID")
+  .patch(updateInstagramAccout);
+
+//Socials Route Ends Here!
 
 export default router;
