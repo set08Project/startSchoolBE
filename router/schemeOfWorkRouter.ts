@@ -2,6 +2,7 @@ import { Router } from "express";
 import { fileUploads } from "../utils/multer";
 import {
   createScheme,
+  deleteScheme,
   getSchemeByClassAndSubject,
   getSchemeOfWork,
 } from "../controller/SchemeController";
@@ -21,5 +22,6 @@ router.post("/upload-schemes", (req, res, next) => {
 });
 router.get("/schemes/:classType/:subject/:term", getSchemeByClassAndSubject);
 router.route("/get-schemes").get(getSchemeOfWork);
+router.route("/delete-schemes/:schemeID").delete(deleteScheme);
 
 export default router;

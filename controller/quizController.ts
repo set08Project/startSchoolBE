@@ -6,6 +6,7 @@ import timetableModel from "../model/timetableModel";
 import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import quizModel from "../model/quizModel";
+import { log } from "console";
 
 export const createSubjectQuiz = async (
   req: Request,
@@ -130,3 +131,4 @@ export const readQuiz = async (
     });
   }
 };
+
