@@ -23,6 +23,7 @@ interface iStudent {
   feesPaid3rd: boolean;
 
   started: boolean;
+  parentPhoneNumber: string;
   status: string;
   enrollmentID: string;
   schoolID: string;
@@ -82,6 +83,10 @@ const studentModel = new Schema<iStudentData>(
     },
 
     schoolIDs: {
+      type: String,
+    },
+
+    parentPhoneNumber: {
       type: String,
     },
 
