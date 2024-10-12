@@ -125,6 +125,7 @@ export const createScheme = async (req: Request, res: Response) => {
         weeks: item.weeks,
         topics: item.topics || [],
         subject: item.subject,
+        status: item.status,
         classType: item.class,
         term: item.term,
         learningObject: item.learningObjects || [],
@@ -189,7 +190,6 @@ export const getSchemeByClassAndSubject = async (
     });
   }
 };
-
 export const getSchemeOfWork = async (req: Request, res: Response) => {
   try {
     const getScheme = await schemeOfWorkModel.find();
@@ -202,6 +202,23 @@ export const getSchemeOfWork = async (req: Request, res: Response) => {
     return res.status(404).json({
       message: "error processed scheme of work entry.",
       status: 404,
+    });
+  }
+};
+export const deleteScheme = async (req: Request, res: Response) => {
+  try {
+    const { schemeID } = req.params;
+    const deletes = await schemeOfWorkModel.findByIdAndDelete(schemeID);
+
+    return res.status(200).json({
+      message: "Successfully deleting scheme of work.",
+      status: 201,
+      data: deletes,
+    });
+  } catch (error) {
+    return res.status(200).json({
+      message: "error deleting scheme of work entry.",
+      status: 201,
     });
   }
 };
