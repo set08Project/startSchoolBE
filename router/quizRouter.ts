@@ -1,7 +1,10 @@
 import { Router } from "express";
 import {
   createSubjectQuiz,
+  deleteQuiz,
+  getQuizRecords,
   readQuiz,
+  readQuizes,
   readSubjectQuiz,
   readTeacherSubjectQuiz,
 } from "../controller/quizController";
@@ -14,4 +17,7 @@ router
 router.route("/view-subject-quiz/:subjectID").get(readSubjectQuiz);
 router.route("/view-subject-quiz/:quizID").get(readTeacherSubjectQuiz);
 router.route("/view-quiz/:quizID").get(readQuiz);
+router.route("/view-quiz").get(readQuizes);
+router.delete("/delete-quiz/:quizID", deleteQuiz);
+router.route("/view-quiz-record/:studentID").get(getQuizRecords);
 export default router;
