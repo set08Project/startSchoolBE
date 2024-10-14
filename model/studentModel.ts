@@ -15,6 +15,14 @@ interface iStudent {
   presentClassID: string;
   monitor: boolean;
 
+  //Student/Parent Socials
+
+  facebookAccount: string;
+  instagramAccount: string;
+  linkedinAccount: string;
+  xAccount: string;
+  //Student/Parent Socials Ends Here
+
   records: any;
   classTermFee: number;
 
@@ -95,6 +103,19 @@ const studentModel = new Schema<iStudentData>(
     },
 
     avatar: {
+      type: String,
+    },
+
+    facebookAccount: {
+      type: String,
+    },
+    xAccount: {
+      type: String,
+    },
+    instagramAccount: {
+      type: String,
+    },
+    linkedinAccount: {
       type: String,
     },
 
