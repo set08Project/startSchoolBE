@@ -7,6 +7,7 @@ import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import quizModel from "../model/quizModel";
 import { log } from "console";
+import studentModel from "../model/studentModel";
 
 export const createSubjectQuiz = async (
   req: Request,
@@ -132,3 +133,100 @@ export const readQuiz = async (
   }
 };
 
+export const readQuizes = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const quiz: any = await quizModel.find().populate({
+      path: "performance",
+    });
+
+    return res.status(201).json({
+      message: "subject quiz read successfully",
+      data: quiz,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating subject quiz",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
+
+export const getQuizRecords = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+
+    const quizzes: any = await studentModel
+      .findById(studentID)
+      .populate({ path: "performance" });
+
+    return res.status(200).json({
+      message: "Quiz records fetched successfully",
+      data: quizzes,
+      status: 200,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error fetching quiz records",
+      data: error.message,
+      status: 500,
+    });
+  }
+};
+
+export const deleteQuiz = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { quizID } = req.params;
+
+    const quiz = await quizModel.findByIdAndDelete(quizID);
+
+    if (!quiz) {
+      return res.status(404).json({
+        message: "Quiz not found",
+        status: 404,
+      });
+    }
+
+    const subjectUpdate = await subjectModel.updateMany(
+      { quiz: quizID },
+      { $pull: { quiz: quizID } }
+    );
+
+    const staffUpdate = await staffModel.updateMany(
+      { quiz: quizID },
+      { $pull: { quiz: quizID } }
+    );
+
+    const studentUpdate = await studentModel.updateMany(
+      { quiz: quizID },
+      { $pull: { quiz: quizID } }
+    );
+
+    return res.status(200).json({
+      message: "Quiz deleted successfully",
+      data: {
+        deletedQuiz: quiz,
+        subjectUpdate,
+        staffUpdate,
+        studentUpdate,
+      },
+      status: 200,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error deleting quiz",
+      data: error.message,
+      status: 500,
+    });
+  }
+};
