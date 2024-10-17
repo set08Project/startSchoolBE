@@ -21,4 +21,5 @@ router.post("/upload-schemes", (req, res, next) => {
 });
 router.get("/schemes/:classType/:subject/:term", SchemeController_1.getSchemeByClassAndSubject);
 router.route("/get-schemes").get(SchemeController_1.getSchemeOfWork);
+router.route("/delete-schemes/:schemeID").delete(SchemeController_1.deleteScheme);
 exports.default = router;

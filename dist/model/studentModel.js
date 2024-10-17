@@ -27,10 +27,25 @@ const studentModel = new mongoose_1.Schema({
     schoolIDs: {
         type: String,
     },
+    parentPhoneNumber: {
+        type: String,
+    },
     presentClassID: {
         type: String,
     },
     avatar: {
+        type: String,
+    },
+    facebookAccount: {
+        type: String,
+    },
+    xAccount: {
+        type: String,
+    },
+    instagramAccount: {
+        type: String,
+    },
+    linkedinAccount: {
         type: String,
     },
     avatarID: {

@@ -9,4 +9,7 @@ router
 router.route("/view-subject-quiz/:subjectID").get(quizController_1.readSubjectQuiz);
 router.route("/view-subject-quiz/:quizID").get(quizController_1.readTeacherSubjectQuiz);
 router.route("/view-quiz/:quizID").get(quizController_1.readQuiz);
+router.route("/view-quiz").get(quizController_1.readQuizes);
+router.delete("/delete-quiz/:quizID", quizController_1.deleteQuiz);
+router.route("/view-quiz-record/:studentID").get(quizController_1.getQuizRecords);
 exports.default = router;

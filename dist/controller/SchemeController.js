@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSchemeOfWork = exports.getSchemeByClassAndSubject = exports.createScheme = void 0;
+exports.deleteScheme = exports.getSchemeOfWork = exports.getSchemeByClassAndSubject = exports.createScheme = void 0;
 const fs_1 = __importDefault(require("fs"));
 const schemeOfWorkModel_1 = __importDefault(require("../model/schemeOfWorkModel"));
 // export const createScheme = async (req: Request, res: Response) => {
@@ -122,6 +122,7 @@ const createScheme = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 weeks: item.weeks,
                 topics: item.topics || [],
                 subject: item.subject,
+                status: item.status,
                 classType: item.class,
                 term: item.term,
                 learningObject: item.learningObjects || [],
@@ -195,3 +196,21 @@ const getSchemeOfWork = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getSchemeOfWork = getSchemeOfWork;
+const deleteScheme = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schemeID } = req.params;
+        const deletes = yield schemeOfWorkModel_1.default.findByIdAndDelete(schemeID);
+        return res.status(200).json({
+            message: "Successfully deleting scheme of work.",
+            status: 201,
+            data: deletes,
+        });
+    }
+    catch (error) {
+        return res.status(200).json({
+            message: "error deleting scheme of work entry.",
+            status: 201,
+        });
+    }
+});
+exports.deleteScheme = deleteScheme;

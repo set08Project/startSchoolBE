@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = void 0;
+exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = void 0;
 const mongoose_1 = require("mongoose");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
+const studentModel_1 = __importDefault(require("../model/studentModel"));
 const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { classID, subjectID } = req.params;
@@ -122,3 +123,77 @@ const readQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.readQuiz = readQuiz;
+const readQuizes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const quiz = yield quizModel_1.default.find().populate({
+            path: "performance",
+        });
+        return res.status(201).json({
+            message: "subject quiz read successfully",
+            data: quiz,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating subject quiz",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.readQuizes = readQuizes;
+const getQuizRecords = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID } = req.params;
+        const quizzes = yield studentModel_1.default
+            .findById(studentID)
+            .populate({ path: "performance" });
+        return res.status(200).json({
+            message: "Quiz records fetched successfully",
+            data: quizzes,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error fetching quiz records",
+            data: error.message,
+            status: 500,
+        });
+    }
+});
+exports.getQuizRecords = getQuizRecords;
+const deleteQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { quizID } = req.params;
+        const quiz = yield quizModel_1.default.findByIdAndDelete(quizID);
+        if (!quiz) {
+            return res.status(404).json({
+                message: "Quiz not found",
+                status: 404,
+            });
+        }
+        const subjectUpdate = yield subjectModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
+        const staffUpdate = yield staffModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
+        const studentUpdate = yield studentModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
+        return res.status(200).json({
+            message: "Quiz deleted successfully",
+            data: {
+                deletedQuiz: quiz,
+                subjectUpdate,
+                staffUpdate,
+                studentUpdate,
+            },
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error deleting quiz",
+            data: error.message,
+            status: 500,
+        });
+    }
+});
+exports.deleteQuiz = deleteQuiz;

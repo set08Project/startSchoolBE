@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAllStudents = exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudent1stFees = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = void 0;
+exports.deleteAllStudents = exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudentLinkedinAccount = exports.updateXAcctount = exports.updateInstagramAccout = exports.updateStudentFacebookAcct = exports.updateStudent1stFees = exports.updateStudentParentNumber = exports.updateStudentPhone = exports.updateStudentGender = exports.updateStudentAddress = exports.updateStudentLastName = exports.updateStudentFirstName = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -376,6 +376,7 @@ const updateStudentAvatar = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.updateStudentAvatar = updateStudentAvatar;
+//Student Updates settings
 const updateStudentParentEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, studentID } = req.params;
@@ -404,6 +405,268 @@ const updateStudentParentEmail = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.updateStudentParentEmail = updateStudentParentEmail;
+const updateStudentFirstName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { studentFirstName, studentLastName } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (!school) {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+        const student = yield studentModel_1.default.findById(studentID);
+        if (!student) {
+            return res.status(404).json({
+                message: "Student Does Not Exist",
+                status: 404,
+            });
+        }
+        const updatedFields = {};
+        if (studentFirstName)
+            updatedFields.studentFirstName = studentFirstName;
+        if (studentLastName)
+            updatedFields.studentLastName = studentLastName;
+        const updatedFirstName = studentFirstName || student.studentFirstName;
+        const updatedLastName = studentLastName || student.studentLastName;
+        const email = `${updatedFirstName
+            .replace(/ /gi, "")
+            .toLowerCase()}${updatedLastName
+            .replace(/ /gi, "")
+            .toLowerCase()}@${school.schoolName
+            .replace(/ /gi, "")
+            .toLowerCase()}.com`;
+        updatedFields.email = email;
+        const updatedStudent = yield studentModel_1.default.findByIdAndUpdate(student._id, updatedFields, { new: true });
+        return res.status(201).json({
+            message: "Student Information Updated Successfully",
+            data: updatedStudent,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error Updating Student Information",
+            error: {
+                errorMessage: error.message,
+                errorStack: error.stack,
+            },
+        });
+    }
+});
+exports.updateStudentFirstName = updateStudentFirstName;
+const updateStudentLastName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { studentLastName } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (!school) {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+        const student = yield studentModel_1.default.findById(studentID);
+        if (!student) {
+            return res.status(404).json({
+                message: "Student Does Not Exist",
+                status: 404,
+            });
+        }
+        const updatedFirstName = student.studentFirstName;
+        const updatedLastName = studentLastName || student.studentLastName;
+        const email = `${updatedFirstName
+            .replace(/ /gi, "")
+            .toLowerCase()}${updatedLastName
+            .replace(/ /gi, "")
+            .toLowerCase()}@${school.schoolName
+            .replace(/ /gi, "")
+            .toLowerCase()}.com`;
+        const studentUpdateLastName = yield studentModel_1.default.findByIdAndUpdate(student._id, {
+            studentLastName: updatedLastName,
+            email: email,
+        }, { new: true });
+        return res.status(201).json({
+            message: "Student LastName Updated Successfully",
+            data: studentUpdateLastName,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error Updating Student Last Name",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateStudentLastName = updateStudentLastName;
+const updateStudentAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { studentAddress } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updateAddress = yield studentModel_1.default.findByIdAndUpdate(student._id, { studentAddress: studentAddress }, { new: true });
+                return res.status(201).json({
+                    message: "Student Address Updated Successfully",
+                    data: updateAddress,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Student Address",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateStudentAddress = updateStudentAddress;
+const updateStudentGender = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { gender } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updateGender = yield studentModel_1.default.findByIdAndUpdate(student._id, { gender: gender }, { new: true });
+                return res.status(201).json({
+                    message: "Student Gender Updated Succed=sfully",
+                    data: updateGender,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Student Gender",
+            data: {
+                errorMessage: error.message,
+                errorTypes: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStudentGender = updateStudentGender;
+const updateStudentPhone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { phone } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updatePhone = yield studentModel_1.default.findByIdAndUpdate(student._id, { phone: phone }, { new: true });
+                return res.status(201).json({
+                    message: "Student Phone Number Updated Successfully",
+                    data: updatePhone,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Student Phone Number",
+            data: {
+                errorMessage: error.mesaage,
+                errorType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStudentPhone = updateStudentPhone;
+const updateStudentParentNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { parentPhoneNumber } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updateParentNumber = yield studentModel_1.default.findByIdAndUpdate(student._id, { parentPhoneNumber: parentPhoneNumber }, { new: true });
+                return res.status(201).json({
+                    message: "Student Phone Number Updated Succesfully",
+                    data: updateParentNumber,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Parents Phone Number",
+            data: {
+                errorMessage: error.message,
+                messageType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStudentParentNumber = updateStudentParentNumber;
 const updateStudent1stFees = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, studentID } = req.params;
@@ -433,6 +696,170 @@ const updateStudent1stFees = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.updateStudent1stFees = updateStudent1stFees;
+//Student Updates settings ends here
+//Student/Parent Socials
+const updateStudentFacebookAcct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { facebookAccount } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updateStudentFacebook = yield studentModel_1.default.findByIdAndUpdate(student._id, { facebookAccount: facebookAccount }, { new: true });
+                return res.status(201).json({
+                    message: "Student Facebook Account Updated Successfuly",
+                    data: updateStudentFacebook,
+                    status: 404,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Facebook Account",
+            data: {
+                errorMessage: error.message,
+                messageType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStudentFacebookAcct = updateStudentFacebookAcct;
+const updateInstagramAccout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { instagramAccount } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updateStudentInstagram = yield studentModel_1.default.findByIdAndUpdate(student._id, { instagramAccount: instagramAccount }, { new: true });
+                return res.status(201).json({
+                    message: "IG Account Updated Successfully",
+                    data: updateStudentInstagram,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating IG Account",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateInstagramAccout = updateInstagramAccout;
+const updateXAcctount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { xAccount } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updateXhandle = yield studentModel_1.default.findByIdAndUpdate(student._id, { xAccount: xAccount }, { new: true });
+                return res.status(201).json({
+                    message: "X Account Updated Succsfully",
+                    data: updateXhandle,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating X Account",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateXAcctount = updateXAcctount;
+const updateStudentLinkedinAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const { linkedinAccount } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updateLinkedinAccount = yield studentModel_1.default.findByIdAndUpdate(student._id, { linkedinAccount: linkedinAccount }, { new: true });
+                return res.status(201).json({
+                    message: "Linkedin Account Updated Successfully",
+                    data: updateLinkedinAccount,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Linkedin Account",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.updateStudentLinkedinAccount = updateStudentLinkedinAccount;
+//Student/Parent Socials Ends Here
 const updateStudent2ndFees = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, studentID } = req.params;
