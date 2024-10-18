@@ -23,6 +23,7 @@ interface ilessonNote {
   summary: string;
   presentation: string;
   assignment: string;
+  profilePic: string;
   adminSignation: boolean;
   rate: number;
   responseDetail: string;
@@ -117,6 +118,9 @@ const lessonNoteModel = new Schema<ilessonNoteData>(
       default: "",
     },
     deadline: {
+      type: String,
+    },
+    profilePic: {
       type: String,
     },
     messageSent: {

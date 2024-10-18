@@ -45,6 +45,7 @@ export const createClasslessonNote = async (
       const note = await lessonNoteModel.create({
         teacher: staff?.staffName,
         // teacherClass: staff?.classesAssigned,
+        profilePic: staff?.avatar,
         teacherID: staff?._id,
 
         week,
