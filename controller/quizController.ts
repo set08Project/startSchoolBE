@@ -1,12 +1,10 @@
 import { Request, Response } from "express";
-import schoolModel from "../model/schoolModel";
 import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
 import timetableModel from "../model/timetableModel";
 import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import quizModel from "../model/quizModel";
-import { log } from "console";
 import studentModel from "../model/studentModel";
 
 export const createSubjectQuiz = async (
