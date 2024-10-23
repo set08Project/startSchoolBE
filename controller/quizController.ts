@@ -25,9 +25,14 @@ export const createSubjectQuiz = async (
       _id: classRoom?.teacherID,
     });
 
+    const findSubjectTeacher = await subjectModel.findById({
+      _id: checkForSubject?.teacherID,
+    });
+
     if (checkForSubject) {
       const quizes = await quizModel.create({
         subjectTitle: checkForSubject?.subjectTitle,
+        subjectID: checkForSubject?._id,
         quiz,
       });
 
@@ -36,6 +41,9 @@ export const createSubjectQuiz = async (
 
       findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
       findTeacher?.save();
+
+      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findSubjectTeacher?.save();
 
       return res.status(201).json({
         message: "quiz entry created successfully",

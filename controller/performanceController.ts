@@ -10,7 +10,7 @@ export const createQuizPerformance = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { studentID, quizID } = req.params;
+    const { studentID, quizID, subjectID } = req.params;
     const { studentScore, studentGrade, remark } = req.body;
 
     const studentInfo: any = await studentModel
@@ -23,9 +23,11 @@ export const createQuizPerformance = async (
     //   classesAssigned: studentInfo?.classAssigned,
     // });
 
-    const findSubject = await subjectModel.findOne({
-      subjectTitle: quizData?.subjectTitle,
-    });
+    // const findSubject = await subjectModel.findOne({
+    //   subjectTitle: quizData?.subjectTitle,
+    // });
+
+    const subject = await subjectModel.findById(subjectID);
 
     if (quizData) {
       const quizes = await performanceModel.create({
@@ -39,16 +41,17 @@ export const createQuizPerformance = async (
         className: studentInfo?.classAssigned,
         quizID: quizID,
         studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
+        subjectID: subject?._id,
       });
 
-      quizData?.performance.push(new Types.ObjectId(quizes._id));
+      quizData?.performance?.push(new Types.ObjectId(quizes._id));
       quizData?.save();
 
-      studentInfo?.performance.push(new Types.ObjectId(quizes._id));
+      studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
       studentInfo?.save();
 
-      findSubject?.performance.push(new Types.ObjectId(quizes._id));
-      findSubject?.save();
+      subject?.performance?.push(new Types.ObjectId(quizes._id));
+      subject?.save();
 
       let view: number[] = [];
       let notView: number[] = [];
@@ -80,9 +83,10 @@ export const createQuizPerformance = async (
         { new: true }
       );
 
+      console.log(quizes);
       return res.status(201).json({
         message: "quiz entry created successfully",
-        // data: { quizes, record },
+        data: quizes,
         status: 201,
       });
     } else {
