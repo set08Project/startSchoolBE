@@ -3,6 +3,7 @@ import { Document, Schema, Types, model } from "mongoose";
 interface iTimeTable {
   quiz: {};
   subjectTitle: string;
+  subjectID: string;
 
   subject: {};
   staff: {};
@@ -17,6 +18,9 @@ const quizModel = new Schema<iTimeTableData>(
       type: {},
     },
     subjectTitle: {
+      type: String,
+    },
+    subjectID: {
       type: String,
     },
 

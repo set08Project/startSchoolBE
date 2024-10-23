@@ -2,6 +2,7 @@ import { Document, Model, Schema, Types, model } from "mongoose";
 
 interface iStaff {
   subjectTitle: string;
+  subjectID: string;
   subjectTeacher: string;
   studentName: string;
   className: string;
@@ -10,7 +11,7 @@ interface iStaff {
   remark: string;
 
   studentScore: number;
-  performanceRating: Number;
+  performanceRating: number;
 
   paymentID: string;
 
@@ -35,6 +36,9 @@ const performanceModel = new Schema<iStaffData>(
     },
 
     subjectTitle: {
+      type: String,
+    },
+    subjectID: {
       type: String,
     },
 

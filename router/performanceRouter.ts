@@ -9,7 +9,7 @@ import {
 const router: Router = Router();
 
 router
-  .route("/create-subject-quiz-performance/:studentID/:quizID")
+  .route("/create-subject-quiz-performance/:studentID/:quizID/:subjectID")
   .post(createQuizPerformance);
 
 router

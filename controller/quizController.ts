@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import schoolModel from "../model/schoolModel";
 import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
 import timetableModel from "../model/timetableModel";
@@ -26,9 +25,14 @@ export const createSubjectQuiz = async (
       _id: classRoom?.teacherID,
     });
 
+    const findSubjectTeacher = await subjectModel.findById({
+      _id: checkForSubject?.teacherID,
+    });
+
     if (checkForSubject) {
       const quizes = await quizModel.create({
         subjectTitle: checkForSubject?.subjectTitle,
+        subjectID: checkForSubject?._id,
         quiz,
       });
 
@@ -37,6 +41,9 @@ export const createSubjectQuiz = async (
 
       findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
       findTeacher?.save();
+
+      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findSubjectTeacher?.save();
 
       return res.status(201).json({
         message: "quiz entry created successfully",
@@ -216,7 +223,7 @@ export const deleteQuiz = async (
     return res.status(200).json({
       message: "Quiz deleted successfully",
       data: {
-        deletedQuiz: quiz, 
+        deletedQuiz: quiz,
         subjectUpdate,
         staffUpdate,
         studentUpdate,
@@ -242,10 +249,10 @@ export const getStudentQuizRecords = async (
     console.log("teacherID", teacherID);
 
     const staff = await staffModel.findById(teacherID).populate({
-      path: 'quiz',
+      path: "quiz",
       populate: {
-        path: 'performance',
-        select: 'studentName studentScore studentGrade subjectTitle date',
+        path: "performance",
+        select: "studentName studentScore studentGrade subjectTitle date",
       },
     });
 
@@ -269,5 +276,3 @@ export const getStudentQuizRecords = async (
     });
   }
 };
-
-
