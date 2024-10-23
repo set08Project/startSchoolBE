@@ -19,9 +19,9 @@ const quizModel_1 = __importDefault(require("../model/quizModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const performanceModel_1 = __importDefault(require("../model/performanceModel"));
 const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     try {
-        const { studentID, quizID } = req.params;
+        const { studentID, quizID, subjectID } = req.params;
         const { studentScore, studentGrade, remark } = req.body;
         const studentInfo = yield studentModel_1.default
             .findById(studentID)
@@ -30,9 +30,10 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
         // const findTeacher = await staffModel.findById({
         //   classesAssigned: studentInfo?.classAssigned,
         // });
-        const findSubject = yield subjectModel_1.default.findOne({
-            subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
-        });
+        // const findSubject = await subjectModel.findOne({
+        //   subjectTitle: quizData?.subjectTitle,
+        // });
+        const subject = yield subjectModel_1.default.findById(subjectID);
         if (quizData) {
             const quizes = yield performanceModel_1.default.create({
                 remark,
@@ -43,13 +44,14 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
+                subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
             });
-            quizData === null || quizData === void 0 ? void 0 : quizData.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
             quizData === null || quizData === void 0 ? void 0 : quizData.save();
-            studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
             studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save();
-            findSubject === null || findSubject === void 0 ? void 0 : findSubject.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findSubject === null || findSubject === void 0 ? void 0 : findSubject.save();
+            (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
+            subject === null || subject === void 0 ? void 0 : subject.save();
             let view = [];
             let notView = [];
             const getStudent = yield studentModel_1.default.findById(studentID).populate({
@@ -69,11 +71,12 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             const record = yield studentModel_1.default.findByIdAndUpdate(studentID, {
                 totalPerformance: view.reduce((a, b) => {
                     return a + b;
-                }, 0) / ((_b = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _b === void 0 ? void 0 : _b.length),
+                }, 0) / ((_e = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _e === void 0 ? void 0 : _e.length),
             }, { new: true });
+            console.log(quizes);
             return res.status(201).json({
                 message: "quiz entry created successfully",
-                // data: { quizes, record },
+                data: quizes,
                 status: 201,
             });
         }

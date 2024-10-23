@@ -30,6 +30,7 @@ const createClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
             const note = yield lessonNoteModel_1.default.create({
                 teacher: staff === null || staff === void 0 ? void 0 : staff.staffName,
                 // teacherClass: staff?.classesAssigned,
+                profilePic: staff === null || staff === void 0 ? void 0 : staff.avatar,
                 teacherID: staff === null || staff === void 0 ? void 0 : staff._id,
                 week,
                 endingAt,

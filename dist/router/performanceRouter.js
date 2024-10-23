@@ -4,7 +4,7 @@ const express_1 = require("express");
 const performanceController_1 = require("../controller/performanceController");
 const router = (0, express_1.Router)();
 router
-    .route("/create-subject-quiz-performance/:studentID/:quizID")
+    .route("/create-subject-quiz-performance/:studentID/:quizID/:subjectID")
     .post(performanceController_1.createQuizPerformance);
 router
     .route("/view-subject-quiz-performance/:subjectID")

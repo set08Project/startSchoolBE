@@ -12,4 +12,5 @@ router.route("/view-quiz/:quizID").get(quizController_1.readQuiz);
 router.route("/view-quiz").get(quizController_1.readQuizes);
 router.delete("/delete-quiz/:quizID", quizController_1.deleteQuiz);
 router.route("/view-quiz-record/:studentID").get(quizController_1.getQuizRecords);
+router.route('/quiz/:teacherID/records').get(quizController_1.getStudentQuizRecords);
 exports.default = router;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = void 0;
+exports.getStudentQuizRecords = exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = void 0;
 const mongoose_1 = require("mongoose");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
@@ -28,15 +28,21 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const findTeacher = yield staffModel_1.default.findById({
             _id: classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID,
         });
+        const findSubjectTeacher = yield subjectModel_1.default.findById({
+            _id: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID,
+        });
         if (checkForSubject) {
             const quizes = yield quizModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
+                subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
                 quiz,
             });
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
+            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
             return res.status(201).json({
                 message: "quiz entry created successfully",
                 data: quizes,
@@ -197,3 +203,35 @@ const deleteQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteQuiz = deleteQuiz;
+const getStudentQuizRecords = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { teacherID } = req.params;
+        console.log("teacherID", teacherID);
+        const staff = yield staffModel_1.default.findById(teacherID).populate({
+            path: "quiz",
+            populate: {
+                path: "performance",
+                select: "studentName studentScore studentGrade subjectTitle date",
+            },
+        });
+        if (!staff) {
+            return res.status(404).json({
+                message: "Teacher not found or no quiz data available",
+                status: 404,
+            });
+        }
+        return res.status(200).json({
+            message: "Student quiz records retrieved successfully",
+            data: staff,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error retrieving student quiz records",
+            data: error.message,
+            status: 500,
+        });
+    }
+});
+exports.getStudentQuizRecords = getStudentQuizRecords;
