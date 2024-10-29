@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import schoolModel from "../model/schoolModel";
 import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
 import timetableModel from "../model/timetableModel";
 import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import quizModel from "../model/quizModel";
+import { staffDuty } from "../utils/enums";
 import { log } from "console";
 import studentModel from "../model/studentModel";
 
@@ -25,9 +25,14 @@ export const createSubjectQuiz = async (
       _id: classRoom?.teacherID,
     });
 
+    const findSubjectTeacher = await subjectModel.findById({
+      _id: checkForSubject?.teacherID,
+    });
+
     if (checkForSubject) {
       const quizes = await quizModel.create({
         subjectTitle: checkForSubject?.subjectTitle,
+        subjectID: checkForSubject?._id,
         quiz,
       });
 
@@ -36,6 +41,9 @@ export const createSubjectQuiz = async (
 
       findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
       findTeacher?.save();
+
+      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findSubjectTeacher?.save();
 
       return res.status(201).json({
         message: "quiz entry created successfully",
@@ -225,6 +233,44 @@ export const deleteQuiz = async (
   } catch (error: any) {
     return res.status(500).json({
       message: "Error deleting quiz",
+      data: error.message,
+      status: 500,
+    });
+  }
+};
+
+export const getStudentQuizRecords = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { teacherID } = req.params;
+
+    console.log("teacherID", teacherID);
+
+    const staff = await staffModel.findById(teacherID).populate({
+      path: "quiz",
+      populate: {
+        path: "performance",
+        select: "studentName studentScore studentGrade subjectTitle date",
+      },
+    });
+
+    if (!staff) {
+      return res.status(404).json({
+        message: "Teacher not found or no quiz data available",
+        status: 404,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Student quiz records retrieved successfully",
+      data: staff,
+      status: 200,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error retrieving student quiz records",
       data: error.message,
       status: 500,
     });
