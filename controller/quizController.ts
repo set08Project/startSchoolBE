@@ -15,7 +15,7 @@ export const createSubjectQuiz = async (
 ): Promise<Response> => {
   try {
     const { classID, subjectID } = req.params;
-    const { quiz } = req.body;
+    const { quiz, totalQuestions } = req.body;
 
     const classRoom = await classroomModel.findById(classID);
 
