@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to EC2 on main branch push
+    name: Deploy to our main server
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +34,7 @@ jobs:
           script: |
             cd server
             sudo pm2 stop all
-            sudo npm run dstop
+            sudo npm run stop
             sudo tsc
             sudo npm install
-            sudo node ./dist/index.js
+            sudo pm2 start ./dist/index.js
