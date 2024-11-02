@@ -16,9 +16,10 @@ exports.dbConfig = void 0;
 const mongoose_1 = require("mongoose");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
+// process.env.MONGO_DB_URL_LOCAL as string
 const dbConfig = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        return yield (0, mongoose_1.connect)(process.env.MONGO_DB_URL_LOCAL)
+        return yield (0, mongoose_1.connect)("mongodb+srv://justtnext:justtnext@cluster0.9fh0y26.mongodb.net/nextIIDB?retryWrites=true&w=majority&appName=Cluster0")
             .then(() => {
             console.log("database connection established🔥❤️🔥");
         })
