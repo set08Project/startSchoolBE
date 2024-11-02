@@ -76,11 +76,11 @@ app.use((0, express_session_1.default)({
     },
     store,
 }));
-const file = fs_1.default.readFileSync("./F5F57A81136A32F3A3EB73DF8DB4BC06.txt");
+const file = fs_1.default.readFileSync("./34E413B6620F83D024BFEC2183C0C835.txt");
 (0, mainApp_1.mainApp)(app);
 //13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt
 http: app.get("/.well-known/pki-validation", (req, res) => {
-    return res.sendFile(" http://13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt");
+    return res.sendFile(" http://13.51.1.65/.well-known/pki-validation/34E413B6620F83D024BFEC2183C0C835.txt");
 });
 const server = app.listen(process.env.PORT || port, () => {
     console.clear();
