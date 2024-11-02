@@ -1,6 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import fs from "fs";
 
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -88,7 +89,17 @@ app.use(
   })
 );
 
+const file = fs.readFileSync("./F5F57A81136A32F3A3EB73DF8DB4BC06.txt");
+
 mainApp(app);
+
+//13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt
+http: app.get("/.well-known/pki-validation", (req: Request, res: Response) => {
+  return res.sendFile(
+    " http://13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt"
+  );
+});
+
 const server = app.listen(process.env.PORT || port, () => {
   console.clear();
   console.log();
