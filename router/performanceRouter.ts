@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createQuizPerformance,
+  readOneSubjectQuizResult,
   readQuizResult,
   readStudentQuizResult,
   readSubjectQuizResult,
@@ -15,6 +16,10 @@ router
 router
   .route("/view-subject-quiz-performance/:subjectID")
   .get(readSubjectQuizResult);
+
+router
+  .route("/view-onesubject-quiz-performance/:subjectID")
+  .get(readOneSubjectQuizResult);
 
 router
   .route("/view-student-quiz-performance/:studentID")

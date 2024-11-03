@@ -121,6 +121,44 @@ export const readSubjectQuizResult = async (
         },
       },
     });
+    console.log("Subject", subject?.quiz);
+
+    return res.status(201).json({
+      message: "subject quiz performance read successfully",
+      data: subject,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating subject quiz",
+      status: 404,
+    });
+  }
+};
+
+export const readOneSubjectQuizResult = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { subjectID, quizID } = req.params;
+    const quiz = await quizModel.findById(quizID);
+
+    const subject = await subjectModel.findById(subjectID).populate({
+      path: "performance",
+      options: {
+        sort: {
+          time: 1,
+        },
+      },
+    });
+    console.log("Subject", subject);
+
+    const hi = subject?.quiz.filter((id: any) => {
+      return id === quiz?._id;
+    });
+
+    console.log("Checking Comparison", hi);
 
     return res.status(201).json({
       message: "subject quiz performance read successfully",

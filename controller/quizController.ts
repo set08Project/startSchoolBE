@@ -35,6 +35,9 @@ export const createSubjectQuiz = async (
       });
 
       checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+
+      checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
       checkForSubject?.save();
 
       findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
