@@ -5,10 +5,12 @@ interface iStaff {
   subjectID: string;
   subjectTeacher: string;
   studentName: string;
+  studentAvatar: string;
   className: string;
   studentGrade: string;
   quizID: string;
   remark: string;
+  quizDone: boolean;
 
   studentScore: number;
   performanceRating: number;
@@ -30,6 +32,10 @@ const performanceModel = new Schema<iStaffData>(
     remark: {
       type: String,
     },
+    quizDone: {
+      type: Boolean,
+      default: false,
+    },
 
     className: {
       type: String,
@@ -43,6 +49,9 @@ const performanceModel = new Schema<iStaffData>(
     },
 
     studentName: {
+      type: String,
+    },
+    studentAvatar: {
       type: String,
     },
 

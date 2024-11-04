@@ -1,12 +1,9 @@
 import { Request, Response } from "express";
 import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
-import timetableModel from "../model/timetableModel";
 import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import quizModel from "../model/quizModel";
-import { staffDuty } from "../utils/enums";
-import { log } from "console";
 import studentModel from "../model/studentModel";
 
 export const createSubjectQuiz = async (
@@ -15,7 +12,7 @@ export const createSubjectQuiz = async (
 ): Promise<Response> => {
   try {
     const { classID, subjectID } = req.params;
-    const { quiz } = req.body;
+    const { quiz, totalQuestions } = req.body;
 
     const classRoom = await classroomModel.findById(classID);
 
@@ -34,9 +31,13 @@ export const createSubjectQuiz = async (
         subjectTitle: checkForSubject?.subjectTitle,
         subjectID: checkForSubject?._id,
         quiz,
+        totalQuestions,
       });
 
       checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+
+      checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
       checkForSubject?.save();
 
       findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
@@ -56,7 +57,7 @@ export const createSubjectQuiz = async (
         status: 404,
       });
     }
-  } catch (errorL) {
+  } catch (error) {
     return res.status(404).json({
       message: "Error creating class subject quiz",
       status: 404,
@@ -245,8 +246,6 @@ export const getStudentQuizRecords = async (
 ): Promise<Response> => {
   try {
     const { teacherID } = req.params;
-
-    console.log("teacherID", teacherID);
 
     const staff = await staffModel.findById(teacherID).populate({
       path: "quiz",
