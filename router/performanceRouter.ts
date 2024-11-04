@@ -18,7 +18,7 @@ router
   .get(readSubjectQuizResult);
 
 router
-  .route("/view-onesubject-quiz-performance/:subjectID")
+  .route("/view-onesubject-quiz-performance/:subjectID/:quizID")
   .get(readOneSubjectQuizResult);
 
 router
