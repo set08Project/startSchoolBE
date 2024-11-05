@@ -121,7 +121,6 @@ export const readSubjectQuizResult = async (
         },
       },
     });
-    console.log("Subject", subject?.quiz);
 
     return res.status(201).json({
       message: "subject quiz performance read successfully",
