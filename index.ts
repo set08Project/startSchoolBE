@@ -89,16 +89,9 @@ app.use(
   })
 );
 
-const file = fs.readFileSync("./34E413B6620F83D024BFEC2183C0C835.txt");
-
 mainApp(app);
 
 //13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt
-http: app.get("/.well-known/pki-validation", (req: Request, res: Response) => {
-  return res.sendFile(
-    " http://13.51.1.65/.well-known/pki-validation/34E413B6620F83D024BFEC2183C0C835.txt"
-  );
-});
 
 const server = app.listen(process.env.PORT || port, () => {
   console.clear();
