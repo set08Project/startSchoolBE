@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "node ./dist/index.js",
+    "prod": "pm2 stop all && tsc && pm2 start ./dist/index.js",
     "dev": "ts-node-dev --respawn index.ts",
     "stop": "kill $(lsof -t -i:2244)"
   },

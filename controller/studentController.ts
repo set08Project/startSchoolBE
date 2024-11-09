@@ -121,7 +121,6 @@ export const createBulkSchoolStudent = async (
     const { schoolID } = req.params;
 
     const data = await csv().fromFile(req.file.path);
-    console.log(data);
 
     for (let i of data) {
       const school = await schoolModel.findById(schoolID).populate({
@@ -1411,8 +1410,6 @@ export const createSchoolFeePayment = async (
           el.term === school?.presentTerm
         );
       });
-
-      console.log(student?.schoolFeesHistory);
 
       if (!payment) {
         const store = await schoolFeeHistory.create({

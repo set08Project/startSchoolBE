@@ -184,13 +184,11 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                         el.className = ` ${num + 1 > 3
                             ? `SSS ${1}${(_d = name[1]) === null || _d === void 0 ? void 0 : _d.trim()}`
                             : `${(_e = name[0]) === null || _e === void 0 ? void 0 : _e.trim()} ${num + 1}${(_f = name[1]) === null || _f === void 0 ? void 0 : _f.trim()}`}`;
-                        console.log(el.className);
                     }
                     else if (num < 3 && ((_g = name[0]) === null || _g === void 0 ? void 0 : _g.trim()) === "SSS") {
                         el.className = ` ${`${(_h = name[0]) === null || _h === void 0 ? void 0 : _h.trim()} ${num + 1}${(_j = name[1]) === null || _j === void 0 ? void 0 : _j.trim()}`}`;
                     }
                     else {
-                        console.log("Ended successfully");
                     }
                 }));
                 i.save();

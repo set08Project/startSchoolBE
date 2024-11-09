@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
-const fs_1 = __importDefault(require("fs"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_session_1 = __importDefault(require("express-session"));
 const cors_1 = __importDefault(require("cors"));
@@ -76,12 +75,8 @@ app.use((0, express_session_1.default)({
     },
     store,
 }));
-const file = fs_1.default.readFileSync("./34E413B6620F83D024BFEC2183C0C835.txt");
 (0, mainApp_1.mainApp)(app);
 //13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt
-http: app.get("/.well-known/pki-validation", (req, res) => {
-    return res.sendFile(" http://13.51.1.65/.well-known/pki-validation/34E413B6620F83D024BFEC2183C0C835.txt");
-});
 const server = app.listen(process.env.PORT || port, () => {
     console.clear();
     console.log();

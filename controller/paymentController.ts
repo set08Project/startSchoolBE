@@ -184,9 +184,7 @@ export const paymentFromStore = (req: Request, res: Response) => {
           data += chunk;
         });
 
-        res.on("end", () => {
-          console.log(JSON.parse(data));
-        });
+        res.on("end", () => {});
       })
       .on("error", (error: Error) => {
         console.error(error);

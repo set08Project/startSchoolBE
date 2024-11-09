@@ -53,7 +53,6 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const school = yield schoolModel_1.default.findOne({
             email,
         });
-        console.log(school);
         if (school) {
             if (school.enrollmentID === enrollmentID) {
                 if (school.verify) {
@@ -112,7 +111,6 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         () => __awaiter(void 0, void 0, void 0, function* () {
             var _a, _b, _c, _d;
             const viewSchool = yield schoolModel_1.default.findById(school._id);
-            console.log(`Deleting school ${school === null || school === void 0 ? void 0 : school.schoolName} with email: ${school === null || school === void 0 ? void 0 : school.email}`);
             if (((_a = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.staff) === null || _a === void 0 ? void 0 : _a.length) === 0 &&
                 ((_b = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.students) === null || _b === void 0 ? void 0 : _b.length) === 0 &&
                 ((_c = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.classRooms) === null || _c === void 0 ? void 0 : _c.length) === 0 &&
@@ -233,6 +231,7 @@ const viewAllSchools = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const school = yield schoolModel_1.default.find();
         return res.status(200).json({
+            total: school.length,
             message: "viewing all school",
             data: school,
             length: school.length,
@@ -345,7 +344,6 @@ const changeSchoolPersonalName = (req, res) => __awaiter(void 0, void 0, void 0,
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { name, name2 }, { new: true });
-            console.log(verified === null || verified === void 0 ? void 0 : verified.name);
             return res.status(201).json({
                 message: "school name changes successfully",
                 data: verified,

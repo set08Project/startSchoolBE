@@ -8,6 +8,10 @@ const performanceModel = new mongoose_1.Schema({
     remark: {
         type: String,
     },
+    quizDone: {
+        type: Boolean,
+        default: false,
+    },
     className: {
         type: String,
     },
@@ -18,6 +22,9 @@ const performanceModel = new mongoose_1.Schema({
         type: String,
     },
     studentName: {
+        type: String,
+    },
+    studentAvatar: {
         type: String,
     },
     subjectTeacher: {

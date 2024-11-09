@@ -61,11 +61,8 @@ import schoolModel from "../model/schoolModel";
 export const createScheme = async (req: Request, res: Response) => {
   try {
     if (!req.file) {
-      console.log("No file uploaded.");
       return res.status(400).json({ message: "No file uploaded" });
     }
-
-    console.log("Uploaded File Details:", req.file);
 
     let data: string;
     if (req.file.buffer) {
@@ -73,20 +70,15 @@ export const createScheme = async (req: Request, res: Response) => {
     } else if (req.file.path) {
       data = fs.readFileSync(req.file.path, "utf-8");
     } else {
-      console.log("File storage method is unclear.");
       return res
         .status(500)
         .json({ message: "File storage method is unclear." });
     }
 
-    console.log("Raw File Data:", data);
-
     let jsonData;
     try {
       jsonData = JSON.parse(data);
-      console.log("Parsed JSON Data:", jsonData);
     } catch (parseError: any) {
-      console.log("JSON Parsing Error:", parseError.message);
       return res.status(400).json({
         message: "Invalid JSON format in the uploaded file",
         error: parseError.message,
@@ -94,20 +86,16 @@ export const createScheme = async (req: Request, res: Response) => {
     }
 
     if (jsonData.schemes) {
-      console.log("Extracting 'schemes' array from JSON.");
       jsonData = jsonData.schemes;
-      console.log("Extracted Schemes Array:", jsonData);
     }
 
     if (!Array.isArray(jsonData)) {
-      console.log("JSON data is not an array.");
       return res
         .status(400)
         .json({ message: "Uploaded file should contain an array of schemes." });
     }
 
     if (jsonData.length === 0) {
-      console.log("JSON array is empty.");
       return res.status(400).json({ message: "JSON array is empty." });
     }
 
@@ -137,12 +125,8 @@ export const createScheme = async (req: Request, res: Response) => {
       };
     });
 
-    console.log("Schemes to Insert:", schemesToInsert);
-
     // Insert into the database
     const insertedSchemes = await schemeOfWorkModel.insertMany(schemesToInsert);
-
-    console.log("Inserted Schemes:", insertedSchemes);
 
     return res.status(201).json({
       message: "Successfully processed and inserted schemes.",

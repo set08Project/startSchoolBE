@@ -20,9 +20,10 @@ const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { classID, subjectID } = req.params;
-        const { quiz } = req.body;
+        const { quiz, totalQuestions } = req.body;
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
         const findTeacher = yield staffModel_1.default.findById({
@@ -36,8 +37,10 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
                 subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
                 quiz,
+                totalQuestions,
             });
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
@@ -56,7 +59,7 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
             });
         }
     }
-    catch (errorL) {
+    catch (error) {
         return res.status(404).json({
             message: "Error creating class subject quiz",
             status: 404,
@@ -206,7 +209,6 @@ exports.deleteQuiz = deleteQuiz;
 const getStudentQuizRecords = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { teacherID } = req.params;
-        console.log("teacherID", teacherID);
         const staff = yield staffModel_1.default.findById(teacherID).populate({
             path: "quiz",
             populate: {
