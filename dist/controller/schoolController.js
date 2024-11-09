@@ -231,10 +231,10 @@ const viewAllSchools = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const school = yield schoolModel_1.default.find();
         return res.status(200).json({
-            total: school.length,
+            total: `Number of Schools: ${school.length}`,
+            length: school.length,
             message: "viewing all school",
             data: school,
-            length: school.length,
         });
     }
     catch (error) {

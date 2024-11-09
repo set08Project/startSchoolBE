@@ -268,7 +268,7 @@ export const viewAllSchools = async (
     const school = await schoolModel.find();
 
     return res.status(200).json({
-      total: `Number of Schools: ${school.length}`,
+      total: `Number of Schools: ${school.length} on our platform`,
       length: school.length,
       message: "viewing all school",
       data: school,
