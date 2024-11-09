@@ -268,10 +268,10 @@ export const viewAllSchools = async (
     const school = await schoolModel.find();
 
     return res.status(200).json({
-      total: school.length,
+      total: `Number of Schools: ${school.length}`,
+      length: school.length,
       message: "viewing all school",
       data: school,
-      length: school.length,
     });
   } catch (error) {
     return res.status(404).json({
