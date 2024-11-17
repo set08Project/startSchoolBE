@@ -8,6 +8,8 @@ interface iStaff {
   studentAvatar: string;
   className: string;
   studentGrade: string;
+  totalQuestions: number;
+  markPerQuestion: string;
   quizID: string;
   remark: string;
   quizDone: boolean;
@@ -60,6 +62,12 @@ const performanceModel = new Schema<iStaffData>(
     },
 
     studentGrade: {
+      type: String,
+    },
+    totalQuestions: {
+      type: Number,
+    },
+    markPerQuestion: {
       type: String,
     },
 
