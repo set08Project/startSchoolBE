@@ -85,7 +85,6 @@ export const createQuizPerformance = async (
         { new: true }
       );
 
-      console.log(quizes);
       return res.status(201).json({
         message: "quiz entry created successfully",
         data: quizes,

@@ -17,7 +17,7 @@ dotenv_1.default.config();
 const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
 const MongoDBStore = (0, connect_mongodb_session_1.default)(express_session_1.default);
 const store = new MongoDBStore({
-    uri: process.env.MONGO_DB_URL_ONLINE,
+    uri: process.env.MONGO_DB_URL_LOCAL,
     collection: "sessions",
 });
 const app = (0, express_1.default)();
@@ -54,7 +54,7 @@ app.use((0, cors_1.default)({
         process.env.APP_URL_DEPLOY,
         "https://justnext-dev.vercel.app",
         "https://justnext-dev.netlify.app",
-        "https://just-next.netlify.app",
+        "https://just-next.web.app",
     ],
 }));
 app.use(express_1.default.json());
@@ -76,6 +76,7 @@ app.use((0, express_session_1.default)({
     store,
 }));
 (0, mainApp_1.mainApp)(app);
+//13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt
 const server = app.listen(process.env.PORT || port, () => {
     console.clear();
     console.log();

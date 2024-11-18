@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
 import studentModel from "../model/studentModel";
+import { CronJob } from "cron";
 
 export const loginTeacher = async (
   req: any,
@@ -953,16 +954,33 @@ export const updateStaffActiveness = async (req: any, res: Response) => {
 
       const timing = 40 * 60 * 1000;
 
-      const taskId = setTimeout(async () => {
-        await staffModel.findByIdAndUpdate(
-          teacher?._id,
-          {
-            activeStatus: false,
-          },
-          { new: true }
-        );
-        clearTimeout(taskId);
-      }, timing);
+      const job = new CronJob(
+        "*/2 * * * *",
+        async () => {
+          await staffModel.findByIdAndUpdate(
+            teacher?._id,
+            {
+              activeStatus: false,
+            },
+            { new: true }
+          );
+
+          job.stop();
+        },
+        null,
+        true
+      );
+
+      // const taskId = setTimeout(async () => {
+      //   await staffModel.findByIdAndUpdate(
+      //     teacher?._id,
+      //     {
+      //       activeStatus: false,
+      //     },
+      //     { new: true }
+      //   );
+      //   clearTimeout(taskId);
+      // }, timing);
 
       return res.status(201).json({
         message: "staff activity has been, active",

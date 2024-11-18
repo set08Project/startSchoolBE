@@ -110,7 +110,6 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
     try {
         const { schoolID } = req.params;
         const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
-        console.log(data);
         for (let i of data) {
             const school = yield schoolModel_1.default.findById(schoolID).populate({
                 path: "classRooms",
@@ -1190,7 +1189,6 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                     el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
                     el.term === (school === null || school === void 0 ? void 0 : school.presentTerm));
             });
-            console.log(student === null || student === void 0 ? void 0 : student.schoolFeesHistory);
             if (!payment) {
                 const store = yield schoolFeeHistory_1.default.create({
                     studentID,

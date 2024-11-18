@@ -22,6 +22,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
+const cron_1 = require("cron");
 const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
@@ -829,12 +830,22 @@ const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 activeStatus: true,
             }, { new: true });
             const timing = 40 * 60 * 1000;
-            const taskId = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+            const job = new cron_1.CronJob("*/2 * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
                 yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
                     activeStatus: false,
                 }, { new: true });
-                clearTimeout(taskId);
-            }), timing);
+                job.stop();
+            }), null, true);
+            // const taskId = setTimeout(async () => {
+            //   await staffModel.findByIdAndUpdate(
+            //     teacher?._id,
+            //     {
+            //       activeStatus: false,
+            //     },
+            //     { new: true }
+            //   );
+            //   clearTimeout(taskId);
+            // }, timing);
             return res.status(201).json({
                 message: "staff activity has been, active",
                 data: updatedSchool,

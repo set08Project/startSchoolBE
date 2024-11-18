@@ -135,7 +135,6 @@ export const setTermlyBudget = async (
     const school = await schoolModel.findById(schoolID);
 
     if (school) {
-      console.log(school.presentTermID);
       const getTerm = await termModel.findByIdAndUpdate(
         school.presentTermID,
         {

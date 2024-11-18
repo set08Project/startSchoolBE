@@ -55,8 +55,6 @@ export const loginSchool = async (
       email,
     });
 
-    console.log(school);
-
     if (school) {
       if (school.enrollmentID === enrollmentID) {
         if (school.verify) {
@@ -120,9 +118,7 @@ export const createSchool = async (
       " * * * * 7", // cronTime
       async () => {
         const viewSchool = await schoolModel.findById(school._id);
-        console.log(
-          `Deleting school ${school?.schoolName} with email: ${school?.email}`
-        );
+
         if (
           viewSchool?.staff?.length === 0 &&
           viewSchool?.students?.length === 0 &&
@@ -272,9 +268,10 @@ export const viewAllSchools = async (
     const school = await schoolModel.find();
 
     return res.status(200).json({
+      total: `Number of Schools: ${school.length} on our platform`,
+      length: school.length,
       message: "viewing all school",
       data: school,
-      length: school.length,
     });
   } catch (error) {
     return res.status(404).json({
@@ -421,8 +418,6 @@ export const changeSchoolPersonalName = async (
 
         { new: true }
       );
-
-      console.log(verified?.name);
 
       return res.status(201).json({
         message: "school name changes successfully",

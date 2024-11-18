@@ -228,13 +228,11 @@ export const createNewSchoolSession = async (
                 ? `SSS ${1}${name[1]?.trim()}`
                 : `${name[0]?.trim()} ${num + 1}${name[1]?.trim()}`
             }`;
-            console.log(el.className);
           } else if (num < 3 && name[0]?.trim() === "SSS") {
             el.className = ` ${`${name[0]?.trim()} ${
               num + 1
             }${name[1]?.trim()}`}`;
           } else {
-            console.log("Ended successfully");
           }
         });
         i.save();

@@ -430,9 +430,10 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
         const teacher = yield staffModel_1.default.findById(teacherID);
-        console.log("student: ", student === null || student === void 0 ? void 0 : student.classAssigned);
-        console.log("teacher: ", teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned[0].className);
-        if ((teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned[0].className) === (student === null || student === void 0 ? void 0 : student.classAssigned)) {
+        const teacherClassDataRomm = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned.find((el) => {
+            return el.className === (student === null || student === void 0 ? void 0 : student.classAssigned);
+        });
+        if ((teacherClassDataRomm === null || teacherClassDataRomm === void 0 ? void 0 : teacherClassDataRomm.className) === (student === null || student === void 0 ? void 0 : student.classAssigned)) {
             const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 classTeacherComment: teacherComment,
             }, { new: true });

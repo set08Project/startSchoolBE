@@ -359,8 +359,6 @@ export const updateSchoolClassName = async (
             return el.classID !== classID;
           });
 
-          console.log(staff?.subjectAssigned);
-
           await staffModel.findByIdAndUpdate(
             i,
             {
@@ -474,8 +472,6 @@ export const updateSchoolClass1stFee = async (req: Request, res: Response) => {
   try {
     const { schoolID, classID } = req.params;
     const { class1stFee, class2ndFee, class3rdFee } = req.body;
-
-    // console.log(class1stFee);
 
     const school = await schoolModel.findById(schoolID);
     const getClass = await classroomModel.findById(classID);

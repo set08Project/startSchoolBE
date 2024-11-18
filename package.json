@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
     "start": "node ./dist/index.js",
+    "prod": "pm2 stop all && tsc && pm2 start ./dist/index.js",
     "dev": "ts-node-dev --respawn index.ts",
-    "build": "tsc"
+    "stop": "kill $(lsof -t -i:2244)"
   },
   "keywords": [],
   "author": "",
@@ -62,6 +64,7 @@
     "nodemailer": "^6.9.8",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pm2": "^5.4.2",
     "streamifier": "^0.1.1",
     "ts-node-dev": "^2.0.0"
   },

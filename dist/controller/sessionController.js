@@ -182,15 +182,19 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                     let name = (_y = el === null || el === void 0 ? void 0 : el.className) === null || _y === void 0 ? void 0 : _y.split(`${num}`);
                     if (num < 4 && name[0].trim() === "JSS") {
                         el.className = ` ${num + 1 > 3
+
                             ? `SSS ${1}${(_z = name[1]) === null || _z === void 0 ? void 0 : _z.trim()}`
                             : `${(_0 = name[0]) === null || _0 === void 0 ? void 0 : _0.trim()} ${num + 1}${(_1 = name[1]) === null || _1 === void 0 ? void 0 : _1.trim()}`}`;
                         console.log(el.className);
+
+                            ? `SSS ${1}${(_d = name[1]) === null || _d === void 0 ? void 0 : _d.trim()}`
+                            : `${(_e = name[0]) === null || _e === void 0 ? void 0 : _e.trim()} ${num + 1}${(_f = name[1]) === null || _f === void 0 ? void 0 : _f.trim()}`}`;
+
                     }
                     else if (num < 3 && ((_2 = name[0]) === null || _2 === void 0 ? void 0 : _2.trim()) === "SSS") {
                         el.className = ` ${`${(_3 = name[0]) === null || _3 === void 0 ? void 0 : _3.trim()} ${num + 1}${(_4 = name[1]) === null || _4 === void 0 ? void 0 : _4.trim()}`}`;
                     }
                     else {
-                        console.log("Ended successfully");
                     }
                 }));
                 i.save();
