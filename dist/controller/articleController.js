@@ -185,11 +185,11 @@ const likeArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.likeArticle = likeArticle;
 const viewArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _a;
     try {
         const { articleID, readerID } = req.params;
         const article = yield articleModel_1.default.findById(articleID);
-        const check = (_b = article === null || article === void 0 ? void 0 : article.view) === null || _b === void 0 ? void 0 : _b.some((el) => {
+        const check = (_a = article === null || article === void 0 ? void 0 : article.view) === null || _a === void 0 ? void 0 : _a.some((el) => {
             return el === readerID;
         });
         if (!check) {

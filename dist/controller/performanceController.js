@@ -22,16 +22,11 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
     var _a, _b, _c, _d, _e;
     try {
         const { studentID, quizID, subjectID } = req.params;
-
         const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, } = req.body;
-
         const studentInfo = yield studentModel_1.default
             .findById(studentID)
             .populate({ path: "performance" });
         const quizData = yield quizModel_1.default.findById(quizID);
-
-
- 
         const subject = yield subjectModel_1.default.findById(subjectID);
         if (quizData) {
             const quizes = yield performanceModel_1.default.create({
@@ -76,7 +71,6 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     return a + b;
                 }, 0) / ((_e = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _e === void 0 ? void 0 : _e.length),
             }, { new: true });
-            console.log(quizes);
             return res.status(201).json({
                 message: "quiz entry created successfully",
                 data: quizes,
@@ -125,11 +119,7 @@ const readSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.readSubjectQuizResult = readSubjectQuizResult;
 const readOneSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-
-    var _f, _g;
-
     var _a, _b;
-
     try {
         const { subjectID, quizID } = req.params;
         const quiz = yield quizModel_1.default.findById(quizID);
@@ -143,14 +133,9 @@ const readOneSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0,
                 status: 404,
             });
         }
-        const idCompare = (_f = subject === null || subject === void 0 ? void 0 : subject.quiz) === null || _f === void 0 ? void 0 : _f.some((id) => id.toString() === quiz._id.toString());
-        if (idCompare) {
-            const filteredPerformance = (_g = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _g === void 0 ? void 0 : _g.filter((el) => el.quizID.toString() === quiz._id.toString());
-
         const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.quiz) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
             const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
-
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
