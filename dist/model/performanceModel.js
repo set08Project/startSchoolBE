@@ -33,6 +33,12 @@ const performanceModel = new mongoose_1.Schema({
     studentGrade: {
         type: String,
     },
+    totalQuestions: {
+        type: Number,
+    },
+    markPerQuestion: {
+        type: String,
+    },
     studentScore: {
         type: Number,
     },
