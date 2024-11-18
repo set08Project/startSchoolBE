@@ -106,7 +106,7 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.createSchoolStudent = createSchoolStudent;
 const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _d, _e, _f;
     try {
         const { schoolID } = req.params;
         const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
@@ -117,7 +117,7 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
             const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
             const salt = yield bcrypt_1.default.genSalt(10);
             const hashed = yield bcrypt_1.default.hash(`${i === null || i === void 0 ? void 0 : i.studentFirstName.replace(/ /gi, "").toLowerCase()}${i === null || i === void 0 ? void 0 : i.studentLastName.replace(/ /gi, "").toLowerCase()}`, salt);
-            const findClass = (_a = school === null || school === void 0 ? void 0 : school.classRooms) === null || _a === void 0 ? void 0 : _a.find((el) => {
+            const findClass = (_d = school === null || school === void 0 ? void 0 : school.classRooms) === null || _d === void 0 ? void 0 : _d.find((el) => {
                 return el.className === (i === null || i === void 0 ? void 0 : i.classAssigned);
             });
             if (school && school.schoolName && school.status === "school-admin") {
@@ -140,12 +140,12 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
                         schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
                         studentAddress: i === null || i === void 0 ? void 0 : i.studentAddress,
                         classAssigned: i === null || i === void 0 ? void 0 : i.classAssigned,
-                        email: `${i === null || i === void 0 ? void 0 : i.studentFirstName.replace(/ /gi, "").toLowerCase()}${i === null || i === void 0 ? void 0 : i.studentLastName.replace(/ /gi, "").toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
+                        email: `${i === null || i === void 0 ? void 0 : i.studentFirstName.replace(/ /gi, "").toLowerCase()}${i === null || i === void 0 ? void 0 : i.studentLastName.replace(/ /gi, "").toLowerCase()}@${(_e = school === null || school === void 0 ? void 0 : school.schoolName) === null || _e === void 0 ? void 0 : _e.replace(/ /gi, "").toLowerCase()}.com`,
                         password: hashed,
                         status: "school-student",
                     });
                     school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
-                    (_c = school === null || school === void 0 ? void 0 : school.historys) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(student._id));
+                    (_f = school === null || school === void 0 ? void 0 : school.historys) === null || _f === void 0 ? void 0 : _f.push(new mongoose_1.Types.ObjectId(student._id));
                     yield school.save();
                     findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
                     yield findClass.save();
@@ -934,7 +934,7 @@ const updateStudent3rdFees = (req, res) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.updateStudent3rdFees = updateStudent3rdFees;
 const updatePurchaseRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _g;
     try {
         const { studentID } = req.params;
         const { purchased } = req.body;
@@ -942,7 +942,7 @@ const updatePurchaseRecord = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
         if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
             yield studentModel_1.default.findById(studentID, {
-                purchaseHistory: (_a = student === null || student === void 0 ? void 0 : student.purchaseHistory) === null || _a === void 0 ? void 0 : _a.push(purchased),
+                purchaseHistory: (_g = student === null || student === void 0 ? void 0 : student.purchaseHistory) === null || _g === void 0 ? void 0 : _g.push(purchased),
             }, { new: true });
             return res.status(201).json({
                 message: "student purchase recorded successfully",
@@ -1170,7 +1170,7 @@ const viewStorePurchasedTeacher = (req, res) => __awaiter(void 0, void 0, void 0
 });
 exports.viewStorePurchasedTeacher = viewStorePurchasedTeacher;
 const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _h, _j, _k;
     try {
         const { studentID } = req.params;
         const { date, amount, purchasedID, reference } = req.body;
@@ -1227,7 +1227,7 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                         .populate({
                         path: "schoolFeesHistory",
                     });
-                    const amount = (_a = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _a === void 0 ? void 0 : _a.filter((el) => {
+                    const amount = (_h = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _h === void 0 ? void 0 : _h.filter((el) => {
                         return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
                             el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
                             el.term === "1st Term");
@@ -1246,7 +1246,7 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                         .populate({
                         path: "schoolFeesHistory2",
                     });
-                    const amount = (_b = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _b === void 0 ? void 0 : _b.filter((el) => {
+                    const amount = (_j = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _j === void 0 ? void 0 : _j.filter((el) => {
                         return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
                             el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
                             el.term === "2nd Term");
@@ -1265,7 +1265,7 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                         .populate({
                         path: "schoolFeesHistory3",
                     });
-                    const amount = (_c = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _c === void 0 ? void 0 : _c.filter((el) => {
+                    const amount = (_k = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _k === void 0 ? void 0 : _k.filter((el) => {
                         return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
                             el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
                             el.term === "3rd Term");
@@ -1394,7 +1394,7 @@ const updateSchoolSchoolFee = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.updateSchoolSchoolFee = updateSchoolSchoolFee;
 const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _l;
     try {
         const { teacherID, studentID } = req.params;
         const teacher = yield staffModel_1.default.findById(teacherID);
@@ -1403,7 +1403,7 @@ const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, funct
             .populate({
             path: "students",
         });
-        let readStudent = (_a = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _a === void 0 ? void 0 : _a.find((el) => {
+        let readStudent = (_l = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _l === void 0 ? void 0 : _l.find((el) => {
             return (el === null || el === void 0 ? void 0 : el.monitor) === true;
         });
         yield studentModel_1.default.findByIdAndUpdate(readStudent === null || readStudent === void 0 ? void 0 : readStudent._id, {
@@ -1426,7 +1426,7 @@ const assignClassMonitor = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.assignClassMonitor = assignClassMonitor;
 const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _m, _o;
     try {
         const { studentID } = req.params;
         const { classID } = req.body;
@@ -1435,7 +1435,7 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
         const studentData = yield studentModel_1.default.findById(studentID);
         const getStudentClass = yield classroomModel_1.default.findById(studentData === null || studentData === void 0 ? void 0 : studentData.presentClassID);
-        (_a = getStudentClass === null || getStudentClass === void 0 ? void 0 : getStudentClass.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
+        (_m = getStudentClass === null || getStudentClass === void 0 ? void 0 : getStudentClass.students) === null || _m === void 0 ? void 0 : _m.pull(new mongoose_1.Types.ObjectId(studentID));
         getStudentClass === null || getStudentClass === void 0 ? void 0 : getStudentClass.save();
         const student = yield studentModel_1.default.findByIdAndUpdate(studentID, {
             classAssigned: getClass === null || getClass === void 0 ? void 0 : getClass.className,
@@ -1448,7 +1448,7 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         ? getClass === null || getClass === void 0 ? void 0 : getClass.class3rdFee
                         : null,
         }, { new: true });
-        (_b = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
+        (_o = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _o === void 0 ? void 0 : _o.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
         getClass === null || getClass === void 0 ? void 0 : getClass.save();
         return res.status(201).json({
             message: `class monitor assigned to ${student === null || student === void 0 ? void 0 : student.studentFirstName} `,
@@ -1465,7 +1465,7 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.changeStudentClass = changeStudentClass;
 const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _p, _q, _r;
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
@@ -1475,9 +1475,9 @@ const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             const checkStudentClass = yield classroomModel_1.default.findOne(student === null || student === void 0 ? void 0 : student.presentClassID);
             if (checkClass.length > 0) {
                 const teacherClass = checkClass[0];
-                (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
-                (_b = teacherClass === null || teacherClass === void 0 ? void 0 : teacherClass.students) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(studentID));
-                (_c = checkStudentClass === null || checkStudentClass === void 0 ? void 0 : checkStudentClass.students) === null || _c === void 0 ? void 0 : _c.pull(new mongoose_1.Types.ObjectId(studentID));
+                (_p = school === null || school === void 0 ? void 0 : school.students) === null || _p === void 0 ? void 0 : _p.pull(new mongoose_1.Types.ObjectId(studentID));
+                (_q = teacherClass === null || teacherClass === void 0 ? void 0 : teacherClass.students) === null || _q === void 0 ? void 0 : _q.pull(new mongoose_1.Types.ObjectId(studentID));
+                (_r = checkStudentClass === null || checkStudentClass === void 0 ? void 0 : checkStudentClass.students) === null || _r === void 0 ? void 0 : _r.pull(new mongoose_1.Types.ObjectId(studentID));
                 school.save();
                 teacherClass.save();
             }
