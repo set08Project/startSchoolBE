@@ -8,6 +8,12 @@ const quizModel = new mongoose_1.Schema({
     subjectTitle: {
         type: String,
     },
+    subjectID: {
+        type: String,
+    },
+    totalQuestions: {
+        type: Number,
+    },
     subject: {
         type: mongoose_1.Types.ObjectId,
         ref: "subjects",

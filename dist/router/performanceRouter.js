@@ -4,11 +4,14 @@ const express_1 = require("express");
 const performanceController_1 = require("../controller/performanceController");
 const router = (0, express_1.Router)();
 router
-    .route("/create-subject-quiz-performance/:studentID/:quizID")
+    .route("/create-subject-quiz-performance/:studentID/:quizID/:subjectID")
     .post(performanceController_1.createQuizPerformance);
 router
     .route("/view-subject-quiz-performance/:subjectID")
     .get(performanceController_1.readSubjectQuizResult);
+router
+    .route("/view-onesubject-quiz-performance/:subjectID/:quizID")
+    .get(performanceController_1.readOneSubjectQuizResult);
 router
     .route("/view-student-quiz-performance/:studentID")
     .get(performanceController_1.readStudentQuizResult);

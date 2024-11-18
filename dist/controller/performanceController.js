@@ -12,44 +12,44 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readQuizResult = exports.readStudentQuizResult = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
+exports.readQuizResult = exports.readStudentQuizResult = exports.readOneSubjectQuizResult = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
 const mongoose_1 = require("mongoose");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const performanceModel_1 = __importDefault(require("../model/performanceModel"));
 const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     try {
-        const { studentID, quizID } = req.params;
-        const { studentScore, studentGrade, remark } = req.body;
+        const { studentID, quizID, subjectID } = req.params;
+        const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, } = req.body;
         const studentInfo = yield studentModel_1.default
             .findById(studentID)
             .populate({ path: "performance" });
         const quizData = yield quizModel_1.default.findById(quizID);
-        // const findTeacher = await staffModel.findById({
-        //   classesAssigned: studentInfo?.classAssigned,
-        // });
-        const findSubject = yield subjectModel_1.default.findOne({
-            subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
-        });
+        const subject = yield subjectModel_1.default.findById(subjectID);
         if (quizData) {
             const quizes = yield performanceModel_1.default.create({
                 remark,
                 subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
                 studentScore,
                 studentGrade,
+                totalQuestions,
+                markPerQuestion,
+                quizDone: true,
                 performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz[1]) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
+                studentAvatar: studentInfo.avatar,
+                subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
             });
-            quizData === null || quizData === void 0 ? void 0 : quizData.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
             quizData === null || quizData === void 0 ? void 0 : quizData.save();
-            studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
             studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save();
-            findSubject === null || findSubject === void 0 ? void 0 : findSubject.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findSubject === null || findSubject === void 0 ? void 0 : findSubject.save();
+            (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
+            subject === null || subject === void 0 ? void 0 : subject.save();
             let view = [];
             let notView = [];
             const getStudent = yield studentModel_1.default.findById(studentID).populate({
@@ -69,11 +69,12 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             const record = yield studentModel_1.default.findByIdAndUpdate(studentID, {
                 totalPerformance: view.reduce((a, b) => {
                     return a + b;
-                }, 0) / ((_b = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _b === void 0 ? void 0 : _b.length),
+                }, 0) / ((_e = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _e === void 0 ? void 0 : _e.length),
             }, { new: true });
+            console.log(quizes);
             return res.status(201).json({
                 message: "quiz entry created successfully",
-                // data: { quizes, record },
+                data: quizes,
                 status: 201,
             });
         }
@@ -118,6 +119,45 @@ const readSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.readSubjectQuizResult = readSubjectQuizResult;
+const readOneSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f, _g;
+    try {
+        const { subjectID, quizID } = req.params;
+        const quiz = yield quizModel_1.default.findById(quizID);
+        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+            path: "performance",
+            options: { sort: { time: 1 } },
+        });
+        if (!quiz || !subject) {
+            return res.status(404).json({
+                message: "Subject or Quiz not found",
+                status: 404,
+            });
+        }
+        const idCompare = (_f = subject === null || subject === void 0 ? void 0 : subject.quiz) === null || _f === void 0 ? void 0 : _f.some((id) => id.toString() === quiz._id.toString());
+        if (idCompare) {
+            const filteredPerformance = (_g = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _g === void 0 ? void 0 : _g.filter((el) => el.quizID.toString() === quiz._id.toString());
+            return res.status(201).json({
+                message: "Filtered quiz performance read successfully",
+                data: filteredPerformance,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "QuizID and Subject Quiz don't align",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error reading subject quiz performance",
+            status: 500,
+        });
+    }
+});
+exports.readOneSubjectQuizResult = readOneSubjectQuizResult;
 const readStudentQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { studentID } = req.params;

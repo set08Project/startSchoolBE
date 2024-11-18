@@ -8,19 +8,35 @@ const performanceModel = new mongoose_1.Schema({
     remark: {
         type: String,
     },
+    quizDone: {
+        type: Boolean,
+        default: false,
+    },
     className: {
         type: String,
     },
     subjectTitle: {
         type: String,
     },
+    subjectID: {
+        type: String,
+    },
     studentName: {
+        type: String,
+    },
+    studentAvatar: {
         type: String,
     },
     subjectTeacher: {
         type: String,
     },
     studentGrade: {
+        type: String,
+    },
+    totalQuestions: {
+        type: Number,
+    },
+    markPerQuestion: {
         type: String,
     },
     studentScore: {
