@@ -207,7 +207,7 @@ const getOneFeeRecord = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.getOneFeeRecord = getOneFeeRecord;
 const deleteFeesRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+    var _a, _b;
     try {
         const { schoolID } = req.params;
         const { studentID } = req.params;
@@ -216,8 +216,8 @@ const deleteFeesRecord = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const student = yield studentModel_1.default.findById(studentID);
         if (school) {
             const findRecord = yield recordPaymentModel_1.default.findByIdAndDelete(recordID);
-            (_b = school === null || school === void 0 ? void 0 : school.recordPayments) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(recordID));
-            (_c = student === null || student === void 0 ? void 0 : student.recordPayments) === null || _c === void 0 ? void 0 : _c.pull(new mongoose_1.Types.ObjectId(recordID));
+            (_a = school === null || school === void 0 ? void 0 : school.recordPayments) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(recordID));
+            (_b = student === null || student === void 0 ? void 0 : student.recordPayments) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(recordID));
             yield school.save();
             yield student.save();
             return res.status(200).json({
