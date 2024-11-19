@@ -12,10 +12,17 @@ interface iScheme {
   status: string;
   topics: LearningItem[];
   term: string;
+  marked: boolean,
+  uploaded: boolean,
+  uniqueId: string,
   learningObject: LearningItem[];
   learningActivities: LearningItem[];
   embeddedCoreSkills: LearningItem[];
   learningResource: LearningItem[];
+  meta?: {
+    uploaded: boolean;
+    uniqueId: string;
+  };
 }
 
 interface iSchemeData extends iScheme, Document {}
@@ -37,6 +44,12 @@ const SchemeModel = new Schema<iSchemeData>(
     learningActivities: { type: [LearningItemSchema], default: [] },
     learningResource: { type: [LearningItemSchema], default: [] },
     embeddedCoreSkills: { type: [LearningItemSchema], default: [] },
+    meta: {
+      type: {
+        uploaded: { type: Boolean, default: false },
+        uniqueId: { type: String, unique: true },
+      },
+    },
   },
   { timestamps: true }
 );

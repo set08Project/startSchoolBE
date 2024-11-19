@@ -1,62 +1,8 @@
 import express, { Request, Response } from "express";
 import fs from "fs";
+import crypto from "crypto"
 import schemeOfWorkModel from "../model/schemeOfWorkModel";
 import schoolModel from "../model/schoolModel";
-
-// export const createScheme = async (req: Request, res: Response) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ message: "No file uploaded" });
-//     }
-
-//     const filePath = req.file.path;
-//     const data = fs.readFileSync(filePath, "utf-8");
-
-//     let jsonData;
-//     try {
-//       jsonData = JSON.parse(data);
-//     } catch (parseError: any) {
-//       return res.status(400).json({
-//         message: "Invalid JSON format in the uploaded file",
-//         error: parseError.message,
-//       });
-//     }
-
-//     if (!Array.isArray(jsonData)) {
-//       return res
-//         .status(400)
-//         .json({ message: "Uploaded file should contain an array of schemes." });
-//     }
-
-//     const schemesToInsert = jsonData.map((item: any) => ({
-//       weeks: item.weeks,
-//       topics: item.topics || [],
-//       subject: item.subject,
-//       classType: item.class,
-//       term: item.term,
-//       learningObject: item.learningObjects || [],
-//       learningActivities: item.learningActivities || [],
-//       embeddedCoreSkills: item.embeddedCoreSkills || [],
-//       learningResource: item.learningResources || [],
-//       createdAt: new Date(),
-//       updatedAt: new Date(),
-//     }));
-
-//     const insertedSchemes = await schemeOfWorkModel.insertMany(schemesToInsert);
-
-//     return res.status(201).json({
-//       message: "Successfully processed and inserted schemes.",
-//       status: 201,
-//       data: insertedSchemes,
-//     });
-//   } catch (error: any) {
-//     console.error("Error while processing bulk upload:", error);
-//     return res.status(500).json({
-//       message: "An error occurred while processing the bulk upload.",
-//       error: error.message,
-//     });
-//   }
-// };
 
 export const createScheme = async (req: Request, res: Response) => {
   try {
@@ -122,6 +68,7 @@ export const createScheme = async (req: Request, res: Response) => {
         learningResource: item.learningResources || [],
         createdAt: new Date(),
         updatedAt: new Date(),
+        marked: true,
       };
     });
 
@@ -177,10 +124,11 @@ export const getSchemeByClassAndSubject = async (
 export const getSchemeOfWork = async (req: Request, res: Response) => {
   try {
     const getScheme = await schemeOfWorkModel.find();
-
+   
     return res.status(200).json({
       message: "Successfully getting scheme of work entry.",
       status: 201,
+      data: getScheme
     });
   } catch (error) {
     return res.status(404).json({
@@ -203,6 +151,27 @@ export const deleteScheme = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "error deleting scheme of work entry.",
       status: 201,
+    });
+  }
+};
+export const getMarkedSchemes = async (req: Request, res: Response) => {
+  try {
+   
+    const markedSchemes = await schemeOfWorkModel.find({});
+    if (markedSchemes.length === 0) {
+      return res.status(404).json({
+        message: "No marked schemes found.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Marked schemes retrieved successfully.",
+      data: markedSchemes,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "An error occurred while fetching marked schemes.",
+      error: error.message,
     });
   }
 };
