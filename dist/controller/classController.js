@@ -300,7 +300,6 @@ const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     let yy = staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.filter((el) => {
                         return el.classID !== classID;
                     });
-                    console.log(staff === null || staff === void 0 ? void 0 : staff.subjectAssigned);
                     yield staffModel_1.default.findByIdAndUpdate(i, {
                         classesAssigned: [...xx, myClass],
                         subjectAssigned: [
@@ -393,7 +392,6 @@ const updateSchoolClass1stFee = (req, res) => __awaiter(void 0, void 0, void 0, 
     try {
         const { schoolID, classID } = req.params;
         const { class1stFee, class2ndFee, class3rdFee } = req.body;
-        // console.log(class1stFee);
         const school = yield schoolModel_1.default.findById(schoolID);
         const getClass = yield classroomModel_1.default.findById(classID);
         if (school && school.schoolName && school.status === "school-admin") {

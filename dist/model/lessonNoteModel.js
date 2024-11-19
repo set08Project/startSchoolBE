@@ -81,6 +81,9 @@ const lessonNoteModel = new mongoose_1.Schema({
     deadline: {
         type: String,
     },
+    profilePic: {
+        type: String,
+    },
     messageSent: {
         type: Boolean,
         default: false,

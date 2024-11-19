@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createQuizPerformance,
+  readOneSubjectQuizResult,
   readQuizResult,
   readStudentQuizResult,
   readSubjectQuizResult,
@@ -9,12 +10,16 @@ import {
 const router: Router = Router();
 
 router
-  .route("/create-subject-quiz-performance/:studentID/:quizID")
+  .route("/create-subject-quiz-performance/:studentID/:quizID/:subjectID")
   .post(createQuizPerformance);
 
 router
   .route("/view-subject-quiz-performance/:subjectID")
   .get(readSubjectQuizResult);
+
+router
+  .route("/view-onesubject-quiz-performance/:subjectID/:quizID")
+  .get(readOneSubjectQuizResult);
 
 router
   .route("/view-student-quiz-performance/:studentID")

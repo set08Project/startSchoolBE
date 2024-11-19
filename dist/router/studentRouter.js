@@ -65,5 +65,37 @@ router
     .patch(studentController_1.assignClassMonitor);
 router.route("/change-student-class/:studentID").patch(studentController_1.changeStudentClass);
 router.route("/delete-student/:schoolID/:studentID").delete(studentController_1.deleteStudent);
+router
+    .route("/update-student-firstname/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentFirstName);
+router
+    .route("/update-student-lastname/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentLastName);
+router
+    .route("/update-student-address/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentAddress);
+router
+    .route("/update-parent-number/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentParentNumber);
+router
+    .route("/update-student-gender/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentGender);
+router
+    .route("/update-student-phone/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentPhone);
 router.route("/delete-all-students/:schoolID").delete(studentController_1.deleteAllStudents);
+//Socials Route
+router
+    .route("/update-student-facebook/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentFacebookAcct);
+router
+    .route("/update-student-linkedin/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentLinkedinAccount);
+router
+    .route("/update-student-xAccount/:schoolID/:studentID")
+    .patch(studentController_1.updateXAcctount);
+router
+    .route("/update-student-instagram/:schoolID/:studentID")
+    .patch(studentController_1.updateInstagramAccout);
+//Socials Route Ends Here!
 exports.default = router;

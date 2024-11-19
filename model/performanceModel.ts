@@ -2,15 +2,20 @@ import { Document, Model, Schema, Types, model } from "mongoose";
 
 interface iStaff {
   subjectTitle: string;
+  subjectID: string;
   subjectTeacher: string;
   studentName: string;
+  studentAvatar: string;
   className: string;
   studentGrade: string;
+  totalQuestions: number;
+  markPerQuestion: string;
   quizID: string;
   remark: string;
+  quizDone: boolean;
 
   studentScore: number;
-  performanceRating: Number;
+  performanceRating: number;
 
   paymentID: string;
 
@@ -29,6 +34,10 @@ const performanceModel = new Schema<iStaffData>(
     remark: {
       type: String,
     },
+    quizDone: {
+      type: Boolean,
+      default: false,
+    },
 
     className: {
       type: String,
@@ -37,8 +46,14 @@ const performanceModel = new Schema<iStaffData>(
     subjectTitle: {
       type: String,
     },
+    subjectID: {
+      type: String,
+    },
 
     studentName: {
+      type: String,
+    },
+    studentAvatar: {
       type: String,
     },
 
@@ -47,6 +62,12 @@ const performanceModel = new Schema<iStaffData>(
     },
 
     studentGrade: {
+      type: String,
+    },
+    totalQuestions: {
+      type: Number,
+    },
+    markPerQuestion: {
       type: String,
     },
 

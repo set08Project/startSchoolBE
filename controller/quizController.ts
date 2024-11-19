@@ -1,13 +1,9 @@
 import { Request, Response } from "express";
-import schoolModel from "../model/schoolModel";
 import { Types } from "mongoose";
 import classroomModel from "../model/classroomModel";
-import timetableModel from "../model/timetableModel";
 import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import quizModel from "../model/quizModel";
-import { staffDuty } from "../utils/enums";
-import { log } from "console";
 import studentModel from "../model/studentModel";
 
 export const createSubjectQuiz = async (
@@ -16,7 +12,7 @@ export const createSubjectQuiz = async (
 ): Promise<Response> => {
   try {
     const { classID, subjectID } = req.params;
-    const { quiz } = req.body;
+    const { quiz, totalQuestions } = req.body;
 
     const classRoom = await classroomModel.findById(classID);
 
@@ -26,17 +22,29 @@ export const createSubjectQuiz = async (
       _id: classRoom?.teacherID,
     });
 
+    const findSubjectTeacher = await subjectModel.findById({
+      _id: checkForSubject?.teacherID,
+    });
+
     if (checkForSubject) {
       const quizes = await quizModel.create({
         subjectTitle: checkForSubject?.subjectTitle,
+        subjectID: checkForSubject?._id,
         quiz,
+        totalQuestions,
       });
 
       checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+
+      checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
       checkForSubject?.save();
 
       findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
       findTeacher?.save();
+
+      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findSubjectTeacher?.save();
 
       return res.status(201).json({
         message: "quiz entry created successfully",
@@ -49,7 +57,7 @@ export const createSubjectQuiz = async (
         status: 404,
       });
     }
-  } catch (errorL) {
+  } catch (error) {
     return res.status(404).json({
       message: "Error creating class subject quiz",
       status: 404,
@@ -216,7 +224,7 @@ export const deleteQuiz = async (
     return res.status(200).json({
       message: "Quiz deleted successfully",
       data: {
-        deletedQuiz: quiz, 
+        deletedQuiz: quiz,
         subjectUpdate,
         staffUpdate,
         studentUpdate,
@@ -239,13 +247,11 @@ export const getStudentQuizRecords = async (
   try {
     const { teacherID } = req.params;
 
-    console.log("teacherID", teacherID);
-
     const staff = await staffModel.findById(teacherID).populate({
-      path: 'quiz',
+      path: "quiz",
       populate: {
-        path: 'performance',
-        select: 'studentName studentScore studentGrade subjectTitle date',
+        path: "performance",
+        select: "studentName studentScore studentGrade subjectTitle date",
       },
     });
 
@@ -269,5 +275,3 @@ export const getStudentQuizRecords = async (
     });
   }
 };
-
-

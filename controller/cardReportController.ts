@@ -544,10 +544,11 @@ export const classTeacherReportRemark = async (
 
     const teacher: any = await staffModel.findById(teacherID);
 
-    console.log("student: ", student?.classAssigned);
-    console.log("teacher: ", teacher?.classesAssigned[0].className);
+    const teacherClassDataRomm = teacher?.classesAssigned.find((el: any) => {
+      return el.className === student?.classAssigned;
+    });
 
-    if (teacher?.classesAssigned[0].className === student?.classAssigned) {
+    if (teacherClassDataRomm?.className === student?.classAssigned) {
       const report = await cardReportModel.findByIdAndUpdate(
         getReportSubject?._id,
         {

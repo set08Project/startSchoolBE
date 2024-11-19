@@ -10,8 +10,14 @@ export const createQuizPerformance = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { studentID, quizID } = req.params;
-    const { studentScore, studentGrade, remark } = req.body;
+    const { studentID, quizID, subjectID } = req.params;
+    const {
+      studentScore,
+      studentGrade,
+      remark,
+      totalQuestions,
+      markPerQuestion,
+    } = req.body;
 
     const studentInfo: any = await studentModel
       .findById(studentID)
@@ -19,13 +25,7 @@ export const createQuizPerformance = async (
 
     const quizData: any = await quizModel.findById(quizID);
 
-    // const findTeacher = await staffModel.findById({
-    //   classesAssigned: studentInfo?.classAssigned,
-    // });
-
-    const findSubject = await subjectModel.findOne({
-      subjectTitle: quizData?.subjectTitle,
-    });
+    const subject = await subjectModel.findById(subjectID);
 
     if (quizData) {
       const quizes = await performanceModel.create({
@@ -33,22 +33,27 @@ export const createQuizPerformance = async (
         subjectTitle: quizData?.subjectTitle,
         studentScore,
         studentGrade,
+        totalQuestions,
+        markPerQuestion,
+        quizDone: true,
         performanceRating: parseInt(
           ((studentScore / quizData?.quiz[1]?.question.length) * 100).toFixed(2)
         ),
         className: studentInfo?.classAssigned,
         quizID: quizID,
         studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
+        studentAvatar: studentInfo.avatar,
+        subjectID: subject?._id,
       });
 
-      quizData?.performance.push(new Types.ObjectId(quizes._id));
+      quizData?.performance?.push(new Types.ObjectId(quizes._id));
       quizData?.save();
 
-      studentInfo?.performance.push(new Types.ObjectId(quizes._id));
+      studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
       studentInfo?.save();
 
-      findSubject?.performance.push(new Types.ObjectId(quizes._id));
-      findSubject?.save();
+      subject?.performance?.push(new Types.ObjectId(quizes._id));
+      subject?.save();
 
       let view: number[] = [];
       let notView: number[] = [];
@@ -82,7 +87,7 @@ export const createQuizPerformance = async (
 
       return res.status(201).json({
         message: "quiz entry created successfully",
-        // data: { quizes, record },
+        data: quizes,
         status: 201,
       });
     } else {
@@ -125,6 +130,53 @@ export const readSubjectQuizResult = async (
     return res.status(404).json({
       message: "Error creating subject quiz",
       status: 404,
+    });
+  }
+};
+
+export const readOneSubjectQuizResult = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { subjectID, quizID } = req.params;
+    const quiz = await quizModel.findById(quizID);
+    const subject = await subjectModel.findById(subjectID).populate({
+      path: "performance",
+      options: { sort: { time: 1 } },
+    });
+
+    if (!quiz || !subject) {
+      return res.status(404).json({
+        message: "Subject or Quiz not found",
+        status: 404,
+      });
+    }
+
+    const idCompare = subject?.quiz?.some(
+      (id: any) => id.toString() === quiz._id.toString()
+    );
+
+    if (idCompare) {
+      const filteredPerformance = subject?.performance?.filter(
+        (el: any) => el.quizID.toString() === quiz._id.toString()
+      );
+
+      return res.status(201).json({
+        message: "Filtered quiz performance read successfully",
+        data: filteredPerformance,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "QuizID and Subject Quiz don't align",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error reading subject quiz performance",
+      status: 500,
     });
   }
 };

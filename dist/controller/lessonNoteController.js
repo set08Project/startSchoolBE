@@ -30,6 +30,7 @@ const createClasslessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
             const note = yield lessonNoteModel_1.default.create({
                 teacher: staff === null || staff === void 0 ? void 0 : staff.staffName,
                 // teacherClass: staff?.classesAssigned,
+                profilePic: staff === null || staff === void 0 ? void 0 : staff.avatar,
                 teacherID: staff === null || staff === void 0 ? void 0 : staff._id,
                 week,
                 endingAt,
@@ -225,11 +226,11 @@ const readTeacherLessonNote = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.readTeacherLessonNote = readTeacherLessonNote;
 const readTeacherClassLessonNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { classID } = req.params;
-        const note = yield ((_a = classroomModel_1.default
-            .findById(classID)) === null || _a === void 0 ? void 0 : _a.populate({ path: "lessonNotes" }));
+        const note = yield ((_b = classroomModel_1.default
+            .findById(classID)) === null || _b === void 0 ? void 0 : _b.populate({ path: "lessonNotes" }));
         return res.status(200).json({
             message: "Reading teacher's lesson note",
             data: note,

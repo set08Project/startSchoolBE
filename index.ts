@@ -1,6 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import fs from "fs";
 
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -15,7 +16,7 @@ dotenv.config();
 import MongoDB from "connect-mongodb-session";
 const MongoDBStore = MongoDB(session);
 const store = new MongoDBStore({
-  uri: process.env.MONGO_DB_URL_ONLINE!,
+  uri: process.env.MONGO_DB_URL_LOCAL!,
   collection: "sessions",
 });
 
@@ -59,7 +60,7 @@ app.use(
       process.env.APP_URL_DEPLOY as string,
       "https://justnext-dev.vercel.app",
       "https://justnext-dev.netlify.app",
-      "https://just-next.netlify.app",
+      "https://just-next.web.app",
     ],
   })
 );
@@ -89,6 +90,9 @@ app.use(
 );
 
 mainApp(app);
+
+//13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt
+
 const server = app.listen(process.env.PORT || port, () => {
   console.clear();
   console.log();

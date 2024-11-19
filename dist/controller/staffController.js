@@ -22,6 +22,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
+const cron_1 = require("cron");
 const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
@@ -308,7 +309,7 @@ const createSchoolTeacherByAdmin = (req, res) => __awaiter(void 0, void 0, void 
 });
 exports.createSchoolTeacherByAdmin = createSchoolTeacherByAdmin;
 const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { schoolID } = req.params;
         const { staffName, gender, salary, staffAddress, role, subjectTitle } = req.body;
@@ -335,7 +336,7 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
                 gender,
                 email: `${staffName
                     .replace(/ /gi, "")
-                    .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                    .toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
                 enrollmentID,
                 password: hashed,
                 staffAddress,
@@ -371,7 +372,7 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.createSchoolTeacher = createSchoolTeacher;
 const updateStaffName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _c;
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
@@ -384,7 +385,7 @@ const updateStaffName = (req, res) => __awaiter(void 0, void 0, void 0, function
                     staffName: staffName,
                     email: `${staffName
                         .replace(/ /gi, "")
-                        .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                        .toLowerCase()}@${(_c = school === null || school === void 0 ? void 0 : school.schoolName) === null || _c === void 0 ? void 0 : _c.replace(/ /gi, "").toLowerCase()}.com`,
                 }, { new: true });
                 return res.status(201).json({
                     message: "Staff Name Updated Successfully",
@@ -829,12 +830,22 @@ const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 activeStatus: true,
             }, { new: true });
             const timing = 40 * 60 * 1000;
-            const taskId = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+            const job = new cron_1.CronJob("*/2 * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
                 yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
                     activeStatus: false,
                 }, { new: true });
-                clearTimeout(taskId);
-            }), timing);
+                job.stop();
+            }), null, true);
+            // const taskId = setTimeout(async () => {
+            //   await staffModel.findByIdAndUpdate(
+            //     teacher?._id,
+            //     {
+            //       activeStatus: false,
+            //     },
+            //     { new: true }
+            //   );
+            //   clearTimeout(taskId);
+            // }, timing);
             return res.status(201).json({
                 message: "staff activity has been, active",
                 data: updatedSchool,
@@ -855,13 +866,13 @@ const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.updateStaffActiveness = updateStaffActiveness;
 const deleteStaff = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _d;
     try {
         const { schoolID, staffID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const staff = yield staffModel_1.default.findByIdAndDelete(staffID);
-            (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(staffID));
+            (_d = school === null || school === void 0 ? void 0 : school.staff) === null || _d === void 0 ? void 0 : _d.pull(new mongoose_1.Types.ObjectId(staffID));
             school.save();
             return res.status(200).json({
                 message: "Successfully Deleted Staff",
