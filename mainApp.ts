@@ -27,7 +27,7 @@ import social from "./router/passportRoute";
 import scheme from "./router/schemeOfWorkRouter";
 
 import cronParser from "cron-parser";
-import fs from "fs"
+import fs from "fs";
 
 import { HTTP } from "./utils/enums";
 import { mainError } from "./error/mianError";
@@ -35,9 +35,9 @@ import { handleError } from "./error/handleError";
 import cron from "node-cron";
 import schoolModel from "./model/schoolModel";
 
-const file = fs.readFileSync(
-  "./.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt"
-);
+// const file = fs.readFileSync(
+//   "./.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt"
+// );
 
 export const mainApp = (app: Application) => {
   try {
@@ -86,7 +86,7 @@ export const mainApp = (app: Application) => {
       (req: Request, res: Response) => {
         // return res.status(200).json({ message: "Awesome" });
 
-        return res.sendFile( 
+        return res.sendFile(
           " http://51.21.84.107/.well-known/pki-validation/34E413B6620F83D024BFEC2183C0C835.txt"
         );
       }
