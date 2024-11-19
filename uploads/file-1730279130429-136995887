@@ -1,0 +1,27 @@
+{
+    "_id": "1",
+    "weeks": "1",
+    "subject": "Agricultural Science",
+    "class": "SS1",
+    "term": "Second Term",
+    "topics": "Revision of last term work and Resumption test",
+    "learningObjects": "By the end of the lesson, students should be able to: Recall some of the lessons taught last term.",
+    "learningActivities": [
+      {
+        "id": "1",
+        "value": "Students participate in the Resumption test"
+      },
+      {
+        "id": "2",
+        "value": "Group discussion/revision of last session work"
+      }
+    ],
+    "embeddedCoreSkills": [
+      {
+        "id": "1",
+        "value": "Critical thinking and Problem Solving"
+      }
+    ],
+    "learningResources": "First term examination questions, students' notes"
+  }
+  

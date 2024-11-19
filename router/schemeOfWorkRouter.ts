@@ -5,6 +5,7 @@ import {
   deleteScheme,
   getSchemeByClassAndSubject,
   getSchemeOfWork,
+  getMarkedSchemes,
 } from "../controller/SchemeController";
 import multer from "multer";
 
@@ -22,6 +23,7 @@ router.post("/upload-schemes", (req, res, next) => {
 });
 router.get("/schemes/:classType/:subject/:term", getSchemeByClassAndSubject);
 router.route("/get-schemes").get(getSchemeOfWork);
+router.route("/get-mark-schemes").get(getMarkedSchemes);
 router.route("/delete-schemes/:schemeID").delete(deleteScheme);
 
 export default router;
