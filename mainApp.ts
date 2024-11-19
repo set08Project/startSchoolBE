@@ -34,6 +34,13 @@ import { mainError } from "./error/mianError";
 import { handleError } from "./error/handleError";
 import cron from "node-cron";
 
+import schoolModel from "./model/schoolModel";
+
+// const file = fs.readFileSync(
+//   "./.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt"
+// );
+
+
 export const mainApp = (app: Application) => {
   try {
     app.use("/api", school);
@@ -75,6 +82,19 @@ export const mainApp = (app: Application) => {
         });
       }
     });
+
+
+    app.get(
+      "/.well-known/pki-validation/34E413B6620F83D024BFEC2183C0C835.txt",
+      (req: Request, res: Response) => {
+        // return res.status(200).json({ message: "Awesome" });
+
+        return res.sendFile(
+          " http://51.21.84.107/.well-known/pki-validation/34E413B6620F83D024BFEC2183C0C835.txt"
+        );
+      }
+    );
+
 
     app.all("*", (req: Request, res: Response, next: NextFunction) => {
       next(
