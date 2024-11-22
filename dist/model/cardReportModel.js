@@ -11,6 +11,10 @@ const cardRportModel = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    psycho: {
+        type: Boolean,
+        default: false,
+    },
     points: {
         type: Number,
         default: 0,
@@ -20,6 +24,15 @@ const cardRportModel = new mongoose_1.Schema({
     },
     classInfo: {
         type: String,
+    },
+    peopleSkill: {
+        type: [],
+    },
+    physicalSkill: {
+        type: [],
+    },
+    softSkill: {
+        type: [],
     },
     grade: {
         type: String,

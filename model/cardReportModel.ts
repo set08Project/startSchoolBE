@@ -10,6 +10,11 @@ interface iCardReport {
   adminComment: string;
   classTeacherComment: string;
 
+  psycho: boolean;
+  peopleSkill: [];
+  softSkill: [];
+  physicalSkill: [];
+
   school: {};
   student: {};
   classes: {};
@@ -31,6 +36,11 @@ const cardRportModel = new Schema<iCardReportData>(
       default: false,
     },
 
+    psycho: {
+      type: Boolean,
+      default: false,
+    },
+
     points: {
       type: Number,
       default: 0,
@@ -42,6 +52,18 @@ const cardRportModel = new Schema<iCardReportData>(
 
     classInfo: {
       type: String,
+    },
+
+    peopleSkill: {
+      type: [],
+    },
+
+    physicalSkill: {
+      type: [],
+    },
+
+    softSkill: {
+      type: [],
     },
 
     grade: {

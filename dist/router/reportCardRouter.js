@@ -14,6 +14,9 @@ router
     .route("/update-report-card/:teacherID/:studentID")
     .patch(cardReportController_1.updateReportScores);
 router
+    .route("/update-psycho-report/:teacherID/:studentID")
+    .patch(cardReportController_1.updatePsyChoReport);
+router
     .route("/admin-report-card/:schoolID/:studentID")
     .patch(cardReportController_1.adminReportRemark);
 router

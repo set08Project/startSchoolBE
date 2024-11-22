@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.studentReportRemark = exports.classTeacherReportRemark = exports.adminReportRemark = exports.updateReportScores = exports.createReportCardEntry = void 0;
+exports.studentPsychoReport = exports.studentReportRemark = exports.classTeacherReportRemark = exports.adminReportRemark = exports.updatePsyChoReport = exports.updateReportScores = exports.createReportCardEntry = void 0;
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -372,6 +372,69 @@ const updateReportScores = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.updateReportScores = updateReportScores;
+const updatePsyChoReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID, teacherID } = req.params;
+        const { subject, confidence, presentational, hardworking, resilient, sportship, empathy, puntuality, communication, leadership, } = req.body;
+        const student = yield studentModel_1.default.findById(studentID).populate({
+            path: "reportCard",
+        });
+        const getReportSubject = student === null || student === void 0 ? void 0 : student.reportCard.find((el) => {
+            var _a;
+            return (_a = el === null || el === void 0 ? void 0 : el.result) === null || _a === void 0 ? void 0 : _a.find((el) => {
+                return (el === null || el === void 0 ? void 0 : el.subject) === subject;
+            });
+        });
+        const teacher = yield staffModel_1.default.findById(teacherID);
+        if (teacher && student) {
+            if (teacher) {
+                const data = getReportSubject.result.find((el) => {
+                    return el.subject === subject;
+                });
+                const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+                    result: [
+                        {
+                            confidence,
+                            presentational,
+                            hardworking,
+                            resilient,
+                            sportship,
+                            empathy,
+                            puntuality,
+                            communication,
+                            leadership,
+                            psycho: true,
+                        },
+                    ],
+                }, { new: true });
+                return res.status(201).json({
+                    message: "teacher updated report successfully",
+                    data: report,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "unable to find school Teacher",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "unable to read school",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            status: 404,
+        });
+    }
+});
+exports.updatePsyChoReport = updatePsyChoReport;
 const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { studentID, schoolID } = req.params;
@@ -480,3 +543,24 @@ const studentReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.studentReportRemark = studentReportRemark;
+const studentPsychoReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID } = req.params;
+        const student = yield studentModel_1.default
+            .findById(studentID)
+            .populate({ path: "reportCard" });
+        return res.status(201).json({
+            message: "class Teacher report grade",
+            data: student,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            status: 404,
+            data: error.message,
+        });
+    }
+});
+exports.studentPsychoReport = studentPsychoReport;

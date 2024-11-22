@@ -459,6 +459,89 @@ export const updateReportScores = async (
   }
 };
 
+export const updatePsyChoReport = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID, teacherID } = req.params;
+    const {
+      subject,
+      confidence,
+      presentational,
+      hardworking,
+      resilient,
+      sportship,
+      empathy,
+      puntuality,
+      communication,
+      leadership,
+    } = req.body;
+
+    const student = await studentModel.findById(studentID).populate({
+      path: "reportCard",
+    });
+
+    const getReportSubject: any = student?.reportCard.find((el: any) => {
+      return el?.result?.find((el: any) => {
+        return el?.subject === subject;
+      });
+    });
+
+    const teacher = await staffModel.findById(teacherID);
+
+    if (teacher && student) {
+      if (teacher) {
+        const data = getReportSubject.result.find((el: any) => {
+          return el.subject === subject;
+        });
+
+        const report = await cardReportModel.findByIdAndUpdate(
+          getReportSubject?._id,
+          {
+            result: [
+              {
+                confidence,
+                presentational,
+                hardworking,
+                resilient,
+                sportship,
+                empathy,
+                puntuality,
+                communication,
+                leadership,
+                psycho: true,
+              },
+            ],
+          },
+          { new: true }
+        );
+
+        return res.status(201).json({
+          message: "teacher updated report successfully",
+          data: report,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "unable to find school Teacher",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "unable to read school",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      status: 404,
+    });
+  }
+};
+
 export const adminReportRemark = async (
   req: Request,
   res: Response
@@ -578,6 +661,31 @@ export const classTeacherReportRemark = async (
 };
 
 export const studentReportRemark = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+
+    const student: any = await studentModel
+      .findById(studentID)
+      .populate({ path: "reportCard" });
+
+    return res.status(201).json({
+      message: "class Teacher report grade",
+      data: student,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
+
+export const studentPsychoReport = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
