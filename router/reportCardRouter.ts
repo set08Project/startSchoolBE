@@ -5,7 +5,7 @@ import {
   classTeacherReportRemark,
   createReportCardEntry,
   studentReportRemark,
-  updatePsyChoReport,
+  classTeacherPhychoReportRemark,
   updateReportScores,
 } from "../controller/cardReportController";
 
@@ -25,7 +25,7 @@ router
 
 router
   .route("/update-psycho-report/:teacherID/:studentID")
-  .patch(updatePsyChoReport);
+  .patch(classTeacherPhychoReportRemark);
 
 router
   .route("/admin-report-card/:schoolID/:studentID")

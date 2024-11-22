@@ -12,57 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteScheme = exports.getSchemeOfWork = exports.getSchemeByClassAndSubject = exports.createScheme = void 0;
+exports.getMarkedSchemes = exports.deleteScheme = exports.getSchemeOfWork = exports.getSchemeByClassAndSubject = exports.createScheme = void 0;
 const fs_1 = __importDefault(require("fs"));
 const schemeOfWorkModel_1 = __importDefault(require("../model/schemeOfWorkModel"));
-// export const createScheme = async (req: Request, res: Response) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ message: "No file uploaded" });
-//     }
-//     const filePath = req.file.path;
-//     const data = fs.readFileSync(filePath, "utf-8");
-//     let jsonData;
-//     try {
-//       jsonData = JSON.parse(data);
-//     } catch (parseError: any) {
-//       return res.status(400).json({
-//         message: "Invalid JSON format in the uploaded file",
-//         error: parseError.message,
-//       });
-//     }
-//     if (!Array.isArray(jsonData)) {
-//       return res
-//         .status(400)
-//         .json({ message: "Uploaded file should contain an array of schemes." });
-//     }
-//     const schemesToInsert = jsonData.map((item: any) => ({
-//       weeks: item.weeks,
-//       topics: item.topics || [],
-//       subject: item.subject,
-//       classType: item.class,
-//       term: item.term,
-//       learningObject: item.learningObjects || [],
-//       learningActivities: item.learningActivities || [],
-//       embeddedCoreSkills: item.embeddedCoreSkills || [],
-//       learningResource: item.learningResources || [],
-//       createdAt: new Date(),
-//       updatedAt: new Date(),
-//     }));
-//     const insertedSchemes = await schemeOfWorkModel.insertMany(schemesToInsert);
-//     return res.status(201).json({
-//       message: "Successfully processed and inserted schemes.",
-//       status: 201,
-//       data: insertedSchemes,
-//     });
-//   } catch (error: any) {
-//     console.error("Error while processing bulk upload:", error);
-//     return res.status(500).json({
-//       message: "An error occurred while processing the bulk upload.",
-//       error: error.message,
-//     });
-//   }
-// };
 const createScheme = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!req.file) {
@@ -121,6 +73,7 @@ const createScheme = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 learningResource: item.learningResources || [],
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                marked: true,
             };
         });
         // Insert into the database
@@ -174,6 +127,7 @@ const getSchemeOfWork = (req, res) => __awaiter(void 0, void 0, void 0, function
         return res.status(200).json({
             message: "Successfully getting scheme of work entry.",
             status: 201,
+            data: getScheme
         });
     }
     catch (error) {
@@ -202,3 +156,24 @@ const deleteScheme = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.deleteScheme = deleteScheme;
+const getMarkedSchemes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const markedSchemes = yield schemeOfWorkModel_1.default.find({});
+        if (markedSchemes.length === 0) {
+            return res.status(404).json({
+                message: "No marked schemes found.",
+            });
+        }
+        return res.status(200).json({
+            message: "Marked schemes retrieved successfully.",
+            data: markedSchemes,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "An error occurred while fetching marked schemes.",
+            error: error.message,
+        });
+    }
+});
+exports.getMarkedSchemes = getMarkedSchemes;

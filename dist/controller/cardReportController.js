@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.studentPsychoReport = exports.studentReportRemark = exports.classTeacherReportRemark = exports.adminReportRemark = exports.updatePsyChoReport = exports.updateReportScores = exports.createReportCardEntry = void 0;
+exports.studentPsychoReport = exports.studentReportRemark = exports.classTeacherReportRemark = exports.adminReportRemark = exports.classTeacherPhychoReportRemark = exports.updateReportScores = exports.createReportCardEntry = void 0;
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -372,53 +372,57 @@ const updateReportScores = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.updateReportScores = updateReportScores;
-const updatePsyChoReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const classTeacherPhychoReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { studentID, teacherID } = req.params;
-        const { subject, confidence, presentational, hardworking, resilient, sportship, empathy, puntuality, communication, leadership, } = req.body;
-        const student = yield studentModel_1.default.findById(studentID).populate({
-            path: "reportCard",
+        const { teacherID, studentID, classID } = req.params;
+        const { confidence, presentational, hardworking, resilient, sportship, empathy, punctuality, communication, leadership, } = req.body;
+        const student = yield studentModel_1.default
+            .findById(studentID)
+            .populate({ path: "reportCard" });
+        const classRM = yield classroomModel_1.default.findById(classID);
+        const school = yield schoolModel_1.default
+            .findById(student === null || student === void 0 ? void 0 : student.schoolIDs)
+            .populate({
+            path: "session",
         });
         const getReportSubject = student === null || student === void 0 ? void 0 : student.reportCard.find((el) => {
-            var _a;
-            return (_a = el === null || el === void 0 ? void 0 : el.result) === null || _a === void 0 ? void 0 : _a.find((el) => {
-                return (el === null || el === void 0 ? void 0 : el.subject) === subject;
-            });
+            return (el.classInfo ===
+                `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
         const teacher = yield staffModel_1.default.findById(teacherID);
-        if (teacher && student) {
-            if (teacher) {
-                const data = getReportSubject.result.find((el) => {
-                    return el.subject === subject;
-                });
-                const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
-                    result: [
-                        {
-                            confidence,
-                            presentational,
-                            hardworking,
-                            resilient,
-                            sportship,
-                            empathy,
-                            puntuality,
-                            communication,
-                            leadership,
-                            psycho: true,
-                        },
-                    ],
-                }, { new: true });
-                return res.status(201).json({
-                    message: "teacher updated report successfully",
-                    data: report,
-                    status: 201,
-                });
-            }
-            else {
-                return res.status(404).json({
-                    message: "unable to find school Teacher",
-                    status: 404,
-                });
-            }
+        const teacherClassDataRomm = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned.find((el) => {
+            return el.className === (student === null || student === void 0 ? void 0 : student.classAssigned);
+        });
+        if ((teacherClassDataRomm === null || teacherClassDataRomm === void 0 ? void 0 : teacherClassDataRomm.className) === (student === null || student === void 0 ? void 0 : student.classAssigned)) {
+            const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+                peopleSkill: [
+                    {
+                        confidence,
+                        presentational,
+                        hardworking,
+                        resilient,
+                    },
+                ],
+                softSkill: [
+                    {
+                        empathy,
+                        punctuality,
+                        communication,
+                        leadership,
+                    },
+                ],
+                physicalSkill: [
+                    {
+                        sportship,
+                    },
+                ],
+                psycho: true,
+            }, { new: true });
+            return res.status(201).json({
+                message: "class Teacher report remark successfully",
+                data: report,
+                status: 201,
+            });
         }
         else {
             return res.status(404).json({
@@ -431,10 +435,11 @@ const updatePsyChoReport = (req, res) => __awaiter(void 0, void 0, void 0, funct
         return res.status(404).json({
             message: "Error creating school session",
             status: 404,
+            data: error.message,
         });
     }
 });
-exports.updatePsyChoReport = updatePsyChoReport;
+exports.classTeacherPhychoReportRemark = classTeacherPhychoReportRemark;
 const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { studentID, schoolID } = req.params;

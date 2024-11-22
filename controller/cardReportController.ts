@@ -459,85 +459,98 @@ export const updateReportScores = async (
   }
 };
 
-export const updatePsyChoReport = async (
+export const classTeacherPhychoReportRemark = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
   try {
-    const { studentID, teacherID } = req.params;
+    const { teacherID, studentID, classID } = req.params;
+
     const {
-      subject,
       confidence,
       presentational,
       hardworking,
       resilient,
       sportship,
       empathy,
-      puntuality,
+      punctuality,
       communication,
       leadership,
     } = req.body;
 
-    const student = await studentModel.findById(studentID).populate({
-      path: "reportCard",
-    });
+    const student: any = await studentModel
+      .findById(studentID)
+      .populate({ path: "reportCard" });
+
+    const classRM = await classroomModel.findById(classID);
+
+    const school: any = await schoolModel
+      .findById(student?.schoolIDs)
+      .populate({
+        path: "session",
+      });
 
     const getReportSubject: any = student?.reportCard.find((el: any) => {
-      return el?.result?.find((el: any) => {
-        return el?.subject === subject;
-      });
+      return (
+        el.classInfo ===
+        `${
+          student?.classAssigned
+        } session: ${school?.presentSession!}(${school?.presentTerm!})`
+      );
     });
 
-    const teacher = await staffModel.findById(teacherID);
+    const teacher: any = await staffModel.findById(teacherID);
 
-    if (teacher && student) {
-      if (teacher) {
-        const data = getReportSubject.result.find((el: any) => {
-          return el.subject === subject;
-        });
+    const teacherClassDataRomm = teacher?.classesAssigned.find((el: any) => {
+      return el.className === student?.classAssigned;
+    });
 
-        const report = await cardReportModel.findByIdAndUpdate(
-          getReportSubject?._id,
-          {
-            result: [
-              {
-                confidence,
-                presentational,
-                hardworking,
-                resilient,
-                sportship,
-                empathy,
-                puntuality,
-                communication,
-                leadership,
-                psycho: true,
-              },
-            ],
-          },
-          { new: true }
-        );
+    if (teacherClassDataRomm?.className === student?.classAssigned) {
+      const report = await cardReportModel.findByIdAndUpdate(
+        getReportSubject?._id,
+        {
+          peopleSkill: [
+            {
+              confidence,
+              presentational,
+              hardworking,
+              resilient,
+            },
+          ],
+          softSkill: [
+            {
+              empathy,
+              punctuality,
+              communication,
+              leadership,
+            },
+          ],
+          physicalSkill: [
+            {
+              sportship,
+            },
+          ],
+          psycho: true,
+        },
+        { new: true }
+      );
 
-        return res.status(201).json({
-          message: "teacher updated report successfully",
-          data: report,
-          status: 201,
-        });
-      } else {
-        return res.status(404).json({
-          message: "unable to find school Teacher",
-          status: 404,
-        });
-      }
+      return res.status(201).json({
+        message: "class Teacher report remark successfully",
+        data: report,
+        status: 201,
+      });
     } else {
       return res.status(404).json({
         message: "unable to read school",
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school session",
       status: 404,
+      data: error.message,
     });
   }
 };
