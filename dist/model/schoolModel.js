@@ -68,6 +68,12 @@ const schoolModel = new mongoose_2.Schema({
     avatarID: {
         type: String,
     },
+    signature: {
+        type: String,
+    },
+    signatureID: {
+        type: String,
+    },
     address: {
         type: String,
     },

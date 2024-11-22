@@ -472,6 +472,41 @@ export const updateSchoolAvatar = async (req: any, res: Response) => {
     });
   }
 };
+
+export const updateSchoolSignature = async (req: any, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const { secure_url, public_id }: any = await streamUpload(req);
+
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          signature: secure_url,
+          signatureID: public_id,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "school signature has been, added",
+        data: updatedSchool,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating user",
+    });
+  }
+};
 // school shool has started
 
 export const updateSchoolStartPossition = async (req: any, res: Response) => {

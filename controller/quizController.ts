@@ -5,6 +5,92 @@ import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import quizModel from "../model/quizModel";
 import studentModel from "../model/studentModel";
+import csv from "csvtojson";
+import { streamUpload } from "../utils/streamifier";
+import lodash from "lodash";
+import schoolModel from "../model/schoolModel";
+
+export const createSubjectExam = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID, subjectID } = req.params;
+    const { instruction, duration, mark } = req.body;
+
+    const classRoom = await classroomModel.findById(classID);
+
+    const checkForSubject = await subjectModel.findById(subjectID);
+
+    const findTeacher = await staffModel.findById({
+      _id: classRoom?.teacherID,
+    });
+
+    const findSubjectTeacher = await subjectModel.findById({
+      _id: checkForSubject?.teacherID,
+    });
+    const school = await schoolModel.findById(findTeacher?.schoolIDs);
+
+    // const { secure_url, public_id }: any = await streamUpload(req);
+
+    let data = await csv().fromFile(req?.file?.path);
+
+    let value: any = [];
+
+    for (let i of data) {
+      i.options?.split(";;");
+      let read = { ...i, options: i.options?.split(";;") };
+      value.push(read);
+    }
+
+    if (checkForSubject) {
+      const quizes = await quizModel.create({
+        subjectTitle: checkForSubject?.subjectTitle,
+        subjectID: checkForSubject?._id,
+        session: school?.presentSession,
+        term: school?.presentTerm,
+        quiz: {
+          duration,
+          mark,
+          instruction,
+          question: value,
+        },
+        totalQuestions: value?.length,
+        status: "examination",
+      });
+
+      checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+
+      checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
+      checkForSubject?.save();
+
+      findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findTeacher?.save();
+
+      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findSubjectTeacher?.save();
+
+      return res.status(201).json({
+        message: "quiz entry created successfully",
+        data: quizes,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Subject doesn't exist for this class",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating class subject quiz",
+      status: 404,
+      error: error,
+      data: error?.message,
+    });
+  }
+};
 
 export const createSubjectQuiz = async (
   req: Request,
@@ -32,6 +118,7 @@ export const createSubjectQuiz = async (
         subjectID: checkForSubject?._id,
         quiz,
         totalQuestions,
+        status: "quiz",
       });
 
       checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
@@ -89,6 +176,38 @@ export const readSubjectQuiz = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error creating subject quiz",
+      status: 404,
+    });
+  }
+};
+
+export const readSubjectExamination = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { subjectID } = req.params;
+
+    const subject = await subjectModel.findById(subjectID).populate({
+      path: "quiz",
+      options: {
+        sort: {
+          time: 1,
+        },
+      },
+    });
+
+    let exam = lodash.filter(subject?.quiz, { status: "examination" });
+
+    return res.status(201).json({
+      message: "subject exam read successfully",
+      data: subject?.quiz,
+      exam,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error reading subject exam",
       status: 404,
     });
   }

@@ -32,6 +32,9 @@ interface iSchool {
   avatar: string;
   avatarID: string;
 
+  signature: string;
+  signatureID: string;
+
   adminCode: string;
   plan: string;
   phone: string;
@@ -149,6 +152,14 @@ const schoolModel = new Schema<iSchoolData>(
     },
 
     avatarID: {
+      type: String,
+    },
+
+    signature: {
+      type: String,
+    },
+
+    signatureID: {
       type: String,
     },
 

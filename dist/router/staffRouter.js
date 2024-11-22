@@ -61,6 +61,9 @@ router
     .route("/update-staff-instagram/:schoolID/:staffID")
     .patch(staffController_1.updateStaffInstagramAcct);
 router.route("/upload-staff-avatar/:staffID").patch(upload, staffController_1.updateStaffAvatar);
+router
+    .route("/upload-staff-signature/:staffID")
+    .patch(upload, staffController_1.updateStaffSignature);
 router.route("/staff-active/:studentID").patch(staffController_1.updateStaffActiveness);
 router.route("/delete-staff/:schoolID/:staffID").delete(staffController_1.deleteStaff);
 exports.default = router;

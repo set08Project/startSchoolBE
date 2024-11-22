@@ -21,6 +21,7 @@ import {
   updateStaffInstagramAcct,
   updateStaffLinkedinAcct,
   updateStaffName,
+  updateStaffSignature,
   updateStaffXAcct,
   updateTeacherSalary,
 } from "../controller/staffController";
@@ -89,7 +90,12 @@ router
 router
   .route("/update-staff-instagram/:schoolID/:staffID")
   .patch(updateStaffInstagramAcct);
+
 router.route("/upload-staff-avatar/:staffID").patch(upload, updateStaffAvatar);
+
+router
+  .route("/upload-staff-signature/:staffID")
+  .patch(upload, updateStaffSignature);
 
 router.route("/staff-active/:studentID").patch(updateStaffActiveness);
 

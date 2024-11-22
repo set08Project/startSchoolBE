@@ -57,6 +57,12 @@ const staffModel = new mongoose_1.Schema({
     staffAvatarID: {
         type: String,
     },
+    signature: {
+        type: String,
+    },
+    signatureID: {
+        type: String,
+    },
     staffName: {
         type: String,
     },

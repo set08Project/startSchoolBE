@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.updateStaffLinkedinAcct = exports.updateStaffInstagramAcct = exports.updateStaffXAcct = exports.updateFacebookAccount = exports.updateStaffAdress = exports.updateStaffGender = exports.updatePhoneNumber = exports.updateStaffName = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
+exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.updateStaffSignature = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.updateStaffLinkedinAcct = exports.updateStaffInstagramAcct = exports.updateStaffXAcct = exports.updateFacebookAccount = exports.updateStaffAdress = exports.updateStaffGender = exports.updatePhoneNumber = exports.updateStaffName = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -791,6 +791,34 @@ const logoutTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.logoutTeacher = logoutTeacher;
+const updateStaffSignature = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { staffID } = req.params;
+        const school = yield staffModel_1.default.findById(staffID);
+        if (school) {
+            const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
+            const updatedSchool = yield staffModel_1.default.findByIdAndUpdate(staffID, {
+                signature: secure_url,
+                signatureID: public_id,
+            }, { new: true });
+            return res.status(200).json({
+                message: "staff signature has been, added",
+                data: updatedSchool,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating user",
+        });
+    }
+});
+exports.updateStaffSignature = updateStaffSignature;
 const updateStaffAvatar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { staffID } = req.params;

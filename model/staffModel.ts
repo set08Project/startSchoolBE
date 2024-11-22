@@ -9,6 +9,8 @@ interface iStaff {
   salary: number;
   avatar: string;
   avatarID: string;
+  signature: string;
+  signatureID: string;
   presentClassID: string;
 
   email: string;
@@ -114,6 +116,14 @@ const staffModel = new Schema<iStaffData>(
     },
 
     staffAvatarID: {
+      type: String,
+    },
+
+    signature: {
+      type: String,
+    },
+
+    signatureID: {
       type: String,
     },
 

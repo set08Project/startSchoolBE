@@ -901,6 +901,40 @@ export const logoutTeacher = async (
   }
 };
 
+export const updateStaffSignature = async (req: any, res: Response) => {
+  try {
+    const { staffID } = req.params;
+
+    const school = await staffModel.findById(staffID);
+
+    if (school) {
+      const { secure_url, public_id }: any = await streamUpload(req);
+
+      const updatedSchool = await staffModel.findByIdAndUpdate(
+        staffID,
+        {
+          signature: secure_url,
+          signatureID: public_id,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "staff signature has been, added",
+        data: updatedSchool,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating user",
+    });
+  }
+};
+
 export const updateStaffAvatar = async (req: any, res: Response) => {
   try {
     const { staffID } = req.params;

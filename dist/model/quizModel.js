@@ -5,8 +5,18 @@ const quizModel = new mongoose_1.Schema({
     quiz: {
         type: {},
     },
+    term: {
+        type: String,
+    },
+    session: {
+        type: String,
+    },
     subjectTitle: {
         type: String,
+    },
+    status: {
+        type: String,
+        default: "quiz",
     },
     subjectID: {
         type: String,

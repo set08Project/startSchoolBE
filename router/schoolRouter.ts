@@ -18,6 +18,7 @@ import {
   updateSchoolAccountDetail,
   updateSchoolAvatar,
   updateSchoolName,
+  updateSchoolSignature,
   updateSchoolStartPossition,
   verifySchool,
   viewAllSchools,
@@ -74,6 +75,10 @@ router.route("/update-account-info/:schoolID").patch(updateSchoolAccountDetail);
 router
   .route("/upload-school-avatar/:schoolID")
   .patch(upload, updateSchoolAvatar);
+
+router
+  .route("/upload-school-signature/:schoolID")
+  .patch(upload, updateSchoolSignature);
 
 router.route("/change-school-phone/:schoolID").patch(changeSchoolPhoneNumber);
 router

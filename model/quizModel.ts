@@ -4,6 +4,9 @@ interface iTimeTable {
   quiz: {};
   subjectTitle: string;
   subjectID: string;
+  status: string;
+  session: string;
+  term: string;
   totalQuestions: number;
 
   subject: {};
@@ -18,8 +21,18 @@ const quizModel = new Schema<iTimeTableData>(
     quiz: {
       type: {},
     },
+    term: {
+      type: String,
+    },
+    session: {
+      type: String,
+    },
     subjectTitle: {
       type: String,
+    },
+    status: {
+      type: String,
+      default: "quiz",
     },
     subjectID: {
       type: String,

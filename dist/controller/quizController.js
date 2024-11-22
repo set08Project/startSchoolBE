@@ -12,13 +12,83 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStudentQuizRecords = exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = void 0;
+exports.getStudentQuizRecords = exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectExamination = exports.readSubjectQuiz = exports.createSubjectQuiz = exports.createSubjectExam = void 0;
 const mongoose_1 = require("mongoose");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
+const csvtojson_1 = __importDefault(require("csvtojson"));
+const lodash_1 = __importDefault(require("lodash"));
+const schoolModel_1 = __importDefault(require("../model/schoolModel"));
+const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
+    try {
+        const { classID, subjectID } = req.params;
+        const { instruction, duration, mark } = req.body;
+        const classRoom = yield classroomModel_1.default.findById(classID);
+        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
+        const findTeacher = yield staffModel_1.default.findById({
+            _id: classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID,
+        });
+        const findSubjectTeacher = yield subjectModel_1.default.findById({
+            _id: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID,
+        });
+        const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        // const { secure_url, public_id }: any = await streamUpload(req);
+        let data = yield (0, csvtojson_1.default)().fromFile((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
+        let value = [];
+        for (let i of data) {
+            (_b = i.options) === null || _b === void 0 ? void 0 : _b.split(";;");
+            let read = Object.assign(Object.assign({}, i), { options: (_c = i.options) === null || _c === void 0 ? void 0 : _c.split(";;") });
+            value.push(read);
+        }
+        if (checkForSubject) {
+            const quizes = yield quizModel_1.default.create({
+                subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
+                subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
+                session: school === null || school === void 0 ? void 0 : school.presentSession,
+                term: school === null || school === void 0 ? void 0 : school.presentTerm,
+                quiz: {
+                    duration,
+                    mark,
+                    instruction,
+                    question: value,
+                },
+                totalQuestions: value === null || value === void 0 ? void 0 : value.length,
+                status: "examination",
+            });
+            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_d = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
+            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
+            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
+            return res.status(201).json({
+                message: "quiz entry created successfully",
+                data: quizes,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Subject doesn't exist for this class",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating class subject quiz",
+            status: 404,
+            error: error,
+            data: error === null || error === void 0 ? void 0 : error.message,
+        });
+    }
+});
+exports.createSubjectExam = createSubjectExam;
 const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -38,6 +108,7 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
                 quiz,
                 totalQuestions,
+                status: "quiz",
             });
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
             (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
@@ -92,6 +163,33 @@ const readSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.readSubjectQuiz = readSubjectQuiz;
+const readSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { subjectID } = req.params;
+        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+            path: "quiz",
+            options: {
+                sort: {
+                    time: 1,
+                },
+            },
+        });
+        let exam = lodash_1.default.filter(subject === null || subject === void 0 ? void 0 : subject.quiz, { status: "examination" });
+        return res.status(201).json({
+            message: "subject exam read successfully",
+            data: subject === null || subject === void 0 ? void 0 : subject.quiz,
+            exam,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error reading subject exam",
+            status: 404,
+        });
+    }
+});
+exports.readSubjectExamination = readSubjectExamination;
 const readTeacherSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { teacherID } = req.params;
