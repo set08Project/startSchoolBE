@@ -10,6 +10,7 @@ import { streamUpload } from "../utils/streamifier";
 import lodash from "lodash";
 import schoolModel from "../model/schoolModel";
 
+// Examination
 export const createSubjectExam = async (
   req: any,
   res: Response
@@ -43,39 +44,62 @@ export const createSubjectExam = async (
       value.push(read);
     }
 
+    let term = lodash.find(value, { term: school?.presentTerm });
+    let session = lodash.find(value, { session: school?.presentSession });
+
     if (checkForSubject) {
-      const quizes = await quizModel.create({
-        subjectTitle: checkForSubject?.subjectTitle,
-        subjectID: checkForSubject?._id,
-        session: school?.presentSession,
-        term: school?.presentTerm,
-        quiz: {
-          duration,
-          mark,
-          instruction,
-          question: value,
-        },
-        totalQuestions: value?.length,
-        status: "examination",
-      });
+      if (term && session) {
+        const quizes = await quizModel.findByIdAndUpdate(
+          term?._id,
+          {
+            quiz: {
+              instruction: { duration, mark, instruction },
+              question: value,
+            },
+            totalQuestions: value?.length,
+            startExam: false,
+          },
+          { new: true }
+        );
 
-      checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+        return res.status(201).json({
+          message: "update exam entry successfully",
+          data: quizes,
+          status: 201,
+        });
+      } else {
+        const quizes = await quizModel.create({
+          subjectTitle: checkForSubject?.subjectTitle,
+          subjectID: checkForSubject?._id,
+          session: school?.presentSession,
+          term: school?.presentTerm,
+          quiz: {
+            instruction: { duration, mark, instruction },
+            question: value,
+          },
+          totalQuestions: value?.length,
+          status: "examination",
+          startExam: false,
+        });
 
-      checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+        checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
 
-      checkForSubject?.save();
+        checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
 
-      findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
-      findTeacher?.save();
+        checkForSubject?.save();
 
-      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
-      findSubjectTeacher?.save();
+        findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+        findTeacher?.save();
 
-      return res.status(201).json({
-        message: "quiz entry created successfully",
-        data: quizes,
-        status: 201,
-      });
+        findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+        findSubjectTeacher?.save();
+
+        return res.status(201).json({
+          message: "exam entry successfully",
+          // data: quizes,
+          status: 201,
+        });
+      }
     } else {
       return res.status(404).json({
         message: "Subject doesn't exist for this class",
@@ -91,6 +115,69 @@ export const createSubjectExam = async (
     });
   }
 };
+
+export const readSubjectExamination = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { subjectID } = req.params;
+
+    const subject = await subjectModel.findById(subjectID).populate({
+      path: "quiz",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    let exam = lodash.filter(subject?.quiz, { status: "examination" })[0];
+
+    return res.status(201).json({
+      message: "subject exam read successfully",
+      // data: subject?.quiz,
+      exam,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error reading subject exam",
+      status: 404,
+    });
+  }
+};
+
+export const startSubjectExamination = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { examID } = req.params;
+    const { started } = req.body;
+
+    const subject = await quizModel.findByIdAndUpdate(
+      examID,
+      {
+        startExam: started,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "start subject exam read successfully",
+      data: subject,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error reading subject exam",
+      status: 404,
+    });
+  }
+};
+
+// Quiz
 
 export const createSubjectQuiz = async (
   req: Request,
@@ -176,38 +263,6 @@ export const readSubjectQuiz = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error creating subject quiz",
-      status: 404,
-    });
-  }
-};
-
-export const readSubjectExamination = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  try {
-    const { subjectID } = req.params;
-
-    const subject = await subjectModel.findById(subjectID).populate({
-      path: "quiz",
-      options: {
-        sort: {
-          time: 1,
-        },
-      },
-    });
-
-    let exam = lodash.filter(subject?.quiz, { status: "examination" });
-
-    return res.status(201).json({
-      message: "subject exam read successfully",
-      data: subject?.quiz,
-      exam,
-      status: 201,
-    });
-  } catch (error) {
-    return res.status(404).json({
-      message: "Error reading subject exam",
       status: 404,
     });
   }

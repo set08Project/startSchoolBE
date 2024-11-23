@@ -21,6 +21,10 @@ const quizModel = new mongoose_1.Schema({
     subjectID: {
         type: String,
     },
+    startExam: {
+        type: Boolean,
+        default: false,
+    },
     totalQuestions: {
         type: Number,
     },

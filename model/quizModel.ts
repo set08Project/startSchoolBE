@@ -8,6 +8,7 @@ interface iTimeTable {
   session: string;
   term: string;
   totalQuestions: number;
+  startExam: false;
 
   subject: {};
   staff: {};
@@ -36,6 +37,10 @@ const quizModel = new Schema<iTimeTableData>(
     },
     subjectID: {
       type: String,
+    },
+    startExam: {
+      type: Boolean,
+      default: false,
     },
     totalQuestions: {
       type: Number,
