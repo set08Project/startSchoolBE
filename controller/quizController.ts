@@ -9,7 +9,8 @@ import csv from "csvtojson";
 import { streamUpload } from "../utils/streamifier";
 import lodash from "lodash";
 import schoolModel from "../model/schoolModel";
-
+import fs from "node:fs";
+import path from "node:path";
 // Examination
 export const createSubjectExam = async (
   req: any,
@@ -61,6 +62,27 @@ export const createSubjectExam = async (
           },
           { new: true }
         );
+
+        let filePath = path.join(__dirname, "uploads");
+
+        const deleteFilesInFolder = (folderPath: any) => {
+          if (fs.existsSync(folderPath)) {
+            const files = fs.readdirSync(folderPath);
+
+            files.forEach((file) => {
+              const filePath = path.join(folderPath, file);
+              fs.unlinkSync(filePath);
+            });
+
+            console.log(
+              `All files in the folder '${folderPath}' have been deleted.`
+            );
+          } else {
+            console.log(`The folder '${folderPath}' does not exist.`);
+          }
+        };
+
+        deleteFilesInFolder(filePath);
 
         return res.status(201).json({
           message: "update exam entry successfully",

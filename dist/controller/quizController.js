@@ -22,6 +22,8 @@ const studentModel_1 = __importDefault(require("../model/studentModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const lodash_1 = __importDefault(require("lodash"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_path_1 = __importDefault(require("node:path"));
 // Examination
 const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
@@ -57,6 +59,21 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     totalQuestions: value === null || value === void 0 ? void 0 : value.length,
                     startExam: false,
                 }, { new: true });
+                let filePath = node_path_1.default.join(__dirname, "uploads");
+                const deleteFilesInFolder = (folderPath) => {
+                    if (node_fs_1.default.existsSync(folderPath)) {
+                        const files = node_fs_1.default.readdirSync(folderPath);
+                        files.forEach((file) => {
+                            const filePath = node_path_1.default.join(folderPath, file);
+                            node_fs_1.default.unlinkSync(filePath);
+                        });
+                        console.log(`All files in the folder '${folderPath}' have been deleted.`);
+                    }
+                    else {
+                        console.log(`The folder '${folderPath}' does not exist.`);
+                    }
+                };
+                deleteFilesInFolder(filePath);
                 return res.status(201).json({
                     message: "update exam entry successfully",
                     data: quizes,
