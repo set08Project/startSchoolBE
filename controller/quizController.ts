@@ -34,9 +34,11 @@ export const createSubjectExam = async (
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
     // const { secure_url, public_id }: any = await streamUpload(req);
+    console.log(req?.file?.path);
 
     let data = await csv().fromFile(req?.file?.path);
 
+    console.log(data);
     let value: any = [];
 
     for (let i of data) {
@@ -48,80 +50,152 @@ export const createSubjectExam = async (
     let term = lodash.find(value, { term: school?.presentTerm });
     let session = lodash.find(value, { session: school?.presentSession });
 
-    if (checkForSubject) {
-      if (term && session) {
-        const quizes = await quizModel.findByIdAndUpdate(
-          term?._id,
-          {
-            quiz: {
-              instruction: { duration, mark, instruction },
-              question: value,
-            },
-            totalQuestions: value?.length,
-            startExam: false,
-          },
-          { new: true }
+    let filePath = path.join(__dirname, "uploads");
+
+    const deleteFilesInFolder = (folderPath: any) => {
+      if (fs.existsSync(folderPath)) {
+        const files = fs.readdirSync(folderPath);
+
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          fs.unlinkSync(filePath);
+        });
+
+        console.log(
+          `All files in the folder '${folderPath}' have been deleted.`
         );
-
-        let filePath = path.join(__dirname, "uploads");
-
-        const deleteFilesInFolder = (folderPath: any) => {
-          if (fs.existsSync(folderPath)) {
-            const files = fs.readdirSync(folderPath);
-
-            files.forEach((file) => {
-              const filePath = path.join(folderPath, file);
-              fs.unlinkSync(filePath);
-            });
-
-            console.log(
-              `All files in the folder '${folderPath}' have been deleted.`
-            );
-          } else {
-            console.log(`The folder '${folderPath}' does not exist.`);
-          }
-        };
-
-        deleteFilesInFolder(filePath);
-
-        return res.status(201).json({
-          message: "update exam entry successfully",
-          data: quizes,
-          status: 201,
-        });
       } else {
-        const quizes = await quizModel.create({
-          subjectTitle: checkForSubject?.subjectTitle,
-          subjectID: checkForSubject?._id,
-          session: school?.presentSession,
-          term: school?.presentTerm,
-          quiz: {
-            instruction: { duration, mark, instruction },
-            question: value,
-          },
-          totalQuestions: value?.length,
-          status: "examination",
-          startExam: false,
-        });
-
-        checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
-
-        checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
-
-        checkForSubject?.save();
-
-        findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
-        findTeacher?.save();
-
-        findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
-        findSubjectTeacher?.save();
-
-        return res.status(201).json({
-          message: "exam entry successfully",
-          // data: quizes,
-          status: 201,
-        });
+        console.log(`The folder '${folderPath}' does not exist.`);
       }
+    };
+
+    if (checkForSubject) {
+      // if (term && session) {
+      //   const quizes = await quizModel.findByIdAndUpdate(
+      //     term?._id,
+      //     {
+      //       quiz: {
+      //         instruction: { duration, mark, instruction },
+      //         question: value,
+      //       },
+      //       totalQuestions: value?.length,
+      //       startExam: false,
+      //     },
+      //     { new: true }
+      //   );
+
+      //   let filePath = path.join(__dirname, "uploads");
+
+      //   const deleteFilesInFolder = (folderPath: any) => {
+      //     if (fs.existsSync(folderPath)) {
+      //       const files = fs.readdirSync(folderPath);
+
+      //       files.forEach((file) => {
+      //         const filePath = path.join(folderPath, file);
+      //         fs.unlinkSync(filePath);
+      //       });
+
+      //       console.log(
+      //         `All files in the folder '${folderPath}' have been deleted.`
+      //       );
+      //     } else {
+      //       console.log(`The folder '${folderPath}' does not exist.`);
+      //     }
+      //   };
+
+      //   deleteFilesInFolder(filePath);
+
+      //   return res.status(201).json({
+      //     message: "update exam entry successfully",
+      //     data: quizes,
+      //     status: 201,
+      //   });
+      // } else {
+      //   const quizes = await quizModel.create({
+      //     subjectTitle: checkForSubject?.subjectTitle,
+      //     subjectID: checkForSubject?._id,
+      //     session: school?.presentSession,
+      //     term: school?.presentTerm,
+      //     quiz: {
+      //       instruction: { duration, mark, instruction },
+      //       question: value,
+      //     },
+      //     totalQuestions: value?.length,
+      //     status: "examination",
+      //     startExam: false,
+      //   });
+
+      //   checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+
+      //   checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
+      //   checkForSubject?.save();
+
+      //   findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      //   findTeacher?.save();
+
+      //   findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      //   findSubjectTeacher?.save();
+
+      //   let filePath = path.join(__dirname, "uploads");
+
+      //   const deleteFilesInFolder = (folderPath: any) => {
+      //     if (fs.existsSync(folderPath)) {
+      //       const files = fs.readdirSync(folderPath);
+
+      //       files.forEach((file) => {
+      //         const filePath = path.join(folderPath, file);
+      //         fs.unlinkSync(filePath);
+      //       });
+
+      //       console.log(
+      //         `All files in the folder '${folderPath}' have been deleted.`
+      //       );
+      //     } else {
+      //       console.log(`The folder '${folderPath}' does not exist.`);
+      //     }
+      //   };
+
+      //   return res.status(201).json({
+      //     message: "exam entry successfully",
+      //     // data: quizes,
+      //     status: 201,
+      //   });
+      // }
+
+      const quizes = await quizModel.create({
+        subjectTitle: checkForSubject?.subjectTitle,
+        subjectID: checkForSubject?._id,
+        session: school?.presentSession,
+        term: school?.presentTerm,
+        quiz: {
+          instruction: { duration, mark, instruction },
+          question: value,
+        },
+        totalQuestions: value?.length,
+        status: "examination",
+        startExam: false,
+      });
+
+      checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+
+      checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
+      checkForSubject?.save();
+
+      findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findTeacher?.save();
+
+      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findSubjectTeacher?.save();
+
+      await deleteFilesInFolder(filePath);
+
+      return res.status(201).json({
+        message: "exam entry successfully",
+        data: quizes,
+        status: 201,
+      });
     } else {
       return res.status(404).json({
         message: "Subject doesn't exist for this class",

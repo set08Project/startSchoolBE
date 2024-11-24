@@ -26,7 +26,7 @@ const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 // Examination
 const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     try {
         const { classID, subjectID } = req.params;
         const { instruction, duration, mark } = req.body;
@@ -40,73 +40,134 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         // const { secure_url, public_id }: any = await streamUpload(req);
-        let data = yield (0, csvtojson_1.default)().fromFile((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
+        console.log((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
+        let data = yield (0, csvtojson_1.default)().fromFile((_b = req === null || req === void 0 ? void 0 : req.file) === null || _b === void 0 ? void 0 : _b.path);
+        console.log(data);
         let value = [];
         for (let i of data) {
-            (_b = i.options) === null || _b === void 0 ? void 0 : _b.split(";;");
-            let read = Object.assign(Object.assign({}, i), { options: (_c = i.options) === null || _c === void 0 ? void 0 : _c.split(";;") });
+            (_c = i.options) === null || _c === void 0 ? void 0 : _c.split(";;");
+            let read = Object.assign(Object.assign({}, i), { options: (_d = i.options) === null || _d === void 0 ? void 0 : _d.split(";;") });
             value.push(read);
         }
         let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
         let session = lodash_1.default.find(value, { session: school === null || school === void 0 ? void 0 : school.presentSession });
-        if (checkForSubject) {
-            if (term && session) {
-                const quizes = yield quizModel_1.default.findByIdAndUpdate(term === null || term === void 0 ? void 0 : term._id, {
-                    quiz: {
-                        instruction: { duration, mark, instruction },
-                        question: value,
-                    },
-                    totalQuestions: value === null || value === void 0 ? void 0 : value.length,
-                    startExam: false,
-                }, { new: true });
-                let filePath = node_path_1.default.join(__dirname, "uploads");
-                const deleteFilesInFolder = (folderPath) => {
-                    if (node_fs_1.default.existsSync(folderPath)) {
-                        const files = node_fs_1.default.readdirSync(folderPath);
-                        files.forEach((file) => {
-                            const filePath = node_path_1.default.join(folderPath, file);
-                            node_fs_1.default.unlinkSync(filePath);
-                        });
-                        console.log(`All files in the folder '${folderPath}' have been deleted.`);
-                    }
-                    else {
-                        console.log(`The folder '${folderPath}' does not exist.`);
-                    }
-                };
-                deleteFilesInFolder(filePath);
-                return res.status(201).json({
-                    message: "update exam entry successfully",
-                    data: quizes,
-                    status: 201,
+        let filePath = node_path_1.default.join(__dirname, "uploads");
+        const deleteFilesInFolder = (folderPath) => {
+            if (node_fs_1.default.existsSync(folderPath)) {
+                const files = node_fs_1.default.readdirSync(folderPath);
+                files.forEach((file) => {
+                    const filePath = node_path_1.default.join(folderPath, file);
+                    node_fs_1.default.unlinkSync(filePath);
                 });
+                console.log(`All files in the folder '${folderPath}' have been deleted.`);
             }
             else {
-                const quizes = yield quizModel_1.default.create({
-                    subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
-                    subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
-                    session: school === null || school === void 0 ? void 0 : school.presentSession,
-                    term: school === null || school === void 0 ? void 0 : school.presentTerm,
-                    quiz: {
-                        instruction: { duration, mark, instruction },
-                        question: value,
-                    },
-                    totalQuestions: value === null || value === void 0 ? void 0 : value.length,
-                    status: "examination",
-                    startExam: false,
-                });
-                checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-                (_d = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
-                checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
-                findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-                findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
-                findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-                findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
-                return res.status(201).json({
-                    message: "exam entry successfully",
-                    // data: quizes,
-                    status: 201,
-                });
+                console.log(`The folder '${folderPath}' does not exist.`);
             }
+        };
+        if (checkForSubject) {
+            // if (term && session) {
+            //   const quizes = await quizModel.findByIdAndUpdate(
+            //     term?._id,
+            //     {
+            //       quiz: {
+            //         instruction: { duration, mark, instruction },
+            //         question: value,
+            //       },
+            //       totalQuestions: value?.length,
+            //       startExam: false,
+            //     },
+            //     { new: true }
+            //   );
+            //   let filePath = path.join(__dirname, "uploads");
+            //   const deleteFilesInFolder = (folderPath: any) => {
+            //     if (fs.existsSync(folderPath)) {
+            //       const files = fs.readdirSync(folderPath);
+            //       files.forEach((file) => {
+            //         const filePath = path.join(folderPath, file);
+            //         fs.unlinkSync(filePath);
+            //       });
+            //       console.log(
+            //         `All files in the folder '${folderPath}' have been deleted.`
+            //       );
+            //     } else {
+            //       console.log(`The folder '${folderPath}' does not exist.`);
+            //     }
+            //   };
+            //   deleteFilesInFolder(filePath);
+            //   return res.status(201).json({
+            //     message: "update exam entry successfully",
+            //     data: quizes,
+            //     status: 201,
+            //   });
+            // } else {
+            //   const quizes = await quizModel.create({
+            //     subjectTitle: checkForSubject?.subjectTitle,
+            //     subjectID: checkForSubject?._id,
+            //     session: school?.presentSession,
+            //     term: school?.presentTerm,
+            //     quiz: {
+            //       instruction: { duration, mark, instruction },
+            //       question: value,
+            //     },
+            //     totalQuestions: value?.length,
+            //     status: "examination",
+            //     startExam: false,
+            //   });
+            //   checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+            //   checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+            //   checkForSubject?.save();
+            //   findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+            //   findTeacher?.save();
+            //   findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+            //   findSubjectTeacher?.save();
+            //   let filePath = path.join(__dirname, "uploads");
+            //   const deleteFilesInFolder = (folderPath: any) => {
+            //     if (fs.existsSync(folderPath)) {
+            //       const files = fs.readdirSync(folderPath);
+            //       files.forEach((file) => {
+            //         const filePath = path.join(folderPath, file);
+            //         fs.unlinkSync(filePath);
+            //       });
+            //       console.log(
+            //         `All files in the folder '${folderPath}' have been deleted.`
+            //       );
+            //     } else {
+            //       console.log(`The folder '${folderPath}' does not exist.`);
+            //     }
+            //   };
+            //   return res.status(201).json({
+            //     message: "exam entry successfully",
+            //     // data: quizes,
+            //     status: 201,
+            //   });
+            // }
+            const quizes = yield quizModel_1.default.create({
+                subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
+                subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
+                session: school === null || school === void 0 ? void 0 : school.presentSession,
+                term: school === null || school === void 0 ? void 0 : school.presentTerm,
+                quiz: {
+                    instruction: { duration, mark, instruction },
+                    question: value,
+                },
+                totalQuestions: value === null || value === void 0 ? void 0 : value.length,
+                status: "examination",
+                startExam: false,
+            });
+            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_e = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _e === void 0 ? void 0 : _e.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
+            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
+            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
+            yield deleteFilesInFolder(filePath);
+            return res.status(201).json({
+                message: "exam entry successfully",
+                data: quizes,
+                status: 201,
+            });
         }
         else {
             return res.status(404).json({

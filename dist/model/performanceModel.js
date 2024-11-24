@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const performanceModel = new mongoose_1.Schema({
+    status: {
+        type: String,
+    },
     quizID: {
         type: String,
     },

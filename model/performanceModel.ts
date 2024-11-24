@@ -13,6 +13,7 @@ interface iStaff {
   quizID: string;
   remark: string;
   quizDone: boolean;
+  status: string;
 
   studentScore: number;
   performanceRating: number;
@@ -28,6 +29,9 @@ interface iStaffData extends iStaff, Document {}
 
 const performanceModel = new Schema<iStaffData>(
   {
+    status: {
+      type: String,
+    },
     quizID: {
       type: String,
     },

@@ -17,6 +17,7 @@ export const createQuizPerformance = async (
       remark,
       totalQuestions,
       markPerQuestion,
+      stutus,
     } = req.body;
 
     const studentInfo: any = await studentModel
@@ -36,8 +37,9 @@ export const createQuizPerformance = async (
         totalQuestions,
         markPerQuestion,
         quizDone: true,
+        stutus,
         performanceRating: parseInt(
-          ((studentScore / quizData?.quiz[1]?.question.length) * 100).toFixed(2)
+          ((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)
         ),
         className: studentInfo?.classAssigned,
         quizID: quizID,

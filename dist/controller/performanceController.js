@@ -22,7 +22,7 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
     var _a, _b, _c, _d, _e;
     try {
         const { studentID, quizID, subjectID } = req.params;
-        const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, } = req.body;
+        const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, stutus, } = req.body;
         const studentInfo = yield studentModel_1.default
             .findById(studentID)
             .populate({ path: "performance" });
@@ -37,7 +37,8 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 totalQuestions,
                 markPerQuestion,
                 quizDone: true,
-                performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz[1]) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
+                stutus,
+                performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
