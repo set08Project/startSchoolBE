@@ -331,7 +331,6 @@ const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
     }
     catch (error) {
-        console.log(error);
         return res.status(404).json({
             message: "Error creating updating class name",
             status: 404,

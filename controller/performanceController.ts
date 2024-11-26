@@ -29,17 +29,6 @@ export const createQuizPerformance = async (
 
     const subject = await subjectModel.findById(subjectID);
 
-    console.log(quizData?.quiz?.question.length);
-    console.log({
-      remark,
-      subjectTitle: quizData?.subjectTitle,
-      studentScore,
-      studentGrade,
-      totalQuestions,
-      markPerQuestion,
-      status,
-    });
-
     if (quizData) {
       const quizes = await performanceModel.create({
         remark,
@@ -278,16 +267,6 @@ export const createExamPerformance = async (
 
     const subject = await subjectModel.findById(subjectID);
 
-    console.log({
-      remark,
-      subjectTitle: quizData?.subjectTitle,
-      studentScore,
-      studentGrade,
-      totalQuestions,
-      markPerQuestion,
-      status,
-    });
-
     if (quizData) {
       const quizes = await performanceModel.create({
         remark,
@@ -403,6 +382,7 @@ export const readOneSubjectExamResult = async (
   try {
     const { subjectID, quizID } = req.params;
     const quiz = await examinationModel.findById(quizID);
+
     const subject = await subjectModel.findById(subjectID).populate({
       path: "performance",
       options: { sort: { time: 1 } },
@@ -415,7 +395,7 @@ export const readOneSubjectExamResult = async (
       });
     }
 
-    const idCompare = subject?.quiz?.some(
+    const idCompare = subject?.examination?.some(
       (id: any) => id.toString() === quiz._id.toString()
     );
 

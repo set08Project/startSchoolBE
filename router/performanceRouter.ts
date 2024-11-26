@@ -35,7 +35,7 @@ router.route("/view-quiz-performance/:quizID").get(readQuizResult);
 // Examination
 
 router
-  .route("/create-subject-exam-performance/:studentID/:examID/:subjectID")
+  .route("/create-subject-exam-performance/:studentID/:quizID/:subjectID")
   .post(createExamPerformance);
 
 router

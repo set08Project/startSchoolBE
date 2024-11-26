@@ -10,4 +10,5 @@ router
     .post(multer_1.fileUploads, examinationController_1.createSubjectExam);
 router.route("/start-subject-exam/:examID/").patch(examinationController_1.startSubjectExamination);
 router.route("/view-subject-exam/:subjectID").get(examinationController_1.readSubjectExamination);
+router.route("/view-exam/:examID").get(examinationController_1.readExamination);
 exports.default = router;

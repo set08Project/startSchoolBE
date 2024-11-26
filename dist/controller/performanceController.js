@@ -20,7 +20,7 @@ const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const performanceModel_1 = __importDefault(require("../model/performanceModel"));
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
 const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e;
     try {
         const { studentID, quizID, subjectID } = req.params;
         const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, status, } = req.body;
@@ -29,16 +29,6 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             .populate({ path: "performance" });
         const quizData = yield quizModel_1.default.findById(quizID);
         const subject = yield subjectModel_1.default.findById(subjectID);
-        console.log((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length);
-        console.log({
-            remark,
-            subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
-            studentScore,
-            studentGrade,
-            totalQuestions,
-            markPerQuestion,
-            status,
-        });
         if (quizData) {
             const quizes = yield performanceModel_1.default.create({
                 remark,
@@ -49,18 +39,18 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 markPerQuestion,
                 quizDone: true,
                 status,
-                performanceRating: parseInt(((studentScore / ((_b = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _b === void 0 ? void 0 : _b.question.length)) * 100).toFixed(2)),
+                performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
                 studentAvatar: studentInfo.avatar,
                 subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
             });
-            (_c = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
             quizData === null || quizData === void 0 ? void 0 : quizData.save();
-            (_d = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
             studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save();
-            (_e = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _e === void 0 ? void 0 : _e.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
             subject === null || subject === void 0 ? void 0 : subject.save();
             let view = [];
             let notView = [];
@@ -81,7 +71,7 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             const record = yield studentModel_1.default.findByIdAndUpdate(studentID, {
                 totalPerformance: view.reduce((a, b) => {
                     return a + b;
-                }, 0) / ((_f = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _f === void 0 ? void 0 : _f.length),
+                }, 0) / ((_e = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _e === void 0 ? void 0 : _e.length),
             }, { new: true });
             return res.status(201).json({
                 message: "quiz entry created successfully",
@@ -230,15 +220,6 @@ const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             .populate({ path: "performance" });
         const quizData = yield examinationModel_1.default.findById(quizID);
         const subject = yield subjectModel_1.default.findById(subjectID);
-        console.log({
-            remark,
-            subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
-            studentScore,
-            studentGrade,
-            totalQuestions,
-            markPerQuestion,
-            status,
-        });
         if (quizData) {
             const quizes = yield performanceModel_1.default.create({
                 remark,
@@ -345,7 +326,7 @@ const readOneSubjectExamResult = (req, res) => __awaiter(void 0, void 0, void 0,
                 status: 404,
             });
         }
-        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.quiz) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
             const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
