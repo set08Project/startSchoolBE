@@ -15,6 +15,7 @@ router
   .post(fileUploads, createSubjectExam);
 
 router.route("/start-subject-exam-now/:examID/").patch(startSubjectExamination);
+
 router.route("/view-subject-exam-now/:subjectID").get(readSubjectExamination);
 
 export default router;
