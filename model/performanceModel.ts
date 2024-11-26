@@ -22,6 +22,7 @@ interface iStaff {
 
   student: {};
   quiz: {};
+  examination: {};
   subject: {};
 }
 
@@ -87,9 +88,13 @@ const performanceModel = new Schema<iStaffData>(
       type: Types.ObjectId,
       ref: "students",
     },
-    quiz: {
+    examination: {
       type: Types.ObjectId,
       ref: "quizes",
+    },
+    quiz: {
+      type: Types.ObjectId,
+      ref: "examinations",
     },
     subject: {
       type: Types.ObjectId,

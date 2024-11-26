@@ -31,6 +31,7 @@ interface iStaff {
   reportCard: Array<{}>;
   attendance: Array<{}>;
   quiz: Array<{}>;
+  examination: Array<{}>;
   lessonNotes: Array<{}>;
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
@@ -223,6 +224,13 @@ const staffModel = new Schema<iStaffData>(
       {
         type: Types.ObjectId,
         ref: "quizes",
+      },
+    ],
+
+    examination: [
+      {
+        type: Types.ObjectId,
+        ref: "examinations",
       },
     ],
 

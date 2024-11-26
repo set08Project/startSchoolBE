@@ -20,6 +20,12 @@ const subjectModel = new mongoose_1.Schema({
             ref: "quizes",
         },
     ],
+    examination: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "examinations",
+        },
+    ],
     assignment: [
         {
             type: mongoose_1.Types.ObjectId,

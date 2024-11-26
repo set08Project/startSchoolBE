@@ -10,6 +10,7 @@ interface iSubject {
   subjectClassIDs: string;
   subjectClassID: string;
   quiz: Array<{}>;
+  examination: Array<{}>;
   assignment: Array<{}>;
   assignmentResolve: Array<{}>;
 
@@ -43,6 +44,12 @@ const subjectModel = new Schema<iSubjectData>(
       {
         type: Types.ObjectId,
         ref: "quizes",
+      },
+    ],
+    examination: [
+      {
+        type: Types.ObjectId,
+        ref: "examinations",
       },
     ],
     assignment: [

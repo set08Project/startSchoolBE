@@ -52,9 +52,13 @@ const performanceModel = new mongoose_1.Schema({
         type: mongoose_1.Types.ObjectId,
         ref: "students",
     },
-    quiz: {
+    examination: {
         type: mongoose_1.Types.ObjectId,
         ref: "quizes",
+    },
+    quiz: {
+        type: mongoose_1.Types.ObjectId,
+        ref: "examinations",
     },
     subject: {
         type: mongoose_1.Types.ObjectId,

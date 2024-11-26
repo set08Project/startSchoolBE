@@ -29,6 +29,7 @@ const expenseRouter_1 = __importDefault(require("./router/expenseRouter"));
 const recordPaymentRouter_1 = __importDefault(require("./router/recordPaymentRouter"));
 const passportRoute_1 = __importDefault(require("./router/passportRoute"));
 const schemeOfWorkRouter_1 = __importDefault(require("./router/schemeOfWorkRouter"));
+const exanimationRouter_1 = __importDefault(require("./router/exanimationRouter"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
 const handleError_1 = require("./error/handleError");
@@ -38,6 +39,7 @@ const handleError_1 = require("./error/handleError");
 const mainApp = (app) => {
     try {
         app.use("/api", schoolRouter_1.default);
+        app.use("/api", exanimationRouter_1.default);
         app.use("/api", schemeOfWorkRouter_1.default);
         app.use("/api", sessionRouter_1.default);
         app.use("/api", staffRouter_1.default);
