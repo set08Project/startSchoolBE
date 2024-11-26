@@ -161,7 +161,7 @@ export const createSubjectExam = async (
       //   });
       // }
 
-      await examinationModel.deleteMany();
+      // await examinationModel.deleteMany();
 
       const quizes = await examinationModel.create({
         subjectTitle: checkForSubject?.subjectTitle,

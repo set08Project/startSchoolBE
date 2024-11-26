@@ -11,6 +11,7 @@ import lodash from "lodash";
 import schoolModel from "../model/schoolModel";
 import fs from "node:fs";
 import path from "node:path";
+
 // Examination
 export const createSubjectExam = async (
   req: any,
@@ -20,13 +21,9 @@ export const createSubjectExam = async (
     const { classID, subjectID } = req.params;
     const { instruction, duration, mark } = req.body;
 
-    console.log(classID, subjectID);
-
     const classRoom = await classroomModel.findById(classID);
 
     const checkForSubject = await subjectModel.findById(subjectID);
-
-    console.log(checkForSubject);
 
     const findTeacher = await staffModel.findById({
       _id: checkForSubject?.teacherID,

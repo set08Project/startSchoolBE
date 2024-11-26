@@ -30,10 +30,8 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
     try {
         const { classID, subjectID } = req.params;
         const { instruction, duration, mark } = req.body;
-        console.log(classID, subjectID);
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        console.log(checkForSubject);
         const findTeacher = yield staffModel_1.default.findById({
             _id: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID,
         });

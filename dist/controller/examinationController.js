@@ -139,7 +139,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             //     status: 201,
             //   });
             // }
-            yield examinationModel_1.default.deleteMany();
+            // await examinationModel.deleteMany();
             const quizes = yield examinationModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
                 subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
