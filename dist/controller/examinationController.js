@@ -24,7 +24,7 @@ const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const mongoose_1 = require("mongoose");
 const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     try {
         const { classID, subjectID } = req.params;
         const { instruction, duration, mark } = req.body;
@@ -38,12 +38,11 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         // const { secure_url, public_id }: any = await streamUpload(req);
-        console.log((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
-        let data = yield (0, csvtojson_1.default)().fromFile((_b = req === null || req === void 0 ? void 0 : req.file) === null || _b === void 0 ? void 0 : _b.path);
+        let data = yield (0, csvtojson_1.default)().fromFile((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
         let value = [];
         for (let i of data) {
-            (_c = i.options) === null || _c === void 0 ? void 0 : _c.split(";;");
-            let read = Object.assign(Object.assign({}, i), { options: (_d = i.options) === null || _d === void 0 ? void 0 : _d.split(";;") });
+            (_b = i.options) === null || _b === void 0 ? void 0 : _b.split(";;");
+            let read = Object.assign(Object.assign({}, i), { options: (_c = i.options) === null || _c === void 0 ? void 0 : _c.split(";;") });
             value.push(read);
         }
         let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
@@ -154,7 +153,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 startExam: false,
             });
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            (_e = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _e === void 0 ? void 0 : _e.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_d = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();

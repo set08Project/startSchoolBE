@@ -107,7 +107,7 @@ export const createReportCardEntry = async (
             return el.subject !== subject;
           });
 
-          const report = await cardReportModel.findByIdAndUpdate(
+          const report: any = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
               result: [
@@ -120,8 +120,11 @@ export const createReportCardEntry = async (
                   test4: y4,
                   exam: y5,
                   mark,
-                  score,
-                  points: parseFloat(((mark / score) * 100).toFixed(2)),
+                  score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+                  points:
+                    y1 > 10
+                      ? parseFloat(((mark / score) * 100).toFixed(2))
+                      : parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
                     (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
                       ? "F"
@@ -214,7 +217,6 @@ export const createReportCardEntry = async (
           let w5 = x5 !== 0 ? (examination = 60) : 0;
 
           let score = w1 + w2 + w3 + w4 + w5;
-
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -228,8 +230,11 @@ export const createReportCardEntry = async (
                   test4: y4,
                   exam: y5,
                   mark,
-                  score,
-                  points: parseFloat(((mark / score) * 100).toFixed(2)),
+                  score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+                  points:
+                    y1 > 10
+                      ? parseFloat(((mark / score) * 100).toFixed(2))
+                      : parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
                     (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
                       ? "F"

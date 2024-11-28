@@ -33,7 +33,7 @@ export const createSubjectExam = async (
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
     // const { secure_url, public_id }: any = await streamUpload(req);
-    console.log(req?.file?.path);
+    
 
     let data = await csv().fromFile(req?.file?.path);
 

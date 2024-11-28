@@ -108,8 +108,10 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 test4: y4,
                                 exam: y5,
                                 mark,
-                                score,
-                                points: parseFloat(((mark / score) * 100).toFixed(2)),
+                                score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+                                points: y1 > 10
+                                    ? parseFloat(((mark / score) * 100).toFixed(2))
+                                    : parseFloat(((mark / score) * 100).toFixed(2)),
                                 grade: (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
                                     ? "F"
                                     : (mark / score) * 100 >= 40 && (mark / score) * 100 <= 49
@@ -189,8 +191,10 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 test4: y4,
                                 exam: y5,
                                 mark,
-                                score,
-                                points: parseFloat(((mark / score) * 100).toFixed(2)),
+                                score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+                                points: y1 > 10
+                                    ? parseFloat(((mark / score) * 100).toFixed(2))
+                                    : parseFloat(((mark / score) * 100).toFixed(2)),
                                 grade: (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
                                     ? "F"
                                     : (mark / score) * 100 >= 40 && (mark / score) * 100 <= 49
