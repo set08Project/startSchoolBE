@@ -22,6 +22,9 @@ const upload = (0, multer_1.default)({
 }).single("avatar");
 const router = (0, express_1.Router)();
 router
+    .route("/update-student-bulk-info/:studentID")
+    .patch(studentController_1.updateStudentBulkInfo);
+router
     .route("/update-student-fees-1st/:schoolID/:studentID")
     .patch(studentController_1.updateStudent1stFees);
 router

@@ -32,7 +32,7 @@ export const createSchoolStudent = async (
       path: "classRooms",
     });
 
-    const enrollmentID = crypto.randomBytes(3).toString("hex");
+    const enrollmentID = crypto.randomBytes(4).toString("hex");
 
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(
@@ -705,6 +705,65 @@ export const updateStudentPhone = async (
         const updatePhone = await studentModel.findByIdAndUpdate(
           student._id,
           { phone: phone },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student Phone Number Updated Successfully",
+          data: updatePhone,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Phone Number",
+      data: {
+        errorMessage: error.mesaage,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
+export const updateStudentBulkInfo = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+    const {
+      phone,
+      studentFirstName,
+      parentPhoneNumber,
+      parentEmail,
+      studentLastName,
+      studentAddress,
+    } = req.body;
+
+    if (true) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const updatePhone = await studentModel.findByIdAndUpdate(
+          student._id,
+          {
+            phone,
+            studentFirstName,
+            parentPhoneNumber,
+            parentEmail,
+            studentLastName,
+            studentAddress,
+          },
           { new: true }
         );
         return res.status(201).json({

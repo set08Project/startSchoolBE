@@ -37,6 +37,7 @@ import {
   viewSchoolStorePurchased,
   viewStorePurchased,
   viewStorePurchasedTeacher,
+  updateStudentBulkInfo,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -59,8 +60,13 @@ const upload = multer({
 const router: Router = Router();
 
 router
+  .route("/update-student-bulk-info/:studentID")
+  .patch(updateStudentBulkInfo);
+
+router
   .route("/update-student-fees-1st/:schoolID/:studentID")
   .patch(updateStudent1stFees);
+
 router
   .route("/update-student-fees-2nd/:schoolID/:studentID")
   .patch(updateStudent2ndFees);
