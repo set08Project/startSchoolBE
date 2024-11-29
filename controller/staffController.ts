@@ -919,9 +919,10 @@ export const updateStaffSignature = async (req: any, res: Response) => {
         { new: true }
       );
 
-      return res.status(200).json({
+      return res.status(201).json({
         message: "staff signature has been, added",
         data: updatedSchool,
+        status: 201,
       });
     } else {
       return res.status(404).json({
