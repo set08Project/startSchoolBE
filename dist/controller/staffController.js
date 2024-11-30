@@ -801,9 +801,10 @@ const updateStaffSignature = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 signature: secure_url,
                 signatureID: public_id,
             }, { new: true });
-            return res.status(200).json({
+            return res.status(201).json({
                 message: "staff signature has been, added",
                 data: updatedSchool,
+                status: 201,
             });
         }
         else {

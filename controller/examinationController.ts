@@ -33,7 +33,6 @@ export const createSubjectExam = async (
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
     // const { secure_url, public_id }: any = await streamUpload(req);
-    
 
     let data = await csv().fromFile(req?.file?.path);
 
@@ -48,7 +47,7 @@ export const createSubjectExam = async (
     let term = lodash.find(value, { term: school?.presentTerm });
     let session = lodash.find(value, { session: school?.presentSession });
 
-    let filePath = path.join(__dirname, "uploads");
+    let filePath = path.join(__dirname, "../uploads");
 
     const deleteFilesInFolder = (folderPath: any) => {
       if (fs.existsSync(folderPath)) {
@@ -67,6 +66,7 @@ export const createSubjectExam = async (
       }
     };
 
+    // checkForSubject;
     if (checkForSubject) {
       // if (term && session) {
       //   const quizes = await quizModel.findByIdAndUpdate(
@@ -189,7 +189,10 @@ export const createSubjectExam = async (
       findSubjectTeacher?.examination.push(new Types.ObjectId(quizes._id));
       findSubjectTeacher?.save();
 
-      await deleteFilesInFolder(filePath);
+      const x = setTimeout(async () => {
+        await deleteFilesInFolder(filePath);
+        clearTimeout(x);
+      }, 15000);
 
       return res.status(201).json({
         message: "exam entry successfully",

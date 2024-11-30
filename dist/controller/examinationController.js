@@ -47,7 +47,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
         let session = lodash_1.default.find(value, { session: school === null || school === void 0 ? void 0 : school.presentSession });
-        let filePath = node_path_1.default.join(__dirname, "uploads");
+        let filePath = node_path_1.default.join(__dirname, "../uploads");
         const deleteFilesInFolder = (folderPath) => {
             if (node_fs_1.default.existsSync(folderPath)) {
                 const files = node_fs_1.default.readdirSync(folderPath);
@@ -61,6 +61,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 console.log(`The folder '${folderPath}' does not exist.`);
             }
         };
+        // checkForSubject;
         if (checkForSubject) {
             // if (term && session) {
             //   const quizes = await quizModel.findByIdAndUpdate(
@@ -159,7 +160,10 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
-            yield deleteFilesInFolder(filePath);
+            const x = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+                yield deleteFilesInFolder(filePath);
+                clearTimeout(x);
+            }), 15000);
             return res.status(201).json({
                 message: "exam entry successfully",
                 data: quizes,
