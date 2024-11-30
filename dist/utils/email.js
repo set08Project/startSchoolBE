@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySchoolFees = exports.changeTokenEmail = exports.addMemberEmail = exports.hospitalVerifiedEmail = exports.verifiedEmail = void 0;
+exports.clockingOutEmail = exports.clockingInEmail = exports.verifySchoolFees = exports.changeTokenEmail = exports.addMemberEmail = exports.verifiedEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const googleapis_1 = require("googleapis");
 const path_1 = __importDefault(require("path"));
@@ -76,45 +76,6 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.verifiedEmail = verifiedEmail;
-const hospitalVerifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const accessToken = (yield oAuth.getAccessToken()).token;
-        const transporter = nodemailer_1.default.createTransport({
-            service: "gmail",
-            auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
-            },
-        });
-        const token = jsonwebtoken_1.default.sign({
-            id: user._id,
-            email: user.email,
-        }, "weCareHospital");
-        let frontEndURL = `${url}/${token}/sign-in`;
-        let devURL = `${url}/api/verify-hospital/${user._id}`;
-        const myPath = path_1.default.join(__dirname, "../views/hospitalCreated.ejs");
-        const html = yield ejs_1.default.renderFile(myPath, {
-            link: devURL,
-            token: user.token,
-            hospitalName: user.hospitalName,
-        });
-        const mailerOption = {
-            from: "wecareHMO❤️⛑️🚑 <codelabbest@gmail.com>",
-            to: user.email,
-            subject: "Hospital's Account Verification",
-            html,
-        };
-        yield transporter.sendMail(mailerOption);
-    }
-    catch (error) {
-        console.error();
-    }
-});
-exports.hospitalVerifiedEmail = hospitalVerifiedEmail;
 const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
@@ -206,8 +167,8 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
             link: devURL,
             token: user.token,
             studentName: user.studentFirstName,
-            schoolMail: user.email,
-            schoolName: user.schoolName,
+            // schoolMail: user.email,
+            // schoolName: user.schoolName,
         });
         const mailerOption = {
             from: `${user.schoolName}📘📘📘 <codelabbest@gmail.com>`,
@@ -222,3 +183,83 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.verifySchoolFees = verifySchoolFees;
+const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const accessToken = (yield oAuth.getAccessToken()).token;
+        const transporter = nodemailer_1.default.createTransport({
+            service: "gmail",
+            auth: {
+                type: "OAuth2",
+                user: "codelabbest@gmail.com",
+                clientSecret: GOOGLE_SECRET,
+                clientId: GOOGLE_ID,
+                refreshToken: GOOGLE_REFRESH,
+                accessToken,
+            },
+        });
+        const myPath = path_1.default.join(__dirname, "../views/clockinMail.ejs");
+        const x = user === null || user === void 0 ? void 0 : user.clockInTime.split(",");
+        const y = x[2].trim();
+        const html = yield ejs_1.default.renderFile(myPath, {
+            clockin: user.clockInTime,
+            parent: user.studentLastName,
+            child: user.studentFirstName,
+            address: school === null || school === void 0 ? void 0 : school.address,
+            school: school === null || school === void 0 ? void 0 : school.schoolName,
+            phone: school === null || school === void 0 ? void 0 : school.phone,
+            date: `${x[0]} ${x[1]} ${y.split(" ")[0]}`,
+            time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
+        });
+        const mailerOption = {
+            from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+            to: user.parentEmail,
+            subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked in`,
+            html,
+        };
+        yield transporter.sendMail(mailerOption);
+    }
+    catch (error) {
+        console.error();
+    }
+});
+exports.clockingInEmail = clockingInEmail;
+const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const accessToken = (yield oAuth.getAccessToken()).token;
+        const transporter = nodemailer_1.default.createTransport({
+            service: "gmail",
+            auth: {
+                type: "OAuth2",
+                user: "codelabbest@gmail.com",
+                clientSecret: GOOGLE_SECRET,
+                clientId: GOOGLE_ID,
+                refreshToken: GOOGLE_REFRESH,
+                accessToken,
+            },
+        });
+        const myPath = path_1.default.join(__dirname, "../views/clockoutMail.ejs");
+        const x = user === null || user === void 0 ? void 0 : user.clockOutTime.split(",");
+        const y = x[2].trim();
+        const html = yield ejs_1.default.renderFile(myPath, {
+            clockin: user.clockInTime,
+            parent: user.studentLastName,
+            child: user.studentFirstName,
+            address: school === null || school === void 0 ? void 0 : school.address,
+            school: school === null || school === void 0 ? void 0 : school.schoolName,
+            phone: school === null || school === void 0 ? void 0 : school.phone,
+            date: `${x[0]} ${x[1]} ${y.split(" ")[0]}`,
+            time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
+        });
+        const mailerOption = {
+            from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+            to: user.parentEmail,
+            subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked Out`,
+            html,
+        };
+        yield transporter.sendMail(mailerOption);
+    }
+    catch (error) {
+        console.error();
+    }
+});
+exports.clockingOutEmail = clockingOutEmail;

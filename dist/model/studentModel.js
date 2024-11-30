@@ -6,6 +6,20 @@ const studentModel = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    clockIn: {
+        type: Boolean,
+        default: false,
+    },
+    clockOut: {
+        type: Boolean,
+        default: false,
+    },
+    clockInTime: {
+        type: String,
+    },
+    clockOutTime: {
+        type: String,
+    },
     monitor: {
         type: Boolean,
         default: false,

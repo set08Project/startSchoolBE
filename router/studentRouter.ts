@@ -38,6 +38,8 @@ import {
   viewStorePurchased,
   viewStorePurchasedTeacher,
   updateStudentBulkInfo,
+  clockinAccount,
+  clockOutAccount,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -59,6 +61,11 @@ const upload = multer({
 
 const router: Router = Router();
 
+// student clocked data
+router.route("/student-clock-in/:schoolID/:studentID").patch(clockinAccount);
+router.route("/student-clock-out/:schoolID/:studentID").patch(clockOutAccount);
+
+// student bulk info
 router
   .route("/update-student-bulk-info/:studentID")
   .patch(updateStudentBulkInfo);
