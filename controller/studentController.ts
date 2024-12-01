@@ -56,7 +56,11 @@ export const clockinAccount = async (
     if (school) {
       const student: any = await studentModel.findById(studentID);
 
-      if (student?.schoolIDs === school?._id) {
+      console.log(student?.schoolIDs === school?._id);
+      console.log(school?._id.toString());
+      console.log(student?.schoolIDs);
+
+      if (student?.schoolIDs === school?._id.toString()) {
         const clockInfo = await studentModel.findByIdAndUpdate(
           student._id,
           {
@@ -68,7 +72,9 @@ export const clockinAccount = async (
           { new: true }
         );
 
-        clockingInEmail(clockInfo, school);
+        clockingInEmail(clockInfo, school).then(() => {
+          console.log("sent");
+        });
 
         return res.status(201).json({
           message: "student has clock-in",

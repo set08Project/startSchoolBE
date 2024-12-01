@@ -246,7 +246,9 @@ export const clockingInEmail = async (user: any, school: any) => {
       html,
     };
 
-    await transporter.sendMail(mailerOption);
+    await transporter.sendMail(mailerOption).then(() => {
+      console.log("sent");
+    });
   } catch (error) {
     console.error();
   }
