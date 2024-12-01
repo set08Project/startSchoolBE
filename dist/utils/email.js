@@ -216,7 +216,9 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
             subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked in`,
             html,
         };
-        yield transporter.sendMail(mailerOption);
+        yield transporter.sendMail(mailerOption).then(() => {
+            console.log("sent");
+        });
     }
     catch (error) {
         console.error();
