@@ -64,6 +64,8 @@ const router: Router = Router();
 // student clocked data
 router.route("/student-clock-in/:schoolID/:studentID").patch(clockinAccount);
 router.route("/student-clock-out/:schoolID/:studentID").patch(clockOutAccount);
+router.route("/student-clock-in-with-id/:schoolID").patch(clockinAccount);
+router.route("/student-clock-out-with-id/:schoolID").patch(clockOutAccount);
 
 // student bulk info
 router
