@@ -29,9 +29,10 @@ export const findStudenWithEnrollmentID = async (
     const { enrollmentID } = req.body;
 
     const student = await studentModel.findOne({ enrollmentID });
-    return res.status(200).json({
+    return res.status(201).json({
       message: "viewing student with enrollment ID",
       data: student,
+      status: 201,
     });
   } catch (error: any) {
     return res.status(404).json({
