@@ -33,9 +33,10 @@ const findStudenWithEnrollmentID = (req, res) => __awaiter(void 0, void 0, void 
     try {
         const { enrollmentID } = req.body;
         const student = yield studentModel_1.default.findOne({ enrollmentID });
-        return res.status(200).json({
+        return res.status(201).json({
             message: "viewing student with enrollment ID",
             data: student,
+            status: 201,
         });
     }
     catch (error) {
