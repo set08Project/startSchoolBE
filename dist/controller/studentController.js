@@ -56,7 +56,7 @@ const clockinAccount = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = yield studentModel_1.default.findById(studentID);
-            if (student) {
+            if ((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id)) {
                 const clockInfo = yield studentModel_1.default.findByIdAndUpdate(student._id, {
                     clockIn: true,
                     clockInTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
@@ -145,7 +145,7 @@ const clockOutAccount = (req, res) => __awaiter(void 0, void 0, void 0, function
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = yield studentModel_1.default.findById(studentID);
-            if (student) {
+            if ((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id)) {
                 if (student === null || student === void 0 ? void 0 : student.clockIn) {
                     const clockInfo = yield studentModel_1.default.findByIdAndUpdate(student._id, {
                         clockIn: false,

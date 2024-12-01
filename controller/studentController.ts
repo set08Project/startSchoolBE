@@ -54,9 +54,9 @@ export const clockinAccount = async (
 
     const school = await schoolModel.findById(schoolID);
     if (school) {
-      const student = await studentModel.findById(studentID);
+      const student: any = await studentModel.findById(studentID);
 
-      if (student) {
+      if (student?.schoolIDs === school?._id) {
         const clockInfo = await studentModel.findByIdAndUpdate(
           student._id,
           {
@@ -163,7 +163,7 @@ export const clockOutAccount = async (
     if (school) {
       const student = await studentModel.findById(studentID);
 
-      if (student) {
+      if (student?.schoolIDs === school?._id) {
         if (student?.clockIn) {
           const clockInfo = await studentModel.findByIdAndUpdate(
             student._id,
