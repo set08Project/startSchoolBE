@@ -21,6 +21,29 @@ import moment from "moment";
 
 // CLOCK-IN/CLOCK-OUT
 
+export const findStudenWithEnrollmentID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { enrollmentID } = req.body;
+
+    const student = await studentModel.findOne({ enrollmentID });
+    return res.status(200).json({
+      message: "viewing student with enrollment ID",
+      data: student,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error finding student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
 export const clockinAccount = async (
   req: Request,
   res: Response

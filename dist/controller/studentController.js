@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAllStudents = exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudentLinkedinAccount = exports.updateXAcctount = exports.updateInstagramAccout = exports.updateStudentFacebookAcct = exports.updateStudent1stFees = exports.updateStudentParentNumber = exports.updateStudentBulkInfo = exports.updateStudentPhone = exports.updateStudentGender = exports.updateStudentAddress = exports.updateStudentLastName = exports.updateStudentFirstName = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = exports.clockOutAccountWidthID = exports.clockOutAccount = exports.clockinAccountWithID = exports.clockinAccount = void 0;
+exports.deleteAllStudents = exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudentLinkedinAccount = exports.updateXAcctount = exports.updateInstagramAccout = exports.updateStudentFacebookAcct = exports.updateStudent1stFees = exports.updateStudentParentNumber = exports.updateStudentBulkInfo = exports.updateStudentPhone = exports.updateStudentGender = exports.updateStudentAddress = exports.updateStudentLastName = exports.updateStudentFirstName = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = exports.clockOutAccountWidthID = exports.clockOutAccount = exports.clockinAccountWithID = exports.clockinAccount = exports.findStudenWithEnrollmentID = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -29,6 +29,26 @@ const schoolFeeHistory_1 = __importDefault(require("../model/schoolFeeHistory"))
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const moment_1 = __importDefault(require("moment"));
 // CLOCK-IN/CLOCK-OUT
+const findStudenWithEnrollmentID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { enrollmentID } = req.body;
+        const student = yield studentModel_1.default.findOne({ enrollmentID });
+        return res.status(200).json({
+            message: "viewing student with enrollment ID",
+            data: student,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error finding student",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.findStudenWithEnrollmentID = findStudenWithEnrollmentID;
 const clockinAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, studentID } = req.params;

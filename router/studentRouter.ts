@@ -40,6 +40,7 @@ import {
   updateStudentBulkInfo,
   clockinAccount,
   clockOutAccount,
+  findStudenWithEnrollmentID,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -62,6 +63,7 @@ const upload = multer({
 const router: Router = Router();
 
 // student clocked data
+router.route("/find-student").post(findStudenWithEnrollmentID);
 router.route("/student-clock-in/:schoolID/:studentID").patch(clockinAccount);
 router.route("/student-clock-out/:schoolID/:studentID").patch(clockOutAccount);
 router.route("/student-clock-in-with-id/:schoolID").patch(clockinAccount);

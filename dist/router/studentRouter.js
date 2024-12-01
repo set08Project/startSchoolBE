@@ -22,6 +22,7 @@ const upload = (0, multer_1.default)({
 }).single("avatar");
 const router = (0, express_1.Router)();
 // student clocked data
+router.route("/find-student").post(studentController_1.findStudenWithEnrollmentID);
 router.route("/student-clock-in/:schoolID/:studentID").patch(studentController_1.clockinAccount);
 router.route("/student-clock-out/:schoolID/:studentID").patch(studentController_1.clockOutAccount);
 router.route("/student-clock-in-with-id/:schoolID").patch(studentController_1.clockinAccount);
