@@ -74,6 +74,60 @@ export const clockinAccount = async (
   }
 };
 
+export const clockinAccountWithID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { enrollmentID } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findOne({ enrollmentID });
+
+      if (student) {
+        const clockInfo = await studentModel.findByIdAndUpdate(
+          student._id,
+          {
+            clockIn: true,
+            clockInTime: moment(new Date().getTime()).format("llll"),
+
+            clockOut: false,
+          },
+          { new: true }
+        );
+
+        clockingInEmail(clockInfo, school);
+
+        return res.status(201).json({
+          message: "student has clock-in",
+          data: clockInfo,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error clockin student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
 export const clockOutAccount = async (
   req: Request,
   res: Response
@@ -84,6 +138,67 @@ export const clockOutAccount = async (
     const school = await schoolModel.findById(schoolID);
     if (school) {
       const student = await studentModel.findById(studentID);
+
+      if (student) {
+        if (student?.clockIn) {
+          const clockInfo = await studentModel.findByIdAndUpdate(
+            student._id,
+            {
+              clockIn: false,
+              clockOut: true,
+              clockOutTime: moment(new Date().getTime()).format("llll"),
+            },
+            { new: true }
+          );
+
+          clockingOutEmail(clockInfo, school);
+
+          return res.status(201).json({
+            message: "student has clock-in",
+            data: clockInfo,
+            status: 201,
+          });
+        } else {
+          return res.status(404).json({
+            message:
+              "Student has to be clock-in first before they can be clock-out",
+            status: 404,
+          });
+        }
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error clockin student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+export const clockOutAccountWidthID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { enrollmentID } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findOne({ enrollmentID });
 
       if (student) {
         if (student?.clockIn) {
