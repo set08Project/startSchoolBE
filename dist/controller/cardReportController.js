@@ -109,21 +109,21 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 exam: y5,
                                 mark,
                                 score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
-                                points: y1 > 10
-                                    ? parseFloat(((mark / score) * 100).toFixed(2))
-                                    : parseFloat(((mark / score) * 100).toFixed(2)),
-                                grade: (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
+                                points: mark,
+                                // y1 > 10
+                                //   ? parseFloat(((mark / score) * 100).toFixed(2))
+                                //   : parseFloat(((mark / score) * 100).toFixed(2)),
+                                grade: mark >= 0 && mark <= 39
                                     ? "F"
-                                    : (mark / score) * 100 >= 40 && (mark / score) * 100 <= 49
+                                    : mark >= 40 && mark <= 49
                                         ? "E"
-                                        : (mark / score) * 100 >= 50 && (mark / score) * 100 <= 59
+                                        : mark >= 50 && mark <= 59
                                             ? "D"
-                                            : (mark / score) * 100 >= 60 && (mark / score) * 100 <= 69
+                                            : mark >= 60 && mark <= 69
                                                 ? "C"
-                                                : (mark / score) * 100 >= 70 && (mark / score) * 100 <= 79
+                                                : mark >= 70 && mark <= 79
                                                     ? "B"
-                                                    : (mark / score) * 100 >= 80 &&
-                                                        (mark / score) * 100 <= 100
+                                                    : mark >= 80 && mark <= 100
                                                         ? "A"
                                                         : null,
                             },
@@ -151,6 +151,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         points: genPoint,
                         grade,
                     }, { new: true });
+                    console.log("test1: ", nice);
                     return res.status(201).json({
                         message: "teacher updated report successfully",
                         data: nice,
@@ -195,18 +196,17 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 points: y1 > 10
                                     ? parseFloat(((mark / score) * 100).toFixed(2))
                                     : parseFloat(((mark / score) * 100).toFixed(2)),
-                                grade: (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
+                                grade: mark >= 0 && mark <= 39
                                     ? "F"
-                                    : (mark / score) * 100 >= 40 && (mark / score) * 100 <= 49
+                                    : mark >= 40 && mark <= 49
                                         ? "E"
-                                        : (mark / score) * 100 >= 50 && (mark / score) * 100 <= 59
+                                        : mark >= 50 && mark <= 59
                                             ? "D"
-                                            : (mark / score) * 100 >= 60 && (mark / score) * 100 <= 69
+                                            : mark >= 60 && mark <= 69
                                                 ? "C"
-                                                : (mark / score) * 100 >= 70 && (mark / score) * 100 <= 79
+                                                : mark >= 70 && mark <= 79
                                                     ? "B"
-                                                    : (mark / score) * 100 >= 80 &&
-                                                        (mark / score) * 100 <= 100
+                                                    : mark >= 80 && mark <= 100
                                                         ? "A"
                                                         : null,
                             },
