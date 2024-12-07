@@ -172,17 +172,60 @@ export const createReportCardEntry = async (
               ? "A"
               : null;
 
+          let x =
+            genPoint >= 0 && genPoint <= 5
+              ? "This is a very poor result."
+              : genPoint >= 6 && genPoint <= 11
+              ? "This result is poor; it's not satisfactory."
+              : genPoint >= 11 && genPoint <= 15
+              ? "Below average; needs significant improvement."
+              : genPoint >= 16 && genPoint <= 21
+              ? "Below average; more effort required."
+              : genPoint >= 21 && genPoint <= 25
+              ? "Fair but not satisfactory; strive harder."
+              : genPoint >= 26 && genPoint <= 31
+              ? "Fair performance; potential for improvement."
+              : genPoint >= 31 && genPoint <= 35
+              ? "Average; a steady effort is needed."
+              : genPoint >= 36 && genPoint <= 41
+              ? "Average; showing gradual improvement."
+              : genPoint >= 41 && genPoint <= 45
+              ? "Slightly above average; keep it up."
+              : genPoint >= 46 && genPoint <= 51
+              ? "Decent work; shows potential."
+              : genPoint >= 51 && genPoint <= 55
+              ? "Passable; satisfactory effort."
+              : genPoint >= 56 && genPoint <= 61
+              ? "Satisfactory; good progress."
+              : genPoint >= 61 && genPoint <= 65
+              ? "Good work; keep striving for excellence."
+              : genPoint >= 66 && genPoint <= 71
+              ? "Commendable effort; very good."
+              : genPoint >= 71 && genPoint <= 75
+              ? "Very good; consistent effort is visible."
+              : genPoint >= 76 && genPoint <= 81
+              ? "Excellent performance; well done!"
+              : genPoint >= 81 && genPoint <= 85
+              ? "Exceptional result; keep up the great work!"
+              : genPoint >= 86 && genPoint <= 91
+              ? "Outstanding achievement; impressive work!"
+              : genPoint >= 91 && genPoint <= 95
+              ? "Brilliant performance; you’re a star!"
+              : genPoint >= 96 && genPoint <= 100
+              ? "Outstanding achievement; impressive work!"
+              : ``;
+
           let nice = await cardReportModel.findByIdAndUpdate(
             report?.id,
             {
               points: genPoint,
-
+              adminComment: x,
               grade,
             },
             { new: true }
           );
 
-          console.log("test1: ", nice);
+          console.log(nice);
 
           return res.status(201).json({
             message: "teacher updated report successfully",
