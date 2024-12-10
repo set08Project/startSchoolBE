@@ -663,7 +663,7 @@ export const classTeacherReportRemark = async (
 ): Promise<Response> => {
   try {
     const { teacherID, studentID, classID } = req.params;
-    const { teacherComment } = req.body;
+    const { teacherComment, attendance } = req.body;
 
     const student: any = await studentModel
       .findById(studentID)
@@ -696,6 +696,7 @@ export const classTeacherReportRemark = async (
       const report = await cardReportModel.findByIdAndUpdate(
         getReportSubject?._id,
         {
+          attendance,
           classTeacherComment: teacherComment,
         },
         { new: true }

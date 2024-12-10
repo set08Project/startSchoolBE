@@ -193,6 +193,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         adminComment: x,
                         grade,
                     }, { new: true });
+                    console.log(nice);
                     return res.status(201).json({
                         message: "teacher updated report successfully",
                         data: nice,
@@ -528,7 +529,7 @@ exports.adminReportRemark = adminReportRemark;
 const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { teacherID, studentID, classID } = req.params;
-        const { teacherComment } = req.body;
+        const { teacherComment, attendance } = req.body;
         const student = yield studentModel_1.default
             .findById(studentID)
             .populate({ path: "reportCard" });
@@ -548,6 +549,7 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
         });
         if ((teacherClassDataRomm === null || teacherClassDataRomm === void 0 ? void 0 : teacherClassDataRomm.className) === (student === null || student === void 0 ? void 0 : student.classAssigned)) {
             const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+                attendance,
                 classTeacherComment: teacherComment,
             }, { new: true });
             return res.status(201).json({
