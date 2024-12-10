@@ -113,19 +113,25 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 // y1 > 10
                                 //   ? parseFloat(((mark / score) * 100).toFixed(2))
                                 //   : parseFloat(((mark / score) * 100).toFixed(2)),
-                                grade: mark >= 0 && mark <= 39
-                                    ? "F"
-                                    : mark >= 40 && mark <= 49
-                                        ? "E"
-                                        : mark >= 50 && mark <= 59
-                                            ? "D"
-                                            : mark >= 60 && mark <= 69
-                                                ? "C"
-                                                : mark >= 70 && mark <= 79
-                                                    ? "B"
-                                                    : mark >= 80 && mark <= 100
-                                                        ? "A"
-                                                        : null,
+                                grade: mark >= 0 && mark <= 40
+                                    ? "F9"
+                                    : mark >= 40 && mark <= 44
+                                        ? "E8"
+                                        : mark >= 44 && mark <= 49
+                                            ? "D7"
+                                            : mark >= 49 && mark <= 54
+                                                ? "C6"
+                                                : mark >= 54 && mark <= 59
+                                                    ? "C5"
+                                                    : mark >= 59 && mark <= 64
+                                                        ? "C4"
+                                                        : mark >= 64 && mark <= 69
+                                                            ? "B3"
+                                                            : mark >= 69 && mark <= 74
+                                                                ? "B2"
+                                                                : mark >= 74 && mark <= 100
+                                                                    ? "A1"
+                                                                    : null,
                             },
                         ],
                     }, { new: true });
@@ -134,19 +140,25 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     }).reduce((a, b) => {
                         return a + b;
                     }, 0)) / ((_e = report === null || report === void 0 ? void 0 : report.result) === null || _e === void 0 ? void 0 : _e.length)).toFixed(2));
-                    let grade = genPoint >= 0 && genPoint <= 39
-                        ? "F"
-                        : genPoint >= 40 && genPoint <= 49
-                            ? "E"
-                            : genPoint >= 50 && genPoint <= 59
-                                ? "D"
-                                : genPoint >= 60 && genPoint <= 69
-                                    ? "C"
-                                    : genPoint >= 70 && genPoint <= 79
-                                        ? "B"
-                                        : genPoint >= 80 && genPoint <= 100
-                                            ? "A"
-                                            : null;
+                    let grade = genPoint >= 0 && genPoint <= 40
+                        ? "F9"
+                        : genPoint >= 40 && genPoint <= 44
+                            ? "E8"
+                            : genPoint >= 44 && genPoint <= 49
+                                ? "D7"
+                                : genPoint >= 49 && genPoint <= 54
+                                    ? "C6"
+                                    : genPoint >= 54 && genPoint <= 59
+                                        ? "C5"
+                                        : genPoint >= 59 && genPoint <= 64
+                                            ? "C4"
+                                            : genPoint >= 64 && genPoint <= 69
+                                                ? "B3"
+                                                : genPoint >= 69 && genPoint <= 74
+                                                    ? "B2"
+                                                    : genPoint >= 74 && genPoint <= 100
+                                                        ? "A1"
+                                                        : null;
                     let x = genPoint >= 0 && genPoint <= 5
                         ? "This is a very poor result."
                         : genPoint >= 6 && genPoint <= 11
@@ -193,7 +205,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         adminComment: x,
                         grade,
                     }, { new: true });
-                    console.log(nice);
                     return res.status(201).json({
                         message: "teacher updated report successfully",
                         data: nice,
@@ -238,19 +249,25 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 points: y1 > 10
                                     ? parseFloat(((mark / score) * 100).toFixed(2))
                                     : parseFloat(((mark / score) * 100).toFixed(2)),
-                                grade: mark >= 0 && mark <= 39
-                                    ? "F"
-                                    : mark >= 40 && mark <= 49
-                                        ? "E"
-                                        : mark >= 50 && mark <= 59
-                                            ? "D"
-                                            : mark >= 60 && mark <= 69
-                                                ? "C"
-                                                : mark >= 70 && mark <= 79
-                                                    ? "B"
-                                                    : mark >= 80 && mark <= 100
-                                                        ? "A"
-                                                        : null,
+                                grade: mark >= 0 && mark <= 40
+                                    ? "F9"
+                                    : mark >= 40 && mark <= 44
+                                        ? "E8"
+                                        : mark >= 44 && mark <= 49
+                                            ? "D7"
+                                            : mark >= 49 && mark <= 54
+                                                ? "C6"
+                                                : mark >= 54 && mark <= 59
+                                                    ? "C5"
+                                                    : mark >= 59 && mark <= 64
+                                                        ? "C4"
+                                                        : mark >= 64 && mark <= 69
+                                                            ? "B3"
+                                                            : mark >= 69 && mark <= 74
+                                                                ? "B2"
+                                                                : mark >= 74 && mark <= 100
+                                                                    ? "A1"
+                                                                    : null,
                             },
                         ],
                     }, { new: true });
@@ -259,19 +276,25 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     }).reduce((a, b) => {
                         return a + b;
                     }, 0)) / ((_g = report === null || report === void 0 ? void 0 : report.result) === null || _g === void 0 ? void 0 : _g.length)).toFixed(2));
-                    let grade = genPoint >= 0 && genPoint <= 39
-                        ? "F"
-                        : genPoint >= 40 && genPoint <= 49
-                            ? "E"
-                            : genPoint >= 50 && genPoint <= 59
-                                ? "D"
-                                : genPoint >= 60 && genPoint <= 69
-                                    ? "C"
-                                    : genPoint >= 70 && genPoint <= 79
-                                        ? "B"
-                                        : genPoint >= 80 && genPoint <= 100
-                                            ? "A"
-                                            : null;
+                    let grade = genPoint >= 0 && genPoint <= 40
+                        ? "F9"
+                        : genPoint >= 40 && genPoint <= 44
+                            ? "E8"
+                            : genPoint >= 44 && genPoint <= 49
+                                ? "D7"
+                                : genPoint >= 49 && genPoint <= 54
+                                    ? "C6"
+                                    : genPoint >= 54 && genPoint <= 59
+                                        ? "C5"
+                                        : genPoint >= 59 && genPoint <= 64
+                                            ? "C4"
+                                            : genPoint >= 64 && genPoint <= 69
+                                                ? "B3"
+                                                : genPoint >= 69 && genPoint <= 74
+                                                    ? "B2"
+                                                    : genPoint >= 74 && genPoint <= 100
+                                                        ? "A1"
+                                                        : null;
                     let nice = yield cardReportModel_1.default.findByIdAndUpdate(report === null || report === void 0 ? void 0 : report.id, {
                         points: genPoint,
                         grade,
