@@ -18,6 +18,8 @@ import schoolFeeHistory from "../model/schoolFeeHistory";
 // import subjectModel from "../model/subjectModel";
 import csv from "csvtojson";
 import moment from "moment";
+import fs from "node:fs";
+import path from "node:path";
 
 // CLOCK-IN/CLOCK-OUT
 
@@ -387,6 +389,25 @@ export const createBulkSchoolStudent = async (
   try {
     const { schoolID } = req.params;
 
+    let filePath = path.join(__dirname, "../uploads/examination");
+
+    const deleteFilesInFolder = (folderPath: any) => {
+      if (fs.existsSync(folderPath)) {
+        const files = fs.readdirSync(folderPath);
+
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          fs.unlinkSync(filePath);
+        });
+
+        console.log(
+          `All files in the folder '${folderPath}' have been deleted.`
+        );
+      } else {
+        console.log(`The folder '${folderPath}' does not exist.`);
+      }
+    };
+
     const data = await csv().fromFile(req.file.path);
 
     for (let i of data) {
@@ -450,6 +471,8 @@ export const createBulkSchoolStudent = async (
 
           findClass?.students.push(new Types.ObjectId(student._id));
           await findClass.save();
+
+          deleteFilesInFolder(filePath);
         } else {
           return res.status(404).json({
             message: "class must exist",

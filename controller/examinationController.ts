@@ -18,6 +18,7 @@ export const createSubjectExam = async (
   try {
     const { classID, subjectID } = req.params;
     const { instruction, duration, mark } = req.body;
+    let filePath = path.join(__dirname, "../uploads/examination");
 
     const classRoom = await classroomModel.findById(classID);
 
@@ -46,8 +47,6 @@ export const createSubjectExam = async (
 
     let term = lodash.find(value, { term: school?.presentTerm });
     let session = lodash.find(value, { session: school?.presentSession });
-
-    let filePath = path.join(__dirname, "../uploads");
 
     const deleteFilesInFolder = (folderPath: any) => {
       if (fs.existsSync(folderPath)) {

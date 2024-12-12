@@ -431,7 +431,6 @@ export const createReportCardEntry = async (
           },
           { new: true }
         );
-
         student?.reportCard?.push(new Types.ObjectId(nice?._id));
         student?.save();
 

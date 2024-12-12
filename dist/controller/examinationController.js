@@ -28,6 +28,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
     try {
         const { classID, subjectID } = req.params;
         const { instruction, duration, mark } = req.body;
+        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
         const findTeacher = yield staffModel_1.default.findById({
@@ -47,7 +48,6 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
         let session = lodash_1.default.find(value, { session: school === null || school === void 0 ? void 0 : school.presentSession });
-        let filePath = node_path_1.default.join(__dirname, "../uploads");
         const deleteFilesInFolder = (folderPath) => {
             if (node_fs_1.default.existsSync(folderPath)) {
                 const files = node_fs_1.default.readdirSync(folderPath);
