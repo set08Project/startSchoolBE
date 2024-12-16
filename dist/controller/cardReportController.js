@@ -113,9 +113,9 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 // y1 > 10
                                 //   ? parseFloat(((mark / score) * 100).toFixed(2))
                                 //   : parseFloat(((mark / score) * 100).toFixed(2)),
-                                grade: mark >= 0 && mark <= 40
+                                grade: mark >= 0 && mark <= 39
                                     ? "F9"
-                                    : mark >= 40 && mark <= 44
+                                    : mark >= 39 && mark <= 44
                                         ? "E8"
                                         : mark >= 44 && mark <= 49
                                             ? "D7"
@@ -140,9 +140,10 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     }).reduce((a, b) => {
                         return a + b;
                     }, 0)) / ((_e = report === null || report === void 0 ? void 0 : report.result) === null || _e === void 0 ? void 0 : _e.length)).toFixed(2));
-                    let grade = genPoint >= 0 && genPoint <= 40
+                    console.log("here");
+                    let grade = genPoint >= 0 && genPoint <= 39
                         ? "F9"
-                        : genPoint >= 40 && genPoint <= 44
+                        : genPoint >= 39 && genPoint <= 44
                             ? "E8"
                             : genPoint >= 44 && genPoint <= 49
                                 ? "D7"
@@ -205,6 +206,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         adminComment: x,
                         grade,
                     }, { new: true });
+                    console.log("here12");
                     return res.status(201).json({
                         message: "teacher updated report successfully",
                         data: nice,
@@ -249,9 +251,9 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                 points: y1 > 10
                                     ? parseFloat(((mark / score) * 100).toFixed(2))
                                     : parseFloat(((mark / score) * 100).toFixed(2)),
-                                grade: mark >= 0 && mark <= 40
+                                grade: mark >= 0 && mark <= 39
                                     ? "F9"
-                                    : mark >= 40 && mark <= 44
+                                    : mark >= 39 && mark <= 44
                                         ? "E8"
                                         : mark >= 44 && mark <= 49
                                             ? "D7"
@@ -276,9 +278,9 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     }).reduce((a, b) => {
                         return a + b;
                     }, 0)) / ((_g = report === null || report === void 0 ? void 0 : report.result) === null || _g === void 0 ? void 0 : _g.length)).toFixed(2));
-                    let grade = genPoint >= 0 && genPoint <= 40
+                    let grade = genPoint >= 0 && genPoint <= 39
                         ? "F9"
-                        : genPoint >= 40 && genPoint <= 44
+                        : genPoint >= 39 && genPoint <= 44
                             ? "E8"
                             : genPoint >= 44 && genPoint <= 49
                                 ? "D7"
@@ -299,6 +301,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         points: genPoint,
                         grade,
                     }, { new: true });
+                    console.log("here2");
                     return res.status(201).json({
                         message: "can't report entry created successfully",
                         data: nice,
