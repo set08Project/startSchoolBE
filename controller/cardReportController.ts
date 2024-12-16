@@ -163,6 +163,8 @@ export const createReportCardEntry = async (
             ).toFixed(2)
           );
 
+          console.log("here");
+
           let grade =
             genPoint >= 0 && genPoint <= 39
               ? "F9"
@@ -236,6 +238,8 @@ export const createReportCardEntry = async (
             },
             { new: true }
           );
+
+          console.log("here12");
 
           return res.status(201).json({
             message: "teacher updated report successfully",
@@ -357,7 +361,7 @@ export const createReportCardEntry = async (
             },
             { new: true }
           );
-
+          console.log("here2");
           return res.status(201).json({
             message: "can't report entry created successfully",
             data: nice,
