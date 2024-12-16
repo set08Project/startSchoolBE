@@ -126,9 +126,9 @@ export const createReportCardEntry = async (
                   //   ? parseFloat(((mark / score) * 100).toFixed(2))
                   //   : parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
-                    mark >= 0 && mark <= 40
+                    mark >= 0 && mark <= 39
                       ? "F9"
-                      : mark >= 40 && mark <= 44
+                      : mark >= 39 && mark <= 44
                       ? "E8"
                       : mark >= 44 && mark <= 49
                       ? "D7"
@@ -164,9 +164,9 @@ export const createReportCardEntry = async (
           );
 
           let grade =
-            genPoint >= 0 && genPoint <= 40
+            genPoint >= 0 && genPoint <= 39
               ? "F9"
-              : genPoint >= 40 && genPoint <= 44
+              : genPoint >= 39 && genPoint <= 44
               ? "E8"
               : genPoint >= 44 && genPoint <= 49
               ? "D7"
@@ -290,9 +290,9 @@ export const createReportCardEntry = async (
                       ? parseFloat(((mark / score) * 100).toFixed(2))
                       : parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
-                    mark >= 0 && mark <= 40
+                    mark >= 0 && mark <= 39
                       ? "F9"
-                      : mark >= 40 && mark <= 44
+                      : mark >= 39 && mark <= 44
                       ? "E8"
                       : mark >= 44 && mark <= 49
                       ? "D7"
@@ -328,9 +328,9 @@ export const createReportCardEntry = async (
           );
 
           let grade =
-            genPoint >= 0 && genPoint <= 40
+            genPoint >= 0 && genPoint <= 39
               ? "F9"
-              : genPoint >= 40 && genPoint <= 44
+              : genPoint >= 39 && genPoint <= 44
               ? "E8"
               : genPoint >= 44 && genPoint <= 49
               ? "D7"
