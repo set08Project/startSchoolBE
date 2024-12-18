@@ -140,7 +140,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     }).reduce((a, b) => {
                         return a + b;
                     }, 0)) / ((_e = report === null || report === void 0 ? void 0 : report.result) === null || _e === void 0 ? void 0 : _e.length)).toFixed(2));
-                    console.log("here");
                     let grade = genPoint >= 0 && genPoint <= 39
                         ? "F9"
                         : genPoint >= 39 && genPoint <= 44
@@ -201,9 +200,51 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                                                                                                 : genPoint >= 96 && genPoint <= 100
                                                                                                     ? "Outstanding achievement; impressive work!"
                                                                                                     : ``;
+                    let xx = genPoint >= 0 && genPoint <= 5
+                        ? "The submission demonstrates a lack of understanding of the topic. Please see me for guidance"
+                        : genPoint >= 6 && genPoint <= 11
+                            ? "Very minimal effort is evident in the work. It's essential to review the material thoroughly."
+                            : genPoint >= 11 && genPoint <= 15
+                                ? "This effort does not meet the basic requirements. Please focus on the foundational concepts."
+                                : genPoint >= 16 && genPoint <= 21
+                                    ? "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions."
+                                    : genPoint >= 21 && genPoint <= 25
+                                        ? "Some attempt is evident, but significant gaps in understanding remain. More effort is required."
+                                        : genPoint >= 26 && genPoint <= 31
+                                            ? "The work shows minimal understanding of the topic. Focus on building your foundational knowledge."
+                                            : genPoint >= 31 && genPoint <= 35
+                                                ? "A basic attempt is made, but it falls short of expectations. Review the feedback to improve"
+                                                : genPoint >= 36 && genPoint <= 41
+                                                    ? "You are starting to grasp the material, but more depth and accuracy are needed."
+                                                    : genPoint >= 41 && genPoint <= 45
+                                                        ? "An acceptable effort, but there is room for improvement in clarity and depth"
+                                                        : genPoint >= 46 && genPoint <= 51
+                                                            ? "Some understanding is demonstrated, but key concepts are missing or incorrect."
+                                                            : genPoint >= 51 && genPoint <= 55
+                                                                ? "You are making progress but need to develop your analysis further to meet the standard"
+                                                                : genPoint >= 56 && genPoint <= 61
+                                                                    ? "A decent attempt that meets some expectations but lacks polish and depth in certain areas"
+                                                                    : genPoint >= 61 && genPoint <= 65
+                                                                        ? "Good work; keep striving for excellence."
+                                                                        : genPoint >= 66 && genPoint <= 71
+                                                                            ? "A solid understanding is evident, though there are areas to refine."
+                                                                            : genPoint >= 71 && genPoint <= 75
+                                                                                ? "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth."
+                                                                                : genPoint >= 76 && genPoint <= 81
+                                                                                    ? "Strong work overall! A little more attention to detail could make it exceptional!"
+                                                                                    : genPoint >= 81 && genPoint <= 85
+                                                                                        ? "Well done! You have a good grasp of the material. Aim for more critical analysis next time!"
+                                                                                        : genPoint >= 86 && genPoint <= 91
+                                                                                            ? "Excellent work! You’ve exceeded expectations. Keep up the fantastic effort!"
+                                                                                            : genPoint >= 91 && genPoint <= 95
+                                                                                                ? "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!"
+                                                                                                : genPoint >= 96 && genPoint <= 100
+                                                                                                    ? "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulation!"
+                                                                                                    : ``;
                     let nice = yield cardReportModel_1.default.findByIdAndUpdate(report === null || report === void 0 ? void 0 : report.id, {
                         points: genPoint,
                         adminComment: x,
+                        classTeacherComment: xx,
                         grade,
                     }, { new: true });
                     console.log("here12");

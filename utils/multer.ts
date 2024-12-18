@@ -9,6 +9,8 @@ if (!fs.existsSync(filePath)) {
   fs.mkdir(filePath, () => {
     console.log("folder created");
   });
+} else {
+  console.log("folder exist...");
 }
 
 const storage = multer.diskStorage({

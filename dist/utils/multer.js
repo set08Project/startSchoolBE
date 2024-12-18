@@ -13,6 +13,9 @@ if (!node_fs_1.default.existsSync(filePath)) {
         console.log("folder created");
     });
 }
+else {
+    console.log("folder exist...");
+}
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
         cb(null, filePath);
