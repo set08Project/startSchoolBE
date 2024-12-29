@@ -676,7 +676,7 @@ export const makeOtherSchoolPayment = async (req: Request, res: Response) => {
 
     const params = JSON.stringify({
       email,
-      first_name: "This is Peter",
+
       amount: `${paymentAmount * 100}`,
       subaccount: subAccountCode,
       callback_url: `${URL}/other-school-payment`,
@@ -734,8 +734,9 @@ export const makeOtherSchoolPayment = async (req: Request, res: Response) => {
 export const verifySchoolTransaction = async (req: Request, res: Response) => {
   try {
     const { ref, studentID } = req.params;
+    const { paymentName } = req.body;
 
-    const student = await studentModel.findById(studentID);
+    const student: any = await studentModel.findById(studentID);
 
     const school = await schoolModel.findById(student?.schoolIDs).populate({
       path: "session",
@@ -758,7 +759,6 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
     const mainTerm: any = await termModel.findById(readTerm?._id);
 
     const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
-    console.log("main: ", mainTerm);
     await axios
       .get(url, {
         headers: {
@@ -766,32 +766,77 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
         },
       })
       .then(async (data: any) => {
-        let id = crypto.randomBytes(4).toString("hex");
-
-        let newData = await termModel.findByIdAndUpdate(
-          mainTerm?._id,
-          {
-            paymentOptions: [
-              ...mainTerm?.paymentOptions,
-              {
-                id,
-                paymentDetails: "payment",
-                paymentAmount: data?.data?.amount / 100,
-                reference: data?.data?.reference,
-              },
-            ],
-          },
-          { new: true }
+        const check = mainTerm?.paymentOptions?.some(
+          (el: any) => el.reference === ref
         );
 
-        console.log("get main: ", newData);
+        if (!check) {
+          let id = crypto.randomBytes(4).toString("hex");
 
-        return res.status(200).json({
-          message: "payment verified",
-          status: 200,
-          data: data.data,
-          // newData,
-        });
+          let newData = await termModel.findByIdAndUpdate(
+            mainTerm?._id,
+            {
+              paymentOptions: [
+                ...mainTerm?.paymentOptions,
+                {
+                  id,
+                  studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                  createdAt: moment(new Date().getTime()).format("lll"),
+                  paymentMode: "online",
+                  confirm: false,
+                  paymentDetails: paymentName,
+                  paymentAmount: parseFloat(data?.data?.data?.amount) / 100,
+                  reference: data?.data?.data?.reference,
+                  studentID,
+                  schoolID: student?.schoolIDs,
+                  termID: mainTerm?._id,
+                  sessionID: school?.presentSessionID,
+                  session: termly?.year,
+                  term: mainTerm.presentTerm,
+                },
+              ],
+            },
+            { new: true }
+          );
+
+          await studentModel.findByIdAndUpdate(
+            student?._id,
+            {
+              otherPayment: [
+                ...student?.otherPayment,
+                {
+                  id,
+                  studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                  createdAt: moment(new Date().getTime()).format("lll"),
+                  paymentMode: "online",
+                  confirm: false,
+                  paymentDetails: paymentName,
+                  paymentAmount: parseFloat(data?.data?.data?.amount) / 100,
+                  reference: data?.data?.data?.reference,
+                  studentID,
+                  schoolID: student?.schoolIDs,
+                  termID: mainTerm?._id,
+                  sessionID: school?.presentSessionID,
+                  term: mainTerm.presentTerm,
+                  session: termly?.year,
+                },
+              ],
+            },
+            { new: true }
+          );
+
+          return res.status(200).json({
+            message: "payment verified",
+            status: 200,
+            data: data.data,
+            newData,
+          });
+        } else {
+          return res.status(200).json({
+            message: "Ref is already in used",
+            data: data.data,
+          });
+        }
       });
   } catch (error: any) {
     res.status(404).json({

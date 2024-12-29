@@ -38,5 +38,5 @@ router.route("/make-other-school-payment").post(makeOtherSchoolPayment);
 
 router
   .route("/verify-other-payment/:studentID/:ref")
-  .get(verifySchoolTransaction);
+  .post(verifySchoolTransaction);
 export default router;

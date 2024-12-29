@@ -18,5 +18,5 @@ router.route("/make-schoolfee-payment").post(paymentController_1.schoolFeePaymen
 router.route("/make-other-school-payment").post(paymentController_1.makeOtherSchoolPayment);
 router
     .route("/verify-other-payment/:studentID/:ref")
-    .get(paymentController_1.verifySchoolTransaction);
+    .post(paymentController_1.verifySchoolTransaction);
 exports.default = router;

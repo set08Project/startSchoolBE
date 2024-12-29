@@ -64,6 +64,7 @@ interface iStudent {
   articles: Array<{}>;
   complain: Array<{}>;
   purchaseHistory: Array<{}>;
+  otherPayment: Array<{}>;
 }
 
 interface iStudentData extends iStudent, Document {}
@@ -73,6 +74,11 @@ const studentModel = new Schema<iStudentData>(
     feesPaid1st: {
       type: Boolean,
       default: false,
+    },
+
+    otherPayment: {
+      type: [],
+      default: [],
     },
 
     clockIn: {
