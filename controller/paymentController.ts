@@ -762,7 +762,9 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
       .then(async (data: any) => {
         let id = crypto.randomBytes(4).toString("hex");
 
-        await termModel.findByIdAndUpdate(
+        console.log(data);
+
+        let newData = await termModel.findByIdAndUpdate(
           mainTerm?._id,
           {
             otherPaymentRecord: [
@@ -772,11 +774,13 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
           },
           { new: true }
         );
+        console.log(newData);
 
         return res.status(200).json({
           message: "payment verified",
           status: 200,
           data: data.data,
+          newData,
         });
       });
   } catch (error: any) {

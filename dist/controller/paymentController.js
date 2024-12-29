@@ -670,16 +670,19 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
         })
             .then((data) => __awaiter(void 0, void 0, void 0, function* () {
             let id = crypto_1.default.randomBytes(4).toString("hex");
-            yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+            console.log(data);
+            let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
                 otherPaymentRecord: [
                     ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.otherPaymentRecord,
                     { id, paymentDetails: "payment", paymentAmount: data === null || data === void 0 ? void 0 : data.amount },
                 ],
             }, { new: true });
+            console.log(newData);
             return res.status(200).json({
                 message: "payment verified",
                 status: 200,
                 data: data.data,
+                newData,
             });
         }));
     }
