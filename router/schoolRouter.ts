@@ -18,6 +18,7 @@ import {
   updateSchoolAccountDetail,
   updateSchoolAvatar,
   updateSchoolName,
+  updateSchoolPaymentOptions,
   updateSchoolSignature,
   updateSchoolStartPossition,
   verifySchool,
@@ -94,6 +95,10 @@ router
 router
   .route("/create-school-time-table/:schoolID")
   .patch(createSchoolTimetableRecord);
+
+router
+  .route("/add-more-payment-option/:schoolID")
+  .patch(updateSchoolPaymentOptions);
 
 router.route("/update-school-admin-code/:schoolID").patch(updateAdminCode);
 

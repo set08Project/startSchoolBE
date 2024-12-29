@@ -37,6 +37,9 @@ const schoolModel = new mongoose_2.Schema({
     timeTableStructure: {
         type: [],
     },
+    paymentOptions: {
+        type: [],
+    },
     organizationType: {
         type: String,
     },

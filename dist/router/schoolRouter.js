@@ -56,5 +56,8 @@ router
 router
     .route("/create-school-time-table/:schoolID")
     .patch(schoolController_1.createSchoolTimetableRecord);
+router
+    .route("/add-more-payment-option/:schoolID")
+    .patch(schoolController_1.updateSchoolPaymentOptions);
 router.route("/update-school-admin-code/:schoolID").patch(schoolController_1.updateAdminCode);
 exports.default = router;

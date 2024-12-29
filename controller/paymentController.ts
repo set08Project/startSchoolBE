@@ -9,6 +9,9 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 // import https from "https";
 import env from "dotenv";
+import studentModel from "../model/studentModel";
+import termModel from "../model/termModel";
+import sessionModel from "../model/sessionModel";
 env.config();
 
 const URL = process.env.APP_URL_DEPLOY;
@@ -659,6 +662,123 @@ export const schoolFeePayment = async (req: Request, res: Response) => {
 
     request.write(params);
     request.end();
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
+    });
+  }
+};
+
+export const makeOtherSchoolPayment = async (req: Request, res: Response) => {
+  try {
+    const { subAccountCode, email, paymentAmount, paymentName } = req.body;
+
+    const params = JSON.stringify({
+      email,
+      amount: `${paymentAmount * 100}`,
+      subaccount: subAccountCode,
+      callback_url: `${URL}/school-fee-payment`,
+      meta: {
+        cancel: `${URL}`,
+      },
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/transaction/initialize",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const request = https
+      .request(options, (response: Response) => {
+        let data = "";
+
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          return res.status(200).json({
+            message: "other payment made successfully",
+            status: 201,
+            data: JSON.parse(data),
+          });
+        });
+      })
+      .on("error", (error: Error) => {
+        console.error(error);
+      });
+
+    request.write(params);
+    request.end();
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
+    });
+  }
+};
+
+export const verifySchoolTransaction = async (req: Request, res: Response) => {
+  try {
+    const { ref, studentID } = req.params;
+
+    const student = await studentModel.findById(studentID);
+
+    const school = await schoolModel.findById(student?.schoolIDs).populate({
+      path: "session",
+    });
+
+    const readSession: any = school?.session?.find(
+      (el: any) => el?._id === school?.presentSessionID
+    );
+
+    const termly: any = await sessionModel.findById(readSession?._id).populate({
+      path: "term",
+    });
+
+    const readTerm: any = termly?.term?.find(
+      (el: any) =>
+        el?.presentTerm === school?.presentTerm &&
+        el.presentTermID === school?.presentTermID
+    );
+
+    const mainTerm: any = await termModel.findById(readTerm?._id);
+
+    const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
+
+    await axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        },
+      })
+      .then(async (data: any) => {
+        let id = crypto.randomBytes(4).toString("hex");
+
+        await termModel.findByIdAndUpdate(
+          mainTerm?._id,
+          {
+            otherPaymentRecord: [
+              ...mainTerm?.otherPaymentRecord,
+              { id, paymentDetails: "payment", paymentAmount: data?.amount },
+            ],
+          },
+          { new: true }
+        );
+
+        return res.status(200).json({
+          message: "payment verified",
+          status: 200,
+          data: data.data,
+        });
+      });
   } catch (error: any) {
     res.status(404).json({
       message: "Errror",
