@@ -603,7 +603,7 @@ const makeOtherSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             email,
             amount: `${paymentAmount * 100}`,
             subaccount: subAccountCode,
-            callback_url: `${URL}/school-fee-payment`,
+            callback_url: `${URL}/other-school-payment`,
             meta: {
                 cancel: `${URL}`,
             },

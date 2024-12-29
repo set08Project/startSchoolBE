@@ -678,7 +678,7 @@ export const makeOtherSchoolPayment = async (req: Request, res: Response) => {
       email,
       amount: `${paymentAmount * 100}`,
       subaccount: subAccountCode,
-      callback_url: `${URL}/school-fee-payment`,
+      callback_url: `${URL}/other-school-payment`,
       meta: {
         cancel: `${URL}`,
       },

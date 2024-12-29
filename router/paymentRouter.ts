@@ -36,5 +36,7 @@ router.route("/update-schoolfee-payment-info").post(makeSplitSchoolfeePayment);
 router.route("/make-schoolfee-payment").post(schoolFeePayment);
 router.route("/make-other-school-payment").post(makeOtherSchoolPayment);
 
-router.route("/verify-payment/:studentID/:ref").get(verifySchoolTransaction);
+router
+  .route("/verify-other-payment/:studentID/:ref")
+  .get(verifySchoolTransaction);
 export default router;
