@@ -676,11 +676,17 @@ export const makeOtherSchoolPayment = async (req: Request, res: Response) => {
 
     const params = JSON.stringify({
       email,
+      first_name: "This is Peter",
       amount: `${paymentAmount * 100}`,
       subaccount: subAccountCode,
       callback_url: `${URL}/other-school-payment`,
       meta: {
         cancel: `${URL}`,
+        custom_fields: [
+          {
+            display_name: paymentName,
+          },
+        ],
       },
     });
 
@@ -736,7 +742,7 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
     });
 
     const readSession: any = school?.session?.find(
-      (el: any) => el?._id === school?.presentSessionID
+      (el: any) => el?._id.toString() === school?.presentSessionID
     );
 
     const termly: any = await sessionModel.findById(readSession?._id).populate({
@@ -746,13 +752,13 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
     const readTerm: any = termly?.term?.find(
       (el: any) =>
         el?.presentTerm === school?.presentTerm &&
-        el.presentTermID === school?.presentTermID
+        el._id.toString() === school?.presentTermID
     );
 
     const mainTerm: any = await termModel.findById(readTerm?._id);
 
     const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
-
+    console.log("main: ", mainTerm);
     await axios
       .get(url, {
         headers: {
@@ -762,25 +768,29 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
       .then(async (data: any) => {
         let id = crypto.randomBytes(4).toString("hex");
 
-        console.log(data);
-
         let newData = await termModel.findByIdAndUpdate(
           mainTerm?._id,
           {
-            otherPaymentRecord: [
-              ...mainTerm?.otherPaymentRecord,
-              { id, paymentDetails: "payment", paymentAmount: data?.amount },
+            paymentOptions: [
+              ...mainTerm?.paymentOptions,
+              {
+                id,
+                paymentDetails: "payment",
+                paymentAmount: data?.data?.amount / 100,
+                reference: data?.data?.reference,
+              },
             ],
           },
           { new: true }
         );
-        console.log(newData);
+
+        console.log("get main: ", newData);
 
         return res.status(200).json({
           message: "payment verified",
           status: 200,
           data: data.data,
-          newData,
+          // newData,
         });
       });
   } catch (error: any) {

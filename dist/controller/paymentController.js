@@ -601,11 +601,17 @@ const makeOtherSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
         const { subAccountCode, email, paymentAmount, paymentName } = req.body;
         const params = JSON.stringify({
             email,
+            first_name: "This is Peter",
             amount: `${paymentAmount * 100}`,
             subaccount: subAccountCode,
             callback_url: `${URL}/other-school-payment`,
             meta: {
                 cancel: `${URL}`,
+                custom_fields: [
+                    {
+                        display_name: paymentName,
+                    },
+                ],
             },
         });
         const options = {
@@ -654,14 +660,15 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
         const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
             path: "session",
         });
-        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
+        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
         const termly = yield sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
             path: "term",
         });
         const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
-            el.presentTermID === (school === null || school === void 0 ? void 0 : school.presentTermID));
+            el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
         const mainTerm = yield termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
         const url = `https://api.paystack.co/transaction/verify/${ref}`;
+        console.log("main: ", mainTerm);
         yield axios_1.default
             .get(url, {
             headers: {
@@ -669,20 +676,25 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
             },
         })
             .then((data) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a, _b;
             let id = crypto_1.default.randomBytes(4).toString("hex");
-            console.log(data);
             let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
-                otherPaymentRecord: [
-                    ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.otherPaymentRecord,
-                    { id, paymentDetails: "payment", paymentAmount: data === null || data === void 0 ? void 0 : data.amount },
+                paymentOptions: [
+                    ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
+                    {
+                        id,
+                        paymentDetails: "payment",
+                        paymentAmount: ((_a = data === null || data === void 0 ? void 0 : data.data) === null || _a === void 0 ? void 0 : _a.amount) / 100,
+                        reference: (_b = data === null || data === void 0 ? void 0 : data.data) === null || _b === void 0 ? void 0 : _b.reference,
+                    },
                 ],
             }, { new: true });
-            console.log(newData);
+            console.log("get main: ", newData);
             return res.status(200).json({
                 message: "payment verified",
                 status: 200,
                 data: data.data,
-                newData,
+                // newData,
             });
         }));
     }
