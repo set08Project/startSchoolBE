@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySchoolTransaction = exports.makeOtherSchoolPayment = exports.schoolFeePayment = exports.makeSplitSchoolfeePayment = exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
+exports.verifyOtherSchoolTransaction = exports.verifySchoolTransaction = exports.makeOtherSchoolPayment = exports.schoolFeePayment = exports.makeSplitSchoolfeePayment = exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const paymentModel_1 = __importDefault(require("../model/paymentModel"));
 const mongoose_1 = require("mongoose");
@@ -744,3 +744,77 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.verifySchoolTransaction = verifySchoolTransaction;
+const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    try {
+        const { studentID } = req.params;
+        const { paymentName, paymentAmount } = req.body;
+        const student = yield studentModel_1.default.findById(studentID);
+        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
+            path: "session",
+        });
+        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
+        const termly = yield sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
+            path: "term",
+        });
+        const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
+            el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
+        const mainTerm = yield termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
+        let id = crypto_1.default.randomBytes(4).toString("hex");
+        let reff = crypto_1.default.randomBytes(4).toString("hex");
+        let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+            paymentOptions: [
+                ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
+                {
+                    id,
+                    studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                    createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
+                    paymentMode: "cash",
+                    confirm: false,
+                    paymentDetails: paymentName,
+                    paymentAmount: paymentAmount,
+                    reference: reff,
+                    studentID,
+                    schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
+                    termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
+                    sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                    session: termly === null || termly === void 0 ? void 0 : termly.year,
+                    term: mainTerm.presentTerm,
+                },
+            ],
+        }, { new: true });
+        yield studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
+            otherPayment: [
+                ...student === null || student === void 0 ? void 0 : student.otherPayment,
+                {
+                    id,
+                    studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                    createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
+                    paymentMode: "online",
+                    confirm: false,
+                    paymentDetails: paymentName,
+                    paymentAmount: paymentAmount,
+                    reference: reff,
+                    studentID,
+                    schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
+                    termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
+                    sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                    term: mainTerm.presentTerm,
+                    session: termly === null || termly === void 0 ? void 0 : termly.year,
+                },
+            ],
+        }, { new: true });
+        return res.status(200).json({
+            message: "payment verified",
+            status: 200,
+            data: newData === null || newData === void 0 ? void 0 : newData.paymentOptions[((_c = newData === null || newData === void 0 ? void 0 : newData.paymentOptions) === null || _c === void 0 ? void 0 : _c.length) - 1],
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Errror",
+            data: error.message,
+        });
+    }
+});
+exports.verifyOtherSchoolTransaction = verifyOtherSchoolTransaction;

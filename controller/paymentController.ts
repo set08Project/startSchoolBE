@@ -845,3 +845,101 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const verifyOtherSchoolTransaction = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { studentID } = req.params;
+    const { paymentName, paymentAmount } = req.body;
+
+    const student: any = await studentModel.findById(studentID);
+
+    const school = await schoolModel.findById(student?.schoolIDs).populate({
+      path: "session",
+    });
+
+    const readSession: any = school?.session?.find(
+      (el: any) => el?._id.toString() === school?.presentSessionID
+    );
+
+    const termly: any = await sessionModel.findById(readSession?._id).populate({
+      path: "term",
+    });
+
+    const readTerm: any = termly?.term?.find(
+      (el: any) =>
+        el?.presentTerm === school?.presentTerm &&
+        el._id.toString() === school?.presentTermID
+    );
+
+    const mainTerm: any = await termModel.findById(readTerm?._id);
+
+    let id = crypto.randomBytes(4).toString("hex");
+    let reff = crypto.randomBytes(4).toString("hex");
+
+    let newData = await termModel.findByIdAndUpdate(
+      mainTerm?._id,
+      {
+        paymentOptions: [
+          ...mainTerm?.paymentOptions,
+          {
+            id,
+            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+            createdAt: moment(new Date().getTime()).format("lll"),
+            paymentMode: "cash",
+            confirm: false,
+            paymentDetails: paymentName,
+            paymentAmount: paymentAmount,
+            reference: reff,
+            studentID,
+            schoolID: student?.schoolIDs,
+            termID: mainTerm?._id,
+            sessionID: school?.presentSessionID,
+            session: termly?.year,
+            term: mainTerm.presentTerm,
+          },
+        ],
+      },
+      { new: true }
+    );
+
+    await studentModel.findByIdAndUpdate(
+      student?._id,
+      {
+        otherPayment: [
+          ...student?.otherPayment,
+          {
+            id,
+            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+            createdAt: moment(new Date().getTime()).format("lll"),
+            paymentMode: "online",
+            confirm: false,
+            paymentDetails: paymentName,
+            paymentAmount: paymentAmount,
+            reference: reff,
+            studentID,
+            schoolID: student?.schoolIDs,
+            termID: mainTerm?._id,
+            sessionID: school?.presentSessionID,
+            term: mainTerm.presentTerm,
+            session: termly?.year,
+          },
+        ],
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "payment verified",
+      status: 200,
+      data: newData?.paymentOptions[newData?.paymentOptions?.length - 1],
+    });
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
+    });
+  }
+};

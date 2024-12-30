@@ -10,6 +10,7 @@ import {
   paymentFromStore,
   schoolFeePayment,
   storePayment,
+  verifyOtherSchoolTransaction,
   verifySchoolTransaction,
   verifyTransaction,
   viewSchoolPayment,
@@ -39,4 +40,8 @@ router.route("/make-other-school-payment").post(makeOtherSchoolPayment);
 router
   .route("/verify-other-payment/:studentID/:ref")
   .post(verifySchoolTransaction);
+
+router
+  .route("/verify-other-cash-payment/:studentID")
+  .post(verifyOtherSchoolTransaction);
 export default router;

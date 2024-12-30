@@ -19,4 +19,7 @@ router.route("/make-other-school-payment").post(paymentController_1.makeOtherSch
 router
     .route("/verify-other-payment/:studentID/:ref")
     .post(paymentController_1.verifySchoolTransaction);
+router
+    .route("/verify-other-cash-payment/:studentID")
+    .post(paymentController_1.verifyOtherSchoolTransaction);
 exports.default = router;
