@@ -529,6 +529,28 @@ export const readSchoolStudents = async (
   }
 };
 
+export const readStudentByEnrollmentID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { enrollmentID } = req.params;
+
+    const students = await studentModel.findOne({ enrollmentID });
+
+    return res.status(200).json({
+      message: "student read successfully",
+      data: students,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school students",
+      status: 404,
+    });
+  }
+};
+
 export const readStudentDetail = async (
   req: Request,
   res: Response

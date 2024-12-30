@@ -79,6 +79,9 @@ router
     .route("/update-student-firstname/:schoolID/:studentID")
     .patch(studentController_1.updateStudentFirstName);
 router
+    .route("/read-by-enrollment-id/:enrollmentID")
+    .get(studentController_1.readStudentByEnrollmentID);
+router
     .route("/update-student-lastname/:schoolID/:studentID")
     .patch(studentController_1.updateStudentLastName);
 router
