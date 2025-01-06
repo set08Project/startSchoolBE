@@ -10,6 +10,7 @@ interface iSessionTerm {
   costPaid: number;
   classResult: any;
   paymentOptions: [];
+  expensePayOut: [];
   totalStudents: number;
   studentFeesPaid: number;
   studentFeesNotPaid: number;
@@ -35,6 +36,10 @@ const termModel = new Schema<iSessionTermData>(
       type: [],
     },
     classResult: {
+      type: [],
+    },
+
+    expensePayOut: {
       type: [],
     },
 

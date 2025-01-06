@@ -790,7 +790,7 @@ const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, voi
                     id,
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
                     createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
-                    paymentMode: "online",
+                    paymentMode: "cash",
                     confirm: false,
                     paymentDetails: paymentName,
                     paymentAmount: paymentAmount,

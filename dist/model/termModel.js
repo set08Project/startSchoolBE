@@ -11,6 +11,9 @@ const termModel = new mongoose_1.Schema({
     classResult: {
         type: [],
     },
+    expensePayOut: {
+        type: [],
+    },
     presentTerm: {
         type: String,
     },

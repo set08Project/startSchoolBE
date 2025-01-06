@@ -914,7 +914,7 @@ export const verifyOtherSchoolTransaction = async (
             id,
             studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
             createdAt: moment(new Date().getTime()).format("lll"),
-            paymentMode: "online",
+            paymentMode: "cash",
             confirm: false,
             paymentDetails: paymentName,
             paymentAmount: paymentAmount,
