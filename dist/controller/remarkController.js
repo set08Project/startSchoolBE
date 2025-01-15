@@ -22,7 +22,7 @@ const moment_1 = __importDefault(require("moment"));
 const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { teacherID, studentID } = req.params;
-        const { remark } = req.body;
+        const { remark, weekPerformanceRatio, attendanceRatio, best, worst, classParticipation, sportParticipation, topicFocus, payment, announcement, generalPerformace, } = req.body;
         const teacher = yield staffModel_1.default.findById(teacherID);
         const student = yield studentModel_1.default.findById(studentID);
         if (teacher && student) {
@@ -31,6 +31,16 @@ const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             if (readDate === 5 || readDate === 6) {
                 const remarkData = yield studentRemark_1.default.create({
                     remark,
+                    weekPerformanceRatio,
+                    attendanceRatio,
+                    best,
+                    worst,
+                    classParticipation,
+                    sportParticipation,
+                    topicFocus,
+                    payment,
+                    announcement,
+                    generalPerformace,
                 });
                 student.remark.push(new mongoose_1.Types.ObjectId(remarkData._id));
                 student === null || student === void 0 ? void 0 : student.save();

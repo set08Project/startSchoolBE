@@ -13,7 +13,19 @@ export const createRemark = async (
 ): Promise<Response> => {
   try {
     const { teacherID, studentID } = req.params;
-    const { remark } = req.body;
+    const {
+      remark,
+      weekPerformanceRatio,
+      attendanceRatio,
+      best,
+      worst,
+      classParticipation,
+      sportParticipation,
+      topicFocus,
+      payment,
+      announcement,
+      generalPerformace,
+    } = req.body;
 
     const teacher = await staffModel.findById(teacherID);
     const student: any = await studentModel.findById(studentID);
@@ -25,6 +37,16 @@ export const createRemark = async (
       if (readDate === 5 || readDate === 6) {
         const remarkData = await remarkModel.create({
           remark,
+          weekPerformanceRatio,
+          attendanceRatio,
+          best,
+          worst,
+          classParticipation,
+          sportParticipation,
+          topicFocus,
+          payment,
+          announcement,
+          generalPerformace,
         });
 
         student.remark.push(new Types.ObjectId(remarkData._id));

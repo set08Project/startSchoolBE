@@ -5,6 +5,36 @@ const remarkModel = new mongoose_1.Schema({
     remark: {
         type: String,
     },
+    weekPerformanceRatio: {
+        type: String,
+    },
+    attendanceRatio: {
+        type: String,
+    },
+    best: {
+        type: String,
+    },
+    worst: {
+        type: String,
+    },
+    classParticipation: {
+        type: String,
+    },
+    sportParticipation: {
+        type: String,
+    },
+    topicFocus: {
+        type: String,
+    },
+    payment: {
+        type: Number,
+    },
+    generalPerformace: {
+        type: String,
+    },
+    announcement: {
+        type: String,
+    },
     student: {
         type: mongoose_1.Types.ObjectId,
         ref: "students",
