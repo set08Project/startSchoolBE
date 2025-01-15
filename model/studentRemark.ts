@@ -10,7 +10,7 @@ interface iremake {
   sportParticipation: string;
   topicFocus: string;
   payment: number;
-  announcement: string;
+  announcement: {};
   generalPerformace: string;
   student: {};
   staff: {};
@@ -51,7 +51,7 @@ const remarkModel = new Schema<iremakeData>(
       type: String,
     },
     announcement: {
-      type: String,
+      type: {},
     },
 
     student: {

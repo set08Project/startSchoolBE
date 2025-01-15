@@ -33,7 +33,7 @@ const remarkModel = new mongoose_1.Schema({
         type: String,
     },
     announcement: {
-        type: String,
+        type: {},
     },
     student: {
         type: mongoose_1.Types.ObjectId,
