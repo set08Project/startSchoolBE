@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clockingOutEmail = exports.clockingInEmail = exports.verifySchoolFees = exports.changeTokenEmail = exports.addMemberEmail = exports.verifiedEmail = void 0;
+exports.sendWeeklyReport = exports.clockingOutEmail = exports.clockingInEmail = exports.verifySchoolFees = exports.changeTokenEmail = exports.addMemberEmail = exports.verifiedEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const googleapis_1 = require("googleapis");
 const path_1 = __importDefault(require("path"));
@@ -20,6 +20,7 @@ const ejs_1 = __importDefault(require("ejs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
+const moment_1 = __importDefault(require("moment"));
 dotenv_1.default.config();
 const GOOGLE_ID = process.env.GOOGLE_ID;
 const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
@@ -265,3 +266,50 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.clockingOutEmail = clockingOutEmail;
+const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const accessToken = (yield oAuth.getAccessToken()).token;
+        const transporter = nodemailer_1.default.createTransport({
+            service: "gmail",
+            auth: {
+                type: "OAuth2",
+                user: "codelabbest@gmail.com",
+                clientSecret: GOOGLE_SECRET,
+                clientId: GOOGLE_ID,
+                refreshToken: GOOGLE_REFRESH,
+                accessToken,
+            },
+        });
+        const myPath = path_1.default.join(__dirname, "../views/weeklyReport.ejs");
+        // const x = user?.clockInTime.split(",");
+        // const y = x[2].trim();
+        let link = `${url}/report`;
+        const html = yield ejs_1.default.renderFile(myPath, {
+            parent: user.studentLastName,
+            studentName: user.studentFirstName,
+            address: school === null || school === void 0 ? void 0 : school.address,
+            school: school === null || school === void 0 ? void 0 : school.schoolName,
+            phone: school === null || school === void 0 ? void 0 : school.phone,
+            date: (0, moment_1.default)(remark === null || remark === void 0 ? void 0 : remark.createdAt).format("LL"),
+            attendance: parseInt(remark === null || remark === void 0 ? void 0 : remark.attendanceRatio) * 20,
+            best: remark === null || remark === void 0 ? void 0 : remark.best,
+            worst: remark === null || remark === void 0 ? void 0 : remark.worst,
+            link,
+            classParticipation: remark === null || remark === void 0 ? void 0 : remark.classParticipation,
+            sportParticipation: remark === null || remark === void 0 ? void 0 : remark.sportParticipation,
+        });
+        const mailerOption = {
+            from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+            to: user.parentEmail,
+            subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} Weekly Academic Performance Report`,
+            html,
+        };
+        yield transporter.sendMail(mailerOption).then(() => {
+            console.log("sent");
+        });
+    }
+    catch (error) {
+        console.error();
+    }
+});
+exports.sendWeeklyReport = sendWeeklyReport;

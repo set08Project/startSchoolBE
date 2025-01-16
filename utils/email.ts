@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import env from "dotenv";
 import schoolModel from "../model/schoolModel";
 import { updateStudentFirstName } from "../controller/studentController";
+import moment from "moment";
 env.config();
 
 const GOOGLE_ID = process.env.GOOGLE_ID;
@@ -294,6 +295,61 @@ export const clockingOutEmail = async (user: any, school: any) => {
     };
 
     await transporter.sendMail(mailerOption);
+  } catch (error) {
+    console.error();
+  }
+};
+
+export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
+  try {
+    const accessToken: any = (await oAuth.getAccessToken()).token;
+
+    const transporter = nodemail.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: "codelabbest@gmail.com",
+        clientSecret: GOOGLE_SECRET,
+        clientId: GOOGLE_ID,
+        refreshToken: GOOGLE_REFRESH,
+        accessToken,
+      },
+    });
+
+    const myPath = path.join(__dirname, "../views/weeklyReport.ejs");
+
+    // const x = user?.clockInTime.split(",");
+    // const y = x[2].trim();
+
+    let link: string = `${url}/report`;
+
+    const html = await ejs.renderFile(myPath, {
+      parent: user.studentLastName,
+      studentName: user.studentFirstName,
+
+      address: school?.address,
+      school: school?.schoolName,
+      phone: school?.phone,
+
+      date: moment(remark?.createdAt).format("LL"),
+      attendance: parseInt(remark?.attendanceRatio) * 20,
+      best: remark?.best,
+      worst: remark?.worst,
+      link,
+      classParticipation: remark?.classParticipation,
+      sportParticipation: remark?.sportParticipation,
+    });
+
+    const mailerOption = {
+      from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+      to: user.parentEmail,
+      subject: `${user?.studentFirstName} Weekly Academic Performance Report`,
+      html,
+    };
+
+    await transporter.sendMail(mailerOption).then(() => {
+      console.log("sent");
+    });
   } catch (error) {
     console.error();
   }

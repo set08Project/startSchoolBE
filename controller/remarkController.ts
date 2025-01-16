@@ -6,6 +6,7 @@ import studentModel from "../model/studentModel";
 import staffModel from "../model/staffModel";
 import remarkModel from "../model/studentRemark";
 import moment from "moment";
+import { sendWeeklyReport } from "../utils/email";
 
 export const createRemark = async (
   req: Request,
@@ -27,14 +28,15 @@ export const createRemark = async (
       generalPerformace,
     } = req.body;
 
-    const teacher = await staffModel.findById(teacherID);
+    const teacher: any = await staffModel.findById(teacherID);
     const student: any = await studentModel.findById(studentID);
+    const school: any = await schoolModel.findById(teacher?.schoolIDs);
 
     if (teacher && student) {
       const fridayDate = Date.now();
       const readDate = moment(fridayDate).days();
 
-      if (readDate === 5 || readDate === 6) {
+      if (readDate === 5 || readDate === 6 || readDate === 4) {
         const remarkData = await remarkModel.create({
           remark,
           weekPerformanceRatio,
@@ -48,6 +50,8 @@ export const createRemark = async (
           announcement,
           generalPerformace,
         });
+
+        sendWeeklyReport(student, school, remarkData);
 
         student.remark.push(new Types.ObjectId(remarkData._id));
         student?.save();
@@ -95,7 +99,7 @@ export const viewStudentRemark = async (
     });
 
     return res.status(200).json({
-      message: "viewing school remark",
+      message: "viewing student weekly remark",
       data: student?.remark,
     });
   } catch (error: any) {
