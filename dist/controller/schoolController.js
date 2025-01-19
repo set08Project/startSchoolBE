@@ -20,6 +20,12 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const lodash_1 = __importDefault(require("lodash"));
 const cron_1 = require("cron");
+const sessionModel_1 = __importDefault(require("../model/sessionModel"));
+const termModel_1 = __importDefault(require("../model/termModel"));
+const classHistory_1 = __importDefault(require("../model/classHistory"));
+const subjectModel_1 = __importDefault(require("../model/subjectModel"));
+const classroomModel_1 = __importDefault(require("../model/classroomModel"));
+const studentModel_1 = __importDefault(require("../model/studentModel"));
 const viewSchoolTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -247,6 +253,31 @@ exports.viewAllSchools = viewAllSchools;
 const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
+        let id = "678d4e5060a0cbcd2e27dc51";
+        const getSchool = yield schoolModel_1.default.findById(schoolID);
+        console.log("here hmm: ", getSchool === null || getSchool === void 0 ? void 0 : getSchool.session);
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.session) {
+            let sessTerm = yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findById(i.toString()));
+            for (let i of sessTerm === null || sessTerm === void 0 ? void 0 : sessTerm.term) {
+                console.log("here reading: ", i);
+                yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndDelete(i.toString()));
+            }
+            console.log("here done");
+            yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findByIdAndDelete(i.toString()));
+        }
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classHistory) {
+            yield (classHistory_1.default === null || classHistory_1.default === void 0 ? void 0 : classHistory_1.default.findByIdAndDelete(i.toString()));
+        }
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.subjects) {
+            yield (subjectModel_1.default === null || subjectModel_1.default === void 0 ? void 0 : subjectModel_1.default.findByIdAndDelete(i.toString()));
+        }
+        console.log("class");
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classRooms) {
+            yield (classroomModel_1.default === null || classroomModel_1.default === void 0 ? void 0 : classroomModel_1.default.findByIdAndDelete(i.toString()));
+        }
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.students) {
+            yield (studentModel_1.default === null || studentModel_1.default === void 0 ? void 0 : studentModel_1.default.findByIdAndDelete(i.toString()));
+        }
         yield schoolModel_1.default.findByIdAndDelete(schoolID);
         return res.status(200).json({
             message: "school deleted successfully",
