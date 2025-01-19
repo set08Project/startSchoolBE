@@ -654,7 +654,7 @@ const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, func
             const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school._id, {
                 started: true,
             }, { new: true });
-            yield (0, email_1.verifiedEmail)(email);
+            yield (0, email_1.verifiedEmail)(school);
             return res.status(200).json({
                 message: "School has been approved",
                 data: updatedSchool,

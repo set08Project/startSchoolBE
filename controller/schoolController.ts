@@ -784,7 +784,7 @@ export const approveRegistration = async (req: Request, res: Response) => {
         { new: true }
       );
 
-      await verifiedEmail(email);
+      await verifiedEmail(school);
 
       return res.status(200).json({
         message: "School has been approved",
