@@ -28,6 +28,7 @@ import {
   viewSchoolTopStudent,
 } from "../controller/schoolController";
 import multer from "multer";
+
 const upload = multer({
   fileFilter: (req, file, cb) => {
     if (
@@ -52,7 +53,6 @@ router
 router.route("/school-request-registration").patch(updateRegisterationStatus);
 
 router.route("/view-school-top-student/:schoolID").get(viewSchoolTopStudent);
-
 router.route("/register-school/").post(createSchool);
 router.route("/login-school/").post(loginSchool);
 
