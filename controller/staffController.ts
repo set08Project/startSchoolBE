@@ -954,8 +954,9 @@ export const updateStaffAvatar = async (req: any, res: Response) => {
         { new: true }
       );
 
-      return res.status(200).json({
+      return res.status(201).json({
         message: "staff avatar has been, added",
+        status: 201,
         data: updatedSchool,
       });
     } else {

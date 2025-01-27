@@ -281,6 +281,7 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         yield schoolModel_1.default.findByIdAndDelete(schoolID);
         return res.status(200).json({
             message: "school deleted successfully",
+            status: 201,
         });
     }
     catch (error) {

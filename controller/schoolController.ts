@@ -330,6 +330,7 @@ export const deleteSchool = async (
 
     return res.status(200).json({
       message: "school deleted successfully",
+      status: 201,
     });
   } catch (error) {
     return res.status(404).json({
