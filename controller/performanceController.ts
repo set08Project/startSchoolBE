@@ -40,7 +40,7 @@ export const createQuizPerformance = async (
         quizDone: true,
         status,
         performanceRating: parseInt(
-          ((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)
+          ((studentScore / quizData?.quiz[1]?.question.length) * 100).toFixed(2)
         ),
         className: studentInfo?.classAssigned,
         quizID: quizID,

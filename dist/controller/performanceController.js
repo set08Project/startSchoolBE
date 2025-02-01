@@ -39,7 +39,7 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 markPerQuestion,
                 quizDone: true,
                 status,
-                performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
+                performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz[1]) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
