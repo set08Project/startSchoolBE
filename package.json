@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@playwright/test": "^1.50.1",
     "@types/axios": "^0.14.0",
     "@types/bcrypt": "^5.0.2",
     "@types/connect-mongodb-session": "^2.4.7",
