@@ -1,14 +1,19 @@
 import { Router } from "express";
 import {
   createExamPerformance,
+  createMidTestPerformance,
   createQuizPerformance,
   readExamResult,
+  readMidTestResult,
   readOneSubjectExamResult,
+  readOneSubjectMidTestResult,
   readOneSubjectQuizResult,
   readQuizResult,
   readStudentExamResult,
+  readStudentMidTestResult,
   readStudentQuizResult,
   readSubjectExamResult,
+  readSubjectMidTestResult,
   readSubjectQuizResult,
 } from "../controller/performanceController";
 
@@ -51,5 +56,25 @@ router
   .get(readStudentExamResult);
 
 router.route("/view-exam-performance/:quizID").get(readExamResult);
+
+// Mid Test
+
+router
+  .route("/create-subject-mid-test-performance/:studentID/:quizID/:subjectID")
+  .post(createMidTestPerformance);
+
+router
+  .route("/view-subject-mid-test-performance/:subjectID")
+  .get(readSubjectMidTestResult);
+
+router
+  .route("/view-onesubject-mid-test-performance/:subjectID/:quizID")
+  .get(readOneSubjectMidTestResult);
+
+router
+  .route("/view-student-mid-test-performance/:studentID")
+  .get(readStudentMidTestResult);
+
+router.route("/view-mid-test-performance/:quizID").get(readMidTestResult);
 
 export default router;
