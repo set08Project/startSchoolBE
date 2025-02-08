@@ -30,12 +30,10 @@ const recordPaymentRouter_1 = __importDefault(require("./router/recordPaymentRou
 const passportRoute_1 = __importDefault(require("./router/passportRoute"));
 const schemeOfWorkRouter_1 = __importDefault(require("./router/schemeOfWorkRouter"));
 const exanimationRouter_1 = __importDefault(require("./router/exanimationRouter"));
+const midTestRouter_1 = __importDefault(require("./router/midTestRouter"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
 const handleError_1 = require("./error/handleError");
-// const file = fs.readFileSync(
-//   "./.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt"
-// );
 const mainApp = (app) => {
     try {
         app.use("/api", schoolRouter_1.default);
@@ -47,6 +45,7 @@ const mainApp = (app) => {
         app.use("/api", classRouter_1.default);
         app.use("/api", subjectRouter_1.default);
         app.use("/api", anouncementRouter_1.default);
+        app.use("/api", midTestRouter_1.default);
         app.use("/api", attendanceRouter_1.default);
         app.use("/api", quizRouter_1.default);
         app.use("/api", lessonNoteRouter_1.default);
