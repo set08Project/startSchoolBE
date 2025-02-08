@@ -139,9 +139,9 @@ const readSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.readSubjectMidTest = readSubjectMidTest;
 const startSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { midTest } = req.params;
+        const { midTestID } = req.params;
         const { started } = req.body;
-        const subject = yield midTestModel_1.default.findByIdAndUpdate(midTest, {
+        const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
             startMidTest: started,
         }, { new: true });
         return res.status(201).json({

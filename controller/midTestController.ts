@@ -155,11 +155,11 @@ export const startSubjectMidTest = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { midTest } = req.params;
+    const { midTestID } = req.params;
     const { started } = req.body;
 
     const subject = await midTestModel.findByIdAndUpdate(
-      midTest,
+      midTestID,
       {
         startMidTest: started,
       },
