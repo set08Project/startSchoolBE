@@ -4,7 +4,7 @@ const express_1 = require("express");
 const quizController_1 = require("../controller/quizController");
 const router = (0, express_1.Router)();
 // examination
-// router
+// routercreate-subject-quiz
 //   .route("/create-subject-examination/:classID/:subjectID")
 //   .post(fileUploads, createSubjectExam);
 // router.route("/start-subject-exam/:examID/").patch(startSubjectExamination);

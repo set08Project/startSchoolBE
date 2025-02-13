@@ -32,7 +32,7 @@ router
 router.route("/view-exam-performance/:quizID").get(performanceController_1.readExamResult);
 // Mid Test
 router
-    .route("/create-subject-mid-test-performance/:studentID/:quizID/:subjectID")
+    .route("/create1-subject-mid-test-performance/:studentID/:quizID/:subjectID")
     .post(performanceController_1.createMidTestPerformance);
 router
     .route("/view-subject-mid-test-performance/:subjectID")

@@ -60,7 +60,7 @@ router.route("/view-exam-performance/:quizID").get(readExamResult);
 // Mid Test
 
 router
-  .route("/create-subject-mid-test-performance/:studentID/:quizID/:subjectID")
+  .route("/create1-subject-mid-test-performance/:studentID/:quizID/:subjectID")
   .post(createMidTestPerformance);
 
 router

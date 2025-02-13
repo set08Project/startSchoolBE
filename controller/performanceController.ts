@@ -372,6 +372,8 @@ export const createMidTestPerformance = async (
 
     const subject = await subjectModel.findById(subjectID);
 
+    console.log(quizData);
+
     if (quizData) {
       const quizes = await performanceModel.create({
         remark,
@@ -679,9 +681,13 @@ export const readStudentMidTestResult = async (
       },
     });
 
+    const x = subject?.performance?.filter(
+      (el: any) => el.status === "midTest"
+    );
+
     return res.status(201).json({
       message: "subject quiz performance read successfully",
-      data: subject,
+      data: x,
       status: 201,
     });
   } catch (error) {

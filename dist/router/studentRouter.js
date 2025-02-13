@@ -91,6 +91,9 @@ router
     .route("/update-parent-number/:schoolID/:studentID")
     .patch(studentController_1.updateStudentParentNumber);
 router
+    .route("/restrict-view/:schoolID/:studentID")
+    .patch(studentController_1.updateStudentViewReportCard);
+router
     .route("/update-student-gender/:schoolID/:studentID")
     .patch(studentController_1.updateStudentGender);
 router

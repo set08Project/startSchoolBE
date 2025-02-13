@@ -298,6 +298,7 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
             .populate({ path: "performance" });
         const quizData = yield midTestModel_1.default.findById(quizID);
         const subject = yield subjectModel_1.default.findById(subjectID);
+        console.log(quizData);
         if (quizData) {
             const quizes = yield performanceModel_1.default.create({
                 remark,
@@ -543,6 +544,7 @@ const readOneSubjectMidTestResult = (req, res) => __awaiter(void 0, void 0, void
 });
 exports.readOneSubjectMidTestResult = readOneSubjectMidTestResult;
 const readStudentMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { studentID } = req.params;
         const subject = yield studentModel_1.default.findById(studentID).populate({
@@ -553,9 +555,10 @@ const readStudentMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0,
                 },
             },
         });
+        const x = (_a = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _a === void 0 ? void 0 : _a.filter((el) => el.status === "midTest");
         return res.status(201).json({
             message: "subject quiz performance read successfully",
-            data: subject,
+            data: x,
             status: 201,
         });
     }

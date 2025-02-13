@@ -1048,6 +1048,54 @@ export const updateStudentPhone = async (
   }
 };
 
+export const updateStudentViewReportCard = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { toggle } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const studentData = await studentModel.findByIdAndUpdate(
+          student._id,
+          { viewReportCard: toggle },
+          { new: true }
+        );
+
+        console.log(toggle);
+        return res.status(201).json({
+          message: "Student can now view Report card",
+          data: studentData,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Phone Number",
+      data: {
+        errorMessage: error.mesaage,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
 export const updateStudentBulkInfo = async (
   req: Request,
   res: Response
