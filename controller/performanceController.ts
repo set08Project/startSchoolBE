@@ -372,8 +372,6 @@ export const createMidTestPerformance = async (
 
     const subject = await subjectModel.findById(subjectID);
 
-    console.log(quizData);
-
     if (quizData) {
       const quizes = await performanceModel.create({
         remark,

@@ -298,7 +298,6 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
             .populate({ path: "performance" });
         const quizData = yield midTestModel_1.default.findById(quizID);
         const subject = yield subjectModel_1.default.findById(subjectID);
-        console.log(quizData);
         if (quizData) {
             const quizes = yield performanceModel_1.default.create({
                 remark,
