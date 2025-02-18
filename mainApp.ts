@@ -26,6 +26,7 @@ import recordPay from "./router/recordPaymentRouter";
 import social from "./router/passportRoute";
 import scheme from "./router/schemeOfWorkRouter";
 import exam from "./router/exanimationRouter";
+import midTest from "./router/midTestRouter";
 
 import cronParser from "cron-parser";
 import fs from "fs";
@@ -37,10 +38,6 @@ import cron from "node-cron";
 
 import schoolModel from "./model/schoolModel";
 
-// const file = fs.readFileSync(
-//   "./.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt"
-// );
-
 export const mainApp = (app: Application) => {
   try {
     app.use("/api", school);
@@ -51,7 +48,10 @@ export const mainApp = (app: Application) => {
     app.use("/api", payment);
     app.use("/api", classes);
     app.use("/api", subject);
+
     app.use("/api", event);
+
+    app.use("/api", midTest);
     app.use("/api", attendance);
     app.use("/api", quiz);
     app.use("/api", lessonNote);

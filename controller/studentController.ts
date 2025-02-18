@@ -324,10 +324,10 @@ export const createSchoolStudent = async (
             findClass?.presentTerm === "1st Term"
               ? findClass?.class1stFee
               : findClass?.presentTerm === "2nd Term"
-              ? findClass?.class2ndFee
-              : findClass?.presentTerm === "3rd Term"
-              ? findClass?.class3rdFee
-              : null,
+                ? findClass?.class2ndFee
+                : findClass?.presentTerm === "3rd Term"
+                  ? findClass?.class3rdFee
+                  : null,
 
           gender,
           enrollmentID,
@@ -340,10 +340,10 @@ export const createSchoolStudent = async (
           email: `${studentFirstName
             .replace(/ /gi, "")
             .toLowerCase()}${studentLastName
-            .replace(/ /gi, "")
-            .toLowerCase()}@${school?.schoolName
-            ?.replace(/ /gi, "")
-            .toLowerCase()}.com`,
+              .replace(/ /gi, "")
+              .toLowerCase()}@${school?.schoolName
+                ?.replace(/ /gi, "")
+                .toLowerCase()}.com`,
           password: hashed,
           status: "school-student",
         });
@@ -422,8 +422,8 @@ export const createBulkSchoolStudent = async (
         `${i?.studentFirstName
           .replace(/ /gi, "")
           .toLowerCase()}${i?.studentLastName
-          .replace(/ /gi, "")
-          .toLowerCase()}`,
+            .replace(/ /gi, "")
+            .toLowerCase()}`,
         salt
       );
 
@@ -440,10 +440,10 @@ export const createBulkSchoolStudent = async (
               findClass?.presentTerm === "1st Term"
                 ? findClass?.class1stFee
                 : findClass?.presentTerm === "2nd Term"
-                ? findClass?.class2ndFee
-                : findClass?.presentTerm === "3rd Term"
-                ? findClass?.class3rdFee
-                : null,
+                  ? findClass?.class2ndFee
+                  : findClass?.presentTerm === "3rd Term"
+                    ? findClass?.class3rdFee
+                    : null,
 
             gender: i?.gender,
             enrollmentID,
@@ -456,10 +456,10 @@ export const createBulkSchoolStudent = async (
             email: `${i?.studentFirstName
               .replace(/ /gi, "")
               .toLowerCase()}${i?.studentLastName
-              .replace(/ /gi, "")
-              .toLowerCase()}@${school?.schoolName
-              ?.replace(/ /gi, "")
-              .toLowerCase()}.com`,
+                .replace(/ /gi, "")
+                .toLowerCase()}@${school?.schoolName
+                  ?.replace(/ /gi, "")
+                  .toLowerCase()}.com`,
             password: hashed,
             status: "school-student",
           });
@@ -820,10 +820,10 @@ export const updateStudentFirstName = async (
     const email = `${updatedFirstName
       .replace(/ /gi, "")
       .toLowerCase()}${updatedLastName
-      .replace(/ /gi, "")
-      .toLowerCase()}@${school.schoolName
-      .replace(/ /gi, "")
-      .toLowerCase()}.com`;
+        .replace(/ /gi, "")
+        .toLowerCase()}@${school.schoolName
+          .replace(/ /gi, "")
+          .toLowerCase()}.com`;
 
     updatedFields.email = email;
 
@@ -879,10 +879,10 @@ export const updateStudentLastName = async (
     const email = `${updatedFirstName
       .replace(/ /gi, "")
       .toLowerCase()}${updatedLastName
-      .replace(/ /gi, "")
-      .toLowerCase()}@${school.schoolName
-      .replace(/ /gi, "")
-      .toLowerCase()}.com`;
+        .replace(/ /gi, "")
+        .toLowerCase()}@${school.schoolName
+          .replace(/ /gi, "")
+          .toLowerCase()}.com`;
 
     const studentUpdateLastName = await studentModel.findByIdAndUpdate(
       student._id,
@@ -1022,6 +1022,54 @@ export const updateStudentPhone = async (
         return res.status(201).json({
           message: "Student Phone Number Updated Successfully",
           data: updatePhone,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Phone Number",
+      data: {
+        errorMessage: error.mesaage,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
+export const updateStudentViewReportCard = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+    const { toggle } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const studentData = await studentModel.findByIdAndUpdate(
+          student._id,
+          { viewReportCard: toggle },
+          { new: true }
+        );
+
+        console.log(toggle);
+        return res.status(201).json({
+          message: "Student can now view Report card",
+          data: studentData,
           status: 201,
         });
       } else {
@@ -2126,10 +2174,10 @@ export const changeStudentClass = async (
           getClass?.presentTerm === "1st Term"
             ? getClass?.class1stFee
             : getClass?.presentTerm === "2nd Term"
-            ? getClass?.class2ndFee
-            : getClass?.presentTerm === "3rd Term"
-            ? getClass?.class3rdFee
-            : null,
+              ? getClass?.class2ndFee
+              : getClass?.presentTerm === "3rd Term"
+                ? getClass?.class3rdFee
+                : null,
       },
       { new: true }
     );

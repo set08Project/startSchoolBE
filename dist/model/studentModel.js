@@ -14,6 +14,10 @@ const studentModel = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    viewReportCard: {
+        type: Boolean,
+        default: false,
+    },
     clockOut: {
         type: Boolean,
         default: false,

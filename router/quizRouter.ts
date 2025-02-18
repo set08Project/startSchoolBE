@@ -17,7 +17,7 @@ import { fileUploads } from "../utils/multer";
 const router: Router = Router();
 
 // examination
-// router
+// routercreate-subject-quiz
 //   .route("/create-subject-examination/:classID/:subjectID")
 //   .post(fileUploads, createSubjectExam);
 

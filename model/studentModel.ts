@@ -29,6 +29,7 @@ interface iStudent {
   feesPaid1st: boolean;
   feesPaid2nd: boolean;
   feesPaid3rd: boolean;
+  viewReportCard: boolean;
 
   clockIn: boolean;
   clockInTime: string;
@@ -82,6 +83,11 @@ const studentModel = new Schema<iStudentData>(
     },
 
     clockIn: {
+      type: Boolean,
+      default: false,
+    },
+
+    viewReportCard: {
       type: Boolean,
       default: false,
     },
