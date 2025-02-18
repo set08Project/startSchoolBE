@@ -25,6 +25,7 @@ import expense from "./router/expenseRouter";
 import recordPay from "./router/recordPaymentRouter";
 import social from "./router/passportRoute";
 import scheme from "./router/schemeOfWorkRouter";
+import exam from "./router/exanimationRouter";
 
 import cronParser from "cron-parser";
 import fs from "fs";
@@ -40,10 +41,10 @@ import schoolModel from "./model/schoolModel";
 //   "./.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt"
 // );
 
-
 export const mainApp = (app: Application) => {
   try {
     app.use("/api", school);
+    app.use("/api", exam);
     app.use("/api", scheme);
     app.use("/api", session);
     app.use("/api", staff);
@@ -83,7 +84,6 @@ export const mainApp = (app: Application) => {
       }
     });
 
-
     app.get(
       "/.well-known/pki-validation/34E413B6620F83D024BFEC2183C0C835.txt",
       (req: Request, res: Response) => {
@@ -94,7 +94,6 @@ export const mainApp = (app: Application) => {
         );
       }
     );
-
 
     app.all("*", (req: Request, res: Response, next: NextFunction) => {
       next(

@@ -801,9 +801,10 @@ const updateStaffSignature = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 signature: secure_url,
                 signatureID: public_id,
             }, { new: true });
-            return res.status(200).json({
+            return res.status(201).json({
                 message: "staff signature has been, added",
                 data: updatedSchool,
+                status: 201,
             });
         }
         else {
@@ -829,8 +830,9 @@ const updateStaffAvatar = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 avatar: secure_url,
                 avatarID: public_id,
             }, { new: true });
-            return res.status(200).json({
+            return res.status(201).json({
                 message: "staff avatar has been, added",
+                status: 201,
                 data: updatedSchool,
             });
         }

@@ -37,6 +37,11 @@ import {
   viewSchoolStorePurchased,
   viewStorePurchased,
   viewStorePurchasedTeacher,
+  updateStudentBulkInfo,
+  clockinAccount,
+  clockOutAccount,
+  findStudenWithEnrollmentID,
+  readStudentByEnrollmentID,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -58,9 +63,22 @@ const upload = multer({
 
 const router: Router = Router();
 
+// student clocked data
+router.route("/find-student").post(findStudenWithEnrollmentID);
+router.route("/student-clock-in/:schoolID/:studentID").patch(clockinAccount);
+router.route("/student-clock-out/:schoolID/:studentID").patch(clockOutAccount);
+router.route("/student-clock-in-with-id/:schoolID").patch(clockinAccount);
+router.route("/student-clock-out-with-id/:schoolID").patch(clockOutAccount);
+
+// student bulk info
+router
+  .route("/update-student-bulk-info/:studentID")
+  .patch(updateStudentBulkInfo);
+
 router
   .route("/update-student-fees-1st/:schoolID/:studentID")
   .patch(updateStudent1stFees);
+
 router
   .route("/update-student-fees-2nd/:schoolID/:studentID")
   .patch(updateStudent2ndFees);
@@ -124,6 +142,11 @@ router.route("/delete-student/:schoolID/:studentID").delete(deleteStudent);
 router
   .route("/update-student-firstname/:schoolID/:studentID")
   .patch(updateStudentFirstName);
+
+router
+  .route("/read-by-enrollment-id/:enrollmentID")
+  .get(readStudentByEnrollmentID);
+
 router
   .route("/update-student-lastname/:schoolID/:studentID")
   .patch(updateStudentLastName);

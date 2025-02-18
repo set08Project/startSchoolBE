@@ -399,7 +399,7 @@ export const updateSchoolClassName = async (
       });
     }
   } catch (error) {
-    console.log(error);
+    
     return res.status(404).json({
       message: "Error creating updating class name",
       status: 404,

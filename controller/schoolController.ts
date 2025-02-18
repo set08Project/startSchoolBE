@@ -7,6 +7,12 @@ import { streamUpload } from "../utils/streamifier";
 import lodash from "lodash";
 import { CronJob } from "cron";
 import { verifiedaccess_v1 } from "googleapis";
+import sessionModel from "../model/sessionModel";
+import termModel from "../model/termModel";
+import classHistoryModel from "../model/classHistory";
+import subjectModel from "../model/subjectModel";
+import classroomModel from "../model/classroomModel";
+import studentModel from "../model/studentModel";
 
 export const viewSchoolTopStudent = async (
   req: Request,
@@ -286,10 +292,45 @@ export const deleteSchool = async (
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
+    let id = "678d4e5060a0cbcd2e27dc51";
+    const getSchool: any = await schoolModel.findById(schoolID);
+    console.log("here hmm: ", getSchool?.session);
+
+    for (let i of getSchool?.session) {
+      let sessTerm: any = await sessionModel?.findById(i.toString());
+      for (let i of sessTerm?.term) {
+        console.log("here reading: ", i);
+
+        await termModel?.findByIdAndDelete(i.toString());
+      }
+      console.log("here done");
+
+      await sessionModel?.findByIdAndDelete(i.toString());
+    }
+
+    for (let i of getSchool?.classHistory) {
+      await classHistoryModel?.findByIdAndDelete(i.toString());
+    }
+
+    for (let i of getSchool?.subjects) {
+      await subjectModel?.findByIdAndDelete(i.toString());
+    }
+
+    console.log("class");
+
+    for (let i of getSchool?.classRooms) {
+      await classroomModel?.findByIdAndDelete(i.toString());
+    }
+
+    for (let i of getSchool?.students) {
+      await studentModel?.findByIdAndDelete(i.toString());
+    }
+
     await schoolModel.findByIdAndDelete(schoolID);
 
     return res.status(200).json({
       message: "school deleted successfully",
+      status: 201,
     });
   } catch (error) {
     return res.status(404).json({
@@ -573,6 +614,43 @@ export const updateSchoolAccountDetail = async (req: any, res: Response) => {
   }
 };
 
+export const updateSchoolPaymentOptions = async (req: any, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+    const { paymentDetails, paymentAmount } = req.body;
+
+    let id = crypto.randomBytes(4).toString("hex");
+    const school: any = await schoolModel.findById(schoolID);
+
+    if (school.schoolName) {
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          paymentOptions: [
+            ...school?.paymentOptions,
+            { id, paymentDetails, paymentAmount },
+          ],
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "school account detail updated successfully",
+        data: updatedSchool,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating account details",
+    });
+  }
+};
+
 export const updateAdminCode = async (req: any, res: Response) => {
   try {
     const { schoolID } = req.params;
@@ -649,33 +727,36 @@ export const updateRegisterationStatus = async (req: any, res: Response) => {
       schoolOrganization,
     } = req.body;
 
-    const school: any = await schoolModel.findOne({ email });
-    if (school) {
-      const updatedSchool = await schoolModel.findByIdAndUpdate(
-        school?._id,
-        {
-          schoolName,
-          phone: schoolPhoneNumber,
-          categoryType: schoolCategory,
-          address: schoolLocation,
-          organizationType: schoolOrganization,
-        },
-        { new: true }
-      );
+    const id = crypto.randomBytes(4).toString("hex");
+    const adminCode = crypto.randomBytes(6).toString("hex");
 
-      return res.status(201).json({
-        message: "school detail has been updated successfully",
-        data: updatedSchool,
-        status: 201,
-      });
-    } else {
-      return res.status(404).json({
-        message: "Something went wrong",
-      });
-    }
+    // if (school) {
+    const updatedSchool = await schoolModel.create({
+      adminCode,
+      enrollmentID: id,
+      status: "school-admin",
+      schoolName,
+      email,
+      phone: schoolPhoneNumber,
+      categoryType: schoolCategory,
+      address: schoolLocation,
+      organizationType: schoolOrganization,
+    });
+
+    return res.status(201).json({
+      message: "school detail has been updated successfully",
+      data: updatedSchool,
+      status: 201,
+    });
+    // } else {
+    //   return res.status(404).json({
+    //     message: "Something went wrong",
+    //   });
+    // }
   } catch (error) {
     return res.status(404).json({
       message: "Error updating account details",
+      error: error,
     });
   }
 };
@@ -744,7 +825,7 @@ export const approveRegistration = async (req: Request, res: Response) => {
         { new: true }
       );
 
-      await verifiedEmail(email);
+      await verifiedEmail(school);
 
       return res.status(200).json({
         message: "School has been approved",

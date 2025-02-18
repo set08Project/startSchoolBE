@@ -5,6 +5,8 @@ import ejs from "ejs";
 import jwt from "jsonwebtoken";
 import env from "dotenv";
 import schoolModel from "../model/schoolModel";
+import { updateStudentFirstName } from "../controller/studentController";
+import moment from "moment";
 env.config();
 
 const GOOGLE_ID = process.env.GOOGLE_ID;
@@ -72,53 +74,6 @@ export const verifiedEmail = async (user: any) => {
       from: "NEXT🟦🟦🟦 <codelabbest@gmail.com>",
       to: user.email,
       subject: "Account Verification",
-      html,
-    };
-
-    await transporter.sendMail(mailerOption);
-  } catch (error) {
-    console.error();
-  }
-};
-
-export const hospitalVerifiedEmail = async (user: any) => {
-  try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
-
-    const transporter = nodemail.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
-      },
-    });
-
-    const token = jwt.sign(
-      {
-        id: user._id,
-        email: user.email,
-      },
-      "weCareHospital"
-    );
-
-    let frontEndURL: string = `${url}/${token}/sign-in`;
-    let devURL: string = `${url}/api/verify-hospital/${user._id}`;
-
-    const myPath = path.join(__dirname, "../views/hospitalCreated.ejs");
-    const html = await ejs.renderFile(myPath, {
-      link: devURL,
-      token: user.token,
-      hospitalName: user.hospitalName,
-    });
-
-    const mailerOption = {
-      from: "wecareHMO❤️⛑️🚑 <codelabbest@gmail.com>",
-      to: user.email,
-      subject: "Hospital's Account Verification",
       html,
     };
 
@@ -236,8 +191,8 @@ export const verifySchoolFees = async (user: any, term: number) => {
       link: devURL,
       token: user.token,
       studentName: user.studentFirstName,
-      schoolMail: user.email,
-      schoolName: user.schoolName,
+      // schoolMail: user.email,
+      // schoolName: user.schoolName,
     });
 
     const mailerOption = {
@@ -248,6 +203,153 @@ export const verifySchoolFees = async (user: any, term: number) => {
     };
 
     await transporter.sendMail(mailerOption);
+  } catch (error) {
+    console.error();
+  }
+};
+
+export const clockingInEmail = async (user: any, school: any) => {
+  try {
+    const accessToken: any = (await oAuth.getAccessToken()).token;
+
+    const transporter = nodemail.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: "codelabbest@gmail.com",
+        clientSecret: GOOGLE_SECRET,
+        clientId: GOOGLE_ID,
+        refreshToken: GOOGLE_REFRESH,
+        accessToken,
+      },
+    });
+
+    const myPath = path.join(__dirname, "../views/clockinMail.ejs");
+
+    const x = user?.clockInTime.split(",");
+    const y = x[2].trim();
+
+    const html = await ejs.renderFile(myPath, {
+      clockin: user.clockInTime,
+      parent: user.studentLastName,
+      child: user.studentFirstName,
+      address: school?.address,
+      school: school?.schoolName,
+      phone: school?.phone,
+      date: `${x[0]} ${x[1]} ${y.split(" ")[0]}`,
+      time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
+    });
+
+    const mailerOption = {
+      from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+      to: user.parentEmail,
+      subject: `${user?.studentFirstName} just Clocked in`,
+      html,
+    };
+
+    await transporter.sendMail(mailerOption).then(() => {
+      console.log("sent");
+    });
+  } catch (error) {
+    console.error();
+  }
+};
+
+export const clockingOutEmail = async (user: any, school: any) => {
+  try {
+    const accessToken: any = (await oAuth.getAccessToken()).token;
+
+    const transporter = nodemail.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: "codelabbest@gmail.com",
+        clientSecret: GOOGLE_SECRET,
+        clientId: GOOGLE_ID,
+        refreshToken: GOOGLE_REFRESH,
+        accessToken,
+      },
+    });
+
+    const myPath = path.join(__dirname, "../views/clockoutMail.ejs");
+
+    const x = user?.clockOutTime.split(",");
+    const y = x[2].trim();
+
+    const html = await ejs.renderFile(myPath, {
+      clockin: user.clockInTime,
+      parent: user.studentLastName,
+      child: user.studentFirstName,
+      address: school?.address,
+      school: school?.schoolName,
+      phone: school?.phone,
+      date: `${x[0]} ${x[1]} ${y.split(" ")[0]}`,
+      time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
+    });
+
+    const mailerOption = {
+      from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+      to: user.parentEmail,
+      subject: `${user?.studentFirstName} just Clocked Out`,
+      html,
+    };
+
+    await transporter.sendMail(mailerOption);
+  } catch (error) {
+    console.error();
+  }
+};
+
+export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
+  try {
+    const accessToken: any = (await oAuth.getAccessToken()).token;
+
+    const transporter = nodemail.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: "codelabbest@gmail.com",
+        clientSecret: GOOGLE_SECRET,
+        clientId: GOOGLE_ID,
+        refreshToken: GOOGLE_REFRESH,
+        accessToken,
+      },
+    });
+
+    const myPath = path.join(__dirname, "../views/weeklyReport.ejs");
+
+    // const x = user?.clockInTime.split(",");
+    // const y = x[2].trim();
+
+    let link: string = `${url}/report`;
+
+    const html = await ejs.renderFile(myPath, {
+      parent: user.studentLastName,
+      studentName: user.studentFirstName,
+
+      address: school?.address,
+      school: school?.schoolName,
+      phone: school?.phone,
+
+      date: moment(remark?.createdAt).format("LL"),
+      attendance: parseInt(remark?.attendanceRatio) * 20,
+      best: remark?.best,
+      worst: remark?.worst,
+      link,
+      classParticipation: remark?.classParticipation,
+      sportParticipation: remark?.sportParticipation,
+    });
+
+    const mailerOption = {
+      from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+      to: user.parentEmail,
+      subject: `${user?.studentFirstName} Weekly Academic Performance Report`,
+      html,
+    };
+
+    await transporter.sendMail(mailerOption).then(() => {
+      console.log("sent");
+    });
   } catch (error) {
     console.error();
   }

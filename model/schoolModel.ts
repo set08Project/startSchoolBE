@@ -50,6 +50,7 @@ interface iSchool {
   schoolTags: Array<{}>;
 
   receipt: [];
+  paymentOptions: [];
 
   subjects: Array<{}>;
   classRooms: Array<{}>;
@@ -115,6 +116,10 @@ const schoolModel = new Schema<iSchoolData>(
     },
 
     timeTableStructure: {
+      type: [],
+    },
+
+    paymentOptions: {
       type: [],
     },
 

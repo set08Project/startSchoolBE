@@ -30,6 +30,11 @@ interface iStudent {
   feesPaid2nd: boolean;
   feesPaid3rd: boolean;
 
+  clockIn: boolean;
+  clockInTime: string;
+  clockOut: boolean;
+  clockOutTime: string;
+
   started: boolean;
   parentPhoneNumber: string;
   status: string;
@@ -59,6 +64,7 @@ interface iStudent {
   articles: Array<{}>;
   complain: Array<{}>;
   purchaseHistory: Array<{}>;
+  otherPayment: Array<{}>;
 }
 
 interface iStudentData extends iStudent, Document {}
@@ -68,6 +74,29 @@ const studentModel = new Schema<iStudentData>(
     feesPaid1st: {
       type: Boolean,
       default: false,
+    },
+
+    otherPayment: {
+      type: [],
+      default: [],
+    },
+
+    clockIn: {
+      type: Boolean,
+      default: false,
+    },
+
+    clockOut: {
+      type: Boolean,
+      default: false,
+    },
+
+    clockInTime: {
+      type: String,
+    },
+
+    clockOutTime: {
+      type: String,
     },
 
     monitor: {

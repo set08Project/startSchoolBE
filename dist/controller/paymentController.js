@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.schoolFeePayment = exports.makeSplitSchoolfeePayment = exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
+exports.verifyOtherSchoolTransaction = exports.verifySchoolTransaction = exports.makeOtherSchoolPayment = exports.schoolFeePayment = exports.makeSplitSchoolfeePayment = exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const paymentModel_1 = __importDefault(require("../model/paymentModel"));
 const mongoose_1 = require("mongoose");
@@ -23,6 +23,9 @@ const axios_1 = __importDefault(require("axios"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // import https from "https";
 const dotenv_1 = __importDefault(require("dotenv"));
+const studentModel_1 = __importDefault(require("../model/studentModel"));
+const termModel_1 = __importDefault(require("../model/termModel"));
+const sessionModel_1 = __importDefault(require("../model/sessionModel"));
 dotenv_1.default.config();
 const URL = process.env.APP_URL_DEPLOY;
 const https = require("https");
@@ -593,3 +596,225 @@ const schoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.schoolFeePayment = schoolFeePayment;
+const makeOtherSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { subAccountCode, email, paymentAmount, paymentName } = req.body;
+        const params = JSON.stringify({
+            email,
+            amount: `${paymentAmount * 100}`,
+            subaccount: subAccountCode,
+            callback_url: `${URL}/other-school-payment`,
+            meta: {
+                cancel: `${URL}`,
+                custom_fields: [
+                    {
+                        display_name: paymentName,
+                    },
+                ],
+            },
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/transaction/initialize",
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https
+            .request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                return res.status(200).json({
+                    message: "other payment made successfully",
+                    status: 201,
+                    data: JSON.parse(data),
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Errror",
+            data: error.message,
+        });
+    }
+});
+exports.makeOtherSchoolPayment = makeOtherSchoolPayment;
+const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const { ref, studentID } = req.params;
+        const { paymentName } = req.body;
+        const student = yield studentModel_1.default.findById(studentID);
+        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
+            path: "session",
+        });
+        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
+        const termly = yield sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
+            path: "term",
+        });
+        const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
+            el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
+        const mainTerm = yield termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
+        const url = `https://api.paystack.co/transaction/verify/${ref}`;
+        yield axios_1.default
+            .get(url, {
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+            },
+        })
+            .then((data) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+            const check = (_a = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions) === null || _a === void 0 ? void 0 : _a.some((el) => el.reference === ref);
+            if (!check) {
+                let id = crypto_1.default.randomBytes(4).toString("hex");
+                let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+                    paymentOptions: [
+                        ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
+                        {
+                            id,
+                            studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                            createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
+                            paymentMode: "online",
+                            confirm: false,
+                            paymentDetails: paymentName,
+                            paymentAmount: parseFloat((_c = (_b = data === null || data === void 0 ? void 0 : data.data) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.amount) / 100,
+                            reference: (_e = (_d = data === null || data === void 0 ? void 0 : data.data) === null || _d === void 0 ? void 0 : _d.data) === null || _e === void 0 ? void 0 : _e.reference,
+                            studentID,
+                            schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
+                            termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
+                            sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                            session: termly === null || termly === void 0 ? void 0 : termly.year,
+                            term: mainTerm.presentTerm,
+                        },
+                    ],
+                }, { new: true });
+                yield studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
+                    otherPayment: [
+                        ...student === null || student === void 0 ? void 0 : student.otherPayment,
+                        {
+                            id,
+                            studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                            createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
+                            paymentMode: "online",
+                            confirm: false,
+                            paymentDetails: paymentName,
+                            paymentAmount: parseFloat((_g = (_f = data === null || data === void 0 ? void 0 : data.data) === null || _f === void 0 ? void 0 : _f.data) === null || _g === void 0 ? void 0 : _g.amount) / 100,
+                            reference: (_j = (_h = data === null || data === void 0 ? void 0 : data.data) === null || _h === void 0 ? void 0 : _h.data) === null || _j === void 0 ? void 0 : _j.reference,
+                            studentID,
+                            schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
+                            termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
+                            sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                            term: mainTerm.presentTerm,
+                            session: termly === null || termly === void 0 ? void 0 : termly.year,
+                        },
+                    ],
+                }, { new: true });
+                return res.status(200).json({
+                    message: "payment verified",
+                    status: 200,
+                    data: data.data,
+                    newData,
+                });
+            }
+            else {
+                return res.status(200).json({
+                    message: "Ref is already in used",
+                    data: data.data,
+                });
+            }
+        }));
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Errror",
+            data: error.message,
+        });
+    }
+});
+exports.verifySchoolTransaction = verifySchoolTransaction;
+const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    try {
+        const { studentID } = req.params;
+        const { paymentName, paymentAmount } = req.body;
+        const student = yield studentModel_1.default.findById(studentID);
+        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
+            path: "session",
+        });
+        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
+        const termly = yield sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
+            path: "term",
+        });
+        const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
+            el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
+        const mainTerm = yield termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
+        let id = crypto_1.default.randomBytes(4).toString("hex");
+        let reff = crypto_1.default.randomBytes(4).toString("hex");
+        let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+            paymentOptions: [
+                ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
+                {
+                    id,
+                    studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                    createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
+                    paymentMode: "cash",
+                    confirm: false,
+                    paymentDetails: paymentName,
+                    paymentAmount: paymentAmount,
+                    reference: reff,
+                    studentID,
+                    schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
+                    termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
+                    sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                    session: termly === null || termly === void 0 ? void 0 : termly.year,
+                    term: mainTerm.presentTerm,
+                },
+            ],
+        }, { new: true });
+        yield studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
+            otherPayment: [
+                ...student === null || student === void 0 ? void 0 : student.otherPayment,
+                {
+                    id,
+                    studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                    createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
+                    paymentMode: "cash",
+                    confirm: false,
+                    paymentDetails: paymentName,
+                    paymentAmount: paymentAmount,
+                    reference: reff,
+                    studentID,
+                    schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
+                    termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
+                    sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                    term: mainTerm.presentTerm,
+                    session: termly === null || termly === void 0 ? void 0 : termly.year,
+                },
+            ],
+        }, { new: true });
+        return res.status(200).json({
+            message: "payment verified",
+            status: 200,
+            data: newData === null || newData === void 0 ? void 0 : newData.paymentOptions[((_c = newData === null || newData === void 0 ? void 0 : newData.paymentOptions) === null || _c === void 0 ? void 0 : _c.length) - 1],
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Errror",
+            data: error.message,
+        });
+    }
+});
+exports.verifyOtherSchoolTransaction = verifyOtherSchoolTransaction;

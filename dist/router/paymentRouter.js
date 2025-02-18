@@ -15,4 +15,11 @@ router.route("/update-payment-info").post(paymentController_1.makeSplitPayment);
 router.route("/make-store-payment").post(paymentController_1.storePayment);
 router.route("/update-schoolfee-payment-info").post(paymentController_1.makeSplitSchoolfeePayment);
 router.route("/make-schoolfee-payment").post(paymentController_1.schoolFeePayment);
+router.route("/make-other-school-payment").post(paymentController_1.makeOtherSchoolPayment);
+router
+    .route("/verify-other-payment/:studentID/:ref")
+    .post(paymentController_1.verifySchoolTransaction);
+router
+    .route("/verify-other-cash-payment/:studentID")
+    .post(paymentController_1.verifyOtherSchoolTransaction);
 exports.default = router;

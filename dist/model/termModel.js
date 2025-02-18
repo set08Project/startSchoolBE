@@ -5,7 +5,13 @@ const termModel = new mongoose_1.Schema({
     year: {
         type: String,
     },
+    paymentOptions: {
+        type: [],
+    },
     classResult: {
+        type: [],
+    },
+    expensePayOut: {
         type: [],
     },
     presentTerm: {

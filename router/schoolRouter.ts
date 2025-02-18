@@ -18,6 +18,7 @@ import {
   updateSchoolAccountDetail,
   updateSchoolAvatar,
   updateSchoolName,
+  updateSchoolPaymentOptions,
   updateSchoolSignature,
   updateSchoolStartPossition,
   verifySchool,
@@ -27,6 +28,7 @@ import {
   viewSchoolTopStudent,
 } from "../controller/schoolController";
 import multer from "multer";
+
 const upload = multer({
   fileFilter: (req, file, cb) => {
     if (
@@ -51,7 +53,6 @@ router
 router.route("/school-request-registration").patch(updateRegisterationStatus);
 
 router.route("/view-school-top-student/:schoolID").get(viewSchoolTopStudent);
-
 router.route("/register-school/").post(createSchool);
 router.route("/login-school/").post(loginSchool);
 
@@ -94,6 +95,10 @@ router
 router
   .route("/create-school-time-table/:schoolID")
   .patch(createSchoolTimetableRecord);
+
+router
+  .route("/add-more-payment-option/:schoolID")
+  .patch(updateSchoolPaymentOptions);
 
 router.route("/update-school-admin-code/:schoolID").patch(updateAdminCode);
 

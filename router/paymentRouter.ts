@@ -3,12 +3,15 @@ import {
   createPayment,
   createPaymentAccount,
   getBankAccount,
+  makeOtherSchoolPayment,
   makePayment,
   makeSplitPayment,
   makeSplitSchoolfeePayment,
   paymentFromStore,
   schoolFeePayment,
   storePayment,
+  verifyOtherSchoolTransaction,
+  verifySchoolTransaction,
   verifyTransaction,
   viewSchoolPayment,
 } from "../controller/paymentController";
@@ -32,5 +35,13 @@ router.route("/make-store-payment").post(storePayment);
 
 router.route("/update-schoolfee-payment-info").post(makeSplitSchoolfeePayment);
 router.route("/make-schoolfee-payment").post(schoolFeePayment);
+router.route("/make-other-school-payment").post(makeOtherSchoolPayment);
 
+router
+  .route("/verify-other-payment/:studentID/:ref")
+  .post(verifySchoolTransaction);
+
+router
+  .route("/verify-other-cash-payment/:studentID")
+  .post(verifyOtherSchoolTransaction);
 export default router;

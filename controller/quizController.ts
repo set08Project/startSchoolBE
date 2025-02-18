@@ -11,6 +11,7 @@ import lodash from "lodash";
 import schoolModel from "../model/schoolModel";
 import fs from "node:fs";
 import path from "node:path";
+
 // Examination
 export const createSubjectExam = async (
   req: any,
@@ -25,20 +26,19 @@ export const createSubjectExam = async (
     const checkForSubject = await subjectModel.findById(subjectID);
 
     const findTeacher = await staffModel.findById({
-      _id: classRoom?.teacherID,
+      _id: checkForSubject?.teacherID,
     });
 
     const findSubjectTeacher = await subjectModel.findById({
       _id: checkForSubject?.teacherID,
     });
+
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
     // const { secure_url, public_id }: any = await streamUpload(req);
-    console.log(req?.file?.path);
 
     let data = await csv().fromFile(req?.file?.path);
 
-    console.log(data);
     let value: any = [];
 
     for (let i of data) {
@@ -189,7 +189,7 @@ export const createSubjectExam = async (
       findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
       findSubjectTeacher?.save();
 
-      await deleteFilesInFolder(filePath);
+      // await deleteFilesInFolder(filePath);
 
       return res.status(201).json({
         message: "exam entry successfully",

@@ -41,6 +41,9 @@ const cardRportModel = new mongoose_1.Schema({
     adminComment: {
         type: String,
     },
+    attendance: {
+        type: String,
+    },
     classTeacherComment: {
         type: String,
     },

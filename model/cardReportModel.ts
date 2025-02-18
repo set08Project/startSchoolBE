@@ -8,6 +8,7 @@ interface iCardReport {
   classInfo: string;
   studentID: string;
   adminComment: string;
+  attendance: string;
   classTeacherComment: string;
 
   psycho: boolean;
@@ -72,6 +73,10 @@ const cardRportModel = new Schema<iCardReportData>(
     },
 
     adminComment: {
+      type: String,
+    },
+
+    attendance: {
       type: String,
     },
 

@@ -14,11 +14,13 @@ dotenv.config();
 // import { rateLimit } from "express-rate-limit";
 
 import MongoDB from "connect-mongodb-session";
-const MongoDBStore = MongoDB(session);
-const store = new MongoDBStore({
-  uri: process.env.MONGO_DB_URL_LOCAL!,
-  collection: "sessions",
-});
+
+// const MongoDBStore = MongoDB(session);
+
+// const store = new MongoDBStore({
+//   uri: process.env.MONGO_DB_URL_LOCAL!,
+//   collection: "sessions",
+// });
 
 const app: Application = express();
 const portServer = process.env.PORT!;
@@ -85,7 +87,7 @@ app.use(
       // domain: process.env.APP_URL_DEPLOY,
     },
 
-    store,
+    // store,
   })
 );
 

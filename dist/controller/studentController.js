@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAllStudents = exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudentLinkedinAccount = exports.updateXAcctount = exports.updateInstagramAccout = exports.updateStudentFacebookAcct = exports.updateStudent1stFees = exports.updateStudentParentNumber = exports.updateStudentPhone = exports.updateStudentGender = exports.updateStudentAddress = exports.updateStudentLastName = exports.updateStudentFirstName = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = void 0;
+exports.deleteAllStudents = exports.deleteStudent = exports.changeStudentClass = exports.assignClassMonitor = exports.updateSchoolSchoolFee = exports.viewSchoolSchoolFeeRecord = exports.viewSchoolFeeRecord = exports.createSchoolFeePayment = exports.viewStorePurchasedTeacher = exports.createStorePurchasedTeacher = exports.updateSchoolStorePurchased = exports.viewSchoolStorePurchased = exports.viewStorePurchased = exports.createStorePurchased = exports.updatePurchaseRecord = exports.updateStudent3rdFees = exports.updateStudent2ndFees = exports.updateStudentLinkedinAccount = exports.updateXAcctount = exports.updateInstagramAccout = exports.updateStudentFacebookAcct = exports.updateStudent1stFees = exports.updateStudentParentNumber = exports.updateStudentBulkInfo = exports.updateStudentPhone = exports.updateStudentGender = exports.updateStudentAddress = exports.updateStudentLastName = exports.updateStudentFirstName = exports.updateStudentParentEmail = exports.updateStudentAvatar = exports.logoutStudent = exports.readStudentCookie = exports.loginStudentWithToken = exports.loginStudent = exports.readStudentDetail = exports.readStudentByEnrollmentID = exports.readSchoolStudents = exports.createBulkSchoolStudent = exports.createSchoolStudent = exports.clockOutAccountWidthID = exports.clockOutAccount = exports.clockinAccountWithID = exports.clockinAccount = exports.findStudenWithEnrollmentID = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const mongoose_1 = require("mongoose");
@@ -27,6 +27,231 @@ const historyModel_1 = __importDefault(require("../model/historyModel"));
 const schoolFeeHistory_1 = __importDefault(require("../model/schoolFeeHistory"));
 // import subjectModel from "../model/subjectModel";
 const csvtojson_1 = __importDefault(require("csvtojson"));
+const moment_1 = __importDefault(require("moment"));
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_path_1 = __importDefault(require("node:path"));
+// CLOCK-IN/CLOCK-OUT
+const findStudenWithEnrollmentID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { enrollmentID } = req.body;
+        const student = yield studentModel_1.default.findOne({ enrollmentID });
+        return res.status(201).json({
+            message: "viewing student with enrollment ID",
+            data: student,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error finding student",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.findStudenWithEnrollmentID = findStudenWithEnrollmentID;
+const clockinAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            console.log((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id));
+            console.log(school === null || school === void 0 ? void 0 : school._id.toString());
+            console.log(student === null || student === void 0 ? void 0 : student.schoolIDs);
+            if ((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id.toString())) {
+                const clockInfo = yield studentModel_1.default.findByIdAndUpdate(student._id, {
+                    clockIn: true,
+                    clockInTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                    clockOut: false,
+                }, { new: true });
+                (0, email_1.clockingInEmail)(clockInfo, school).then(() => {
+                    console.log("sent");
+                });
+                return res.status(201).json({
+                    message: "student has clock-in",
+                    data: clockInfo,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error clockin student",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.clockinAccount = clockinAccount;
+const clockinAccountWithID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { enrollmentID } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findOne({ enrollmentID });
+            if (student) {
+                const clockInfo = yield studentModel_1.default.findByIdAndUpdate(student._id, {
+                    clockIn: true,
+                    clockInTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                    clockOut: false,
+                }, { new: true });
+                (0, email_1.clockingInEmail)(clockInfo, school);
+                return res.status(201).json({
+                    message: "student has clock-in",
+                    data: clockInfo,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error clockin student",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.clockinAccountWithID = clockinAccountWithID;
+const clockOutAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID, studentID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if ((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id.toString())) {
+                if (student === null || student === void 0 ? void 0 : student.clockIn) {
+                    const clockInfo = yield studentModel_1.default.findByIdAndUpdate(student._id, {
+                        clockIn: false,
+                        clockOut: true,
+                        clockOutTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                    }, { new: true });
+                    (0, email_1.clockingOutEmail)(clockInfo, school);
+                    return res.status(201).json({
+                        message: "student has clock-in",
+                        data: clockInfo,
+                        status: 201,
+                    });
+                }
+                else {
+                    return res.status(404).json({
+                        message: "Student has to be clock-in first before they can be clock-out",
+                        status: 404,
+                    });
+                }
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error clockin student",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.clockOutAccount = clockOutAccount;
+const clockOutAccountWidthID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { enrollmentID } = req.body;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school) {
+            const student = yield studentModel_1.default.findOne({ enrollmentID });
+            if (student) {
+                if (student === null || student === void 0 ? void 0 : student.clockIn) {
+                    const clockInfo = yield studentModel_1.default.findByIdAndUpdate(student._id, {
+                        clockIn: false,
+                        clockOut: true,
+                        clockOutTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                    }, { new: true });
+                    (0, email_1.clockingOutEmail)(clockInfo, school);
+                    return res.status(201).json({
+                        message: "student has clock-in",
+                        data: clockInfo,
+                        status: 201,
+                    });
+                }
+                else {
+                    return res.status(404).json({
+                        message: "Student has to be clock-in first before they can be clock-out",
+                        status: 404,
+                    });
+                }
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error clockin student",
+            data: {
+                errorMessage: error.message,
+                errorType: error.stack,
+            },
+        });
+    }
+});
+exports.clockOutAccountWidthID = clockOutAccountWidthID;
+// Create Account
 const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
@@ -35,7 +260,7 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
         const school = yield schoolModel_1.default.findById(schoolID).populate({
             path: "classRooms",
         });
-        const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
+        const enrollmentID = crypto_1.default.randomBytes(4).toString("hex");
         const salt = yield bcrypt_1.default.genSalt(10);
         const hashed = yield bcrypt_1.default.hash(`${studentFirstName.replace(/ /gi, "").toLowerCase()}${studentLastName
             .replace(/ /gi, "")
@@ -109,6 +334,20 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
     var _a, _b, _c;
     try {
         const { schoolID } = req.params;
+        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
+        const deleteFilesInFolder = (folderPath) => {
+            if (node_fs_1.default.existsSync(folderPath)) {
+                const files = node_fs_1.default.readdirSync(folderPath);
+                files.forEach((file) => {
+                    const filePath = node_path_1.default.join(folderPath, file);
+                    node_fs_1.default.unlinkSync(filePath);
+                });
+                console.log(`All files in the folder '${folderPath}' have been deleted.`);
+            }
+            else {
+                console.log(`The folder '${folderPath}' does not exist.`);
+            }
+        };
         const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
         for (let i of data) {
             const school = yield schoolModel_1.default.findById(schoolID).populate({
@@ -149,6 +388,7 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
                     yield school.save();
                     findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
                     yield findClass.save();
+                    deleteFilesInFolder(filePath);
                 }
                 else {
                     return res.status(404).json({
@@ -203,6 +443,24 @@ const readSchoolStudents = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.readSchoolStudents = readSchoolStudents;
+const readStudentByEnrollmentID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { enrollmentID } = req.params;
+        const students = yield studentModel_1.default.findOne({ enrollmentID });
+        return res.status(200).json({
+            message: "student read successfully",
+            data: students,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school students",
+            status: 404,
+        });
+    }
+});
+exports.readStudentByEnrollmentID = readStudentByEnrollmentID;
 const readStudentDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { studentID } = req.params;
@@ -625,6 +883,53 @@ const updateStudentPhone = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.updateStudentPhone = updateStudentPhone;
+const updateStudentBulkInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentID } = req.params;
+        const { phone, studentFirstName, parentPhoneNumber, parentEmail, studentLastName, studentAddress, } = req.body;
+        if (true) {
+            const student = yield studentModel_1.default.findById(studentID);
+            if (student) {
+                const updatePhone = yield studentModel_1.default.findByIdAndUpdate(student._id, {
+                    phone,
+                    studentFirstName,
+                    parentPhoneNumber,
+                    parentEmail,
+                    studentLastName,
+                    studentAddress,
+                }, { new: true });
+                return res.status(201).json({
+                    message: "Student Phone Number Updated Successfully",
+                    data: updatePhone,
+                    status: 201,
+                });
+            }
+            else {
+                return res.status(404).json({
+                    message: "Student Does Not Exist",
+                    status: 404,
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                message: "School Does Not Exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error Updating Student Phone Number",
+            data: {
+                errorMessage: error.mesaage,
+                errorType: error.stack,
+            },
+            status: 404,
+        });
+    }
+});
+exports.updateStudentBulkInfo = updateStudentBulkInfo;
 const updateStudentParentNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, studentID } = req.params;

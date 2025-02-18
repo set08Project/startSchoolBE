@@ -6,13 +6,282 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { streamUpload } from "../utils/streamifier";
-import { verifySchoolFees } from "../utils/email";
+import {
+  clockingInEmail,
+  clockingOutEmail,
+  verifySchoolFees,
+} from "../utils/email";
 import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
 import purchasedModel from "../model/historyModel";
 import schoolFeeHistory from "../model/schoolFeeHistory";
 // import subjectModel from "../model/subjectModel";
 import csv from "csvtojson";
+import moment from "moment";
+import fs from "node:fs";
+import path from "node:path";
+
+// CLOCK-IN/CLOCK-OUT
+
+export const findStudenWithEnrollmentID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { enrollmentID } = req.body;
+
+    const student = await studentModel.findOne({ enrollmentID });
+    return res.status(201).json({
+      message: "viewing student with enrollment ID",
+      data: student,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error finding student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+export const clockinAccount = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student: any = await studentModel.findById(studentID);
+
+      console.log(student?.schoolIDs === school?._id);
+      console.log(school?._id.toString());
+      console.log(student?.schoolIDs);
+
+      if (student?.schoolIDs === school?._id.toString()) {
+        const clockInfo = await studentModel.findByIdAndUpdate(
+          student._id,
+          {
+            clockIn: true,
+            clockInTime: moment(new Date().getTime()).format("llll"),
+
+            clockOut: false,
+          },
+          { new: true }
+        );
+
+        clockingInEmail(clockInfo, school).then(() => {
+          console.log("sent");
+        });
+
+        return res.status(201).json({
+          message: "student has clock-in",
+          data: clockInfo,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error clockin student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+export const clockinAccountWithID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { enrollmentID } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findOne({ enrollmentID });
+
+      if (student) {
+        const clockInfo = await studentModel.findByIdAndUpdate(
+          student._id,
+          {
+            clockIn: true,
+            clockInTime: moment(new Date().getTime()).format("llll"),
+
+            clockOut: false,
+          },
+          { new: true }
+        );
+
+        clockingInEmail(clockInfo, school);
+
+        return res.status(201).json({
+          message: "student has clock-in",
+          data: clockInfo,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error clockin student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+export const clockOutAccount = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID, studentID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findById(studentID);
+
+      if (student?.schoolIDs === school?._id.toString()) {
+        if (student?.clockIn) {
+          const clockInfo = await studentModel.findByIdAndUpdate(
+            student._id,
+            {
+              clockIn: false,
+              clockOut: true,
+              clockOutTime: moment(new Date().getTime()).format("llll"),
+            },
+            { new: true }
+          );
+
+          clockingOutEmail(clockInfo, school);
+
+          return res.status(201).json({
+            message: "student has clock-in",
+            data: clockInfo,
+            status: 201,
+          });
+        } else {
+          return res.status(404).json({
+            message:
+              "Student has to be clock-in first before they can be clock-out",
+            status: 404,
+          });
+        }
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error clockin student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+export const clockOutAccountWidthID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { enrollmentID } = req.body;
+
+    const school = await schoolModel.findById(schoolID);
+    if (school) {
+      const student = await studentModel.findOne({ enrollmentID });
+
+      if (student) {
+        if (student?.clockIn) {
+          const clockInfo = await studentModel.findByIdAndUpdate(
+            student._id,
+            {
+              clockIn: false,
+              clockOut: true,
+              clockOutTime: moment(new Date().getTime()).format("llll"),
+            },
+            { new: true }
+          );
+
+          clockingOutEmail(clockInfo, school);
+
+          return res.status(201).json({
+            message: "student has clock-in",
+            data: clockInfo,
+            status: 201,
+          });
+        } else {
+          return res.status(404).json({
+            message:
+              "Student has to be clock-in first before they can be clock-out",
+            status: 404,
+          });
+        }
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error clockin student",
+      data: {
+        errorMessage: error.message,
+        errorType: error.stack,
+      },
+    });
+  }
+};
+
+// Create Account
 
 export const createSchoolStudent = async (
   req: Request,
@@ -32,7 +301,7 @@ export const createSchoolStudent = async (
       path: "classRooms",
     });
 
-    const enrollmentID = crypto.randomBytes(3).toString("hex");
+    const enrollmentID = crypto.randomBytes(4).toString("hex");
 
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(
@@ -120,6 +389,25 @@ export const createBulkSchoolStudent = async (
   try {
     const { schoolID } = req.params;
 
+    let filePath = path.join(__dirname, "../uploads/examination");
+
+    const deleteFilesInFolder = (folderPath: any) => {
+      if (fs.existsSync(folderPath)) {
+        const files = fs.readdirSync(folderPath);
+
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          fs.unlinkSync(filePath);
+        });
+
+        console.log(
+          `All files in the folder '${folderPath}' have been deleted.`
+        );
+      } else {
+        console.log(`The folder '${folderPath}' does not exist.`);
+      }
+    };
+
     const data = await csv().fromFile(req.file.path);
 
     for (let i of data) {
@@ -183,6 +471,8 @@ export const createBulkSchoolStudent = async (
 
           findClass?.students.push(new Types.ObjectId(student._id));
           await findClass.save();
+
+          deleteFilesInFolder(filePath);
         } else {
           return res.status(404).json({
             message: "class must exist",
@@ -230,6 +520,28 @@ export const readSchoolStudents = async (
       message: "students read successfully",
       data: students,
       status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating school students",
+      status: 404,
+    });
+  }
+};
+
+export const readStudentByEnrollmentID = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { enrollmentID } = req.params;
+
+    const students = await studentModel.findOne({ enrollmentID });
+
+    return res.status(200).json({
+      message: "student read successfully",
+      data: students,
+      status: 200,
     });
   } catch (error) {
     return res.status(404).json({
@@ -705,6 +1017,65 @@ export const updateStudentPhone = async (
         const updatePhone = await studentModel.findByIdAndUpdate(
           student._id,
           { phone: phone },
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student Phone Number Updated Successfully",
+          data: updatePhone,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Phone Number",
+      data: {
+        errorMessage: error.mesaage,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
+export const updateStudentBulkInfo = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+    const {
+      phone,
+      studentFirstName,
+      parentPhoneNumber,
+      parentEmail,
+      studentLastName,
+      studentAddress,
+    } = req.body;
+
+    if (true) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const updatePhone = await studentModel.findByIdAndUpdate(
+          student._id,
+          {
+            phone,
+            studentFirstName,
+            parentPhoneNumber,
+            parentEmail,
+            studentLastName,
+            studentAddress,
+          },
           { new: true }
         );
         return res.status(201).json({

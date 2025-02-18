@@ -145,6 +145,12 @@ const staffModel = new mongoose_1.Schema({
             ref: "quizes",
         },
     ],
+    examination: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "examinations",
+        },
+    ],
     phone: {
         type: String,
     },

@@ -9,6 +9,9 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 // import https from "https";
 import env from "dotenv";
+import studentModel from "../model/studentModel";
+import termModel from "../model/termModel";
+import sessionModel from "../model/sessionModel";
 env.config();
 
 const URL = process.env.APP_URL_DEPLOY;
@@ -659,6 +662,280 @@ export const schoolFeePayment = async (req: Request, res: Response) => {
 
     request.write(params);
     request.end();
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
+    });
+  }
+};
+
+export const makeOtherSchoolPayment = async (req: Request, res: Response) => {
+  try {
+    const { subAccountCode, email, paymentAmount, paymentName } = req.body;
+
+    const params = JSON.stringify({
+      email,
+
+      amount: `${paymentAmount * 100}`,
+      subaccount: subAccountCode,
+      callback_url: `${URL}/other-school-payment`,
+      meta: {
+        cancel: `${URL}`,
+        custom_fields: [
+          {
+            display_name: paymentName,
+          },
+        ],
+      },
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/transaction/initialize",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const request = https
+      .request(options, (response: Response) => {
+        let data = "";
+
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          return res.status(200).json({
+            message: "other payment made successfully",
+            status: 201,
+            data: JSON.parse(data),
+          });
+        });
+      })
+      .on("error", (error: Error) => {
+        console.error(error);
+      });
+
+    request.write(params);
+    request.end();
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
+    });
+  }
+};
+
+export const verifySchoolTransaction = async (req: Request, res: Response) => {
+  try {
+    const { ref, studentID } = req.params;
+    const { paymentName } = req.body;
+
+    const student: any = await studentModel.findById(studentID);
+
+    const school = await schoolModel.findById(student?.schoolIDs).populate({
+      path: "session",
+    });
+
+    const readSession: any = school?.session?.find(
+      (el: any) => el?._id.toString() === school?.presentSessionID
+    );
+
+    const termly: any = await sessionModel.findById(readSession?._id).populate({
+      path: "term",
+    });
+
+    const readTerm: any = termly?.term?.find(
+      (el: any) =>
+        el?.presentTerm === school?.presentTerm &&
+        el._id.toString() === school?.presentTermID
+    );
+
+    const mainTerm: any = await termModel.findById(readTerm?._id);
+
+    const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
+    await axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        },
+      })
+      .then(async (data: any) => {
+        const check = mainTerm?.paymentOptions?.some(
+          (el: any) => el.reference === ref
+        );
+
+        if (!check) {
+          let id = crypto.randomBytes(4).toString("hex");
+
+          let newData = await termModel.findByIdAndUpdate(
+            mainTerm?._id,
+            {
+              paymentOptions: [
+                ...mainTerm?.paymentOptions,
+                {
+                  id,
+                  studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                  createdAt: moment(new Date().getTime()).format("lll"),
+                  paymentMode: "online",
+                  confirm: false,
+                  paymentDetails: paymentName,
+                  paymentAmount: parseFloat(data?.data?.data?.amount) / 100,
+                  reference: data?.data?.data?.reference,
+                  studentID,
+                  schoolID: student?.schoolIDs,
+                  termID: mainTerm?._id,
+                  sessionID: school?.presentSessionID,
+                  session: termly?.year,
+                  term: mainTerm.presentTerm,
+                },
+              ],
+            },
+            { new: true }
+          );
+
+          await studentModel.findByIdAndUpdate(
+            student?._id,
+            {
+              otherPayment: [
+                ...student?.otherPayment,
+                {
+                  id,
+                  studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                  createdAt: moment(new Date().getTime()).format("lll"),
+                  paymentMode: "online",
+                  confirm: false,
+                  paymentDetails: paymentName,
+                  paymentAmount: parseFloat(data?.data?.data?.amount) / 100,
+                  reference: data?.data?.data?.reference,
+                  studentID,
+                  schoolID: student?.schoolIDs,
+                  termID: mainTerm?._id,
+                  sessionID: school?.presentSessionID,
+                  term: mainTerm.presentTerm,
+                  session: termly?.year,
+                },
+              ],
+            },
+            { new: true }
+          );
+
+          return res.status(200).json({
+            message: "payment verified",
+            status: 200,
+            data: data.data,
+            newData,
+          });
+        } else {
+          return res.status(200).json({
+            message: "Ref is already in used",
+            data: data.data,
+          });
+        }
+      });
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Errror",
+      data: error.message,
+    });
+  }
+};
+
+export const verifyOtherSchoolTransaction = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { studentID } = req.params;
+    const { paymentName, paymentAmount } = req.body;
+
+    const student: any = await studentModel.findById(studentID);
+
+    const school = await schoolModel.findById(student?.schoolIDs).populate({
+      path: "session",
+    });
+
+    const readSession: any = school?.session?.find(
+      (el: any) => el?._id.toString() === school?.presentSessionID
+    );
+
+    const termly: any = await sessionModel.findById(readSession?._id).populate({
+      path: "term",
+    });
+
+    const readTerm: any = termly?.term?.find(
+      (el: any) =>
+        el?.presentTerm === school?.presentTerm &&
+        el._id.toString() === school?.presentTermID
+    );
+
+    const mainTerm: any = await termModel.findById(readTerm?._id);
+
+    let id = crypto.randomBytes(4).toString("hex");
+    let reff = crypto.randomBytes(4).toString("hex");
+
+    let newData = await termModel.findByIdAndUpdate(
+      mainTerm?._id,
+      {
+        paymentOptions: [
+          ...mainTerm?.paymentOptions,
+          {
+            id,
+            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+            createdAt: moment(new Date().getTime()).format("lll"),
+            paymentMode: "cash",
+            confirm: false,
+            paymentDetails: paymentName,
+            paymentAmount: paymentAmount,
+            reference: reff,
+            studentID,
+            schoolID: student?.schoolIDs,
+            termID: mainTerm?._id,
+            sessionID: school?.presentSessionID,
+            session: termly?.year,
+            term: mainTerm.presentTerm,
+          },
+        ],
+      },
+      { new: true }
+    );
+
+    await studentModel.findByIdAndUpdate(
+      student?._id,
+      {
+        otherPayment: [
+          ...student?.otherPayment,
+          {
+            id,
+            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+            createdAt: moment(new Date().getTime()).format("lll"),
+            paymentMode: "cash",
+            confirm: false,
+            paymentDetails: paymentName,
+            paymentAmount: paymentAmount,
+            reference: reff,
+            studentID,
+            schoolID: student?.schoolIDs,
+            termID: mainTerm?._id,
+            sessionID: school?.presentSessionID,
+            term: mainTerm.presentTerm,
+            session: termly?.year,
+          },
+        ],
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "payment verified",
+      status: 200,
+      data: newData?.paymentOptions[newData?.paymentOptions?.length - 1],
+    });
   } catch (error: any) {
     res.status(404).json({
       message: "Errror",

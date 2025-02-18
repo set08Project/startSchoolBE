@@ -107,7 +107,7 @@ export const createReportCardEntry = async (
             return el.subject !== subject;
           });
 
-          const report = await cardReportModel.findByIdAndUpdate(
+          const report: any = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
               result: [
@@ -120,22 +120,30 @@ export const createReportCardEntry = async (
                   test4: y4,
                   exam: y5,
                   mark,
-                  score,
-                  points: parseFloat(((mark / score) * 100).toFixed(2)),
+                  score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+                  points: mark,
+                  // y1 > 10
+                  //   ? parseFloat(((mark / score) * 100).toFixed(2))
+                  //   : parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
-                    (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
-                      ? "F"
-                      : (mark / score) * 100 >= 40 && (mark / score) * 100 <= 49
-                      ? "E"
-                      : (mark / score) * 100 >= 50 && (mark / score) * 100 <= 59
-                      ? "D"
-                      : (mark / score) * 100 >= 60 && (mark / score) * 100 <= 69
-                      ? "C"
-                      : (mark / score) * 100 >= 70 && (mark / score) * 100 <= 79
-                      ? "B"
-                      : (mark / score) * 100 >= 80 &&
-                        (mark / score) * 100 <= 100
-                      ? "A"
+                    mark >= 0 && mark <= 39
+                      ? "F9"
+                      : mark >= 39 && mark <= 44
+                      ? "E8"
+                      : mark >= 44 && mark <= 49
+                      ? "D7"
+                      : mark >= 49 && mark <= 54
+                      ? "C6"
+                      : mark >= 54 && mark <= 59
+                      ? "C5"
+                      : mark >= 59 && mark <= 64
+                      ? "C4"
+                      : mark >= 64 && mark <= 69
+                      ? "B3"
+                      : mark >= 69 && mark <= 74
+                      ? "B2"
+                      : mark >= 74 && mark <= 100
+                      ? "A1"
                       : null,
                 },
               ],
@@ -157,28 +165,123 @@ export const createReportCardEntry = async (
 
           let grade =
             genPoint >= 0 && genPoint <= 39
-              ? "F"
-              : genPoint >= 40 && genPoint <= 49
-              ? "E"
-              : genPoint >= 50 && genPoint <= 59
-              ? "D"
-              : genPoint >= 60 && genPoint <= 69
-              ? "C"
-              : genPoint >= 70 && genPoint <= 79
-              ? "B"
-              : genPoint >= 80 && genPoint <= 100
-              ? "A"
+              ? "F9"
+              : genPoint >= 39 && genPoint <= 44
+              ? "E8"
+              : genPoint >= 44 && genPoint <= 49
+              ? "D7"
+              : genPoint >= 49 && genPoint <= 54
+              ? "C6"
+              : genPoint >= 54 && genPoint <= 59
+              ? "C5"
+              : genPoint >= 59 && genPoint <= 64
+              ? "C4"
+              : genPoint >= 64 && genPoint <= 69
+              ? "B3"
+              : genPoint >= 69 && genPoint <= 74
+              ? "B2"
+              : genPoint >= 74 && genPoint <= 100
+              ? "A1"
               : null;
+
+          let x =
+            genPoint >= 0 && genPoint <= 5
+              ? "This is a very poor result."
+              : genPoint >= 6 && genPoint <= 11
+              ? "This result is poor; it's not satisfactory."
+              : genPoint >= 11 && genPoint <= 15
+              ? "Below average; needs significant improvement."
+              : genPoint >= 16 && genPoint <= 21
+              ? "Below average; more effort required."
+              : genPoint >= 21 && genPoint <= 25
+              ? "Fair but not satisfactory; strive harder."
+              : genPoint >= 26 && genPoint <= 31
+              ? "Fair performance; potential for improvement."
+              : genPoint >= 31 && genPoint <= 35
+              ? "Average; a steady effort is needed."
+              : genPoint >= 36 && genPoint <= 41
+              ? "Average; showing gradual improvement."
+              : genPoint >= 41 && genPoint <= 45
+              ? "Slightly above average; keep it up."
+              : genPoint >= 46 && genPoint <= 51
+              ? "Decent work; shows potential."
+              : genPoint >= 51 && genPoint <= 55
+              ? "Passable; satisfactory effort."
+              : genPoint >= 56 && genPoint <= 61
+              ? "Satisfactory; good progress."
+              : genPoint >= 61 && genPoint <= 65
+              ? "Good work; keep striving for excellence."
+              : genPoint >= 66 && genPoint <= 71
+              ? "Commendable effort; very good."
+              : genPoint >= 71 && genPoint <= 75
+              ? "Very good; consistent effort is visible."
+              : genPoint >= 76 && genPoint <= 81
+              ? "Excellent performance; well done!"
+              : genPoint >= 81 && genPoint <= 85
+              ? "Exceptional result; keep up the great work!"
+              : genPoint >= 86 && genPoint <= 91
+              ? "Outstanding achievement; impressive work!"
+              : genPoint >= 91 && genPoint <= 95
+              ? "Brilliant performance; you’re a star!"
+              : genPoint >= 96 && genPoint <= 100
+              ? "Outstanding achievement; impressive work!"
+              : ``;
+
+          let xx =
+            genPoint >= 0 && genPoint <= 5
+              ? "The submission demonstrates a lack of understanding of the topic. Please see me for guidance"
+              : genPoint >= 6 && genPoint <= 11
+              ? "Very minimal effort is evident in the work. It's essential to review the material thoroughly."
+              : genPoint >= 11 && genPoint <= 15
+              ? "This effort does not meet the basic requirements. Please focus on the foundational concepts."
+              : genPoint >= 16 && genPoint <= 21
+              ? "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions."
+              : genPoint >= 21 && genPoint <= 25
+              ? "Some attempt is evident, but significant gaps in understanding remain. More effort is required."
+              : genPoint >= 26 && genPoint <= 31
+              ? "The work shows minimal understanding of the topic. Focus on building your foundational knowledge."
+              : genPoint >= 31 && genPoint <= 35
+              ? "A basic attempt is made, but it falls short of expectations. Review the feedback to improve"
+              : genPoint >= 36 && genPoint <= 41
+              ? "You are starting to grasp the material, but more depth and accuracy are needed."
+              : genPoint >= 41 && genPoint <= 45
+              ? "An acceptable effort, but there is room for improvement in clarity and depth"
+              : genPoint >= 46 && genPoint <= 51
+              ? "Some understanding is demonstrated, but key concepts are missing or incorrect."
+              : genPoint >= 51 && genPoint <= 55
+              ? "You are making progress but need to develop your analysis further to meet the standard"
+              : genPoint >= 56 && genPoint <= 61
+              ? "A decent attempt that meets some expectations but lacks polish and depth in certain areas"
+              : genPoint >= 61 && genPoint <= 65
+              ? "Good work; keep striving for excellence."
+              : genPoint >= 66 && genPoint <= 71
+              ? "A solid understanding is evident, though there are areas to refine."
+              : genPoint >= 71 && genPoint <= 75
+              ? "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth."
+              : genPoint >= 76 && genPoint <= 81
+              ? "Strong work overall! A little more attention to detail could make it exceptional!"
+              : genPoint >= 81 && genPoint <= 85
+              ? "Well done! You have a good grasp of the material. Aim for more critical analysis next time!"
+              : genPoint >= 86 && genPoint <= 91
+              ? "Excellent work! You’ve exceeded expectations. Keep up the fantastic effort!"
+              : genPoint >= 91 && genPoint <= 95
+              ? "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!"
+              : genPoint >= 96 && genPoint <= 100
+              ? "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulation!"
+              : ``;
 
           let nice = await cardReportModel.findByIdAndUpdate(
             report?.id,
             {
               points: genPoint,
-
+              adminComment: x,
+              classTeacherComment: xx,
               grade,
             },
             { new: true }
           );
+
+          console.log("here12");
 
           return res.status(201).json({
             message: "teacher updated report successfully",
@@ -214,7 +317,6 @@ export const createReportCardEntry = async (
           let w5 = x5 !== 0 ? (examination = 60) : 0;
 
           let score = w1 + w2 + w3 + w4 + w5;
-
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -228,22 +330,30 @@ export const createReportCardEntry = async (
                   test4: y4,
                   exam: y5,
                   mark,
-                  score,
-                  points: parseFloat(((mark / score) * 100).toFixed(2)),
+                  score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+                  points:
+                    y1 > 10
+                      ? parseFloat(((mark / score) * 100).toFixed(2))
+                      : parseFloat(((mark / score) * 100).toFixed(2)),
                   grade:
-                    (mark / score) * 100 >= 0 && (mark / score) * 100 <= 39
-                      ? "F"
-                      : (mark / score) * 100 >= 40 && (mark / score) * 100 <= 49
-                      ? "E"
-                      : (mark / score) * 100 >= 50 && (mark / score) * 100 <= 59
-                      ? "D"
-                      : (mark / score) * 100 >= 60 && (mark / score) * 100 <= 69
-                      ? "C"
-                      : (mark / score) * 100 >= 70 && (mark / score) * 100 <= 79
-                      ? "B"
-                      : (mark / score) * 100 >= 80 &&
-                        (mark / score) * 100 <= 100
-                      ? "A"
+                    mark >= 0 && mark <= 39
+                      ? "F9"
+                      : mark >= 39 && mark <= 44
+                      ? "E8"
+                      : mark >= 44 && mark <= 49
+                      ? "D7"
+                      : mark >= 49 && mark <= 54
+                      ? "C6"
+                      : mark >= 54 && mark <= 59
+                      ? "C5"
+                      : mark >= 59 && mark <= 64
+                      ? "C4"
+                      : mark >= 64 && mark <= 69
+                      ? "B3"
+                      : mark >= 69 && mark <= 74
+                      ? "B2"
+                      : mark >= 74 && mark <= 100
+                      ? "A1"
                       : null,
                 },
               ],
@@ -265,29 +375,34 @@ export const createReportCardEntry = async (
 
           let grade =
             genPoint >= 0 && genPoint <= 39
-              ? "F"
-              : genPoint >= 40 && genPoint <= 49
-              ? "E"
-              : genPoint >= 50 && genPoint <= 59
-              ? "D"
-              : genPoint >= 60 && genPoint <= 69
-              ? "C"
-              : genPoint >= 70 && genPoint <= 79
-              ? "B"
-              : genPoint >= 80 && genPoint <= 100
-              ? "A"
+              ? "F9"
+              : genPoint >= 39 && genPoint <= 44
+              ? "E8"
+              : genPoint >= 44 && genPoint <= 49
+              ? "D7"
+              : genPoint >= 49 && genPoint <= 54
+              ? "C6"
+              : genPoint >= 54 && genPoint <= 59
+              ? "C5"
+              : genPoint >= 59 && genPoint <= 64
+              ? "C4"
+              : genPoint >= 64 && genPoint <= 69
+              ? "B3"
+              : genPoint >= 69 && genPoint <= 74
+              ? "B2"
+              : genPoint >= 74 && genPoint <= 100
+              ? "A1"
               : null;
 
           let nice = await cardReportModel.findByIdAndUpdate(
             report?.id,
             {
               points: genPoint,
-
               grade,
             },
             { new: true }
           );
-
+          console.log("here2");
           return res.status(201).json({
             message: "can't report entry created successfully",
             data: nice,
@@ -361,7 +476,6 @@ export const createReportCardEntry = async (
           },
           { new: true }
         );
-
         student?.reportCard?.push(new Types.ObjectId(nice?._id));
         student?.save();
 
@@ -615,7 +729,7 @@ export const classTeacherReportRemark = async (
 ): Promise<Response> => {
   try {
     const { teacherID, studentID, classID } = req.params;
-    const { teacherComment } = req.body;
+    const { teacherComment, attendance } = req.body;
 
     const student: any = await studentModel
       .findById(studentID)
@@ -648,6 +762,7 @@ export const classTeacherReportRemark = async (
       const report = await cardReportModel.findByIdAndUpdate(
         getReportSubject?._id,
         {
+          attendance,
           classTeacherComment: teacherComment,
         },
         { new: true }

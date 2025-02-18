@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.updateSchoolPaymentOptions = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -20,6 +20,12 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const lodash_1 = __importDefault(require("lodash"));
 const cron_1 = require("cron");
+const sessionModel_1 = __importDefault(require("../model/sessionModel"));
+const termModel_1 = __importDefault(require("../model/termModel"));
+const classHistory_1 = __importDefault(require("../model/classHistory"));
+const subjectModel_1 = __importDefault(require("../model/subjectModel"));
+const classroomModel_1 = __importDefault(require("../model/classroomModel"));
+const studentModel_1 = __importDefault(require("../model/studentModel"));
 const viewSchoolTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -247,9 +253,35 @@ exports.viewAllSchools = viewAllSchools;
 const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
+        let id = "678d4e5060a0cbcd2e27dc51";
+        const getSchool = yield schoolModel_1.default.findById(schoolID);
+        console.log("here hmm: ", getSchool === null || getSchool === void 0 ? void 0 : getSchool.session);
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.session) {
+            let sessTerm = yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findById(i.toString()));
+            for (let i of sessTerm === null || sessTerm === void 0 ? void 0 : sessTerm.term) {
+                console.log("here reading: ", i);
+                yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndDelete(i.toString()));
+            }
+            console.log("here done");
+            yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findByIdAndDelete(i.toString()));
+        }
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classHistory) {
+            yield (classHistory_1.default === null || classHistory_1.default === void 0 ? void 0 : classHistory_1.default.findByIdAndDelete(i.toString()));
+        }
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.subjects) {
+            yield (subjectModel_1.default === null || subjectModel_1.default === void 0 ? void 0 : subjectModel_1.default.findByIdAndDelete(i.toString()));
+        }
+        console.log("class");
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classRooms) {
+            yield (classroomModel_1.default === null || classroomModel_1.default === void 0 ? void 0 : classroomModel_1.default.findByIdAndDelete(i.toString()));
+        }
+        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.students) {
+            yield (studentModel_1.default === null || studentModel_1.default === void 0 ? void 0 : studentModel_1.default.findByIdAndDelete(i.toString()));
+        }
         yield schoolModel_1.default.findByIdAndDelete(schoolID);
         return res.status(200).json({
             message: "school deleted successfully",
+            status: 201,
         });
     }
     catch (error) {
@@ -477,6 +509,38 @@ const updateSchoolAccountDetail = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.updateSchoolAccountDetail = updateSchoolAccountDetail;
+const updateSchoolPaymentOptions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const { paymentDetails, paymentAmount } = req.body;
+        let id = crypto_1.default.randomBytes(4).toString("hex");
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (school.schoolName) {
+            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                paymentOptions: [
+                    ...school === null || school === void 0 ? void 0 : school.paymentOptions,
+                    { id, paymentDetails, paymentAmount },
+                ],
+            }, { new: true });
+            return res.status(201).json({
+                message: "school account detail updated successfully",
+                data: updatedSchool,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Something went wrong",
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating account details",
+        });
+    }
+});
+exports.updateSchoolPaymentOptions = updateSchoolPaymentOptions;
 const updateAdminCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -535,30 +599,35 @@ exports.updateSchoolName = updateSchoolName;
 const updateRegisterationStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolName, email, schoolPhoneNumber, schoolCategory, schoolLocation, schoolOrganization, } = req.body;
-        const school = yield schoolModel_1.default.findOne({ email });
-        if (school) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
-                schoolName,
-                phone: schoolPhoneNumber,
-                categoryType: schoolCategory,
-                address: schoolLocation,
-                organizationType: schoolOrganization,
-            }, { new: true });
-            return res.status(201).json({
-                message: "school detail has been updated successfully",
-                data: updatedSchool,
-                status: 201,
-            });
-        }
-        else {
-            return res.status(404).json({
-                message: "Something went wrong",
-            });
-        }
+        const id = crypto_1.default.randomBytes(4).toString("hex");
+        const adminCode = crypto_1.default.randomBytes(6).toString("hex");
+        // if (school) {
+        const updatedSchool = yield schoolModel_1.default.create({
+            adminCode,
+            enrollmentID: id,
+            status: "school-admin",
+            schoolName,
+            email,
+            phone: schoolPhoneNumber,
+            categoryType: schoolCategory,
+            address: schoolLocation,
+            organizationType: schoolOrganization,
+        });
+        return res.status(201).json({
+            message: "school detail has been updated successfully",
+            data: updatedSchool,
+            status: 201,
+        });
+        // } else {
+        //   return res.status(404).json({
+        //     message: "Something went wrong",
+        //   });
+        // }
     }
     catch (error) {
         return res.status(404).json({
             message: "Error updating account details",
+            error: error,
         });
     }
 });
@@ -617,7 +686,7 @@ const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, func
             const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school._id, {
                 started: true,
             }, { new: true });
-            yield (0, email_1.verifiedEmail)(email);
+            yield (0, email_1.verifiedEmail)(school);
             return res.status(200).json({
                 message: "School has been approved",
                 data: updatedSchool,
