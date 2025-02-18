@@ -30,4 +30,18 @@ router
     .route("/view-student-exam-performance/:studentID")
     .get(performanceController_1.readStudentExamResult);
 router.route("/view-exam-performance/:quizID").get(performanceController_1.readExamResult);
+// Mid Test
+router
+    .route("/create-subject-mid-test-performance/:studentID/:quizID/:subjectID")
+    .post(performanceController_1.createMidTestPerformance);
+router
+    .route("/view-subject-mid-test-performance/:subjectID")
+    .get(performanceController_1.readSubjectMidTestResult);
+router
+    .route("/view-onesubject-mid-test-performance/:subjectID/:quizID")
+    .get(performanceController_1.readOneSubjectMidTestResult);
+router
+    .route("/view-student-mid-test-performance/:studentID")
+    .get(performanceController_1.readStudentMidTestResult);
+router.route("/view-mid-test-performance/:quizID").get(performanceController_1.readMidTestResult);
 exports.default = router;
