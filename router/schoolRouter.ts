@@ -50,7 +50,7 @@ router
   .route("/approved-school-registration/:schoolID")
   .patch(approveRegistration);
 
-router.route("/school-request-registration").patch(updateRegisterationStatus);
+router.route("/school-request-registration").post(updateRegisterationStatus);
 
 router.route("/view-school-top-student/:schoolID").get(viewSchoolTopStudent);
 router.route("/register-school/").post(createSchool);

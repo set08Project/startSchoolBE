@@ -239,7 +239,6 @@ export const createNewSchoolSession = async (
       }
 
       schoolTeacher.save();
-
       return res.status(201).json({
         message: "session created successfully",
         data: session,

@@ -727,32 +727,32 @@ export const updateRegisterationStatus = async (req: any, res: Response) => {
       schoolOrganization,
     } = req.body;
 
-    const id = crypto.randomBytes(4).toString("hex");
-    const adminCode = crypto.randomBytes(6).toString("hex");
+    const school = await schoolModel.findOne({ email });
 
+    // const id = crypto.randomBytes(4).toString("hex");
+    // const adminCode = crypto.randomBytes(6).toString("hex");
     // if (school) {
-    const updatedSchool = await schoolModel.create({
-      adminCode,
-      enrollmentID: id,
-      status: "school-admin",
-      schoolName,
-      email,
-      phone: schoolPhoneNumber,
-      categoryType: schoolCategory,
-      address: schoolLocation,
-      organizationType: schoolOrganization,
-    });
+    const updatedSchool = await schoolModel.findByIdAndUpdate(
+      school?._id,
+      {
+        // adminCode,
+        // enrollmentID: id,
+        status: "school-admin",
+        schoolName,
+        email,
+        phone: schoolPhoneNumber,
+        categoryType: schoolCategory,
+        address: schoolLocation,
+        organizationType: schoolOrganization,
+      },
+      { new: true }
+    );
 
     return res.status(201).json({
       message: "school detail has been updated successfully",
       data: updatedSchool,
       status: 201,
     });
-    // } else {
-    //   return res.status(404).json({
-    //     message: "Something went wrong",
-    //   });
-    // }
   } catch (error) {
     return res.status(404).json({
       message: "Error updating account details",

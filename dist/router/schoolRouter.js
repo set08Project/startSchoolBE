@@ -23,7 +23,7 @@ const router = (0, express_1.Router)();
 router
     .route("/approved-school-registration/:schoolID")
     .patch(schoolController_1.approveRegistration);
-router.route("/school-request-registration").patch(schoolController_1.updateRegisterationStatus);
+router.route("/school-request-registration").post(schoolController_1.updateRegisterationStatus);
 router.route("/view-school-top-student/:schoolID").get(schoolController_1.viewSchoolTopStudent);
 router.route("/register-school/").post(schoolController_1.createSchool);
 router.route("/login-school/").post(schoolController_1.loginSchool);
