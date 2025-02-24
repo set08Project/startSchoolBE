@@ -30,6 +30,7 @@ const csvtojson_1 = __importDefault(require("csvtojson"));
 const moment_1 = __importDefault(require("moment"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
+const termModel_1 = __importDefault(require("../model/termModel"));
 // CLOCK-IN/CLOCK-OUT
 const findStudenWithEnrollmentID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -1018,9 +1019,22 @@ const updateStudent1stFees = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         const getStudent = yield studentModel_1.default.findById(studentID);
+        const presentClass = yield classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
+        const findTerm = yield termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
         if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
             const students = yield studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid1st: !(getStudent === null || getStudent === void 0 ? void 0 : getStudent.feesPaid1st) }, { new: true });
             (0, email_1.verifySchoolFees)(students, 1);
+            yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndUpdate(findTerm === null || findTerm === void 0 ? void 0 : findTerm._id, {
+                schoolFeePayment: [
+                    ...findTerm === null || findTerm === void 0 ? void 0 : findTerm.schoolFeePayment,
+                    {
+                        studentID: getStudent._id,
+                        feesPaid1st: getStudent.feesPaid1st,
+                        cost: presentClass === null || presentClass === void 0 ? void 0 : presentClass.class1stFee,
+                        date: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                    },
+                ],
+            }, { new: true }));
             return res.status(201).json({
                 message: "student fees updated successfully",
                 data: students,
@@ -1210,11 +1224,25 @@ const updateStudent2ndFees = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
+        const getStudent = yield studentModel_1.default.findById(studentID);
+        const presentClass = yield classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
+        const findTerm = yield termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
         if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
             let students = yield studentModel_1.default.findById(studentID);
             if ((students === null || students === void 0 ? void 0 : students.feesPaid1st) === true) {
                 let student = yield studentModel_1.default.findByIdAndUpdate(students === null || students === void 0 ? void 0 : students._id, { feesPaid2nd: !(students === null || students === void 0 ? void 0 : students.feesPaid2nd) }, { new: true });
                 (0, email_1.verifySchoolFees)(student, 2);
+                yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndUpdate(findTerm === null || findTerm === void 0 ? void 0 : findTerm._id, {
+                    schoolFeePayment: [
+                        ...findTerm === null || findTerm === void 0 ? void 0 : findTerm.schoolFeePayment,
+                        {
+                            studentID: getStudent._id,
+                            feesPaid2nd: getStudent.feesPaid2nd,
+                            cost: presentClass === null || presentClass === void 0 ? void 0 : presentClass.class2ndFee,
+                            date: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                        },
+                    ],
+                }, { new: true }));
                 return res.status(201).json({
                     message: "student fees updated successfully",
                     data: student,
@@ -1247,11 +1275,25 @@ const updateStudent3rdFees = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
+        const getStudent = yield studentModel_1.default.findById(studentID);
+        const presentClass = yield classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
+        const findTerm = yield termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
         if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
             const student = yield studentModel_1.default.findById(studentID);
             if ((student === null || student === void 0 ? void 0 : student.feesPaid2nd) === true) {
                 yield studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid3rd: !(student === null || student === void 0 ? void 0 : student.feesPaid3rd) }, { new: true });
                 (0, email_1.verifySchoolFees)(student, 3);
+                yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndUpdate(findTerm === null || findTerm === void 0 ? void 0 : findTerm._id, {
+                    schoolFeePayment: [
+                        ...findTerm === null || findTerm === void 0 ? void 0 : findTerm.schoolFeePayment,
+                        {
+                            studentID: getStudent._id,
+                            feesPaid3rd: getStudent.feesPaid3rd,
+                            cost: presentClass === null || presentClass === void 0 ? void 0 : presentClass.class3rdFee,
+                            date: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                        },
+                    ],
+                }, { new: true }));
                 return res.status(201).json({
                     message: "student fees updated successfully",
                     data: student,
@@ -1320,6 +1362,7 @@ const createStorePurchased = (req, res) => __awaiter(void 0, void 0, void 0, fun
             path: "purchaseHistory",
         });
         const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        const term = yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID));
         if (school) {
             const check = student === null || student === void 0 ? void 0 : student.purchaseHistory.some((el) => {
                 return el.reference === reference;
@@ -1335,6 +1378,20 @@ const createStorePurchased = (req, res) => __awaiter(void 0, void 0, void 0, fun
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
                     studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
                 });
+                yield termModel_1.default.findByIdAndUpdate(term === null || term === void 0 ? void 0 : term._id, {
+                    storePayment: [
+                        ...term === null || term === void 0 ? void 0 : term.storePayment,
+                        {
+                            date,
+                            amount,
+                            cart,
+                            reference,
+                            purchasedID,
+                            studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                            studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
+                        },
+                    ],
+                }, { new: true });
                 student === null || student === void 0 ? void 0 : student.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
                 student === null || student === void 0 ? void 0 : student.save();
                 school === null || school === void 0 ? void 0 : school.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));

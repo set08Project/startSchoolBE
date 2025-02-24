@@ -14,6 +14,12 @@ const termModel = new mongoose_1.Schema({
     expensePayOut: {
         type: [],
     },
+    schoolFeePayment: {
+        type: [],
+    },
+    storePayment: {
+        type: [],
+    },
     presentTerm: {
         type: String,
     },

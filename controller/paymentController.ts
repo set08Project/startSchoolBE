@@ -12,6 +12,7 @@ import env from "dotenv";
 import studentModel from "../model/studentModel";
 import termModel from "../model/termModel";
 import sessionModel from "../model/sessionModel";
+import { AnyAaaaRecord } from "dns";
 env.config();
 
 const URL = process.env.APP_URL_DEPLOY;
@@ -434,6 +435,7 @@ export const verifyTransaction = async (req: Request, res: Response) => {
 
     const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
 
+    console.log(ref);
     await axios
       .get(url, {
         headers: {
@@ -759,7 +761,8 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
     const mainTerm: any = await termModel.findById(readTerm?._id);
 
     const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
-    await axios
+    console.log("ref: ", ref);
+    return await axios
       .get(url, {
         headers: {
           Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
@@ -772,7 +775,6 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
 
         if (!check) {
           let id = crypto.randomBytes(4).toString("hex");
-
           let newData = await termModel.findByIdAndUpdate(
             mainTerm?._id,
             {
@@ -839,6 +841,7 @@ export const verifySchoolTransaction = async (req: Request, res: Response) => {
         }
       });
   } catch (error: any) {
+    console.log("Error: ", error);
     res.status(404).json({
       message: "Errror",
       data: error.message,
@@ -879,64 +882,80 @@ export const verifyOtherSchoolTransaction = async (
     let id = crypto.randomBytes(4).toString("hex");
     let reff = crypto.randomBytes(4).toString("hex");
 
-    let newData = await termModel.findByIdAndUpdate(
-      mainTerm?._id,
-      {
-        paymentOptions: [
-          ...mainTerm?.paymentOptions,
-          {
-            id,
-            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
-            createdAt: moment(new Date().getTime()).format("lll"),
-            paymentMode: "cash",
-            confirm: false,
-            paymentDetails: paymentName,
-            paymentAmount: paymentAmount,
-            reference: reff,
-            studentID,
-            schoolID: student?.schoolIDs,
-            termID: mainTerm?._id,
-            sessionID: school?.presentSessionID,
-            session: termly?.year,
-            term: mainTerm.presentTerm,
-          },
-        ],
-      },
-      { new: true }
+    const check = mainTerm?.paymentOptions.some(
+      (el: any) =>
+        el?.paymentDetails === paymentName &&
+        el?.term === mainTerm.presentTerm &&
+        el?.session === termly?.year &&
+        el?.studentName ===
+          `${student?.studentFirstName} ${student?.studentLastName}`
     );
 
-    await studentModel.findByIdAndUpdate(
-      student?._id,
-      {
-        otherPayment: [
-          ...student?.otherPayment,
-          {
-            id,
-            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
-            createdAt: moment(new Date().getTime()).format("lll"),
-            paymentMode: "cash",
-            confirm: false,
-            paymentDetails: paymentName,
-            paymentAmount: paymentAmount,
-            reference: reff,
-            studentID,
-            schoolID: student?.schoolIDs,
-            termID: mainTerm?._id,
-            sessionID: school?.presentSessionID,
-            term: mainTerm.presentTerm,
-            session: termly?.year,
-          },
-        ],
-      },
-      { new: true }
-    );
+    if (!check) {
+      let newData = await termModel.findByIdAndUpdate(
+        mainTerm?._id,
+        {
+          paymentOptions: [
+            ...mainTerm?.paymentOptions,
+            {
+              id,
+              studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+              createdAt: moment(new Date().getTime()).format("lll"),
+              paymentMode: "cash",
+              confirm: false,
+              paymentDetails: paymentName,
+              paymentAmount: paymentAmount,
+              reference: reff,
+              studentID,
+              schoolID: student?.schoolIDs,
+              termID: mainTerm?._id,
+              sessionID: school?.presentSessionID,
+              session: termly?.year,
+              term: mainTerm.presentTerm,
+            },
+          ],
+        },
+        { new: true }
+      );
 
-    return res.status(200).json({
-      message: "payment verified",
-      status: 200,
-      data: newData?.paymentOptions[newData?.paymentOptions?.length - 1],
-    });
+      await studentModel.findByIdAndUpdate(
+        student?._id,
+        {
+          otherPayment: [
+            ...student?.otherPayment,
+            {
+              id,
+              studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+              createdAt: moment(new Date().getTime()).format("lll"),
+              paymentMode: "cash",
+              confirm: false,
+              paymentDetails: paymentName,
+              paymentAmount: paymentAmount,
+              reference: reff,
+              studentID,
+              schoolID: student?.schoolIDs,
+              termID: mainTerm?._id,
+              sessionID: school?.presentSessionID,
+              term: mainTerm.presentTerm,
+              session: termly?.year,
+            },
+          ],
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "payment verified",
+        status: 200,
+        data: newData?.paymentOptions[newData?.paymentOptions?.length - 1],
+      });
+    } else {
+      res.status(404).json({
+        message: "Payment already made",
+      });
+    }
   } catch (error: any) {
+    console.log(error);
     res.status(404).json({
       message: "Errror",
       data: error.message,

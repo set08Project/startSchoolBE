@@ -20,6 +20,7 @@ import csv from "csvtojson";
 import moment from "moment";
 import fs from "node:fs";
 import path from "node:path";
+import termModel from "../model/termModel";
 
 // CLOCK-IN/CLOCK-OUT
 
@@ -324,10 +325,10 @@ export const createSchoolStudent = async (
             findClass?.presentTerm === "1st Term"
               ? findClass?.class1stFee
               : findClass?.presentTerm === "2nd Term"
-                ? findClass?.class2ndFee
-                : findClass?.presentTerm === "3rd Term"
-                  ? findClass?.class3rdFee
-                  : null,
+              ? findClass?.class2ndFee
+              : findClass?.presentTerm === "3rd Term"
+              ? findClass?.class3rdFee
+              : null,
 
           gender,
           enrollmentID,
@@ -340,10 +341,10 @@ export const createSchoolStudent = async (
           email: `${studentFirstName
             .replace(/ /gi, "")
             .toLowerCase()}${studentLastName
-              .replace(/ /gi, "")
-              .toLowerCase()}@${school?.schoolName
-                ?.replace(/ /gi, "")
-                .toLowerCase()}.com`,
+            .replace(/ /gi, "")
+            .toLowerCase()}@${school?.schoolName
+            ?.replace(/ /gi, "")
+            .toLowerCase()}.com`,
           password: hashed,
           status: "school-student",
         });
@@ -422,8 +423,8 @@ export const createBulkSchoolStudent = async (
         `${i?.studentFirstName
           .replace(/ /gi, "")
           .toLowerCase()}${i?.studentLastName
-            .replace(/ /gi, "")
-            .toLowerCase()}`,
+          .replace(/ /gi, "")
+          .toLowerCase()}`,
         salt
       );
 
@@ -440,10 +441,10 @@ export const createBulkSchoolStudent = async (
               findClass?.presentTerm === "1st Term"
                 ? findClass?.class1stFee
                 : findClass?.presentTerm === "2nd Term"
-                  ? findClass?.class2ndFee
-                  : findClass?.presentTerm === "3rd Term"
-                    ? findClass?.class3rdFee
-                    : null,
+                ? findClass?.class2ndFee
+                : findClass?.presentTerm === "3rd Term"
+                ? findClass?.class3rdFee
+                : null,
 
             gender: i?.gender,
             enrollmentID,
@@ -456,10 +457,10 @@ export const createBulkSchoolStudent = async (
             email: `${i?.studentFirstName
               .replace(/ /gi, "")
               .toLowerCase()}${i?.studentLastName
-                .replace(/ /gi, "")
-                .toLowerCase()}@${school?.schoolName
-                  ?.replace(/ /gi, "")
-                  .toLowerCase()}.com`,
+              .replace(/ /gi, "")
+              .toLowerCase()}@${school?.schoolName
+              ?.replace(/ /gi, "")
+              .toLowerCase()}.com`,
             password: hashed,
             status: "school-student",
           });
@@ -820,10 +821,10 @@ export const updateStudentFirstName = async (
     const email = `${updatedFirstName
       .replace(/ /gi, "")
       .toLowerCase()}${updatedLastName
-        .replace(/ /gi, "")
-        .toLowerCase()}@${school.schoolName
-          .replace(/ /gi, "")
-          .toLowerCase()}.com`;
+      .replace(/ /gi, "")
+      .toLowerCase()}@${school.schoolName
+      .replace(/ /gi, "")
+      .toLowerCase()}.com`;
 
     updatedFields.email = email;
 
@@ -879,10 +880,10 @@ export const updateStudentLastName = async (
     const email = `${updatedFirstName
       .replace(/ /gi, "")
       .toLowerCase()}${updatedLastName
-        .replace(/ /gi, "")
-        .toLowerCase()}@${school.schoolName
-          .replace(/ /gi, "")
-          .toLowerCase()}.com`;
+      .replace(/ /gi, "")
+      .toLowerCase()}@${school.schoolName
+      .replace(/ /gi, "")
+      .toLowerCase()}.com`;
 
     const studentUpdateLastName = await studentModel.findByIdAndUpdate(
       student._id,
@@ -1210,7 +1211,12 @@ export const updateStudent1stFees = async (
     const { schoolID, studentID } = req.params;
 
     const school = await schoolModel.findById(schoolID);
-    const getStudent = await studentModel.findById(studentID);
+    const getStudent: any = await studentModel.findById(studentID);
+    const presentClass = await classroomModel.findById(
+      getStudent?.presentClassID
+    );
+
+    const findTerm: any = await termModel.findById(school?.presentTermID);
 
     if (school?.status === "school-admin" && school) {
       const students = await studentModel.findByIdAndUpdate(
@@ -1219,6 +1225,22 @@ export const updateStudent1stFees = async (
         { new: true }
       );
       verifySchoolFees(students, 1);
+
+      await termModel?.findByIdAndUpdate(
+        findTerm?._id,
+        {
+          schoolFeePayment: [
+            ...findTerm?.schoolFeePayment,
+            {
+              studentID: getStudent._id,
+              feesPaid1st: getStudent.feesPaid1st,
+              cost: presentClass?.class1stFee,
+              date: moment(new Date().getTime()).format("llll"),
+            },
+          ],
+        },
+        { new: true }
+      );
 
       return res.status(201).json({
         message: "student fees updated successfully",
@@ -1439,6 +1461,13 @@ export const updateStudent2ndFees = async (
 
     const school = await schoolModel.findById(schoolID);
 
+    const getStudent: any = await studentModel.findById(studentID);
+    const presentClass = await classroomModel.findById(
+      getStudent?.presentClassID
+    );
+
+    const findTerm: any = await termModel.findById(school?.presentTermID);
+
     if (school?.status === "school-admin" && school) {
       let students = await studentModel.findById(studentID);
 
@@ -1450,6 +1479,22 @@ export const updateStudent2ndFees = async (
         );
 
         verifySchoolFees(student, 2);
+
+        await termModel?.findByIdAndUpdate(
+          findTerm?._id,
+          {
+            schoolFeePayment: [
+              ...findTerm?.schoolFeePayment,
+              {
+                studentID: getStudent._id,
+                feesPaid2nd: getStudent.feesPaid2nd,
+                cost: presentClass?.class2ndFee,
+                date: moment(new Date().getTime()).format("llll"),
+              },
+            ],
+          },
+          { new: true }
+        );
 
         return res.status(201).json({
           message: "student fees updated successfully",
@@ -1484,6 +1529,12 @@ export const updateStudent3rdFees = async (
     const { schoolID, studentID } = req.params;
 
     const school = await schoolModel.findById(schoolID);
+    const getStudent: any = await studentModel.findById(studentID);
+    const presentClass = await classroomModel.findById(
+      getStudent?.presentClassID
+    );
+
+    const findTerm: any = await termModel.findById(school?.presentTermID);
 
     if (school?.status === "school-admin" && school) {
       const student = await studentModel.findById(studentID);
@@ -1494,6 +1545,22 @@ export const updateStudent3rdFees = async (
           { new: true }
         );
         verifySchoolFees(student, 3);
+
+        await termModel?.findByIdAndUpdate(
+          findTerm?._id,
+          {
+            schoolFeePayment: [
+              ...findTerm?.schoolFeePayment,
+              {
+                studentID: getStudent._id,
+                feesPaid3rd: getStudent.feesPaid3rd,
+                cost: presentClass?.class3rdFee,
+                date: moment(new Date().getTime()).format("llll"),
+              },
+            ],
+          },
+          { new: true }
+        );
 
         return res.status(201).json({
           message: "student fees updated successfully",
@@ -1571,6 +1638,7 @@ export const createStorePurchased = async (
     });
 
     const school = await schoolModel.findById(student?.schoolIDs);
+    const term: any = await termModel?.findById(school?.presentTermID);
 
     if (school) {
       const check = student?.purchaseHistory.some((el: any) => {
@@ -1588,6 +1656,25 @@ export const createStorePurchased = async (
           studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
           studentClass: student?.classAssigned,
         });
+
+        await termModel.findByIdAndUpdate(
+          term?._id,
+          {
+            storePayment: [
+              ...term?.storePayment,
+              {
+                date,
+                amount,
+                cart,
+                reference,
+                purchasedID,
+                studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                studentClass: student?.classAssigned,
+              },
+            ],
+          },
+          { new: true }
+        );
 
         student?.purchaseHistory.push(new Types.ObjectId(store._id));
         student?.save();
@@ -2174,10 +2261,10 @@ export const changeStudentClass = async (
           getClass?.presentTerm === "1st Term"
             ? getClass?.class1stFee
             : getClass?.presentTerm === "2nd Term"
-              ? getClass?.class2ndFee
-              : getClass?.presentTerm === "3rd Term"
-                ? getClass?.class3rdFee
-                : null,
+            ? getClass?.class2ndFee
+            : getClass?.presentTerm === "3rd Term"
+            ? getClass?.class3rdFee
+            : null,
       },
       { new: true }
     );
