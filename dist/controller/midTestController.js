@@ -27,7 +27,7 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
     var _a, _b, _c, _d;
     try {
         const { classID, subjectID } = req.params;
-        const { instruction, duration, mark } = req.body;
+        const { instruction, duration, mark, theory } = req.body;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
@@ -69,6 +69,7 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 quiz: {
                     instruction: { duration, mark, instruction },
                     question: value,
+                    theory,
                 },
                 totalQuestions: value === null || value === void 0 ? void 0 : value.length,
                 status: "midTest",
