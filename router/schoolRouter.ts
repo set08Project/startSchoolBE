@@ -61,7 +61,9 @@ router.route("/delete-school/:schoolID").delete(deleteSchool);
 router.route("/get-school-by-name/:schoolName").get(viewSchoolStatusByName);
 
 router.route("/verify-school/:schoolID").get(verifySchool);
+
 router.route("/view-school/:schoolID").get(viewSchoolStatus);
+
 router.route("/view-all-school").get(viewAllSchools);
 
 router.route("/logout-school").delete(logoutSchool);
