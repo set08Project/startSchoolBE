@@ -2140,11 +2140,13 @@ export const updateSchoolSchoolFee = async (
       },
       { new: true }
     );
-
-    let studentRecord = await studentModel.findById(item.studentID);
+    let studentRecord: any = await studentModel.findById(item.studentID);
     let studetClass = await classroomModel.findById(
       studentRecord?.presentClassID
     );
+    const school = await schoolModel.findById(studentRecord?.schoolIDs);
+
+    const term: any = await termModel.findById(school?.presentTermID);
 
     if (studetClass?.presentTerm === "1st Term") {
       await studentModel.findByIdAndUpdate(
@@ -2172,11 +2174,31 @@ export const updateSchoolSchoolFee = async (
       );
     }
 
-    return res.status(201).json({
-      message: `schoolfee confirm successfully`,
-      data: item,
-      status: 201,
-    });
+    const check = term?.schoolFeePayment.some(
+      (el: any) => el?.purchasedID !== item?.purchasedID
+    );
+
+    if (check) {
+      await termModel.findByIdAndUpdate(
+        item?.termID,
+        {
+          schoolFeePayment: [...term?.schoolFeePayment!, item],
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: `schoolfee confirm successfully`,
+        data: item,
+        status: 201,
+      });
+    } else {
+      return res.status(201).json({
+        message: `schoolfee confirm successfully`,
+        data: item,
+        status: 201,
+      });
+    }
   } catch (error: any) {
     return res.status(404).json({
       message: "Error updating school's school fee",
