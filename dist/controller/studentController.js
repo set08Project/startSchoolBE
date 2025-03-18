@@ -1768,6 +1768,8 @@ const updateSchoolSchoolFee = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }, { new: true });
         let studentRecord = yield studentModel_1.default.findById(item.studentID);
         let studetClass = yield classroomModel_1.default.findById(studentRecord === null || studentRecord === void 0 ? void 0 : studentRecord.presentClassID);
+        const school = yield schoolModel_1.default.findById(studentRecord === null || studentRecord === void 0 ? void 0 : studentRecord.schoolIDs);
+        const term = yield termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
         if ((studetClass === null || studetClass === void 0 ? void 0 : studetClass.presentTerm) === "1st Term") {
             yield studentModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.studentID, {
                 feesPaid1st: true,
@@ -1783,11 +1785,24 @@ const updateSchoolSchoolFee = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 feesPaid3rd: true,
             }, { new: true });
         }
-        return res.status(201).json({
-            message: `schoolfee confirm successfully`,
-            data: item,
-            status: 201,
-        });
+        const check = term === null || term === void 0 ? void 0 : term.schoolFeePayment.some((el) => (el === null || el === void 0 ? void 0 : el.purchasedID) !== (item === null || item === void 0 ? void 0 : item.purchasedID));
+        if (check) {
+            yield termModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.termID, {
+                schoolFeePayment: [...term === null || term === void 0 ? void 0 : term.schoolFeePayment, item],
+            }, { new: true });
+            return res.status(201).json({
+                message: `schoolfee confirm successfully`,
+                data: item,
+                status: 201,
+            });
+        }
+        else {
+            return res.status(201).json({
+                message: `schoolfee confirm successfully`,
+                data: item,
+                status: 201,
+            });
+        }
     }
     catch (error) {
         return res.status(404).json({

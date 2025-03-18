@@ -23,20 +23,22 @@ export const createSubjectMidTest = async (
     const classRoom = await classroomModel.findById(classID);
 
     const checkForSubject = await subjectModel.findById(subjectID);
+    console.log(checkForSubject);
 
-    const findTeacher = await staffModel.findById({
-      _id: classRoom?.teacherID,
-    });
+    const findTeacher = await staffModel.findById(classRoom?.teacherID);
 
-    const findSubjectTeacher = await subjectModel.findById({
-      _id: checkForSubject?.teacherID,
-    });
+    console.log(findTeacher);
+    const findSubjectTeacher = await subjectModel.findById(
+      checkForSubject?.teacherID
+    );
+
+    console.log("here");
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
     let data = await csv().fromFile(req?.file?.path);
 
     let value: any = [];
-
+    console.log("here 1");
     for (let i of data) {
       i.options?.split(";;");
       let read = { ...i, options: i.options?.split(";;") };
@@ -45,7 +47,7 @@ export const createSubjectMidTest = async (
 
     let term = lodash.find(value, { term: school?.presentTerm });
     let session = lodash.find(value, { session: school?.presentSession });
-
+    console.log("here 2");
     const deleteFilesInFolder = (folderPath: any) => {
       if (fs.existsSync(folderPath)) {
         const files = fs.readdirSync(folderPath);
@@ -78,6 +80,7 @@ export const createSubjectMidTest = async (
         status: "midTest",
         startExam: false,
       });
+      console.log("here 3");
 
       checkForSubject?.midTest.push(new Types.ObjectId(quizes._id));
 
