@@ -6,6 +6,7 @@ import {
   readMidTest,
   readSubjectMidTest,
   startSubjectMidTest,
+  deleteMidTest,
 } from "../controller/midTestController";
 
 const router: Router = Router();
@@ -20,5 +21,8 @@ router.route("/start-subject-mid-test/:midTestID/").patch(startSubjectMidTest);
 router.route("/view-subject-mid-test/:subjectID").get(readSubjectMidTest);
 
 router.route("/view-mid-test/:midTestID").get(readMidTest);
+router
+  .route("/delete-mid-test/:teacherID/:subjectID/:midTestID")
+  .delete(deleteMidTest);
 
 export default router;

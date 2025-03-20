@@ -23,22 +23,18 @@ export const createSubjectMidTest = async (
     const classRoom = await classroomModel.findById(classID);
 
     const checkForSubject = await subjectModel.findById(subjectID);
-    console.log(checkForSubject);
 
     const findTeacher = await staffModel.findById(classRoom?.teacherID);
 
-    console.log(findTeacher);
     const findSubjectTeacher = await subjectModel.findById(
       checkForSubject?.teacherID
     );
 
-    console.log("here");
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
     let data = await csv().fromFile(req?.file?.path);
 
     let value: any = [];
-    console.log("here 1");
     for (let i of data) {
       i.options?.split(";;");
       let read = { ...i, options: i.options?.split(";;") };
@@ -47,7 +43,6 @@ export const createSubjectMidTest = async (
 
     let term = lodash.find(value, { term: school?.presentTerm });
     let session = lodash.find(value, { session: school?.presentSession });
-    console.log("here 2");
     const deleteFilesInFolder = (folderPath: any) => {
       if (fs.existsSync(folderPath)) {
         const files = fs.readdirSync(folderPath);
@@ -80,7 +75,6 @@ export const createSubjectMidTest = async (
         status: "midTest",
         startExam: false,
       });
-      console.log("here 3");
 
       checkForSubject?.midTest.push(new Types.ObjectId(quizes._id));
 
@@ -195,6 +189,37 @@ export const readMidTest = async (
     return res.status(201).json({
       message: "subject mid Test read successfully",
       data: quiz,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating subject mid Test",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
+
+export const deleteMidTest = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { midTestID, subjectID, teacherID } = req.params;
+
+    const quizSubject: any = await subjectModel.findById(subjectID);
+    const quizTeacher: any = await staffModel.findById(teacherID);
+
+    const quiz: any = await midTestModel.findByIdAndDelete(midTestID);
+
+    quizSubject.pull(new Types.ObjectId(midTestID));
+    quizSubject.save();
+    quizTeacher.pull(new Types.ObjectId(midTestID));
+    quizTeacher.save();
+
+    return res.status(201).json({
+      message: "subject mid Test read successfully",
+      // data: quiz,
       status: 201,
     });
   } catch (error: any) {

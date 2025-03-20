@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readMidTest = exports.startSubjectMidTest = exports.readSubjectMidTest = exports.createSubjectMidTest = void 0;
+exports.deleteMidTest = exports.readMidTest = exports.startSubjectMidTest = exports.readSubjectMidTest = exports.createSubjectMidTest = void 0;
 const midTestModel_1 = __importDefault(require("../model/midTestModel"));
 const lodash_1 = __importDefault(require("lodash"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
@@ -31,15 +31,11 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        console.log(checkForSubject);
         const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        console.log(findTeacher);
         const findSubjectTeacher = yield subjectModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        console.log("here");
         const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         let data = yield (0, csvtojson_1.default)().fromFile((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
         let value = [];
-        console.log("here 1");
         for (let i of data) {
             (_b = i.options) === null || _b === void 0 ? void 0 : _b.split(";;");
             let read = Object.assign(Object.assign({}, i), { options: (_c = i.options) === null || _c === void 0 ? void 0 : _c.split(";;") });
@@ -47,7 +43,6 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
         let session = lodash_1.default.find(value, { session: school === null || school === void 0 ? void 0 : school.presentSession });
-        console.log("here 2");
         const deleteFilesInFolder = (folderPath) => {
             if (node_fs_1.default.existsSync(folderPath)) {
                 const files = node_fs_1.default.readdirSync(folderPath);
@@ -76,7 +71,6 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 status: "midTest",
                 startExam: false,
             });
-            console.log("here 3");
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
             (_d = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
@@ -180,3 +174,28 @@ const readMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.readMidTest = readMidTest;
+const deleteMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { midTestID, subjectID, teacherID } = req.params;
+        const quizSubject = yield subjectModel_1.default.findById(subjectID);
+        const quizTeacher = yield staffModel_1.default.findById(teacherID);
+        const quiz = yield midTestModel_1.default.findByIdAndDelete(midTestID);
+        quizSubject.pull(new mongoose_1.Types.ObjectId(midTestID));
+        quizSubject.save();
+        quizTeacher.pull(new mongoose_1.Types.ObjectId(midTestID));
+        quizTeacher.save();
+        return res.status(201).json({
+            message: "subject mid Test read successfully",
+            // data: quiz,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating subject mid Test",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.deleteMidTest = deleteMidTest;
