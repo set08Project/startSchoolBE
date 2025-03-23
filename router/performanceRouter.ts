@@ -7,6 +7,7 @@ import {
   readMidTestResult,
   readOneSubjectExamResult,
   readOneSubjectMidTestResult,
+  readOneSubjectMidTestResultPreformance,
   readOneSubjectQuizResult,
   readQuizResult,
   readStudentExamResult,
@@ -50,6 +51,10 @@ router
 router
   .route("/view-onesubject-exam-performance/:subjectID/:quizID")
   .get(readOneSubjectExamResult);
+
+router
+  .route("/view-one-subject-mid-test-performance/:subjectID/:quizID")
+  .get(readOneSubjectMidTestResultPreformance);
 
 router
   .route("/view-student-exam-performance/:studentID")

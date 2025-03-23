@@ -387,6 +387,7 @@ export const createMidTestPerformance = async (
         ),
         className: studentInfo?.classAssigned,
         quizID: quizID,
+        studentID,
         studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
         studentAvatar: studentInfo.avatar,
         subjectID: subject?._id,
@@ -721,6 +722,54 @@ export const readMidTestResult = async (
     return res.status(404).json({
       message: "Error creating subject quiz",
       status: 404,
+    });
+  }
+};
+
+export const readOneSubjectMidTestResultPreformance = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { subjectID, quizID } = req.params;
+    const quiz = await midTestModel.findById(quizID);
+
+    const subject = await subjectModel.findById(subjectID).populate({
+      path: "performance",
+      options: { sort: { time: 1 } },
+    });
+
+    if (!quiz || !subject) {
+      return res.status(404).json({
+        message: "Subject or Quiz not found",
+        status: 404,
+      });
+    }
+
+    const idCompare = subject?.examination?.some(
+      (id: any) => id.toString() === quiz._id.toString()
+    );
+
+    if (idCompare) {
+      const filteredPerformance = subject?.performance?.filter(
+        (el: any) => el.quizID.toString() === quiz._id.toString()
+      );
+
+      return res.status(201).json({
+        message: "Filtered quiz performance read successfully",
+        data: filteredPerformance,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "QuizID and Subject Quiz don't align",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error reading subject quiz performance",
+      status: 500,
     });
   }
 };
