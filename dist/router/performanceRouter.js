@@ -27,6 +27,9 @@ router
     .route("/view-onesubject-exam-performance/:subjectID/:quizID")
     .get(performanceController_1.readOneSubjectExamResult);
 router
+    .route("/view-one-subject-mid-test-performance/:subjectID/:quizID")
+    .get(performanceController_1.readOneSubjectMidTestResultPreformance);
+router
     .route("/view-student-exam-performance/:studentID")
     .get(performanceController_1.readStudentExamResult);
 router.route("/view-exam-performance/:quizID").get(performanceController_1.readExamResult);

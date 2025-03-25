@@ -154,6 +154,12 @@ const schoolModel = new mongoose_2.Schema({
             ref: "myReportCards",
         },
     ],
+    midReportCard: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "myMidReportCards",
+        },
+    ],
     subjects: [
         {
             type: mongoose_1.Types.ObjectId,

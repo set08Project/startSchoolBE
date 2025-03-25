@@ -52,6 +52,7 @@ interface iStudent {
   performance: Array<{}>;
   history: Array<{}>;
   reportCard: Array<{}>;
+  midReportCard: Array<{}>;
   pastQuestionHistory: Array<{}>;
   schoolFeesHistory: Array<{}>;
   recordPayments: Array<{}>;
@@ -296,6 +297,13 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "myReportCards",
+      },
+    ],
+
+    midReportCard: [
+      {
+        type: Types.ObjectId,
+        ref: "myMidReportCards",
       },
     ],
     pastQuestionHistory: [

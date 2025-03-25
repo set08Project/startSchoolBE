@@ -44,6 +44,12 @@ const subjectModel = new mongoose_1.Schema({
             ref: "performances",
         },
     ],
+    midReportCard: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "myMidReportCards",
+        },
+    ],
     subjectClassIDs: {
         type: String,
     },

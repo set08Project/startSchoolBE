@@ -11,6 +11,9 @@ router
     .route("/create-report-card/:teacherID/:studentID")
     .post(cardReportController_1.createReportCardEntry);
 router
+    .route("/create-mid-report-card/:teacherID/:studentID")
+    .post(cardReportController_1.createMidReportCardEntry);
+router
     .route("/update-report-card/:teacherID/:studentID")
     .patch(cardReportController_1.updateReportScores);
 router
@@ -22,5 +25,12 @@ router
 router
     .route("/teacher-report-card/:teacherID/:studentID")
     .patch(cardReportController_1.classTeacherReportRemark);
+router
+    .route("/admin-mid-report-card/:schoolID/:studentID")
+    .patch(cardReportController_1.adminMidReportRemark);
+router
+    .route("/teacher-mid-report-card/:teacherID/:studentID")
+    .patch(cardReportController_1.classTeacherMidReportRemark);
 router.route("/student-report-card/:studentID").get(cardReportController_1.studentReportRemark);
+router.route("/student-mid-report-card/:studentID").get(cardReportController_1.studentMidReportRemark);
 exports.default = router;

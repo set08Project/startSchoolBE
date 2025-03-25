@@ -189,6 +189,12 @@ const studentModel = new mongoose_1.Schema({
             ref: "myReportCards",
         },
     ],
+    midReportCard: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "myMidReportCards",
+        },
+    ],
     pastQuestionHistory: [
         {
             type: mongoose_1.Types.ObjectId,

@@ -66,6 +66,7 @@ interface iSchool {
   gallaries: Array<{}>;
   complain: Array<{}>;
   reportCard: Array<{}>;
+  midReportCard: Array<{}>;
   recordPayments: Array<{}>;
   classHistory: Array<{}>;
   purchaseHistory: Array<{}>;
@@ -251,6 +252,13 @@ const schoolModel = new Schema<iSchoolData>(
       {
         type: Types.ObjectId,
         ref: "myReportCards",
+      },
+    ],
+
+    midReportCard: [
+      {
+        type: Types.ObjectId,
+        ref: "myMidReportCards",
       },
     ],
 

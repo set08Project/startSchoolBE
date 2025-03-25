@@ -24,6 +24,7 @@ interface iSubject {
   classDetails: {};
   performance: Array<{}>;
   reportCard: Array<{}>;
+  midReportCard: Array<{}>;
 }
 
 interface iSubjectData extends iSubject, Document {}
@@ -71,6 +72,13 @@ const subjectModel = new Schema<iSubjectData>(
       {
         type: Types.ObjectId,
         ref: "performances",
+      },
+    ],
+
+    midReportCard: [
+      {
+        type: Types.ObjectId,
+        ref: "myMidReportCards",
       },
     ],
     subjectClassIDs: {

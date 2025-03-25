@@ -115,6 +115,12 @@ const staffModel = new mongoose_1.Schema({
             ref: "myReportCards",
         },
     ],
+    midReportCard: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "myMidReportCards",
+        },
+    ],
     purchaseHistory: [
         {
             type: mongoose_1.Types.ObjectId,
