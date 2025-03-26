@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMidTest = exports.readMidTest = exports.startSubjectMidTest = exports.readSubjectMidTest = exports.createSubjectMidTest = void 0;
+exports.deleteMidTest = exports.readMidTest = exports.updateSubjectMidTest = exports.startSubjectMidTest = exports.readSubjectMidTest = exports.createSubjectMidTest = void 0;
 const midTestModel_1 = __importDefault(require("../model/midTestModel"));
 const lodash_1 = __importDefault(require("lodash"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
@@ -155,6 +155,33 @@ const startSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.startSubjectMidTest = startSubjectMidTest;
+const updateSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const { midTestID } = req.params;
+        const { mark, duration } = req.body;
+        const midTest = yield midTestModel_1.default.findByIdAndUpdate(midTestID);
+        const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
+            quiz: {
+                instruction: { duration, mark },
+                question: (_a = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _a === void 0 ? void 0 : _a.question,
+                theory: (_b = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _b === void 0 ? void 0 : _b.theory,
+            },
+        }, { new: true });
+        return res.status(201).json({
+            message: "start subject mid test read successfully",
+            data: subject,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error reading subject mid test",
+            status: 404,
+        });
+    }
+});
+exports.updateSubjectMidTest = updateSubjectMidTest;
 const readMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { midTestID } = req.params;

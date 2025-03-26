@@ -7,6 +7,7 @@ import {
   readSubjectMidTest,
   startSubjectMidTest,
   deleteMidTest,
+  updateSubjectMidTest,
 } from "../controller/midTestController";
 
 const router: Router = Router();
@@ -17,6 +18,9 @@ router
   .post(fileUploads, createSubjectMidTest);
 
 router.route("/start-subject-mid-test/:midTestID/").patch(startSubjectMidTest);
+router
+  .route("/update-subject-mid-test/:midTestID/")
+  .patch(updateSubjectMidTest);
 
 router.route("/view-subject-mid-test/:subjectID").get(readSubjectMidTest);
 

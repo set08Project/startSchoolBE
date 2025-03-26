@@ -177,6 +177,40 @@ export const startSubjectMidTest = async (
   }
 };
 
+export const updateSubjectMidTest = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { midTestID } = req.params;
+    const { mark, duration } = req.body;
+
+    const midTest: any = await midTestModel.findByIdAndUpdate(midTestID);
+    const subject = await midTestModel.findByIdAndUpdate(
+      midTestID,
+      {
+        quiz: {
+          instruction: { duration, mark },
+          question: midTest?.quiz?.question,
+          theory: midTest?.quiz?.theory,
+        },
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "start subject mid test read successfully",
+      data: subject,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error reading subject mid test",
+      status: 404,
+    });
+  }
+};
+
 export const readMidTest = async (
   req: Request,
   res: Response

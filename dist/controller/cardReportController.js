@@ -514,6 +514,26 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                                 test3,
                                 test4,
                                 exam,
+                                total: exam,
+                                grade: exam >= 0 && exam <= 39
+                                    ? "F9"
+                                    : exam >= 39 && exam <= 44
+                                        ? "E8"
+                                        : exam >= 44 && exam <= 49
+                                            ? "D7"
+                                            : exam >= 49 && exam <= 54
+                                                ? "C6"
+                                                : exam >= 54 && exam <= 59
+                                                    ? "C5"
+                                                    : exam >= 59 && exam <= 64
+                                                        ? "C4"
+                                                        : exam >= 64 && exam <= 69
+                                                            ? "B3"
+                                                            : exam >= 69 && exam <= 74
+                                                                ? "B2"
+                                                                : exam >= 74 && exam <= 100
+                                                                    ? "A1"
+                                                                    : null,
                             },
                         ],
                         classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_d = school === null || school === void 0 ? void 0 : school.session[0]) === null || _d === void 0 ? void 0 : _d.year}(${(_e = school === null || school === void 0 ? void 0 : school.session[0]) === null || _e === void 0 ? void 0 : _e.presentTerm})`,
@@ -780,6 +800,26 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                             test3,
                             test4,
                             exam,
+                            total: exam,
+                            grade: exam >= 0 && exam <= 39
+                                ? "F9"
+                                : exam >= 39 && exam <= 44
+                                    ? "E8"
+                                    : exam >= 44 && exam <= 49
+                                        ? "D7"
+                                        : exam >= 49 && exam <= 54
+                                            ? "C6"
+                                            : exam >= 54 && exam <= 59
+                                                ? "C5"
+                                                : exam >= 59 && exam <= 64
+                                                    ? "C4"
+                                                    : exam >= 64 && exam <= 69
+                                                        ? "B3"
+                                                        : exam >= 69 && exam <= 74
+                                                            ? "B2"
+                                                            : exam >= 74 && exam <= 100
+                                                                ? "A1"
+                                                                : null,
                         },
                     ],
                     classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_k = school === null || school === void 0 ? void 0 : school.session[0]) === null || _k === void 0 ? void 0 : _k.year}(${(_l = school === null || school === void 0 ? void 0 : school.session[0]) === null || _l === void 0 ? void 0 : _l.presentTerm})`,

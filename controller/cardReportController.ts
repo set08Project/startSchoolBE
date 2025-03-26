@@ -618,6 +618,27 @@ export const createMidReportCardEntry = async (
                 test3,
                 test4,
                 exam,
+                total: exam,
+                grade:
+                  exam >= 0 && exam <= 39
+                    ? "F9"
+                    : exam >= 39 && exam <= 44
+                    ? "E8"
+                    : exam >= 44 && exam <= 49
+                    ? "D7"
+                    : exam >= 49 && exam <= 54
+                    ? "C6"
+                    : exam >= 54 && exam <= 59
+                    ? "C5"
+                    : exam >= 59 && exam <= 64
+                    ? "C4"
+                    : exam >= 64 && exam <= 69
+                    ? "B3"
+                    : exam >= 69 && exam <= 74
+                    ? "B2"
+                    : exam >= 74 && exam <= 100
+                    ? "A1"
+                    : null,
               },
             ],
             classInfo: `${student?.classAssigned} session: ${school?.session[0]
@@ -934,6 +955,27 @@ export const createMidReportCardEntry = async (
               test3,
               test4,
               exam,
+              total: exam,
+              grade:
+                exam >= 0 && exam <= 39
+                  ? "F9"
+                  : exam >= 39 && exam <= 44
+                  ? "E8"
+                  : exam >= 44 && exam <= 49
+                  ? "D7"
+                  : exam >= 49 && exam <= 54
+                  ? "C6"
+                  : exam >= 54 && exam <= 59
+                  ? "C5"
+                  : exam >= 59 && exam <= 64
+                  ? "C4"
+                  : exam >= 64 && exam <= 69
+                  ? "B3"
+                  : exam >= 69 && exam <= 74
+                  ? "B2"
+                  : exam >= 74 && exam <= 100
+                  ? "A1"
+                  : null,
             },
           ],
           classInfo: `${student?.classAssigned} session: ${school?.session[0]

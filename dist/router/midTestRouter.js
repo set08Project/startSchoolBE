@@ -9,6 +9,9 @@ router
     .route("/create-subject-mid-test/:classID/:subjectID")
     .post(multer_1.fileUploads, midTestController_1.createSubjectMidTest);
 router.route("/start-subject-mid-test/:midTestID/").patch(midTestController_1.startSubjectMidTest);
+router
+    .route("/update-subject-mid-test/:midTestID/")
+    .patch(midTestController_1.updateSubjectMidTest);
 router.route("/view-subject-mid-test/:subjectID").get(midTestController_1.readSubjectMidTest);
 router.route("/view-mid-test/:midTestID").get(midTestController_1.readMidTest);
 router
