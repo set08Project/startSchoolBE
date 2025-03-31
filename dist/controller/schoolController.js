@@ -255,14 +255,11 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const { schoolID } = req.params;
         let id = "678d4e5060a0cbcd2e27dc51";
         const getSchool = yield schoolModel_1.default.findById(schoolID);
-        console.log("here hmm: ", getSchool === null || getSchool === void 0 ? void 0 : getSchool.session);
         for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.session) {
             let sessTerm = yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findById(i.toString()));
             for (let i of sessTerm === null || sessTerm === void 0 ? void 0 : sessTerm.term) {
-                console.log("here reading: ", i);
                 yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndDelete(i.toString()));
             }
-            console.log("here done");
             yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findByIdAndDelete(i.toString()));
         }
         for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classHistory) {
@@ -271,7 +268,6 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.subjects) {
             yield (subjectModel_1.default === null || subjectModel_1.default === void 0 ? void 0 : subjectModel_1.default.findByIdAndDelete(i.toString()));
         }
-        console.log("class");
         for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classRooms) {
             yield (classroomModel_1.default === null || classroomModel_1.default === void 0 ? void 0 : classroomModel_1.default.findByIdAndDelete(i.toString()));
         }
@@ -681,6 +677,7 @@ const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (school) {
             const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school._id, {
                 started: true,
+                verify: true,
             }, { new: true });
             yield (0, email_1.verifiedEmail)(school);
             return res.status(200).json({

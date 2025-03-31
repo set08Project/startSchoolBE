@@ -294,16 +294,12 @@ export const deleteSchool = async (
     const { schoolID } = req.params;
     let id = "678d4e5060a0cbcd2e27dc51";
     const getSchool: any = await schoolModel.findById(schoolID);
-    console.log("here hmm: ", getSchool?.session);
 
     for (let i of getSchool?.session) {
       let sessTerm: any = await sessionModel?.findById(i.toString());
       for (let i of sessTerm?.term) {
-        console.log("here reading: ", i);
-
         await termModel?.findByIdAndDelete(i.toString());
       }
-      console.log("here done");
 
       await sessionModel?.findByIdAndDelete(i.toString());
     }
@@ -315,8 +311,6 @@ export const deleteSchool = async (
     for (let i of getSchool?.subjects) {
       await subjectModel?.findByIdAndDelete(i.toString());
     }
-
-    console.log("class");
 
     for (let i of getSchool?.classRooms) {
       await classroomModel?.findByIdAndDelete(i.toString());
@@ -728,7 +722,6 @@ export const updateRegisterationStatus = async (req: any, res: Response) => {
     } = req.body;
 
     const school = await schoolModel.findOne({ email });
-
     // const id = crypto.randomBytes(4).toString("hex");
     // const adminCode = crypto.randomBytes(6).toString("hex");
     // if (school) {
@@ -821,6 +814,7 @@ export const approveRegistration = async (req: Request, res: Response) => {
         school._id,
         {
           started: true,
+          verify: true,
         },
         { new: true }
       );
