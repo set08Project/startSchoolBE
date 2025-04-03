@@ -282,8 +282,6 @@ export const createReportCardEntry = async (
             { new: true }
           );
 
-          console.log("here12");
-
           return res.status(201).json({
             message: "teacher updated report successfully",
             data: nice,
@@ -403,7 +401,6 @@ export const createReportCardEntry = async (
             },
             { new: true }
           );
-          console.log("here2");
           return res.status(201).json({
             message: "can't report entry created successfully",
             data: nice,
@@ -1407,8 +1404,13 @@ export const classTeacherReportRemark = async (
     const teacherClassDataRomm = teacher?.classesAssigned.find((el: any) => {
       return el.className === student?.classAssigned;
     });
+    const x = student?.presentClassID;
 
-    if (teacherClassDataRomm?.className === student?.classAssigned) {
+    const xx = teacher?.classesAssigned?.find((el: any) => {
+      return el?.classID === `${x}`;
+    });
+
+    if (xx?.className === student?.classAssigned.trim()) {
       const report = await cardReportModel.findByIdAndUpdate(
         getReportSubject?._id,
         {
@@ -1538,9 +1540,6 @@ export const adminMidReportRemark = async (
         { new: true }
       );
 
-      console.log(report);
-      console.log(getReportSubject);
-
       return res.status(201).json({
         message: "admin report remark successfully",
         data: report,
@@ -1595,8 +1594,6 @@ export const studentMidReportRemark = async (
     const student: any = await studentModel
       .findById(studentID)
       .populate({ path: "midReportCard" });
-
-    console.log(student?.midReportCard);
 
     return res.status(201).json({
       message: "class Teacher report grade",
