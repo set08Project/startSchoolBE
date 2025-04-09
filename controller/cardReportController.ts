@@ -38,9 +38,11 @@ export const createReportCardEntry = async (
       return (
         el.classInfo ===
         `${student?.classAssigned} session: ${school?.session[0]
-          ?.year!}(${school?.session[0]?.presentTerm!})`
+          ?.year!}(${school?.presentTerm!})`
       );
     });
+
+
 
     if (teacher && student) {
       if (studentCheck) {
