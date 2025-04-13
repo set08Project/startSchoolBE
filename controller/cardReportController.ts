@@ -43,7 +43,6 @@ export const createReportCardEntry = async (
       );
     });
     // presentSession;
-    // console.log(student?.reportCard);
 
     if (teacher && student) {
       if (studentCheck) {
