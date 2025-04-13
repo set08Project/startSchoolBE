@@ -37,12 +37,13 @@ export const createReportCardEntry = async (
     const studentCheck = student?.reportCard.some((el: any) => {
       return (
         el.classInfo ===
-        `${student?.classAssigned} session: ${school?.session[0]
-          ?.year!}(${school?.presentTerm!})`
+        `${
+          student?.classAssigned
+        } session: ${school?.presentSession!}(${school?.presentTerm!})`
       );
     });
-
-
+    // presentSession;
+    // console.log(student?.reportCard);
 
     if (teacher && student) {
       if (studentCheck) {
@@ -56,8 +57,9 @@ export const createReportCardEntry = async (
         const getData: any = getReportSubject?.reportCard?.find((el: any) => {
           return (
             el.classInfo ===
-            `${student?.classAssigned} session: ${school?.session[0]
-              ?.year!}(${school?.session[0]?.presentTerm!})`
+            `${
+              student?.classAssigned
+            } session: ${school?.presentSession!}(${school?.presentTerm!})`
           );
         });
 
@@ -421,8 +423,9 @@ export const createReportCardEntry = async (
               exam,
             },
           ],
-          classInfo: `${student?.classAssigned} session: ${school?.session[0]
-            ?.year!}(${school?.session[0]?.presentTerm!})`,
+          classInfo: `${
+            student?.classAssigned
+          } session: ${school?.presentSession!}(${school?.presentTerm!})`,
           studentID,
         });
 
@@ -484,7 +487,7 @@ export const createReportCardEntry = async (
 
         // school?.reportCard.push(new Types.ObjectId(report._id));
         // school?.save();
-
+        console.log("report", report);
         return res.status(201).json({
           message: "report entry created successfully",
           data: { nice, student },
@@ -535,8 +538,9 @@ export const createMidReportCardEntry = async (
     const studentCheck = student?.midReportCard.some((el: any) => {
       return (
         el.classInfo ===
-        `${student?.classAssigned} session: ${school?.session[0]
-          ?.year!}(${school?.session[0]?.presentTerm!})`
+        `${
+          student?.classAssigned
+        } session: ${school?.presentSession!}(${school?.presentTerm!})`
       );
     });
 
@@ -553,8 +557,9 @@ export const createMidReportCardEntry = async (
           (el: any) => {
             return (
               el.classInfo ===
-              `${student?.classAssigned} session: ${school?.session[0]
-                ?.year!}(${school?.session[0]?.presentTerm!})`
+              `${
+                student?.classAssigned
+              } session: ${school?.presentSession!}(${school?.presentTerm!})`
             );
           }
         );
@@ -640,8 +645,9 @@ export const createMidReportCardEntry = async (
                     : null,
               },
             ],
-            classInfo: `${student?.classAssigned} session: ${school?.session[0]
-              ?.year!}(${school?.session[0]?.presentTerm!})`,
+            classInfo: `${
+              student?.classAssigned
+            } session: ${school?.presentSession!}(${school?.presentTerm!})`,
             studentID,
           });
 
@@ -977,8 +983,9 @@ export const createMidReportCardEntry = async (
                   : null,
             },
           ],
-          classInfo: `${student?.classAssigned} session: ${school?.session[0]
-            ?.year!}(${school?.session[0]?.presentTerm!})`,
+          classInfo: `${
+            student?.classAssigned
+          } session: ${school?.presentSession!}(${school?.presentTerm!})`,
           studentID,
         });
 
@@ -1392,6 +1399,8 @@ export const classTeacherReportRemark = async (
         path: "session",
       });
 
+    console.log(student);
+
     const getReportSubject: any = student?.reportCard.find((el: any) => {
       return (
         el.classInfo ===
@@ -1411,6 +1420,8 @@ export const classTeacherReportRemark = async (
     const xx = teacher?.classesAssigned?.find((el: any) => {
       return el?.classID === `${x}`;
     });
+
+    console.log(getReportSubject);
 
     if (xx?.className === student?.classAssigned.trim()) {
       const report = await cardReportModel.findByIdAndUpdate(

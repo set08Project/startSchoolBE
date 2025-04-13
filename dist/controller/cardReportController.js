@@ -22,7 +22,7 @@ const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const midReportCardModel_1 = __importDefault(require("../model/midReportCardModel"));
 const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     try {
         const { teacherID, studentID } = req.params;
         const { subject, test1, test2, test3, test4, exam } = req.body;
@@ -42,10 +42,11 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
         const subjectData = yield subjectModel_1.default.findOne({ subjectTitle: subject });
         const studentCheck = student === null || student === void 0 ? void 0 : student.reportCard.some((el) => {
-            var _a, _b;
             return (el.classInfo ===
-                `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_a = school === null || school === void 0 ? void 0 : school.session[0]) === null || _a === void 0 ? void 0 : _a.year}(${(_b = school === null || school === void 0 ? void 0 : school.session[0]) === null || _b === void 0 ? void 0 : _b.presentTerm})`);
+                `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
+        // presentSession;
+        // console.log(student?.reportCard);
         if (teacher && student) {
             if (studentCheck) {
                 // check
@@ -55,9 +56,8 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     path: "reportCard",
                 });
                 const getData = (_a = getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject.reportCard) === null || _a === void 0 ? void 0 : _a.find((el) => {
-                    var _a, _b;
                     return (el.classInfo ===
-                        `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_a = school === null || school === void 0 ? void 0 : school.session[0]) === null || _a === void 0 ? void 0 : _a.year}(${(_b = school === null || school === void 0 ? void 0 : school.session[0]) === null || _b === void 0 ? void 0 : _b.presentTerm})`);
+                        `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
                 });
                 const data = (_b = getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject.reportCard) === null || _b === void 0 ? void 0 : _b.find((el) => {
                     return el.result.find((el) => {
@@ -248,7 +248,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         classTeacherComment: xx,
                         grade,
                     }, { new: true });
-                    console.log("here12");
                     return res.status(201).json({
                         message: "teacher updated report successfully",
                         data: nice,
@@ -343,7 +342,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         points: genPoint,
                         grade,
                     }, { new: true });
-                    console.log("here2");
                     return res.status(201).json({
                         message: "can't report entry created successfully",
                         data: nice,
@@ -363,14 +361,14 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                             exam,
                         },
                     ],
-                    classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_h = school === null || school === void 0 ? void 0 : school.session[0]) === null || _h === void 0 ? void 0 : _h.year}(${(_j = school === null || school === void 0 ? void 0 : school.session[0]) === null || _j === void 0 ? void 0 : _j.presentTerm})`,
+                    classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`,
                     studentID,
                 });
-                let genPoint = parseFloat((((_k = report === null || report === void 0 ? void 0 : report.result) === null || _k === void 0 ? void 0 : _k.map((el) => {
+                let genPoint = parseFloat((((_h = report === null || report === void 0 ? void 0 : report.result) === null || _h === void 0 ? void 0 : _h.map((el) => {
                     return el.points;
                 }).reduce((a, b) => {
                     return a + b;
-                }, 0)) / ((_l = report === null || report === void 0 ? void 0 : report.result) === null || _l === void 0 ? void 0 : _l.length)).toFixed(2));
+                }, 0)) / ((_j = report === null || report === void 0 ? void 0 : report.result) === null || _j === void 0 ? void 0 : _j.length)).toFixed(2));
                 let numb = [test1, test2, test3, test4, exam];
                 let count = 0;
                 let resultNumb = 0;
@@ -399,12 +397,13 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     points: resultNumb,
                     grade: "Nill",
                 }, { new: true });
-                (_m = student === null || student === void 0 ? void 0 : student.reportCard) === null || _m === void 0 ? void 0 : _m.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
+                (_k = student === null || student === void 0 ? void 0 : student.reportCard) === null || _k === void 0 ? void 0 : _k.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
                 student === null || student === void 0 ? void 0 : student.save();
-                (_o = subjectData === null || subjectData === void 0 ? void 0 : subjectData.reportCard) === null || _o === void 0 ? void 0 : _o.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
+                (_l = subjectData === null || subjectData === void 0 ? void 0 : subjectData.reportCard) === null || _l === void 0 ? void 0 : _l.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
                 subjectData === null || subjectData === void 0 ? void 0 : subjectData.save();
                 // school?.reportCard.push(new Types.ObjectId(report._id));
                 // school?.save();
+                console.log("report", report);
                 return res.status(201).json({
                     message: "report entry created successfully",
                     data: { nice, student },
@@ -429,7 +428,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.createReportCardEntry = createReportCardEntry;
 const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     try {
         const { teacherID, studentID } = req.params;
         const { subject, test1, test2, test3, test4, exam } = req.body;
@@ -449,9 +448,8 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
         });
         const subjectData = yield subjectModel_1.default.findOne({ subjectTitle: subject });
         const studentCheck = student === null || student === void 0 ? void 0 : student.midReportCard.some((el) => {
-            var _a, _b;
             return (el.classInfo ===
-                `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_a = school === null || school === void 0 ? void 0 : school.session[0]) === null || _a === void 0 ? void 0 : _a.year}(${(_b = school === null || school === void 0 ? void 0 : school.session[0]) === null || _b === void 0 ? void 0 : _b.presentTerm})`);
+                `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
         if (teacher && student) {
             if (studentCheck) {
@@ -462,9 +460,8 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                     path: "midReportCard",
                 });
                 const getData = (_a = getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject.midReportCard) === null || _a === void 0 ? void 0 : _a.find((el) => {
-                    var _a, _b;
                     return (el.classInfo ===
-                        `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_a = school === null || school === void 0 ? void 0 : school.session[0]) === null || _a === void 0 ? void 0 : _a.year}(${(_b = school === null || school === void 0 ? void 0 : school.session[0]) === null || _b === void 0 ? void 0 : _b.presentTerm})`);
+                        `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
                 });
                 const data = (_b = getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject.midReportCard) === null || _b === void 0 ? void 0 : _b.find((el) => {
                     return el.result.find((el) => {
@@ -536,7 +533,7 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                                                                     : null,
                             },
                         ],
-                        classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_d = school === null || school === void 0 ? void 0 : school.session[0]) === null || _d === void 0 ? void 0 : _d.year}(${(_e = school === null || school === void 0 ? void 0 : school.session[0]) === null || _e === void 0 ? void 0 : _e.presentTerm})`,
+                        classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`,
                         studentID,
                     });
                     const report = yield midReportCardModel_1.default.findByIdAndUpdate(getData === null || getData === void 0 ? void 0 : getData._id, {
@@ -577,11 +574,11 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                             },
                         ],
                     }, { new: true });
-                    let genPoint = parseFloat((((_f = report === null || report === void 0 ? void 0 : report.result) === null || _f === void 0 ? void 0 : _f.map((el) => {
+                    let genPoint = parseFloat((((_d = report === null || report === void 0 ? void 0 : report.result) === null || _d === void 0 ? void 0 : _d.map((el) => {
                         return el.points;
                     }).reduce((a, b) => {
                         return a + b;
-                    }, 0)) / ((_g = report === null || report === void 0 ? void 0 : report.result) === null || _g === void 0 ? void 0 : _g.length)).toFixed(2));
+                    }, 0)) / ((_e = report === null || report === void 0 ? void 0 : report.result) === null || _e === void 0 ? void 0 : _e.length)).toFixed(2));
                     let grade = genPoint >= 0 && genPoint <= 39
                         ? "F9"
                         : genPoint >= 39 && genPoint <= 44
@@ -755,11 +752,11 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                             },
                         ],
                     }, { new: true });
-                    let genPoint = parseFloat((((_h = report === null || report === void 0 ? void 0 : report.result) === null || _h === void 0 ? void 0 : _h.map((el) => {
+                    let genPoint = parseFloat((((_f = report === null || report === void 0 ? void 0 : report.result) === null || _f === void 0 ? void 0 : _f.map((el) => {
                         return el.points;
                     }).reduce((a, b) => {
                         return a + b;
-                    }, 0)) / ((_j = report === null || report === void 0 ? void 0 : report.result) === null || _j === void 0 ? void 0 : _j.length)).toFixed(2));
+                    }, 0)) / ((_g = report === null || report === void 0 ? void 0 : report.result) === null || _g === void 0 ? void 0 : _g.length)).toFixed(2));
                     let grade = genPoint >= 0 && genPoint <= 39
                         ? "F9"
                         : genPoint >= 39 && genPoint <= 44
@@ -822,14 +819,14 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                                                                 : null,
                         },
                     ],
-                    classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${(_k = school === null || school === void 0 ? void 0 : school.session[0]) === null || _k === void 0 ? void 0 : _k.year}(${(_l = school === null || school === void 0 ? void 0 : school.session[0]) === null || _l === void 0 ? void 0 : _l.presentTerm})`,
+                    classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`,
                     studentID,
                 });
-                let genPointScore = parseFloat((((_m = report === null || report === void 0 ? void 0 : report.result) === null || _m === void 0 ? void 0 : _m.map((el) => {
+                let genPointScore = parseFloat((((_h = report === null || report === void 0 ? void 0 : report.result) === null || _h === void 0 ? void 0 : _h.map((el) => {
                     return el.exam;
                 }).reduce((a, b) => {
                     return a + b;
-                }, 0)) / ((_o = report === null || report === void 0 ? void 0 : report.result) === null || _o === void 0 ? void 0 : _o.length)).toFixed(2));
+                }, 0)) / ((_j = report === null || report === void 0 ? void 0 : report.result) === null || _j === void 0 ? void 0 : _j.length)).toFixed(2));
                 let numb = [test1, test2, test3, test4, exam];
                 let count = 0;
                 let resultNumb = 0;
@@ -947,9 +944,9 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                                                         ? "A1"
                                                         : null,
                 }, { new: true });
-                (_p = student === null || student === void 0 ? void 0 : student.midReportCard) === null || _p === void 0 ? void 0 : _p.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
+                (_k = student === null || student === void 0 ? void 0 : student.midReportCard) === null || _k === void 0 ? void 0 : _k.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
                 student === null || student === void 0 ? void 0 : student.save();
-                (_q = subjectData === null || subjectData === void 0 ? void 0 : subjectData.midReportCard) === null || _q === void 0 ? void 0 : _q.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
+                (_l = subjectData === null || subjectData === void 0 ? void 0 : subjectData.midReportCard) === null || _l === void 0 ? void 0 : _l.push(new mongoose_1.Types.ObjectId(nice === null || nice === void 0 ? void 0 : nice._id));
                 subjectData === null || subjectData === void 0 ? void 0 : subjectData.save();
                 // school?.reportCard.push(new Types.ObjectId(report._id));
                 // school?.save();
@@ -1143,6 +1140,7 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.adminReportRemark = adminReportRemark;
 const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { teacherID, studentID, classID } = req.params;
         const { teacherComment, attendance } = req.body;
@@ -1155,6 +1153,7 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
             .populate({
             path: "session",
         });
+        console.log(student);
         const getReportSubject = student === null || student === void 0 ? void 0 : student.reportCard.find((el) => {
             return (el.classInfo ===
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
@@ -1163,7 +1162,12 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
         const teacherClassDataRomm = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned.find((el) => {
             return el.className === (student === null || student === void 0 ? void 0 : student.classAssigned);
         });
-        if ((teacherClassDataRomm === null || teacherClassDataRomm === void 0 ? void 0 : teacherClassDataRomm.className) === (student === null || student === void 0 ? void 0 : student.classAssigned)) {
+        const x = student === null || student === void 0 ? void 0 : student.presentClassID;
+        const xx = (_a = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned) === null || _a === void 0 ? void 0 : _a.find((el) => {
+            return (el === null || el === void 0 ? void 0 : el.classID) === `${x}`;
+        });
+        console.log(getReportSubject);
+        if ((xx === null || xx === void 0 ? void 0 : xx.className) === (student === null || student === void 0 ? void 0 : student.classAssigned.trim())) {
             const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 attendance,
                 classTeacherComment: teacherComment,
@@ -1257,8 +1261,6 @@ const adminMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 approve: true,
                 adminComment,
             }, { new: true });
-            console.log(report);
-            console.log(getReportSubject);
             return res.status(201).json({
                 message: "admin report remark successfully",
                 data: report,
@@ -1307,7 +1309,6 @@ const studentMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, f
         const student = yield studentModel_1.default
             .findById(studentID)
             .populate({ path: "midReportCard" });
-        console.log(student === null || student === void 0 ? void 0 : student.midReportCard);
         return res.status(201).json({
             message: "class Teacher report grade",
             data: student,
