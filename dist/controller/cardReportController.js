@@ -46,7 +46,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
         // presentSession;
-        // console.log(student?.reportCard);
         if (teacher && student) {
             if (studentCheck) {
                 // check
@@ -403,7 +402,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 subjectData === null || subjectData === void 0 ? void 0 : subjectData.save();
                 // school?.reportCard.push(new Types.ObjectId(report._id));
                 // school?.save();
-                console.log("report", report);
                 return res.status(201).json({
                     message: "report entry created successfully",
                     data: { nice, student },
@@ -1153,7 +1151,6 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
             .populate({
             path: "session",
         });
-        console.log(student);
         const getReportSubject = student === null || student === void 0 ? void 0 : student.reportCard.find((el) => {
             return (el.classInfo ===
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
@@ -1166,8 +1163,7 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
         const xx = (_a = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned) === null || _a === void 0 ? void 0 : _a.find((el) => {
             return (el === null || el === void 0 ? void 0 : el.classID) === `${x}`;
         });
-        console.log(getReportSubject);
-        if ((xx === null || xx === void 0 ? void 0 : xx.className) === (student === null || student === void 0 ? void 0 : student.classAssigned.trim())) {
+        if ((xx === null || xx === void 0 ? void 0 : xx.classID) === x) {
             const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 attendance,
                 classTeacherComment: teacherComment,

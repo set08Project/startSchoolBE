@@ -486,7 +486,7 @@ export const createReportCardEntry = async (
 
         // school?.reportCard.push(new Types.ObjectId(report._id));
         // school?.save();
-        console.log("report", report);
+
         return res.status(201).json({
           message: "report entry created successfully",
           data: { nice, student },
@@ -1398,8 +1398,6 @@ export const classTeacherReportRemark = async (
         path: "session",
       });
 
-    console.log(student);
-
     const getReportSubject: any = student?.reportCard.find((el: any) => {
       return (
         el.classInfo ===
@@ -1420,9 +1418,7 @@ export const classTeacherReportRemark = async (
       return el?.classID === `${x}`;
     });
 
-    console.log(getReportSubject);
-
-    if (xx?.className === student?.classAssigned.trim()) {
+    if (xx?.classID === x) {
       const report = await cardReportModel.findByIdAndUpdate(
         getReportSubject?._id,
         {
