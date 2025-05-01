@@ -71,12 +71,20 @@ interface iSchool {
   classHistory: Array<{}>;
   purchaseHistory: Array<{}>;
   schoolFeesHistory: Array<{}>;
+  outGoneStudents: Array<{}>;
 }
 
 interface iSchoolData extends iSchool, Document {}
 
 const schoolModel = new Schema<iSchoolData>(
   {
+    outGoneStudents: [
+      {
+        type: Types.ObjectId,
+        ref: "outGoneStudents",
+      },
+    ],
+
     purchaseHistory: [
       {
         type: Types.ObjectId,

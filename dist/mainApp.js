@@ -31,6 +31,8 @@ const passportRoute_1 = __importDefault(require("./router/passportRoute"));
 const schemeOfWorkRouter_1 = __importDefault(require("./router/schemeOfWorkRouter"));
 const exanimationRouter_1 = __importDefault(require("./router/exanimationRouter"));
 const midTestRouter_1 = __importDefault(require("./router/midTestRouter"));
+const outGoneStudentRouter_1 = __importDefault(require("./router/outGoneStudentRouter"));
+const resultHistoryRouter_1 = __importDefault(require("./router/resultHistoryRouter"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
 const handleError_1 = require("./error/handleError");
@@ -44,6 +46,7 @@ const mainApp = (app) => {
         app.use("/api", paymentRouter_1.default);
         app.use("/api", classRouter_1.default);
         app.use("/api", subjectRouter_1.default);
+        app.use("/api", outGoneStudentRouter_1.default);
         app.use("/api", anouncementRouter_1.default);
         app.use("/api", midTestRouter_1.default);
         app.use("/api", attendanceRouter_1.default);
@@ -63,6 +66,7 @@ const mainApp = (app) => {
         app.use("/api", assignmentResolveRouter_1.default);
         app.use("/api", gallaryRouter_1.default);
         app.use("/api", complainRouter_1.default);
+        app.use("/api", resultHistoryRouter_1.default);
         app.get("/", (req, res) => {
             try {
                 return res.status(200).json({

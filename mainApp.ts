@@ -27,6 +27,8 @@ import social from "./router/passportRoute";
 import scheme from "./router/schemeOfWorkRouter";
 import exam from "./router/exanimationRouter";
 import midTest from "./router/midTestRouter";
+import outgone from "./router/outGoneStudentRouter";
+import resultHistory from "./router/resultHistoryRouter";
 
 import cronParser from "cron-parser";
 import fs from "fs";
@@ -48,6 +50,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", payment);
     app.use("/api", classes);
     app.use("/api", subject);
+    app.use("/api", outgone);
 
     app.use("/api", event);
 
@@ -71,6 +74,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", assignment);
     app.use("/api", gallary);
     app.use("/api", complain);
+    app.use("/api", resultHistory);
 
     app.get("/", (req: Request, res: Response) => {
       try {

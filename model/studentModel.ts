@@ -57,6 +57,8 @@ interface iStudent {
   schoolFeesHistory: Array<{}>;
   recordPayments: Array<{}>;
 
+  historicalResult: Array<{}>;
+
   weekStudent: {};
 
   school: {};
@@ -247,6 +249,12 @@ const studentModel = new Schema<iStudentData>(
       {
         type: Types.ObjectId,
         ref: "historys",
+      },
+    ],
+    historicalResult: [
+      {
+        type: Types.ObjectId,
+        ref: "historicalResults",
       },
     ],
 

@@ -3,6 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const mongoose_2 = require("mongoose");
 const schoolModel = new mongoose_2.Schema({
+    outGoneStudents: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "outGoneStudents",
+        },
+    ],
     purchaseHistory: [
         {
             type: mongoose_1.Types.ObjectId,

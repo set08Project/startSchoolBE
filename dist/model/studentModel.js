@@ -146,6 +146,12 @@ const studentModel = new mongoose_1.Schema({
             ref: "historys",
         },
     ],
+    historicalResult: [
+        {
+            type: mongoose_1.Types.ObjectId,
+            ref: "historicalResults",
+        },
+    ],
     subjects: [
         {
             type: mongoose_1.Types.ObjectId,
