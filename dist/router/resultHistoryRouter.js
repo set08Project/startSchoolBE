@@ -7,4 +7,7 @@ router
     .route("/create-result-history/:schoolID/:studentID")
     .post(historicalResultController_1.createResultHistory);
 router.route("/view-student-result-history/:studentID").get(historicalResultController_1.viewResultHistory);
+router
+    .route("/delete-student-result-history/:studentID/:resultID")
+    .delete(historicalResultController_1.deleteResultHistory);
 exports.default = router;

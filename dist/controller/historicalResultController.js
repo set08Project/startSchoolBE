@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.viewResultHistory = exports.createResultHistory = void 0;
+exports.deleteResultHistory = exports.viewResultHistory = exports.createResultHistory = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
@@ -76,3 +76,31 @@ const viewResultHistory = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.viewResultHistory = viewResultHistory;
+const deleteResultHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { studentID, schoolID, teacherID, resultID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID);
+        const student = yield studentModel_1.default.findById(studentID).populate({
+            path: "historicalResult",
+            options: {
+                sort: {
+                    createdAt: -1,
+                },
+            },
+        });
+        yield (studentHistoricalResultModel_1.default === null || studentHistoricalResultModel_1.default === void 0 ? void 0 : studentHistoricalResultModel_1.default.findByIdAndDelete(resultID));
+        yield ((_a = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(resultID)));
+        student.save();
+        return res.status(201).json({
+            message: "done",
+            data: student,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error",
+        });
+    }
+});
+exports.deleteResultHistory = deleteResultHistory;

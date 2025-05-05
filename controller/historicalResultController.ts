@@ -66,3 +66,33 @@ export const viewResultHistory = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const deleteResultHistory = async (req: Request, res: Response) => {
+  try {
+    const { studentID, schoolID, teacherID, resultID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+    const student: any = await studentModel.findById(studentID).populate({
+      path: "historicalResult",
+      options: {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    });
+
+    await studentHistoricalResultModel?.findByIdAndDelete(resultID);
+
+    await student?.historicalResult?.pull(new Types.ObjectId(resultID));
+    student.save();
+
+    return res.status(201).json({
+      message: "done",
+      data: student,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error",
+    });
+  }
+};
