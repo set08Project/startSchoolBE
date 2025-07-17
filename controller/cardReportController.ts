@@ -1332,6 +1332,10 @@ export const adminReportRemark = async (
     const { studentID, schoolID } = req.params;
     const { adminComment } = req.body;
 
+    const studentHistory = await studentModel.findById(studentID).populate({
+      path: "historicalResult",
+    });
+
     const student = await studentModel.findById(studentID).populate({
       path: "reportCard",
     });
@@ -1358,6 +1362,12 @@ export const adminReportRemark = async (
         },
         { new: true }
       );
+
+      studentHistory?.historicalResult?.push(new Types.ObjectId(report?._id));
+      studentHistory?.save();
+
+      console.log("studentHistory", student?.historicalResult);
+      console.log("student", student?.reportCard);
 
       return res.status(201).json({
         message: "admin report remark successfully",

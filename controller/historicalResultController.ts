@@ -56,6 +56,8 @@ export const viewResultHistory = async (req: Request, res: Response) => {
     });
     const teacher = await staffModel.findById(teacherID);
 
+    console.log("student", student?.historicalResult);
+
     return res.status(201).json({
       message: "done",
       data: student,
