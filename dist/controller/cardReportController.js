@@ -1098,9 +1098,13 @@ const classTeacherPhychoReportRemark = (req, res) => __awaiter(void 0, void 0, v
 });
 exports.classTeacherPhychoReportRemark = classTeacherPhychoReportRemark;
 const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { studentID, schoolID } = req.params;
         const { adminComment } = req.body;
+        const studentHistory = yield studentModel_1.default.findById(studentID).populate({
+            path: "historicalResult",
+        });
         const student = yield studentModel_1.default.findById(studentID).populate({
             path: "reportCard",
         });
@@ -1116,6 +1120,10 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 approve: true,
                 adminComment,
             }, { new: true });
+            (_a = studentHistory === null || studentHistory === void 0 ? void 0 : studentHistory.historicalResult) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
+            studentHistory === null || studentHistory === void 0 ? void 0 : studentHistory.save();
+            console.log("studentHistory", student === null || student === void 0 ? void 0 : student.historicalResult);
+            console.log("student", student === null || student === void 0 ? void 0 : student.reportCard);
             return res.status(201).json({
                 message: "admin report remark successfully",
                 data: report,

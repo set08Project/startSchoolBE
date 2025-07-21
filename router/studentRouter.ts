@@ -43,6 +43,7 @@ import {
   findStudenWithEnrollmentID,
   readStudentByEnrollmentID,
   updateStudentViewReportCard,
+  updateStudentInfo,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -143,6 +144,8 @@ router.route("/delete-student/:schoolID/:studentID").delete(deleteStudent);
 router
   .route("/update-student-firstname/:schoolID/:studentID")
   .patch(updateStudentFirstName);
+
+router.route("/update-student-info/:studentID").patch(updateStudentInfo);
 
 router
   .route("/read-by-enrollment-id/:enrollmentID")

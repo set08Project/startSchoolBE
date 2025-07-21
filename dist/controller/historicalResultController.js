@@ -64,6 +64,7 @@ const viewResultHistory = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
         });
         const teacher = yield staffModel_1.default.findById(teacherID);
+        console.log("student", student === null || student === void 0 ? void 0 : student.historicalResult);
         return res.status(201).json({
             message: "done",
             data: student,
