@@ -36,6 +36,15 @@ interface iStudent {
   clockOut: boolean;
   clockOutTime: string;
 
+  BOD: string;
+  performanceRemark: string;
+  admissionYear: string;
+  admissionNumber: string;
+  graduationYear: string;
+  leaveYear: string;
+  LGA: string;
+  stateOrigin: string;
+
   started: boolean;
   parentPhoneNumber: string;
   status: string;
@@ -105,6 +114,38 @@ const studentModel = new Schema<iStudentData>(
     },
 
     clockOutTime: {
+      type: String,
+    },
+
+    BOD: {
+      type: String,
+    },
+
+    LGA: {
+      type: String,
+    },
+
+    stateOrigin: {
+      type: String,
+    },
+
+    admissionNumber: {
+      type: String,
+    },
+
+    admissionYear: {
+      type: String,
+    },
+
+    performanceRemark: {
+      type: String,
+    },
+
+    graduationYear: {
+      type: String,
+    },
+
+    leaveYear: {
       type: String,
     },
 

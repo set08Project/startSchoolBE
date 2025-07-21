@@ -28,6 +28,30 @@ const studentModel = new mongoose_1.Schema({
     clockOutTime: {
         type: String,
     },
+    BOD: {
+        type: String,
+    },
+    LGA: {
+        type: String,
+    },
+    stateOrigin: {
+        type: String,
+    },
+    admissionNumber: {
+        type: String,
+    },
+    admissionYear: {
+        type: String,
+    },
+    performanceRemark: {
+        type: String,
+    },
+    graduationYear: {
+        type: String,
+    },
+    leaveYear: {
+        type: String,
+    },
     monitor: {
         type: Boolean,
         default: false,
