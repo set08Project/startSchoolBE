@@ -14,7 +14,14 @@ export const createReportCardEntry = async (
 ): Promise<Response> => {
   try {
     const { teacherID, studentID } = req.params;
-    const { subject, test1, test2, test3, test4, exam } = req.body;
+    const {
+      subject,
+      test1 = 0,
+      test2 = 0,
+      test3 = 0,
+      test4 = 0,
+      exam = 0,
+    } = req.body;
 
     const teacher = await staffModel.findById(teacherID);
     const school: any = await schoolModel
@@ -46,7 +53,7 @@ export const createReportCardEntry = async (
 
     if (teacher && student) {
       if (studentCheck) {
-        // check
+        console.log(school?.presentTerm!);
         const getReportSubject: any = await studentModel
           .findById(studentID)
           .populate({
@@ -85,7 +92,7 @@ export const createReportCardEntry = async (
           let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
           let x5 = !exam ? read?.exam : exam ? exam : 0;
 
-          let y1 = x1 !== null ? x1 : 0;
+          let y1 = 0;
           let y2 = x2 !== null ? x2 : 0;
           let y3 = x3 !== null ? x3 : 0;
           let y4 = x4 !== null ? x4 : 0;
@@ -411,13 +418,14 @@ export const createReportCardEntry = async (
           });
         }
       } else {
+        console.log("This is First Create");
         const report = await cardReportModel.create({
           result: [
             {
               subject,
-              test1,
-              test2,
-              test3,
+              test1: 0,
+              test2: 0,
+              test3: 0,
               test4,
               exam,
             },
@@ -611,14 +619,14 @@ export const createMidReportCardEntry = async (
           let updated = getData.result.filter((el: any) => {
             return el.subject !== subject;
           });
-
+          console.log("This is Second Create");
           await midReportCardModel.create({
             result: [
               {
                 subject,
-                test1,
-                test2,
-                test3,
+                test1: 0,
+                test2: 0,
+                test3: 0,
                 test4,
                 exam,
                 total: exam,
@@ -950,13 +958,14 @@ export const createMidReportCardEntry = async (
           });
         }
       } else {
+        console.log("This is Third Create");
         const report = await midReportCardModel.create({
           result: [
             {
               subject,
-              test1,
-              test2,
-              test3,
+              test1: 0,
+              test2: 0,
+              test3: 0,
               test4,
               exam,
               total: exam,
@@ -1365,9 +1374,6 @@ export const adminReportRemark = async (
 
       studentHistory?.historicalResult?.push(new Types.ObjectId(report?._id));
       studentHistory?.save();
-
-      console.log("studentHistory", student?.historicalResult);
-      console.log("student", student?.reportCard);
 
       return res.status(201).json({
         message: "admin report remark successfully",
