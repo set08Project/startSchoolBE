@@ -48,7 +48,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
         // presentSession;
         if (teacher && student) {
             if (studentCheck) {
-                console.log(school === null || school === void 0 ? void 0 : school.presentTerm);
+                console.log(test1, test2, test3, test4, exam);
                 const getReportSubject = yield studentModel_1.default
                     .findById(studentID)
                     .populate({
@@ -72,14 +72,14 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     return el.subject === subject;
                 });
                 if (data) {
-                    let x1 = !test1 ? read === null || read === void 0 ? void 0 : read.test1 : test1 ? test1 : 0;
-                    let x2 = !test2 ? read === null || read === void 0 ? void 0 : read.test2 : test2 ? test2 : 0;
-                    let x3 = !test3 ? read === null || read === void 0 ? void 0 : read.test3 : test3 ? test3 : 0;
+                    let x1 = 0;
+                    let x2 = 0;
+                    let x3 = 0;
                     let x4 = !test4 ? read === null || read === void 0 ? void 0 : read.test4 : test4 ? test4 : 0;
                     let x5 = !exam ? read === null || read === void 0 ? void 0 : read.exam : exam ? exam : 0;
                     let y1 = 0;
-                    let y2 = x2 !== null ? x2 : 0;
-                    let y3 = x3 !== null ? x3 : 0;
+                    let y2 = 0;
+                    let y3 = 0;
                     let y4 = x4 !== null ? x4 : 0;
                     let y5 = x5 !== null ? x5 : 0;
                     let mark = y1 + y2 + y3 + y4 + y5;
@@ -102,9 +102,9 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                             ...updated,
                             {
                                 subject: !subject ? read === null || read === void 0 ? void 0 : read.subject : subject,
-                                test1: y1,
-                                test2: y2,
-                                test3: y3,
+                                test1: 0,
+                                test2: 0,
+                                test3: 0,
                                 test4: y4,
                                 exam: y5,
                                 mark,
@@ -254,14 +254,14 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     });
                 }
                 else {
-                    let x1 = !test1 ? read === null || read === void 0 ? void 0 : read.test1 : test1 ? test1 : 0;
-                    let x2 = !test2 ? read === null || read === void 0 ? void 0 : read.test2 : test2 ? test2 : 0;
-                    let x3 = !test3 ? read === null || read === void 0 ? void 0 : read.test3 : test3 ? test3 : 0;
+                    let x1 = 0;
+                    let x2 = 0;
+                    let x3 = 0;
                     let x4 = !test4 ? read === null || read === void 0 ? void 0 : read.test4 : test4 ? test4 : 0;
                     let x5 = !exam ? read === null || read === void 0 ? void 0 : read.exam : exam ? exam : 0;
-                    let y1 = x1 !== null ? x1 : 0;
-                    let y2 = x2 !== null ? x2 : 0;
-                    let y3 = x3 !== null ? x3 : 0;
+                    let y1 = 0;
+                    let y2 = 0;
+                    let y3 = 0;
                     let y4 = x4 !== null ? x4 : 0;
                     let y5 = x5 !== null ? x5 : 0;
                     let mark = y1 + y2 + y3 + y4 + y5;
@@ -403,6 +403,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 subjectData === null || subjectData === void 0 ? void 0 : subjectData.save();
                 // school?.reportCard.push(new Types.ObjectId(report._id));
                 // school?.save();
+                console.log("report data: ");
                 return res.status(201).json({
                     message: "report entry created successfully",
                     data: { nice, student },
@@ -686,6 +687,7 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                         classTeacherComment: xx,
                         grade,
                     }, { new: true });
+                    console.log("report: ", nice);
                     return res.status(201).json({
                         message: "teacher updated report successfully",
                         data: nice,
