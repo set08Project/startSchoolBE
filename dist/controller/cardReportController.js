@@ -349,7 +349,6 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 }
             }
             else {
-                console.log("This is First Create");
                 const report = yield cardReportModel_1.default.create({
                     result: [
                         {

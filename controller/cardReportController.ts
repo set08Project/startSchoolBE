@@ -419,7 +419,6 @@ export const createReportCardEntry = async (
           });
         }
       } else {
-        console.log("This is First Create");
         const report = await cardReportModel.create({
           result: [
             {
