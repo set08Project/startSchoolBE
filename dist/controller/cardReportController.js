@@ -21,6 +21,7 @@ const studentModel_1 = __importDefault(require("../model/studentModel"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const midReportCardModel_1 = __importDefault(require("../model/midReportCardModel"));
+const studentHistoricalResultModel_1 = __importDefault(require("../model/studentHistoricalResultModel"));
 const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     try {
@@ -1124,8 +1125,21 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 approve: true,
                 adminComment,
             }, { new: true });
-            (_a = studentHistory === null || studentHistory === void 0 ? void 0 : studentHistory.historicalResult) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
-            studentHistory === null || studentHistory === void 0 ? void 0 : studentHistory.save();
+            console.log("This is the report: ", report);
+            const result = yield studentHistoricalResultModel_1.default.create({
+                results: report === null || report === void 0 ? void 0 : report.result,
+                totalPoints: report === null || report === void 0 ? void 0 : report.points,
+                mainGrade: report === null || report === void 0 ? void 0 : report.grade,
+                classInfo: report === null || report === void 0 ? void 0 : report.classInfo,
+                session: school === null || school === void 0 ? void 0 : school.presentSession,
+                term: school === null || school === void 0 ? void 0 : school.presentTerm,
+                adminComment: report === null || report === void 0 ? void 0 : report.adminComment,
+                classTeacherComment: report === null || report === void 0 ? void 0 : report.classTeacherComment,
+                school,
+                student,
+            });
+            (_a = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(result._id));
+            student === null || student === void 0 ? void 0 : student.save();
             return res.status(201).json({
                 message: "admin report remark successfully",
                 data: report,

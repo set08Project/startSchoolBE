@@ -7,6 +7,7 @@ import studentModel from "../model/studentModel";
 import schoolModel from "../model/schoolModel";
 import classroomModel from "../model/classroomModel";
 import midReportCardModel from "../model/midReportCardModel";
+import studentHistoricalResultModel from "../model/studentHistoricalResultModel";
 
 export const createReportCardEntry = async (
   req: Request,
@@ -1372,8 +1373,23 @@ export const adminReportRemark = async (
         { new: true }
       );
 
-      studentHistory?.historicalResult?.push(new Types.ObjectId(report?._id));
-      studentHistory?.save();
+      console.log("This is the report: ", report);
+
+      const result = await studentHistoricalResultModel.create({
+        results: report?.result,
+        totalPoints: report?.points,
+        mainGrade: report?.grade,
+        classInfo: report?.classInfo,
+        session: school?.presentSession,
+        term: school?.presentTerm,
+        adminComment: report?.adminComment,
+        classTeacherComment: report?.classTeacherComment,
+        school,
+        student,
+      });
+
+      student?.historicalResult?.push(new Types.ObjectId(result._id));
+      student?.save();
 
       return res.status(201).json({
         message: "admin report remark successfully",
