@@ -2223,14 +2223,16 @@ export const updateSchoolSchoolFee = async (
     );
 
   
-if (!check) {
-  await termModel.findByIdAndUpdate(
+if (true) {
+  let x = await termModel.findByIdAndUpdate(
     item?.termID,
     {
       schoolFeePayment: [...term?.schoolFeePayment!, item],
     },
     { new: true }
   );
+
+  console.log("loading: ", x);
 
   return res.status(201).json({
     message: `schoolfee confirm successfully`,
