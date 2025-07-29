@@ -31,6 +31,7 @@ const createStudentreportCard = (req, res) => __awaiter(void 0, void 0, void 0, 
         const classData = yield classroomModel_1.default.findOne({
             className: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
         });
+        console.log("started here!");
         if (school && school.schoolName && staff && classData) {
             const report = yield reportCardModel_1.default.create({
                 teacherName: staff === null || staff === void 0 ? void 0 : staff.staffName,

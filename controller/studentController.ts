@@ -2222,27 +2222,28 @@ export const updateSchoolSchoolFee = async (
       (el: any) => el?.purchasedID !== item?.purchasedID
     );
 
-    if (check) {
-      await termModel.findByIdAndUpdate(
-        item?.termID,
-        {
-          schoolFeePayment: [...term?.schoolFeePayment!, item],
-        },
-        { new: true }
-      );
+  
+if (!check) {
+  await termModel.findByIdAndUpdate(
+    item?.termID,
+    {
+      schoolFeePayment: [...term?.schoolFeePayment!, item],
+    },
+    { new: true }
+  );
 
-      return res.status(201).json({
-        message: `schoolfee confirm successfully`,
-        data: item,
-        status: 201,
-      });
-    } else {
-      return res.status(201).json({
-        message: `schoolfee confirm successfully`,
-        data: item,
-        status: 201,
-      });
-    }
+  return res.status(201).json({
+    message: `schoolfee confirm successfully`,
+    data: item,
+    status: 201,
+  });
+} else {
+  return res.status(201).json({
+    message: `schoolfee confirm successfully`,
+    data: item,
+    status: 201,
+  });
+}
   } catch (error: any) {
     return res.status(404).json({
       message: "Error updating school's school fee",

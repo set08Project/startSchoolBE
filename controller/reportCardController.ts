@@ -47,6 +47,8 @@ export const createStudentreportCard = async (
       className: staff?.classesAssigned,
     });
 
+    console.log("started here!");
+
     if (school && school.schoolName && staff && classData) {
       const report = await reportcardModel.create({
         teacherName: staff?.staffName,

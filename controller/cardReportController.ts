@@ -54,7 +54,8 @@ export const createReportCardEntry = async (
 
     if (teacher && student) {
       if (studentCheck) {
-        console.log(test1, test2, test3, test4, exam);
+        console.log("Awesome!!");
+
         const getReportSubject: any = await studentModel
           .findById(studentID)
           .populate({
@@ -75,6 +76,8 @@ export const createReportCardEntry = async (
             return el.subject === subject;
           });
         });
+
+      
 
         const dataFIle = getReportSubject?.reportCard?.find((el: any) => {
           return el.result.find((el: any) => {

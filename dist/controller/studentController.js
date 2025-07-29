@@ -1825,7 +1825,7 @@ const updateSchoolSchoolFee = (req, res) => __awaiter(void 0, void 0, void 0, fu
             }, { new: true });
         }
         const check = term === null || term === void 0 ? void 0 : term.schoolFeePayment.some((el) => (el === null || el === void 0 ? void 0 : el.purchasedID) !== (item === null || item === void 0 ? void 0 : item.purchasedID));
-        if (check) {
+        if (!check) {
             yield termModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.termID, {
                 schoolFeePayment: [...term === null || term === void 0 ? void 0 : term.schoolFeePayment, item],
             }, { new: true });

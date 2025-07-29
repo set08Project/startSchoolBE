@@ -49,7 +49,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
         // presentSession;
         if (teacher && student) {
             if (studentCheck) {
-                console.log(test1, test2, test3, test4, exam);
+                console.log("Awesome!!");
                 const getReportSubject = yield studentModel_1.default
                     .findById(studentID)
                     .populate({
