@@ -16,7 +16,7 @@ export const handleError = (
   err: mainError,
   req: Request,
   res: Response,
-  next: NextFunction
+  next?: NextFunction
 ) => {
   errorBuilder(err, res);
 };

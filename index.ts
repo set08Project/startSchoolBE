@@ -95,11 +95,31 @@ mainApp(app);
 
 //13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt
 
-const server = app.listen(process.env.PORT || port, () => {
-  console.clear();
-  console.log();
-  dbConfig();
-});
+const startServer = async () => {
+  try {
+    // Connect to database first
+    await dbConfig();
+
+    // Start server only after successful database connection
+    const server = app.listen(process.env.PORT || port, () => {
+      console.clear();
+      console.log(`Server running on port ${port}🔥❤️🔥`);
+    });
+
+    // Handle server-specific errors
+    server.on("error", (error: Error) => {
+      console.error("Server error:", error);
+      process.exit(1);
+    });
+
+    return server;
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+const server = startServer();
 
 process.on("uncaughtException", (error: Error) => {
   console.log("uncaughtException: ", error);
@@ -109,8 +129,5 @@ process.on("uncaughtException", (error: Error) => {
 
 process.on("unhandledRejection", (reason: any) => {
   console.log("unhandledRejection: ", reason);
-
-  server.close(() => {
-    process.exit(1);
-  });
+  process.exit(1);
 });

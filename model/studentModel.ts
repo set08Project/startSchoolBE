@@ -44,9 +44,21 @@ interface iStudent {
   password: string;
   email: string;
   parentEmail: string;
+
   phone: string;
+  adminisionNumber: string;
+  stateOrigin: string;
+  LGA: string;
+  BOD: string;
+  AdminsionYear: string;
+  leaveYear: string;
+  graduationYear: string;
+  teamBalance: string;
+
+  yourPhoneNumber: string;
   studentAvatar: string;
   studentAvatarID: string;
+
   subjects: Array<{}>;
   attendance: Array<{}>;
   performance: Array<{}>;

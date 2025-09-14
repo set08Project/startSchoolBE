@@ -29,6 +29,10 @@ import exam from "./router/exanimationRouter";
 import midTest from "./router/midTestRouter";
 import outgone from "./router/outGoneStudentRouter";
 import resultHistory from "./router/resultHistoryRouter";
+import course from "./router/courseRouter";
+import teachSubject from "./router/teachSubjectRouter";
+import teachSubjectTopic from "./router/teachSubjectTopicRouter";
+import teachSubjectQuiz from "./router/teachTopicQuiz";
 
 import cronParser from "cron-parser";
 import fs from "fs";
@@ -42,6 +46,9 @@ import schoolModel from "./model/schoolModel";
 
 export const mainApp = (app: Application) => {
   try {
+    app.use("/api", teachSubjectQuiz);
+    app.use("/api", teachSubjectTopic);
+    app.use("/api", teachSubject);
     app.use("/api", school);
     app.use("/api", exam);
     app.use("/api", scheme);
@@ -52,6 +59,7 @@ export const mainApp = (app: Application) => {
     app.use("/api", subject);
     app.use("/api", outgone);
 
+    app.use("/api", course);
     app.use("/api", event);
 
     app.use("/api", midTest);
