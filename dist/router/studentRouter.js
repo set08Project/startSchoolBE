@@ -78,6 +78,7 @@ router.route("/delete-student/:schoolID/:studentID").delete(studentController_1.
 router
     .route("/update-student-firstname/:schoolID/:studentID")
     .patch(studentController_1.updateStudentFirstName);
+router.route("/update-student-info/:studentID").patch(studentController_1.updateStudentInfo);
 router
     .route("/read-by-enrollment-id/:enrollmentID")
     .get(studentController_1.readStudentByEnrollmentID);

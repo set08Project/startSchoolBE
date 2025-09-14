@@ -7,6 +7,7 @@ import studentModel from "../model/studentModel";
 import schoolModel from "../model/schoolModel";
 import classroomModel from "../model/classroomModel";
 import midReportCardModel from "../model/midReportCardModel";
+import studentHistoricalResultModel from "../model/studentHistoricalResultModel";
 
 export const createReportCardEntry = async (
   req: Request,
@@ -14,7 +15,14 @@ export const createReportCardEntry = async (
 ): Promise<Response> => {
   try {
     const { teacherID, studentID } = req.params;
-    const { subject, test1, test2, test3, test4, exam } = req.body;
+    const {
+      subject,
+      test1 = 0,
+      test2 = 0,
+      test3 = 0,
+      test4 = 0,
+      exam = 0,
+    } = req.body;
 
     const teacher = await staffModel.findById(teacherID);
     const school: any = await schoolModel
@@ -46,7 +54,8 @@ export const createReportCardEntry = async (
 
     if (teacher && student) {
       if (studentCheck) {
-        // check
+        console.log("Awesome!!");
+
         const getReportSubject: any = await studentModel
           .findById(studentID)
           .populate({
@@ -68,6 +77,8 @@ export const createReportCardEntry = async (
           });
         });
 
+      
+
         const dataFIle = getReportSubject?.reportCard?.find((el: any) => {
           return el.result.find((el: any) => {
             return el.subject === subject;
@@ -79,15 +90,15 @@ export const createReportCardEntry = async (
         });
 
         if (data) {
-          let x1 = !test1 ? read?.test1 : test1 ? test1 : 0;
-          let x2 = !test2 ? read?.test2 : test2 ? test2 : 0;
-          let x3 = !test3 ? read?.test3 : test3 ? test3 : 0;
+          let x1 = 0;
+          let x2 = 0;
+          let x3 = 0;
           let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
           let x5 = !exam ? read?.exam : exam ? exam : 0;
 
-          let y1 = x1 !== null ? x1 : 0;
-          let y2 = x2 !== null ? x2 : 0;
-          let y3 = x3 !== null ? x3 : 0;
+          let y1 = 0;
+          let y2 = 0;
+          let y3 = 0;
           let y4 = x4 !== null ? x4 : 0;
           let y5 = x5 !== null ? x5 : 0;
 
@@ -118,9 +129,9 @@ export const createReportCardEntry = async (
                 ...updated,
                 {
                   subject: !subject ? read?.subject : subject,
-                  test1: y1,
-                  test2: y2,
-                  test3: y3,
+                  test1: 0,
+                  test2: 0,
+                  test3: 0,
                   test4: y4,
                   exam: y5,
                   mark,
@@ -292,15 +303,15 @@ export const createReportCardEntry = async (
             status: 201,
           });
         } else {
-          let x1 = !test1 ? read?.test1 : test1 ? test1 : 0;
-          let x2 = !test2 ? read?.test2 : test2 ? test2 : 0;
-          let x3 = !test3 ? read?.test3 : test3 ? test3 : 0;
+          let x1 = 0;
+          let x2 = 0;
+          let x3 = 0;
           let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
           let x5 = !exam ? read?.exam : exam ? exam : 0;
 
-          let y1 = x1 !== null ? x1 : 0;
-          let y2 = x2 !== null ? x2 : 0;
-          let y3 = x3 !== null ? x3 : 0;
+          let y1 = 0;
+          let y2 = 0;
+          let y3 = 0;
           let y4 = x4 !== null ? x4 : 0;
           let y5 = x5 !== null ? x5 : 0;
 
@@ -319,6 +330,7 @@ export const createReportCardEntry = async (
           let w5 = x5 !== 0 ? (examination = 60) : 0;
 
           let score = w1 + w2 + w3 + w4 + w5;
+
           const report = await cardReportModel.findByIdAndUpdate(
             getData?._id,
             {
@@ -415,9 +427,9 @@ export const createReportCardEntry = async (
           result: [
             {
               subject,
-              test1,
-              test2,
-              test3,
+              test1: 0,
+              test2: 0,
+              test3: 0,
               test4,
               exam,
             },
@@ -486,7 +498,7 @@ export const createReportCardEntry = async (
 
         // school?.reportCard.push(new Types.ObjectId(report._id));
         // school?.save();
-
+        console.log("report data: ");
         return res.status(201).json({
           message: "report entry created successfully",
           data: { nice, student },
@@ -611,14 +623,14 @@ export const createMidReportCardEntry = async (
           let updated = getData.result.filter((el: any) => {
             return el.subject !== subject;
           });
-
+          console.log("This is Second Create");
           await midReportCardModel.create({
             result: [
               {
                 subject,
-                test1,
-                test2,
-                test3,
+                test1: 0,
+                test2: 0,
+                test3: 0,
                 test4,
                 exam,
                 total: exam,
@@ -823,7 +835,7 @@ export const createMidReportCardEntry = async (
             },
             { new: true }
           );
-
+          console.log("report: ", nice);
           return res.status(201).json({
             message: "teacher updated report successfully",
             data: nice,
@@ -950,13 +962,14 @@ export const createMidReportCardEntry = async (
           });
         }
       } else {
+        console.log("This is Third Create");
         const report = await midReportCardModel.create({
           result: [
             {
               subject,
-              test1,
-              test2,
-              test3,
+              test1: 0,
+              test2: 0,
+              test3: 0,
               test4,
               exam,
               total: exam,
@@ -1363,11 +1376,23 @@ export const adminReportRemark = async (
         { new: true }
       );
 
-      studentHistory?.historicalResult?.push(new Types.ObjectId(report?._id));
-      studentHistory?.save();
+      console.log("This is the report: ", report);
 
-      console.log("studentHistory", student?.historicalResult);
-      console.log("student", student?.reportCard);
+      const result = await studentHistoricalResultModel.create({
+        results: report?.result,
+        totalPoints: report?.points,
+        mainGrade: report?.grade,
+        classInfo: report?.classInfo,
+        session: school?.presentSession,
+        term: school?.presentTerm,
+        adminComment: report?.adminComment,
+        classTeacherComment: report?.classTeacherComment,
+        school,
+        student,
+      });
+
+      student?.historicalResult?.push(new Types.ObjectId(result._id));
+      student?.save();
 
       return res.status(201).json({
         message: "admin report remark successfully",

@@ -29,6 +29,9 @@ export const createRemark = async (
     } = req.body;
 
     const teacher: any = await staffModel.findById(teacherID);
+
+    console.log(teacher);
+
     const student: any = await studentModel.findById(studentID);
     const school: any = await schoolModel.findById(teacher?.schoolIDs);
 

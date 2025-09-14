@@ -26,6 +26,7 @@ const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const { teacherID, studentID } = req.params;
         const { remark, weekPerformanceRatio, attendanceRatio, best, worst, classParticipation, sportParticipation, topicFocus, payment, announcement, generalPerformace, } = req.body;
         const teacher = yield staffModel_1.default.findById(teacherID);
+        console.log(teacher);
         const student = yield studentModel_1.default.findById(studentID);
         const school = yield schoolModel_1.default.findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs);
         if (teacher && student) {

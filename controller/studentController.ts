@@ -1097,6 +1097,50 @@ export const updateStudentViewReportCard = async (
   }
 };
 
+export const updateStudentInfo = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+
+    if (true) {
+      const student = await studentModel.findById(studentID);
+      if (student) {
+        const updatePhone = await studentModel.findByIdAndUpdate(
+          student._id,
+          req.body,
+          { new: true }
+        );
+        return res.status(201).json({
+          message: "Student Phone Number Updated Successfully",
+          data: updatePhone,
+          status: 201,
+        });
+      } else {
+        return res.status(404).json({
+          message: "Student Does Not Exist",
+          status: 404,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "School Does Not Exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error Updating Student Phone Number",
+      data: {
+        errorMessage: error.mesaage,
+        errorType: error.stack,
+      },
+      status: 404,
+    });
+  }
+};
+
 export const updateStudentBulkInfo = async (
   req: Request,
   res: Response
@@ -2178,27 +2222,30 @@ export const updateSchoolSchoolFee = async (
       (el: any) => el?.purchasedID !== item?.purchasedID
     );
 
-    if (check) {
-      await termModel.findByIdAndUpdate(
-        item?.termID,
-        {
-          schoolFeePayment: [...term?.schoolFeePayment!, item],
-        },
-        { new: true }
-      );
+  
+if (true) {
+  let x = await termModel.findByIdAndUpdate(
+    item?.termID,
+    {
+      schoolFeePayment: [...term?.schoolFeePayment!, item],
+    },
+    { new: true }
+  );
 
-      return res.status(201).json({
-        message: `schoolfee confirm successfully`,
-        data: item,
-        status: 201,
-      });
-    } else {
-      return res.status(201).json({
-        message: `schoolfee confirm successfully`,
-        data: item,
-        status: 201,
-      });
-    }
+  console.log("loading: ", x);
+
+  return res.status(201).json({
+    message: `schoolfee confirm successfully`,
+    data: item,
+    status: 201,
+  });
+} else {
+  return res.status(201).json({
+    message: `schoolfee confirm successfully`,
+    data: item,
+    status: 201,
+  });
+}
   } catch (error: any) {
     return res.status(404).json({
       message: "Error updating school's school fee",
