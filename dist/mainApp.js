@@ -33,11 +33,18 @@ const exanimationRouter_1 = __importDefault(require("./router/exanimationRouter"
 const midTestRouter_1 = __importDefault(require("./router/midTestRouter"));
 const outGoneStudentRouter_1 = __importDefault(require("./router/outGoneStudentRouter"));
 const resultHistoryRouter_1 = __importDefault(require("./router/resultHistoryRouter"));
+const courseRouter_1 = __importDefault(require("./router/courseRouter"));
+const teachSubjectRouter_1 = __importDefault(require("./router/teachSubjectRouter"));
+const teachSubjectTopicRouter_1 = __importDefault(require("./router/teachSubjectTopicRouter"));
+const teachTopicQuiz_1 = __importDefault(require("./router/teachTopicQuiz"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
 const handleError_1 = require("./error/handleError");
 const mainApp = (app) => {
     try {
+        app.use("/api", teachTopicQuiz_1.default);
+        app.use("/api", teachSubjectTopicRouter_1.default);
+        app.use("/api", teachSubjectRouter_1.default);
         app.use("/api", schoolRouter_1.default);
         app.use("/api", exanimationRouter_1.default);
         app.use("/api", schemeOfWorkRouter_1.default);
@@ -47,6 +54,7 @@ const mainApp = (app) => {
         app.use("/api", classRouter_1.default);
         app.use("/api", subjectRouter_1.default);
         app.use("/api", outGoneStudentRouter_1.default);
+        app.use("/api", courseRouter_1.default);
         app.use("/api", anouncementRouter_1.default);
         app.use("/api", midTestRouter_1.default);
         app.use("/api", attendanceRouter_1.default);
