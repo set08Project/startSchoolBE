@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTeachSubjectTopic = exports.deleteOneTeachSubjectTopicQuiz = exports.getOneTeachSubjectTopicQuiz = exports.updateTeachSubjectTopicQuiz = exports.createTeachSubjectTopicQuiz = void 0;
+exports.createBulkTeachSubjectTopicQuiz = exports.getAllTeachSubjectTopic = exports.deleteOneTeachSubjectTopicQuiz = exports.getOneTeachSubjectTopicQuiz = exports.updateTeachSubjectTopicQuiz = exports.createTeachSubjectTopicQuiz = void 0;
 const teachSubjectModel_1 = __importDefault(require("../model/teachSubjectModel"));
 const teachSubjectTopics_1 = __importDefault(require("../model/teachSubjectTopics"));
 const teachTopicQuizesModel_1 = __importDefault(require("../model/teachTopicQuizesModel"));
@@ -124,3 +124,45 @@ const getAllTeachSubjectTopic = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.getAllTeachSubjectTopic = getAllTeachSubjectTopic;
+const createBulkTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { questions } = req.body;
+        const { topicID } = req.params;
+        // Find the subject topic
+        const getSubject = yield teachSubjectTopics_1.default.findById(topicID);
+        if (!getSubject) {
+            return res.status(404).json({
+                message: "Topic not found",
+                status: 404,
+            });
+        }
+        // Create all quiz questions in bulk
+        console.log(questions);
+        const createdQuizzes = yield teachTopicQuizesModel_1.default.create(questions);
+        // If createdQuizzes is a single document, convert it to an array
+        const quizArray = Array.isArray(createdQuizzes)
+            ? createdQuizzes
+            : [createdQuizzes];
+        // Add all quiz IDs to the topic's quizQuestions array
+        const quizIds = quizArray.map((quiz) => new mongoose_1.Types.ObjectId(quiz._id));
+        getSubject.quizQuestions.push(...quizIds);
+        yield getSubject.save();
+        return res.status(201).json({
+            message: "Bulk quiz questions created successfully",
+            data: {
+                quizzes: createdQuizzes,
+                topic: getSubject,
+            },
+            status: 201,
+        });
+    }
+    catch (error) {
+        console.error("Error creating bulk quiz questions:", error);
+        return res.status(500).json({
+            message: "Error creating bulk quiz questions",
+            error: error instanceof Error ? error.message : "Unknown error",
+            status: 500,
+        });
+    }
+});
+exports.createBulkTeachSubjectTopicQuiz = createBulkTeachSubjectTopicQuiz;

@@ -131,20 +131,77 @@ export const getAllTeachSubjectTopic = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {    
-
-
+  try {
     const teachSubject = await subjectTeachesModel.find();
 
-      return res.status(201).json({
-        message: "teach subject created successfully",
-        data: teachSubject,
-        status: 201,
-      });
-    
+    return res.status(201).json({
+      message: "teach subject created successfully",
+      data: teachSubject,
+      status: 201,
+    });
   } catch (error) {
     return res.status(404).json({
       message: "Error creating teach subject ",
+    });
+  }
+};
+
+interface QuizQuestion {
+  question: string;
+  explanation: string;
+  correctAnswer: string;
+  options: string[];
+}
+
+export const createBulkTeachSubjectTopicQuiz = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { questions } = req.body as { questions: QuizQuestion[] };
+    const { topicID } = req.params;
+
+    // Find the subject topic
+    const getSubject = await subjectTopicsModel.findById(topicID);
+
+    if (!getSubject) {
+      return res.status(404).json({
+        message: "Topic not found",
+        status: 404,
+      });
+    }
+
+    // Create all quiz questions in bulk
+
+    console.log(questions);
+
+    const createdQuizzes = await subjectTopicQuizesModel.create(questions);
+
+    // If createdQuizzes is a single document, convert it to an array
+    const quizArray = Array.isArray(createdQuizzes)
+      ? createdQuizzes
+      : [createdQuizzes];
+
+    // Add all quiz IDs to the topic's quizQuestions array
+    const quizIds = quizArray.map((quiz) => new Types.ObjectId(quiz._id));
+    getSubject.quizQuestions.push(...quizIds);
+
+    await getSubject.save();
+
+    return res.status(201).json({
+      message: "Bulk quiz questions created successfully",
+      data: {
+        quizzes: createdQuizzes,
+        topic: getSubject,
+      },
+      status: 201,
+    });
+  } catch (error) {
+    console.error("Error creating bulk quiz questions:", error);
+    return res.status(500).json({
+      message: "Error creating bulk quiz questions",
+      error: error instanceof Error ? error.message : "Unknown error",
+      status: 500,
     });
   }
 };
