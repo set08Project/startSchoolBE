@@ -36,14 +36,14 @@ interface iStudent {
   clockOut: boolean;
   clockOutTime: string;
 
-  BOD: string;
+  // BOD: string;
   performanceRemark: string;
   admissionYear: string;
   admissionNumber: string;
-  graduationYear: string;
-  leaveYear: string;
-  LGA: string;
-  stateOrigin: string;
+  // graduationYear: string;
+  // leaveYear: string;
+  // LGA: string;
+  // stateOrigin: string;
 
   started: boolean;
   parentPhoneNumber: string;
