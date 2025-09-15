@@ -106,19 +106,41 @@ export const getOneTeachSubjectTopic = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {  
-    const {teachSubjectTopicID} = req.params
-     const teachSubject = await subjectTeachesModel.findById(teachSubjectTopicID).populate({path: "topics"});
-     console.log(teachSubject)
+  try {
+    const { teachSubjectTopicID } = req.params;
+    const teachSubject = await subjectTeachesModel
+      .findById(teachSubjectTopicID)
+      .populate({ path: "topics" });
 
-      return res.status(201).json({
-        message: "teach subject created successfully",
-        data: teachSubject,
-        status: 201,
-      });
-    
+    return res.status(201).json({
+      message: "teach subject created successfully",
+      data: teachSubject,
+      status: 201,
+    });
   } catch (error) {
-    console.log("error", error)
+    console.log("error", error);
+    return res.status(404).json({
+      message: "Error creating teach subject ",
+    });
+  }
+};
+
+export const getOneTeachSubjectTopicNow = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { teachSubjectTopicID } = req.params;
+    console.log("teachSubjectTopicID", teachSubjectTopicID);
+    const teachSubject = await subjectTopicsModel.findById(teachSubjectTopicID);
+
+    return res.status(201).json({
+      message: "teach subject created successfully",
+      data: teachSubject,
+      status: 201,
+    });
+  } catch (error) {
+    console.log("error", error);
     return res.status(404).json({
       message: "Error creating teach subject ",
     });

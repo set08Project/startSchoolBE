@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTeachSubjectTopic = exports.deleteOneTeachSubjectTopic = exports.getOneTeachSubjectTopic = exports.updateTeachSubjectTopic = exports.createTeachSubjectTopic = void 0;
+exports.getAllTeachSubjectTopic = exports.deleteOneTeachSubjectTopic = exports.getOneTeachSubjectTopicNow = exports.getOneTeachSubjectTopic = exports.updateTeachSubjectTopic = exports.createTeachSubjectTopic = void 0;
 const teachSubjectModel_1 = __importDefault(require("../model/teachSubjectModel"));
 const teachSubjectTopics_1 = __importDefault(require("../model/teachSubjectTopics"));
 const mongoose_1 = require("mongoose");
@@ -76,8 +76,9 @@ exports.updateTeachSubjectTopic = updateTeachSubjectTopic;
 const getOneTeachSubjectTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { teachSubjectTopicID } = req.params;
-        const teachSubject = yield teachSubjectModel_1.default.findById(teachSubjectTopicID).populate({ path: "topics" });
-        console.log(teachSubject);
+        const teachSubject = yield teachSubjectModel_1.default
+            .findById(teachSubjectTopicID)
+            .populate({ path: "topics" });
         return res.status(201).json({
             message: "teach subject created successfully",
             data: teachSubject,
@@ -92,6 +93,25 @@ const getOneTeachSubjectTopic = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.getOneTeachSubjectTopic = getOneTeachSubjectTopic;
+const getOneTeachSubjectTopicNow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { teachSubjectTopicID } = req.params;
+        console.log("teachSubjectTopicID", teachSubjectTopicID);
+        const teachSubject = yield teachSubjectTopics_1.default.findById(teachSubjectTopicID);
+        return res.status(201).json({
+            message: "teach subject created successfully",
+            data: teachSubject,
+            status: 201,
+        });
+    }
+    catch (error) {
+        console.log("error", error);
+        return res.status(404).json({
+            message: "Error creating teach subject ",
+        });
+    }
+});
+exports.getOneTeachSubjectTopicNow = getOneTeachSubjectTopicNow;
 const deleteOneTeachSubjectTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
