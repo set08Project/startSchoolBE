@@ -59,5 +59,8 @@ router
 router
     .route("/add-more-payment-option/:schoolID")
     .patch(schoolController_1.updateSchoolPaymentOptions);
+router
+    .route("/remove-payment-option/:schoolID/:refID")
+    .patch(schoolController_1.RemoveSchoolPaymentOptions);
 router.route("/update-school-admin-code/:schoolID").patch(schoolController_1.updateAdminCode);
 exports.default = router;
