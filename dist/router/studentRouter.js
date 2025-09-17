@@ -32,6 +32,9 @@ router
     .route("/update-student-bulk-info/:studentID")
     .patch(studentController_1.updateStudentBulkInfo);
 router
+    .route("/update-main-student-bulk-info/:studentID")
+    .patch(studentController_1.updateMainStudentBulkInfo);
+router
     .route("/update-student-fees-1st/:schoolID/:studentID")
     .patch(studentController_1.updateStudent1stFees);
 router

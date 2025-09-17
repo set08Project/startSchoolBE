@@ -44,6 +44,7 @@ import {
   readStudentByEnrollmentID,
   updateStudentViewReportCard,
   updateStudentInfo,
+  updateMainStudentBulkInfo,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -76,6 +77,9 @@ router.route("/student-clock-out-with-id/:schoolID").patch(clockOutAccount);
 router
   .route("/update-student-bulk-info/:studentID")
   .patch(updateStudentBulkInfo);
+router
+  .route("/update-main-student-bulk-info/:studentID")
+  .patch(updateMainStudentBulkInfo);
 
 router
   .route("/update-student-fees-1st/:schoolID/:studentID")
