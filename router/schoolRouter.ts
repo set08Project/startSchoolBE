@@ -26,6 +26,7 @@ import {
   viewSchoolStatus,
   viewSchoolStatusByName,
   viewSchoolTopStudent,
+  RemoveSchoolPaymentOptions,
 } from "../controller/schoolController";
 import multer from "multer";
 
@@ -101,6 +102,10 @@ router
 router
   .route("/add-more-payment-option/:schoolID")
   .patch(updateSchoolPaymentOptions);
+
+router
+  .route("/remove-payment-option/:schoolID/:refID")
+  .patch(RemoveSchoolPaymentOptions);
 
 router.route("/update-school-admin-code/:schoolID").patch(updateAdminCode);
 

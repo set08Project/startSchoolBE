@@ -645,6 +645,44 @@ export const updateSchoolPaymentOptions = async (req: any, res: Response) => {
   }
 };
 
+export const RemoveSchoolPaymentOptions = async (req: any, res: Response) => {
+  try {
+    const { schoolID, refID } = req.params;
+    const { paymentDetails, paymentAmount } = req.body;
+
+    let id = crypto.randomBytes(4).toString("hex");
+    const school: any = await schoolModel.findById(schoolID);
+
+    const mainOption = school?.paymentOptions.filter((el: any) => {
+      return el?.id !== refID;
+    });
+
+    if (school.schoolName) {
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          paymentOptions: mainOption,
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "school account detail updated successfully",
+        data: updatedSchool,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating account details",
+    });
+  }
+};
+
 export const updateAdminCode = async (req: any, res: Response) => {
   try {
     const { schoolID } = req.params;
