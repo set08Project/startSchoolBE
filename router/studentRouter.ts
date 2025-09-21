@@ -132,6 +132,9 @@ router
   .post(updateSchoolSchoolFee);
 
 router.route("/view-school-purchase/:schoolID").get(viewSchoolStorePurchased);
+router
+  .route("/update-school-purchase/:schoolID")
+  .patch(updateSchoolStorePurchased);
 
 router.route("/teacher-purchase/:staffID").post(createStorePurchasedTeacher);
 

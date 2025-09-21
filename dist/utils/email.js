@@ -32,15 +32,22 @@ const url = process.env.APP_URL_DEPLOY;
 const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
+        // const transporter = nodemail.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     type: "OAuth2",
+        //     user: "codelabbest@gmail.com",
+        //     clientSecret: GOOGLE_SECRET,
+        //     clientId: GOOGLE_ID,
+        //     refreshToken: GOOGLE_REFRESH,
+        //     accessToken,
+        //   },
+        // });
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
+                user: "justtnext@gmail.com",
+                pass: "wfozkwqcyfohmgfo",
             },
         });
         const token = jsonwebtoken_1.default.sign({
@@ -80,15 +87,22 @@ exports.verifiedEmail = verifiedEmail;
 const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
+        // const transporter = nodemail.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     type: "OAuth2",
+        //     user: "codelabbest@gmail.com",
+        //     clientSecret: GOOGLE_SECRET,
+        //     clientId: GOOGLE_ID,
+        //     refreshToken: GOOGLE_REFRESH,
+        //     accessToken,
+        //   },
+        // });
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
+                user: "justtnext@gmail.com",
+                pass: "wfozkwqcyfohmgfo",
             },
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
@@ -113,15 +127,22 @@ exports.addMemberEmail = addMemberEmail;
 const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
+        // const transporter = nodemail.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     type: "OAuth2",
+        //     user: "codelabbest@gmail.com",
+        //     clientSecret: GOOGLE_SECRET,
+        //     clientId: GOOGLE_ID,
+        //     refreshToken: GOOGLE_REFRESH,
+        //     accessToken,
+        //   },
+        // });
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
+                user: "justtnext@gmail.com",
+                pass: "wfozkwqcyfohmgfo",
             },
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
@@ -146,15 +167,22 @@ exports.changeTokenEmail = changeTokenEmail;
 const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
+        // const transporter = nodemail.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     type: "OAuth2",
+        //     user: "codelabbest@gmail.com",
+        //     clientSecret: GOOGLE_SECRET,
+        //     clientId: GOOGLE_ID,
+        //     refreshToken: GOOGLE_REFRESH,
+        //     accessToken,
+        //   },
+        // });
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
+                user: "justtnext@gmail.com",
+                pass: "wfozkwqcyfohmgfo",
             },
         });
         const token = jsonwebtoken_1.default.sign({
@@ -187,15 +215,22 @@ exports.verifySchoolFees = verifySchoolFees;
 const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
+        // const transporter = nodemail.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     type: "OAuth2",
+        //     user: "codelabbest@gmail.com",
+        //     clientSecret: GOOGLE_SECRET,
+        //     clientId: GOOGLE_ID,
+        //     refreshToken: GOOGLE_REFRESH,
+        //     accessToken,
+        //   },
+        // });
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
+                user: "justtnext@gmail.com",
+                pass: "wfozkwqcyfohmgfo",
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockinMail.ejs");
@@ -229,15 +264,22 @@ exports.clockingInEmail = clockingInEmail;
 const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
+        // const transporter = nodemail.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     type: "OAuth2",
+        //     user: "codelabbest@gmail.com",
+        //     clientSecret: GOOGLE_SECRET,
+        //     clientId: GOOGLE_ID,
+        //     refreshToken: GOOGLE_REFRESH,
+        //     accessToken,
+        //   },
+        // });
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
+                user: "justtnext@gmail.com",
+                pass: "wfozkwqcyfohmgfo",
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockoutMail.ejs");
@@ -269,15 +311,22 @@ exports.clockingOutEmail = clockingOutEmail;
 const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accessToken = (yield oAuth.getAccessToken()).token;
+        // const transporter = nodemail.createTransport({
+        //   service: "gmail",
+        //   auth: {
+        //     type: "OAuth2",
+        //     user: "codelabbest@gmail.com",
+        //     clientSecret: GOOGLE_SECRET,
+        //     clientId: GOOGLE_ID,
+        //     refreshToken: GOOGLE_REFRESH,
+        //     accessToken,
+        //   },
+        // });
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                type: "OAuth2",
-                user: "codelabbest@gmail.com",
-                clientSecret: GOOGLE_SECRET,
-                clientId: GOOGLE_ID,
-                refreshToken: GOOGLE_REFRESH,
-                accessToken,
+                user: "justtnext@gmail.com",
+                pass: "wfozkwqcyfohmgfo",
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/weeklyReport.ejs");

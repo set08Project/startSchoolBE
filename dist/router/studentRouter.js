@@ -71,6 +71,9 @@ router
     .route("/update-school-school-fee/:schoolFeeID")
     .post(studentController_1.updateSchoolSchoolFee);
 router.route("/view-school-purchase/:schoolID").get(studentController_1.viewSchoolStorePurchased);
+router
+    .route("/update-school-purchase/:schoolID")
+    .patch(studentController_1.updateSchoolStorePurchased);
 router.route("/teacher-purchase/:staffID").post(studentController_1.createStorePurchasedTeacher);
 router.route("/view-teacher-purchase/:staffID").get(studentController_1.viewStorePurchasedTeacher);
 router

@@ -372,6 +372,7 @@ export const makePayment = async (req: Request, res: Response) => {
     const school: any = await schoolModel.findById(schoolID);
 
     let amount = school?.students!.length! * 1000;
+
     let termID = school?.presentTermID;
     let token = jwt.sign({ termID }, process.env.API_SECRET_KEY as string, {
       expiresIn: "3d",

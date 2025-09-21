@@ -28,15 +28,23 @@ export const verifiedEmail = async (user: any) => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
+    // const transporter = nodemail.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: "codelabbest@gmail.com",
+    //     clientSecret: GOOGLE_SECRET,
+    //     clientId: GOOGLE_ID,
+    //     refreshToken: GOOGLE_REFRESH,
+    //     accessToken,
+    //   },
+    // });
+
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
+        user: "justtnext@gmail.com",
+        pass: "wfozkwqcyfohmgfo",
       },
     });
 
@@ -87,15 +95,23 @@ export const addMemberEmail = async (member: any, getUser: any) => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
+    // const transporter = nodemail.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: "codelabbest@gmail.com",
+    //     clientSecret: GOOGLE_SECRET,
+    //     clientId: GOOGLE_ID,
+    //     refreshToken: GOOGLE_REFRESH,
+    //     accessToken,
+    //   },
+    // });
+
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
+        user: "justtnext@gmail.com",
+        pass: "wfozkwqcyfohmgfo",
       },
     });
 
@@ -125,15 +141,23 @@ export const changeTokenEmail = async (getUser: any) => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
+    // const transporter = nodemail.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: "codelabbest@gmail.com",
+    //     clientSecret: GOOGLE_SECRET,
+    //     clientId: GOOGLE_ID,
+    //     refreshToken: GOOGLE_REFRESH,
+    //     accessToken,
+    //   },
+    // });
+
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
+        user: "justtnext@gmail.com",
+        pass: "wfozkwqcyfohmgfo",
       },
     });
 
@@ -163,15 +187,23 @@ export const verifySchoolFees = async (user: any, term: number) => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
+    // const transporter = nodemail.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: "codelabbest@gmail.com",
+    //     clientSecret: GOOGLE_SECRET,
+    //     clientId: GOOGLE_ID,
+    //     refreshToken: GOOGLE_REFRESH,
+    //     accessToken,
+    //   },
+    // });
+
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
+        user: "justtnext@gmail.com",
+        pass: "wfozkwqcyfohmgfo",
       },
     });
 
@@ -212,15 +244,23 @@ export const clockingInEmail = async (user: any, school: any) => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
+    // const transporter = nodemail.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: "codelabbest@gmail.com",
+    //     clientSecret: GOOGLE_SECRET,
+    //     clientId: GOOGLE_ID,
+    //     refreshToken: GOOGLE_REFRESH,
+    //     accessToken,
+    //   },
+    // });
+
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
+        user: "justtnext@gmail.com",
+        pass: "wfozkwqcyfohmgfo",
       },
     });
 
@@ -259,15 +299,23 @@ export const clockingOutEmail = async (user: any, school: any) => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
+    // const transporter = nodemail.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: "codelabbest@gmail.com",
+    //     clientSecret: GOOGLE_SECRET,
+    //     clientId: GOOGLE_ID,
+    //     refreshToken: GOOGLE_REFRESH,
+    //     accessToken,
+    //   },
+    // });
+
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
+        user: "justtnext@gmail.com",
+        pass: "wfozkwqcyfohmgfo",
       },
     });
 
@@ -304,15 +352,23 @@ export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
   try {
     const accessToken: any = (await oAuth.getAccessToken()).token;
 
+    // const transporter = nodemail.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: "codelabbest@gmail.com",
+    //     clientSecret: GOOGLE_SECRET,
+    //     clientId: GOOGLE_ID,
+    //     refreshToken: GOOGLE_REFRESH,
+    //     accessToken,
+    //   },
+    // });
+
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "codelabbest@gmail.com",
-        clientSecret: GOOGLE_SECRET,
-        clientId: GOOGLE_ID,
-        refreshToken: GOOGLE_REFRESH,
-        accessToken,
+        user: "justtnext@gmail.com",
+        pass: "wfozkwqcyfohmgfo",
       },
     });
 
