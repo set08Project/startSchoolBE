@@ -24,29 +24,43 @@ oAuth.setCredentials({ refresh_token: GOOGLE_REFRESH });
 
 const url: string = process.env.APP_URL_DEPLOY!;
 
+// const createEmailTransporter = async () => {
+//   try {
+//     // const accessToken: any = (await oAuth.getAccessToken()).token;
+
+//     // const transporter = nodemail.createTransport({
+//     //   service: "gmail",
+//     //   auth: {
+//     //     type: "OAuth2",
+//     //     user: "justtnext@gmail.com", // Your Gmail address
+//     //     clientSecret: GOOGLE_SECRET,
+//     //     clientId: GOOGLE_ID,
+//     //     refreshToken: GOOGLE_REFRESH,
+//     //     accessToken,
+//     //   },
+//     // });
+
+//     // Verify transporter
+//     await transporter.verify();
+//     console.log("Email transporter verified successfully");
+//     return transporter;
+//   } catch (error) {
+//     console.error("Email configuration error:", error);
+//     throw error;
+//   }
+// };
+
 export const verifiedEmail = async (user: any) => {
   try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
+    // const transporter = await createEmailTransporter();
 
-    // const transporter = nodemail.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     type: "OAuth2",
-    //     user: "codelabbest@gmail.com",
-    //     clientSecret: GOOGLE_SECRET,
-    //     clientId: GOOGLE_ID,
-    //     refreshToken: GOOGLE_REFRESH,
-    //     accessToken,
-    //   },
-    // });
-
-    const transporter = nodemail.createTransport({
-      service: "gmail",
-      auth: {
-        user: "justtnext@gmail.com",
-        pass: "wfozkwqcyfohmgfo",
-      },
-    });
+     const transporter = nodemail.createTransport({
+       service: "gmail",
+       auth: {
+         user: "justtnext@gmail.com",
+         pass: "wfozkwqcyfohmgfo",
+       },
+     });
 
     const token = jwt.sign(
       {
@@ -93,7 +107,7 @@ export const verifiedEmail = async (user: any) => {
 
 export const addMemberEmail = async (member: any, getUser: any) => {
   try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
+    // const accessToken: any = (await oAuth.getAccessToken()).token;
 
     // const transporter = nodemail.createTransport({
     //   service: "gmail",
@@ -139,7 +153,7 @@ export const addMemberEmail = async (member: any, getUser: any) => {
 
 export const changeTokenEmail = async (getUser: any) => {
   try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
+    // const accessToken: any = (await oAuth.getAccessToken()).token;
 
     // const transporter = nodemail.createTransport({
     //   service: "gmail",
@@ -185,7 +199,7 @@ export const changeTokenEmail = async (getUser: any) => {
 
 export const verifySchoolFees = async (user: any, term: number) => {
   try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
+    // const accessToken: any = (await oAuth.getAccessToken()).token;
 
     // const transporter = nodemail.createTransport({
     //   service: "gmail",
@@ -242,7 +256,7 @@ export const verifySchoolFees = async (user: any, term: number) => {
 
 export const clockingInEmail = async (user: any, school: any) => {
   try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
+    // const accessToken: any = (await oAuth.getAccessToken()).token;
 
     // const transporter = nodemail.createTransport({
     //   service: "gmail",
@@ -255,6 +269,7 @@ export const clockingInEmail = async (user: any, school: any) => {
     //     accessToken,
     //   },
     // });
+
 
     const transporter = nodemail.createTransport({
       service: "gmail",
@@ -286,9 +301,10 @@ export const clockingInEmail = async (user: any, school: any) => {
       subject: `${user?.studentFirstName} just Clocked in`,
       html,
     };
+    console.log("awesome: ", user.parentEmail);
 
-    await transporter.sendMail(mailerOption).then(() => {
-      console.log("sent");
+    await transporter.sendMail(mailerOption).then((res) => {
+      console.log("sent", user.parentEmail, res);
     });
   } catch (error) {
     console.error();
@@ -297,7 +313,7 @@ export const clockingInEmail = async (user: any, school: any) => {
 
 export const clockingOutEmail = async (user: any, school: any) => {
   try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
+    // const accessToken: any = (await oAuth.getAccessToken()).token;
 
     // const transporter = nodemail.createTransport({
     //   service: "gmail",
@@ -350,7 +366,7 @@ export const clockingOutEmail = async (user: any, school: any) => {
 
 export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
   try {
-    const accessToken: any = (await oAuth.getAccessToken()).token;
+    // const accessToken: any = (await oAuth.getAccessToken()).token;
 
     // const transporter = nodemail.createTransport({
     //   service: "gmail",

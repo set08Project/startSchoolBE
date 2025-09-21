@@ -59,17 +59,14 @@ const clockinAccount = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = yield studentModel_1.default.findById(studentID);
-            console.log((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id));
-            console.log(school === null || school === void 0 ? void 0 : school._id.toString());
-            console.log(student === null || student === void 0 ? void 0 : student.schoolIDs);
             if ((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id.toString())) {
                 const clockInfo = yield studentModel_1.default.findByIdAndUpdate(student._id, {
                     clockIn: true,
                     clockInTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
                     clockOut: false,
                 }, { new: true });
-                (0, email_1.clockingInEmail)(clockInfo, school).then(() => {
-                    console.log("sent");
+                yield (0, email_1.clockingInEmail)(clockInfo, school).then((res) => {
+                    console.log("senttt", clockInfo === null || clockInfo === void 0 ? void 0 : clockInfo._id, school === null || school === void 0 ? void 0 : school._id, res);
                 });
                 return res.status(201).json({
                     message: "student has clock-in",
