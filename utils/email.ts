@@ -93,7 +93,7 @@ export const verifiedEmail = async (user: any) => {
     });
 
     const mailerOption = {
-      from: "NEXT🟦🟦🟦 <codelabbest@gmail.com>",
+      from: "NEXT🟦🟦🟦 <justtnext@gmail.com>",
       to: user.email,
       subject: "Account Verification",
       html,
@@ -113,7 +113,7 @@ export const addMemberEmail = async (member: any, getUser: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "codelabbest@gmail.com",
+    //     user: "justtnext@gmail.com",
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -139,7 +139,7 @@ export const addMemberEmail = async (member: any, getUser: any) => {
     });
 
     const mailerOption = {
-      from: "wecareHMO❤️⛑️🚑 <codelabbest@gmail.com>",
+      from: "wecareHMO❤️⛑️🚑 <justtnext@gmail.com>",
       to: getUser.email,
       subject: "Family Member added Notification",
       html,
@@ -159,7 +159,7 @@ export const changeTokenEmail = async (getUser: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "codelabbest@gmail.com",
+    //     user: "justtnext@gmail.com",
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -185,7 +185,7 @@ export const changeTokenEmail = async (getUser: any) => {
     });
 
     const mailerOption = {
-      from: "wecareHMO❤️⛑️🚑 <codelabbest@gmail.com>",
+      from: "wecareHMO❤️⛑️🚑 <justtnext@gmail.com>",
       to: getUser.email,
       subject: "Token reset Notification",
       html,
@@ -242,7 +242,7 @@ export const verifySchoolFees = async (user: any, term: number) => {
     });
 
     const mailerOption = {
-      from: `${user.schoolName}📘📘📘 <codelabbest@gmail.com>`,
+      from: `${user.schoolName}📘📘📘 <justtnext@gmail.com>`,
       to: user.parentEmail,
       subject: `${term} Term School Fees Payment`,
       html,
@@ -262,7 +262,7 @@ export const clockingInEmail = async (user: any, school: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "codelabbest@gmail.com",
+    //     user: "justtnext@gmail.com",
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -319,7 +319,7 @@ export const clockingOutEmail = async (user: any, school: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "codelabbest@gmail.com",
+    //     user: "justtnext@gmail.com",
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -372,7 +372,7 @@ export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "codelabbest@gmail.com",
+    //     user: "justtnext@gmail.com",
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -413,7 +413,7 @@ export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
     });
 
     const mailerOption = {
-      from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+      from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
       to: user.parentEmail,
       subject: `${user?.studentFirstName} Weekly Academic Performance Report`,
       html,

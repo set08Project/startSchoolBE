@@ -84,7 +84,7 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
             userName: user === null || user === void 0 ? void 0 : user.userName,
         });
         const mailerOption = {
-            from: "NEXT🟦🟦🟦 <codelabbest@gmail.com>",
+            from: "NEXT🟦🟦🟦 <justtnext@gmail.com>",
             to: user.email,
             subject: "Account Verification",
             html,
@@ -103,7 +103,7 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "codelabbest@gmail.com",
+        //     user: "justtnext@gmail.com",
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -124,7 +124,7 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
             firstName: member.firstName,
         });
         const mailerOption = {
-            from: "wecareHMO❤️⛑️🚑 <codelabbest@gmail.com>",
+            from: "wecareHMO❤️⛑️🚑 <justtnext@gmail.com>",
             to: getUser.email,
             subject: "Family Member added Notification",
             html,
@@ -143,7 +143,7 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "codelabbest@gmail.com",
+        //     user: "justtnext@gmail.com",
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -164,7 +164,7 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
             link: devURL,
         });
         const mailerOption = {
-            from: "wecareHMO❤️⛑️🚑 <codelabbest@gmail.com>",
+            from: "wecareHMO❤️⛑️🚑 <justtnext@gmail.com>",
             to: getUser.email,
             subject: "Token reset Notification",
             html,
@@ -212,7 +212,7 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
             // schoolName: user.schoolName,
         });
         const mailerOption = {
-            from: `${user.schoolName}📘📘📘 <codelabbest@gmail.com>`,
+            from: `${user.schoolName}📘📘📘 <justtnext@gmail.com>`,
             to: user.parentEmail,
             subject: `${term} Term School Fees Payment`,
             html,
@@ -231,7 +231,7 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "codelabbest@gmail.com",
+        //     user: "justtnext@gmail.com",
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -281,7 +281,7 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "codelabbest@gmail.com",
+        //     user: "justtnext@gmail.com",
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -328,7 +328,7 @@ const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, voi
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "codelabbest@gmail.com",
+        //     user: "justtnext@gmail.com",
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -361,7 +361,7 @@ const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, voi
             sportParticipation: remark === null || remark === void 0 ? void 0 : remark.sportParticipation,
         });
         const mailerOption = {
-            from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+            from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
             to: user.parentEmail,
             subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} Weekly Academic Performance Report`,
             html,
