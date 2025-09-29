@@ -27,6 +27,7 @@ const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
 const GOOGLE_REDIRECT_URL = process.env.GOOGLE_REDIRECT_URL;
 const GOOGLE_REFRESH = process.env.GOOGLE_REFRESH;
 const GPASS = process.env.GPASS;
+const GMAIL = process.env.GMAIL;
 const oAuth = new googleapis_1.google.auth.OAuth2(GOOGLE_ID, GOOGLE_SECRET, GOOGLE_REDIRECT_URL);
 oAuth.setCredentials({ refresh_token: GOOGLE_REFRESH });
 const url = process.env.APP_URL_DEPLOY;
@@ -37,7 +38,7 @@ const url = process.env.APP_URL_DEPLOY;
 //     //   service: "gmail",
 //     //   auth: {
 //     //     type: "OAuth2",
-//     //     user: "justtnext@gmail.com", // Your Gmail address
+//     //     user: GMAIL, // Your Gmail address
 //     //     clientSecret: GOOGLE_SECRET,
 //     //     clientId: GOOGLE_ID,
 //     //     refreshToken: GOOGLE_REFRESH,
@@ -59,8 +60,8 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                user: "justtnext@gmail.com",
-                pass: "ndoxwnlfhlyeflog",
+                user: GMAIL,
+                pass: GPASS,
             },
         });
         const token = jsonwebtoken_1.default.sign({
@@ -104,7 +105,7 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "justtnext@gmail.com",
+        //     user: GMAIL,
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -114,8 +115,8 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                user: "justtnext@gmail.com",
-                pass: "ndoxwnlfhlyeflog",
+                user: GMAIL,
+                pass: GPASS,
             },
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
@@ -144,7 +145,7 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "justtnext@gmail.com",
+        //     user: GMAIL,
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -154,8 +155,8 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                user: "justtnext@gmail.com",
-                pass: "ndoxwnlfhlyeflog",
+                user: GMAIL,
+                pass: GPASS,
             },
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
@@ -194,8 +195,8 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                user: "justtnext@gmail.com",
-                pass: "ndoxwnlfhlyeflog",
+                user: GMAIL,
+                pass: GPASS,
             },
         });
         const token = jsonwebtoken_1.default.sign({
@@ -232,7 +233,7 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "justtnext@gmail.com",
+        //     user: GMAIL,
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -242,7 +243,7 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                user: "justtnext@gmail.com",
+                user: GMAIL,
                 pass: GPASS,
             },
         });
@@ -282,7 +283,7 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "justtnext@gmail.com",
+        //     user: GMAIL,
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -292,7 +293,7 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                user: "justtnext@gmail.com",
+                user: GMAIL,
                 pass: GPASS,
             },
         });
@@ -329,7 +330,7 @@ const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, voi
         //   service: "gmail",
         //   auth: {
         //     type: "OAuth2",
-        //     user: "justtnext@gmail.com",
+        //     user: GMAIL,
         //     clientSecret: GOOGLE_SECRET,
         //     clientId: GOOGLE_ID,
         //     refreshToken: GOOGLE_REFRESH,
@@ -339,8 +340,8 @@ const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, voi
         const transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
-                user: "justtnext@gmail.com",
-                pass: "ndoxwnlfhlyeflog",
+                user: GMAIL,
+                pass: GPASS,
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/weeklyReport.ejs");

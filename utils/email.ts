@@ -14,6 +14,7 @@ const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
 const GOOGLE_REDIRECT_URL = process.env.GOOGLE_REDIRECT_URL;
 const GOOGLE_REFRESH = process.env.GOOGLE_REFRESH;
 const GPASS = process.env.GPASS;
+const GMAIL = process.env.GMAIL;
 
 const oAuth = new google.auth.OAuth2(
   GOOGLE_ID,
@@ -33,7 +34,7 @@ const url: string = process.env.APP_URL_DEPLOY!;
 //     //   service: "gmail",
 //     //   auth: {
 //     //     type: "OAuth2",
-//     //     user: "justtnext@gmail.com", // Your Gmail address
+//     //     user: GMAIL, // Your Gmail address
 //     //     clientSecret: GOOGLE_SECRET,
 //     //     clientId: GOOGLE_ID,
 //     //     refreshToken: GOOGLE_REFRESH,
@@ -58,8 +59,8 @@ export const verifiedEmail = async (user: any) => {
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        user: "justtnext@gmail.com",
-        pass: "ndoxwnlfhlyeflog",
+        user: GMAIL,
+        pass: GPASS,
       },
     });
 
@@ -114,7 +115,7 @@ export const addMemberEmail = async (member: any, getUser: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "justtnext@gmail.com",
+    //     user: GMAIL,
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -125,8 +126,8 @@ export const addMemberEmail = async (member: any, getUser: any) => {
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        user: "justtnext@gmail.com",
-        pass: "ndoxwnlfhlyeflog",
+        user: GMAIL,
+        pass: GPASS,
       },
     });
 
@@ -160,7 +161,7 @@ export const changeTokenEmail = async (getUser: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "justtnext@gmail.com",
+    //     user: GMAIL,
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -171,8 +172,8 @@ export const changeTokenEmail = async (getUser: any) => {
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        user: "justtnext@gmail.com",
-        pass: "ndoxwnlfhlyeflog",
+        user: GMAIL,
+        pass: GPASS,
       },
     });
 
@@ -217,8 +218,8 @@ export const verifySchoolFees = async (user: any, term: number) => {
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        user: "justtnext@gmail.com",
-        pass: "ndoxwnlfhlyeflog",
+        user: GMAIL,
+        pass: GPASS,
       },
     });
 
@@ -263,7 +264,7 @@ export const clockingInEmail = async (user: any, school: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "justtnext@gmail.com",
+    //     user: GMAIL,
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -274,7 +275,7 @@ export const clockingInEmail = async (user: any, school: any) => {
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        user: "justtnext@gmail.com",
+        user: GMAIL,
         pass: GPASS,
       },
     });
@@ -320,7 +321,7 @@ export const clockingOutEmail = async (user: any, school: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "justtnext@gmail.com",
+    //     user: GMAIL,
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -331,7 +332,7 @@ export const clockingOutEmail = async (user: any, school: any) => {
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        user: "justtnext@gmail.com",
+        user: GMAIL,
         pass: GPASS,
       },
     });
@@ -373,7 +374,7 @@ export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
     //   service: "gmail",
     //   auth: {
     //     type: "OAuth2",
-    //     user: "justtnext@gmail.com",
+    //     user: GMAIL,
     //     clientSecret: GOOGLE_SECRET,
     //     clientId: GOOGLE_ID,
     //     refreshToken: GOOGLE_REFRESH,
@@ -384,8 +385,8 @@ export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
-        user: "justtnext@gmail.com",
-        pass: "ndoxwnlfhlyeflog",
+        user: GMAIL,
+        pass: GPASS,
       },
     });
 
