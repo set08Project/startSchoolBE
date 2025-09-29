@@ -54,13 +54,13 @@ export const verifiedEmail = async (user: any) => {
   try {
     // const transporter = await createEmailTransporter();
 
-     const transporter = nodemail.createTransport({
-       service: "gmail",
-       auth: {
-         user: "justtnext@gmail.com",
-         pass: "wfozkwqcyfohmgfo",
-       },
-     });
+    const transporter = nodemail.createTransport({
+      service: "gmail",
+      auth: {
+        user: "justtnext@gmail.com",
+        pass: "ndoxwnlfhlyeflog",
+      },
+    });
 
     const token = jwt.sign(
       {
@@ -125,7 +125,7 @@ export const addMemberEmail = async (member: any, getUser: any) => {
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "wfozkwqcyfohmgfo",
+        pass: "ndoxwnlfhlyeflog",
       },
     });
 
@@ -171,7 +171,7 @@ export const changeTokenEmail = async (getUser: any) => {
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "wfozkwqcyfohmgfo",
+        pass: "ndoxwnlfhlyeflog",
       },
     });
 
@@ -217,7 +217,7 @@ export const verifySchoolFees = async (user: any, term: number) => {
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "wfozkwqcyfohmgfo",
+        pass: "ndoxwnlfhlyeflog",
       },
     });
 
@@ -270,12 +270,11 @@ export const clockingInEmail = async (user: any, school: any) => {
     //   },
     // });
 
-
     const transporter = nodemail.createTransport({
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "wfozkwqcyfohmgfo",
+        pass: "ndoxwnlfhlyeflog",
       },
     });
 
@@ -296,11 +295,12 @@ export const clockingInEmail = async (user: any, school: any) => {
     });
 
     const mailerOption = {
-      from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+      from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
       to: user.parentEmail,
       subject: `${user?.studentFirstName} just Clocked in`,
       html,
     };
+
     console.log("awesome: ", user.parentEmail);
 
     await transporter.sendMail(mailerOption).then((res) => {
@@ -331,7 +331,7 @@ export const clockingOutEmail = async (user: any, school: any) => {
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "wfozkwqcyfohmgfo",
+        pass: "ndoxwnlfhlyeflog",
       },
     });
 
@@ -352,7 +352,7 @@ export const clockingOutEmail = async (user: any, school: any) => {
     });
 
     const mailerOption = {
-      from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+      from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
       to: user.parentEmail,
       subject: `${user?.studentFirstName} just Clocked Out`,
       html,
@@ -384,7 +384,7 @@ export const sendWeeklyReport = async (user: any, school: any, remark: any) => {
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "wfozkwqcyfohmgfo",
+        pass: "ndoxwnlfhlyeflog",
       },
     });
 

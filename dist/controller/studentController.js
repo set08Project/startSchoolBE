@@ -65,9 +65,7 @@ const clockinAccount = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     clockInTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
                     clockOut: false,
                 }, { new: true });
-                yield (0, email_1.clockingInEmail)(clockInfo, school).then((res) => {
-                    console.log("senttt", clockInfo === null || clockInfo === void 0 ? void 0 : clockInfo._id, school === null || school === void 0 ? void 0 : school._id, res);
-                });
+                yield (0, email_1.clockingInEmail)(clockInfo, school);
                 return res.status(201).json({
                     message: "student has clock-in",
                     data: clockInfo,

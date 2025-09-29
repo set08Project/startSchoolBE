@@ -59,7 +59,7 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "wfozkwqcyfohmgfo",
+                pass: "ndoxwnlfhlyeflog",
             },
         });
         const token = jsonwebtoken_1.default.sign({
@@ -114,7 +114,7 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "wfozkwqcyfohmgfo",
+                pass: "ndoxwnlfhlyeflog",
             },
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
@@ -154,7 +154,7 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "wfozkwqcyfohmgfo",
+                pass: "ndoxwnlfhlyeflog",
             },
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
@@ -194,7 +194,7 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "wfozkwqcyfohmgfo",
+                pass: "ndoxwnlfhlyeflog",
             },
         });
         const token = jsonwebtoken_1.default.sign({
@@ -242,7 +242,7 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "wfozkwqcyfohmgfo",
+                pass: "ndoxwnlfhlyeflog",
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockinMail.ejs");
@@ -259,7 +259,7 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
             time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
         });
         const mailerOption = {
-            from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+            from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
             to: user.parentEmail,
             subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked in`,
             html,
@@ -292,7 +292,7 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "wfozkwqcyfohmgfo",
+                pass: "ndoxwnlfhlyeflog",
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockoutMail.ejs");
@@ -309,7 +309,7 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
             time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
         });
         const mailerOption = {
-            from: `${user.schoolName} 📘📘📘 <codelabbest@gmail.com>`,
+            from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
             to: user.parentEmail,
             subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked Out`,
             html,
@@ -339,7 +339,7 @@ const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, voi
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "wfozkwqcyfohmgfo",
+                pass: "ndoxwnlfhlyeflog",
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/weeklyReport.ejs");

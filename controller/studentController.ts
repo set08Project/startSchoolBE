@@ -71,10 +71,8 @@ export const clockinAccount = async (
           { new: true }
         );
 
-       await clockingInEmail(clockInfo, school).then((res) => {
-         console.log("senttt", clockInfo?._id, school?._id, res);
-       });
-
+       await clockingInEmail(clockInfo, school);
+       
         return res.status(201).json({
           message: "student has clock-in",
           data: clockInfo,
