@@ -13,6 +13,7 @@ const GOOGLE_ID = process.env.GOOGLE_ID;
 const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
 const GOOGLE_REDIRECT_URL = process.env.GOOGLE_REDIRECT_URL;
 const GOOGLE_REFRESH = process.env.GOOGLE_REFRESH;
+const GPASS = process.env.GPASS;
 
 const oAuth = new google.auth.OAuth2(
   GOOGLE_ID,
@@ -274,7 +275,7 @@ export const clockingInEmail = async (user: any, school: any) => {
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "ndoxwnlfhlyeflog",
+        pass: GPASS,
       },
     });
 
@@ -331,7 +332,7 @@ export const clockingOutEmail = async (user: any, school: any) => {
       service: "gmail",
       auth: {
         user: "justtnext@gmail.com",
-        pass: "ndoxwnlfhlyeflog",
+        pass: GPASS,
       },
     });
 

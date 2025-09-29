@@ -26,6 +26,7 @@ const GOOGLE_ID = process.env.GOOGLE_ID;
 const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
 const GOOGLE_REDIRECT_URL = process.env.GOOGLE_REDIRECT_URL;
 const GOOGLE_REFRESH = process.env.GOOGLE_REFRESH;
+const GPASS = process.env.GPASS;
 const oAuth = new googleapis_1.google.auth.OAuth2(GOOGLE_ID, GOOGLE_SECRET, GOOGLE_REDIRECT_URL);
 oAuth.setCredentials({ refresh_token: GOOGLE_REFRESH });
 const url = process.env.APP_URL_DEPLOY;
@@ -242,7 +243,7 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "ndoxwnlfhlyeflog",
+                pass: GPASS,
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockinMail.ejs");
@@ -292,7 +293,7 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
             service: "gmail",
             auth: {
                 user: "justtnext@gmail.com",
-                pass: "ndoxwnlfhlyeflog",
+                pass: GPASS,
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockoutMail.ejs");
