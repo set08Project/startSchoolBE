@@ -12,12 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeSubjectFromTeacher = exports.viewSubjectDetail = exports.deleteSchoolSubject = exports.viewSchoolSubjects = exports.updateSchoolSubjectTeacher = exports.updateSchoolSubjectTitle = exports.createSchoolSubject = void 0;
+exports.removeSubjectFromTeacher = exports.viewSubjectDetail = exports.deleteSchoolSubject = exports.viewSchoolSubjects = exports.updateSchoolSubjectTeacher = exports.updateSchoolSubjectTitle = exports.createBulkClassSubjects = exports.createSchoolSubject = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
+const csvtojson_1 = __importDefault(require("csvtojson"));
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_path_1 = __importDefault(require("node:path"));
 const createSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -86,6 +89,92 @@ const createSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createSchoolSubject = createSchoolSubject;
+const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
+        const deleteFilesInFolder = (folderPath) => {
+            if (node_fs_1.default.existsSync(folderPath)) {
+                const files = node_fs_1.default.readdirSync(folderPath);
+                files.forEach((file) => {
+                    const filePath = node_path_1.default.join(folderPath, file);
+                    node_fs_1.default.unlinkSync(filePath);
+                });
+                console.log(`All files in the folder '${folderPath}' have been deleted.`);
+            }
+            else {
+                console.log(`The folder '${folderPath}' does not exist.`);
+            }
+        };
+        const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        for (let i of data) {
+            const school = yield schoolModel_1.default.findById(schoolID).populate({
+                path: "classRooms",
+            });
+            const schoolSubj = yield schoolModel_1.default.findById(schoolID).populate({
+                path: "subjects",
+            });
+            const getClassRooms = school === null || school === void 0 ? void 0 : school.classRooms.find((el) => {
+                return el.className !== (i === null || i === void 0 ? void 0 : i.designated);
+            });
+            const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
+                return (el.subjectTitle === (i === null || i === void 0 ? void 0 : i.subjectTitle) && el.designated === (i === null || i === void 0 ? void 0 : i.designated));
+            });
+            const getClassRM = yield classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
+            console.log("data: ", getClassRM);
+            if (getClassRooms) {
+                if (school && school.schoolName && school.status === "school-admin") {
+                    if (!getClassRoomsSubj) {
+                        const subjects = yield subjectModel_1.default.create({
+                            schoolName: school.schoolName,
+                            subjectTeacherName: i === null || i === void 0 ? void 0 : i.subjectTeacherName,
+                            subjectTitle: i === null || i === void 0 ? void 0 : i.subjectTitle,
+                            designated: i === null || i === void 0 ? void 0 : i.designated,
+                            classDetails: getClassRooms,
+                            subjectClassID: getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM._id,
+                            subjectClassIDs: getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id,
+                        });
+                        school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
+                        school.save();
+                        getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
+                        getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.save();
+                        deleteFilesInFolder(filePath);
+                    }
+                    else {
+                        return res.status(404).json({
+                            message: "duplicate subject",
+                            status: 404,
+                        });
+                    }
+                }
+                else {
+                    return res.status(404).json({
+                        message: "unable to read school",
+                        status: 404,
+                    });
+                }
+            }
+            else {
+                return res.status(404).json({
+                    message: "Error finding school classroom",
+                    status: 404,
+                });
+            }
+        }
+        return res.status(201).json({
+            message: "done with class entry",
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.createBulkClassSubjects = createBulkClassSubjects;
 const updateSchoolSubjectTitle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, subjectID } = req.params;

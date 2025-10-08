@@ -468,6 +468,7 @@ export const createBulkSchoolStudent = async (
           await findClass.save();
 
           deleteFilesInFolder(filePath);
+          deleteFilesInFolder(filePath);
         } else {
           return res.status(404).json({
             message: "class must exist",

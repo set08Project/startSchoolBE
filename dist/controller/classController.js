@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClass1stFee = exports.updateSchoolClassTeacher = exports.updateSchoolClassName = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createSchoolClasses = void 0;
+exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClass1stFee = exports.updateSchoolClassTeacher = exports.updateSchoolClassName = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createBulkSchoolClassroom = exports.createSchoolClasses = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -20,6 +20,9 @@ const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const lodash_1 = __importDefault(require("lodash"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
+const csvtojson_1 = __importDefault(require("csvtojson"));
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_path_1 = __importDefault(require("node:path"));
 const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -73,6 +76,86 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createSchoolClasses = createSchoolClasses;
+const createBulkSchoolClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { schoolID } = req.params;
+        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
+        const deleteFilesInFolder = (folderPath) => {
+            if (node_fs_1.default.existsSync(folderPath)) {
+                const files = node_fs_1.default.readdirSync(folderPath);
+                files.forEach((file) => {
+                    const filePath = node_path_1.default.join(folderPath, file);
+                    node_fs_1.default.unlinkSync(filePath);
+                });
+                console.log(`All files in the folder '${folderPath}' have been deleted.`);
+            }
+            else {
+                console.log(`The folder '${folderPath}' does not exist.`);
+            }
+        };
+        console.log("data: ", filePath, req.file.path);
+        const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        console.log(data);
+        for (let i of data) {
+            const school = yield schoolModel_1.default.findById(schoolID).populate({
+                path: "classRooms",
+            });
+            const checkClass = school === null || school === void 0 ? void 0 : school.classRooms.some((el) => {
+                return el.className === (i === null || i === void 0 ? void 0 : i.className);
+            });
+            const findClass = (_a = school === null || school === void 0 ? void 0 : school.classRooms) === null || _a === void 0 ? void 0 : _a.find((el) => {
+                return el.className === (i === null || i === void 0 ? void 0 : i.classAssigned);
+            });
+            if (school && school.status === "school-admin") {
+                if (!checkClass) {
+                    const classes = yield classroomModel_1.default.create({
+                        schoolName: school.schoolName,
+                        classTeacherName: i === null || i === void 0 ? void 0 : i.classTeacherName,
+                        className: i === null || i === void 0 ? void 0 : i.className,
+                        class2ndFee: parseInt(i === null || i === void 0 ? void 0 : i.class2ndFee.replace(/,/g, "")),
+                        class3rdFee: parseInt(i === null || i === void 0 ? void 0 : i.class3rdFee.replace(/,/g, "")),
+                        class1stFee: parseInt(i === null || i === void 0 ? void 0 : i.class1stFee.replace(/,/g, "")),
+                        presentTerm: school === null || school === void 0 ? void 0 : school.presentTerm,
+                    });
+                    school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
+                    school.classRooms.push(new mongoose_1.Types.ObjectId(classes._id));
+                    school.save();
+                    deleteFilesInFolder(filePath);
+                    // return res.status(201).json({
+                    //   message: "classes created successfully",
+                    //   data: classes,
+                    //   status: 201,
+                    // });
+                }
+                else {
+                    return res.status(404).json({
+                        message: "duplicated class name",
+                        status: 404,
+                    });
+                }
+            }
+            else {
+                return res.status(404).json({
+                    message: "unable to read school",
+                    status: 404,
+                });
+            }
+        }
+        return res.status(201).json({
+            message: "done with class entry",
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.createBulkSchoolClassroom = createBulkSchoolClassroom;
 const updateSchoolClassesPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, subjectID } = req.params;

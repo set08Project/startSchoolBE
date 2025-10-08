@@ -6,11 +6,15 @@ import {
   deleteSchoolSubject,
   viewSubjectDetail,
   removeSubjectFromTeacher,
+  createBulkClassSubjects,
 } from "../controller/subjectController";
-
+import { fileUpload } from "../utils/multer";
 const router: Router = Router();
 
 router.route("/create-subject/:schoolID").post(createSchoolSubject);
+router
+  .route("/create-bulk-subject/:schoolID")
+  .post(fileUpload, createBulkClassSubjects);
 
 router.route("/view-subjects/:schoolID").get(viewSchoolSubjects);
 router.route("/view-subjects-info/:subjectID").get(viewSubjectDetail);

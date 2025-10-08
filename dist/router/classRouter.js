@@ -2,8 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const classController_1 = require("../controller/classController");
+const multer_1 = require("../utils/multer");
 const router = (0, express_1.Router)();
 router.route("/create-classroom/:schoolID").post(classController_1.createSchoolClasses);
+router
+    .route("/create-bulk-classroom/:schoolID")
+    .post(multer_1.fileUpload, classController_1.createBulkSchoolClassroom);
 router
     .route("/update-classname/:schoolID/:classID")
     .patch(classController_1.updateSchoolClassName);

@@ -5,6 +5,10 @@ import { Types } from "mongoose";
 import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
 
+import csv from "csvtojson";
+import fs from "node:fs";
+import path from "node:path";
+
 export const createSchoolSubject = async (
   req: Request,
   res: Response
@@ -80,6 +84,110 @@ export const createSchoolSubject = async (
     });
   }
 };
+
+export const createBulkClassSubjects = async (
+  req: Request | any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    let filePath = path.join(__dirname, "../uploads/examination");
+
+    const deleteFilesInFolder = (folderPath: any) => {
+      if (fs.existsSync(folderPath)) {
+        const files = fs.readdirSync(folderPath);
+
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          fs.unlinkSync(filePath);
+        });
+
+        console.log(
+          `All files in the folder '${folderPath}' have been deleted.`
+        );
+      } else {
+        console.log(`The folder '${folderPath}' does not exist.`);
+      }
+    };
+
+    const data = await csv().fromFile(req.file.path);
+
+    for (let i of data) {
+      const school = await schoolModel.findById(schoolID).populate({
+        path: "classRooms",
+      });
+
+      const schoolSubj = await schoolModel.findById(schoolID).populate({
+        path: "subjects",
+      });
+
+      const getClassRooms: any = school?.classRooms.find((el: any) => {
+        return el.className !== i?.designated;
+      });
+
+      const getClassRoomsSubj = schoolSubj?.subjects.some((el: any) => {
+        return (
+          el.subjectTitle === i?.subjectTitle && el.designated === i?.designated
+        );
+      });
+
+      const getClassRM = await classroomModel.findById(getClassRooms?._id);
+      console.log("data: ", getClassRM);
+
+      if (getClassRooms) {
+        if (school && school.schoolName && school.status === "school-admin") {
+          if (!getClassRoomsSubj) {
+            const subjects = await subjectModel.create({
+              schoolName: school.schoolName,
+              subjectTeacherName: i?.subjectTeacherName,
+              subjectTitle: i?.subjectTitle,
+              designated: i?.designated,
+              classDetails: getClassRooms,
+              subjectClassID: getClassRM?._id,
+              subjectClassIDs: getClassRooms?._id,
+            });
+
+            school.subjects.push(new Types.ObjectId(subjects._id));
+            school.save();
+
+            getClassRM?.classSubjects.push(new Types.ObjectId(subjects._id));
+            getClassRM?.save();
+
+            deleteFilesInFolder(filePath);
+          } else {
+            return res.status(404).json({
+              message: "duplicate subject",
+              status: 404,
+            });
+          }
+        } else {
+          return res.status(404).json({
+            message: "unable to read school",
+            status: 404,
+          });
+        }
+      } else {
+        return res.status(404).json({
+          message: "Error finding school classroom",
+          status: 404,
+        });
+      }
+    }
+
+    return res.status(201).json({
+      message: "done with class entry",
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
+
 
 export const updateSchoolSubjectTitle = async (
   req: Request,

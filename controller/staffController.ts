@@ -10,6 +10,10 @@ import { streamUpload } from "../utils/streamifier";
 import studentModel from "../model/studentModel";
 import { CronJob } from "cron";
 
+import csv from "csvtojson";
+import fs from "node:fs";
+import path from "node:path";
+
 export const loginTeacher = async (
   req: any,
   res: Response
@@ -407,6 +411,96 @@ export const createSchoolTeacher = async (
   } catch (error) {
     return res.status(404).json({
       message: "Error creating teacher",
+    });
+  }
+};
+
+export const createBulkTeachers = async (
+  req: Request | any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    let filePath = path.join(__dirname, "../uploads/examination");
+
+    const deleteFilesInFolder = (folderPath: any) => {
+      if (fs.existsSync(folderPath)) {
+        const files = fs.readdirSync(folderPath);
+
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          fs.unlinkSync(filePath);
+        });
+
+        console.log(
+          `All files in the folder '${folderPath}' have been deleted.`
+        );
+      } else {
+        console.log(`The folder '${folderPath}' does not exist.`);
+      }
+    };
+
+    const data = await csv().fromFile(req.file.path);
+
+    for (let i of data) {
+      const enrollmentID = crypto.randomBytes(3).toString("hex");
+      console.log("staff: ", i);
+      console.log("staff: ", i?.staffName);
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(
+        `${i?.staffName.replace(/ /gi, "")}`,
+        salt
+      );
+
+      const school = await schoolModel.findById(schoolID).populate({
+        path: "subjects",
+      });
+
+      if (school && school.schoolName && school.status === "school-admin") {
+        // if (getSubject) {
+        const staff = await staffModel.create({
+          schoolIDs: schoolID,
+          staffName: i?.staffName,
+          schoolName: school.schoolName,
+          staffRole: staffDuty.TEACHER,
+          // subjectAssigned: [{ title: subjectTitle, id: getSubject._id }],
+          role: i?.role,
+          status: "school-teacher",
+          salary: i?.salary,
+          gender: i?.gender,
+
+          email: `${i?.staffName
+            .replace(/ /gi, "")
+            .toLowerCase()}@${school?.schoolName
+            ?.replace(/ /gi, "")
+            .toLowerCase()}.com`,
+          enrollmentID,
+          password: hashed,
+          staffAddress: i?.staffAddress,
+        });
+
+        school.staff.push(new Types.ObjectId(staff._id));
+        school.save();
+
+        deleteFilesInFolder(filePath);
+      } else {
+        return res.status(404).json({
+          message: "unable to read school",
+          status: 404,
+        });
+      }
+    }
+
+    return res.status(201).json({
+      message: "done with class entry",
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      data: error.message,
+      status: 404,
     });
   }
 };

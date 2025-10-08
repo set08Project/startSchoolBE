@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  createBulkSchoolClassroom,
   createSchoolClasses,
   deleteSchoolClass,
   studentOfWeek,
@@ -16,9 +17,13 @@ import {
   viewSchoolClassesByName,
 } from "../controller/classController";
 
+import { fileUpload } from "../utils/multer";
 const router: Router = Router();
 
 router.route("/create-classroom/:schoolID").post(createSchoolClasses);
+router
+  .route("/create-bulk-classroom/:schoolID")
+  .post(fileUpload, createBulkSchoolClassroom);
 router
   .route("/update-classname/:schoolID/:classID")
   .patch(updateSchoolClassName);

@@ -8,6 +8,12 @@ import lodash from "lodash";
 import studentModel from "../model/studentModel";
 import { log } from "console";
 
+import csv from "csvtojson";
+import moment from "moment";
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "crypto";
+
 export const createSchoolClasses = async (
   req: Request,
   res: Response
@@ -70,6 +76,99 @@ export const createSchoolClasses = async (
       message: "Error creating school session",
       status: 404,
       error,
+    });
+  }
+};
+
+export const createBulkSchoolClassroom = async (
+  req: Request | any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    let filePath = path.join(__dirname, "../uploads/examination");
+
+    const deleteFilesInFolder = (folderPath: any) => {
+      if (fs.existsSync(folderPath)) {
+        const files = fs.readdirSync(folderPath);
+
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          fs.unlinkSync(filePath);
+        });
+
+        console.log(
+          `All files in the folder '${folderPath}' have been deleted.`
+        );
+      } else {
+        console.log(`The folder '${folderPath}' does not exist.`);
+      }
+    };
+    console.log("data: ", filePath, req.file.path);
+
+    const data = await csv().fromFile(req.file.path);
+    console.log(data);
+
+    for (let i of data) {
+      const school = await schoolModel.findById(schoolID).populate({
+        path: "classRooms",
+      });
+
+      const checkClass = school?.classRooms.some((el: any) => {
+        return el.className === i?.className;
+      });
+
+      const findClass: any = school?.classRooms?.find((el: any) => {
+        return el.className === i?.classAssigned;
+      });
+
+      if (school && school.status === "school-admin") {
+        if (!checkClass) {
+          const classes = await classroomModel.create({
+            schoolName: school.schoolName,
+            classTeacherName: i?.classTeacherName,
+            className: i?.className,
+            class2ndFee: parseInt(i?.class2ndFee.replace(/,/g, "")),
+            class3rdFee: parseInt(i?.class3rdFee.replace(/,/g, "")),
+            class1stFee: parseInt(i?.class1stFee.replace(/,/g, "")),
+
+            presentTerm: school?.presentTerm,
+          });
+
+          school.historys.push(new Types.ObjectId(classes._id));
+          school.classRooms.push(new Types.ObjectId(classes._id));
+
+          school.save();
+          deleteFilesInFolder(filePath);
+          // return res.status(201).json({
+          //   message: "classes created successfully",
+          //   data: classes,
+          //   status: 201,
+          // });
+        } else {
+          return res.status(404).json({
+            message: "duplicated class name",
+            status: 404,
+          });
+        }
+      } else {
+        return res.status(404).json({
+          message: "unable to read school",
+          status: 404,
+        });
+      }
+    }
+
+    return res.status(201).json({
+      message: "done with class entry",
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating school session",
+      data: error.message,
+      status: 404,
     });
   }
 };
