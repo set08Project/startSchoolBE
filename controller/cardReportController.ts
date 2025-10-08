@@ -9,6 +9,517 @@ import classroomModel from "../model/classroomModel";
 import midReportCardModel from "../model/midReportCardModel";
 import studentHistoricalResultModel from "../model/studentHistoricalResultModel";
 
+// export const createReportCardEntry = async (
+//   req: Request,
+//   res: Response
+// ): Promise<Response> => {
+//   try {
+//     const { teacherID, studentID } = req.params;
+//     const {
+//       subject,
+//       test1 = 0,
+//       test2 = 0,
+//       test3 = 0,
+//       test4 = 0,
+//       exam = 0,
+//     } = req.body;
+
+//     const teacher = await staffModel.findById(teacherID);
+//     const school: any = await schoolModel
+//       .findById(teacher?.schoolIDs)
+//       .populate({
+//         path: "session",
+//         options: {
+//           sort: {
+//             createdAt: -1,
+//           },
+//         },
+//       });
+
+//     const student: any = await studentModel.findById(studentID).populate({
+//       path: "reportCard",
+//     });
+
+//     const subjectData = await subjectModel.findOne({ subjectTitle: subject });
+
+//     const studentCheck = student?.reportCard.some((el: any) => {
+//       return (
+//         el.classInfo ===
+//         `${
+//           student?.classAssigned
+//         } session: ${school?.presentSession!}(${school?.presentTerm!})`
+//       );
+//     });
+//     // presentSession;
+
+//     if (teacher && student) {
+//       if (studentCheck) {
+//         console.log("Awesome!!");
+
+//         const getReportSubject: any = await studentModel
+//           .findById(studentID)
+//           .populate({
+//             path: "reportCard",
+//           });
+
+//         const getData: any = getReportSubject?.reportCard?.find((el: any) => {
+//           return (
+//             el.classInfo ===
+//             `${
+//               student?.classAssigned
+//             } session: ${school?.presentSession!}(${school?.presentTerm!})`
+//           );
+//         });
+
+//         const data = getReportSubject?.reportCard?.find((el: any) => {
+//           return el.result.find((el: any) => {
+//             return el.subject === subject;
+//           });
+//         });
+
+      
+
+//         const dataFIle = getReportSubject?.reportCard?.find((el: any) => {
+//           return el.result.find((el: any) => {
+//             return el.subject === subject;
+//           });
+//         });
+
+//         const read = dataFIle?.result.find((el: any) => {
+//           return el.subject === subject;
+//         });
+
+//         if (data) {
+//           let x1 = 0;
+//           let x2 = 0;
+//           let x3 = 0;
+//           let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
+//           let x5 = !exam ? read?.exam : exam ? exam : 0;
+
+//           let y1 = 0;
+//           let y2 = 0;
+//           let y3 = 0;
+//           let y4 = x4 !== null ? x4 : 0;
+//           let y5 = x5 !== null ? x5 : 0;
+
+//           let mark = y1 + y2 + y3 + y4 + y5;
+
+//           let myTest1: number;
+//           let myTest2: number;
+//           let myTest3: number;
+//           let myTest4: number;
+//           let examination: number;
+
+//           let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+//           let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+//           let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+//           let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+//           let w5 = x5 !== 0 ? (examination = 60) : 0;
+
+//           let score = w1 + w2 + w3 + w4 + w5;
+
+//           let updated = getData.result.filter((el: any) => {
+//             return el.subject !== subject;
+//           });
+
+//           const report: any = await cardReportModel.findByIdAndUpdate(
+//             getData?._id,
+//             {
+//               result: [
+//                 ...updated,
+//                 {
+//                   subject: !subject ? read?.subject : subject,
+//                   test1: 0,
+//                   test2: 0,
+//                   test3: 0,
+//                   test4: y4,
+//                   exam: y5,
+//                   mark,
+//                   score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+//                   points: mark,
+//                   // y1 > 10
+//                   //   ? parseFloat(((mark / score) * 100).toFixed(2))
+//                   //   : parseFloat(((mark / score) * 100).toFixed(2)),
+//                   grade:
+//                     mark >= 0 && mark <= 39
+//                       ? "F9"
+//                       : mark >= 39 && mark <= 44
+//                       ? "E8"
+//                       : mark >= 44 && mark <= 49
+//                       ? "D7"
+//                       : mark >= 49 && mark <= 54
+//                       ? "C6"
+//                       : mark >= 54 && mark <= 59
+//                       ? "C5"
+//                       : mark >= 59 && mark <= 64
+//                       ? "C4"
+//                       : mark >= 64 && mark <= 69
+//                       ? "B3"
+//                       : mark >= 69 && mark <= 74
+//                       ? "B2"
+//                       : mark >= 74 && mark <= 100
+//                       ? "A1"
+//                       : null,
+//                 },
+//               ],
+//             },
+//             { new: true }
+//           );
+
+//           let genPoint = parseFloat(
+//             (
+//               report?.result
+//                 ?.map((el: any) => {
+//                   return el.points;
+//                 })
+//                 .reduce((a: number, b: number) => {
+//                   return a + b;
+//                 }, 0) / report?.result?.length!
+//             ).toFixed(2)
+//           );
+
+//           let grade =
+//             genPoint >= 0 && genPoint <= 39
+//               ? "F9"
+//               : genPoint >= 39 && genPoint <= 44
+//               ? "E8"
+//               : genPoint >= 44 && genPoint <= 49
+//               ? "D7"
+//               : genPoint >= 49 && genPoint <= 54
+//               ? "C6"
+//               : genPoint >= 54 && genPoint <= 59
+//               ? "C5"
+//               : genPoint >= 59 && genPoint <= 64
+//               ? "C4"
+//               : genPoint >= 64 && genPoint <= 69
+//               ? "B3"
+//               : genPoint >= 69 && genPoint <= 74
+//               ? "B2"
+//               : genPoint >= 74 && genPoint <= 100
+//               ? "A1"
+//               : null;
+
+//           let x =
+//             genPoint >= 0 && genPoint <= 5
+//               ? "This is a very poor result."
+//               : genPoint >= 6 && genPoint <= 11
+//               ? "This result is poor; it's not satisfactory."
+//               : genPoint >= 11 && genPoint <= 15
+//               ? "Below average; needs significant improvement."
+//               : genPoint >= 16 && genPoint <= 21
+//               ? "Below average; more effort required."
+//               : genPoint >= 21 && genPoint <= 25
+//               ? "Fair but not satisfactory; strive harder."
+//               : genPoint >= 26 && genPoint <= 31
+//               ? "Fair performance; potential for improvement."
+//               : genPoint >= 31 && genPoint <= 35
+//               ? "Average; a steady effort is needed."
+//               : genPoint >= 36 && genPoint <= 41
+//               ? "Average; showing gradual improvement."
+//               : genPoint >= 41 && genPoint <= 45
+//               ? "Slightly above average; keep it up."
+//               : genPoint >= 46 && genPoint <= 51
+//               ? "Decent work; shows potential."
+//               : genPoint >= 51 && genPoint <= 55
+//               ? "Passable; satisfactory effort."
+//               : genPoint >= 56 && genPoint <= 61
+//               ? "Satisfactory; good progress."
+//               : genPoint >= 61 && genPoint <= 65
+//               ? "Good work; keep striving for excellence."
+//               : genPoint >= 66 && genPoint <= 71
+//               ? "Commendable effort; very good."
+//               : genPoint >= 71 && genPoint <= 75
+//               ? "Very good; consistent effort is visible."
+//               : genPoint >= 76 && genPoint <= 81
+//               ? "Excellent performance; well done!"
+//               : genPoint >= 81 && genPoint <= 85
+//               ? "Exceptional result; keep up the great work!"
+//               : genPoint >= 86 && genPoint <= 91
+//               ? "Outstanding achievement; impressive work!"
+//               : genPoint >= 91 && genPoint <= 95
+//               ? "Brilliant performance; you’re a star!"
+//               : genPoint >= 96 && genPoint <= 100
+//               ? "Outstanding achievement; impressive work!"
+//               : ``;
+
+//           let xx =
+//             genPoint >= 0 && genPoint <= 5
+//               ? "The submission demonstrates a lack of understanding of the topic. Please see me for guidance"
+//               : genPoint >= 6 && genPoint <= 11
+//               ? "Very minimal effort is evident in the work. It's essential to review the material thoroughly."
+//               : genPoint >= 11 && genPoint <= 15
+//               ? "This effort does not meet the basic requirements. Please focus on the foundational concepts."
+//               : genPoint >= 16 && genPoint <= 21
+//               ? "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions."
+//               : genPoint >= 21 && genPoint <= 25
+//               ? "Some attempt is evident, but significant gaps in understanding remain. More effort is required."
+//               : genPoint >= 26 && genPoint <= 31
+//               ? "The work shows minimal understanding of the topic. Focus on building your foundational knowledge."
+//               : genPoint >= 31 && genPoint <= 35
+//               ? "A basic attempt is made, but it falls short of expectations. Review the feedback to improve"
+//               : genPoint >= 36 && genPoint <= 41
+//               ? "You are starting to grasp the material, but more depth and accuracy are needed."
+//               : genPoint >= 41 && genPoint <= 45
+//               ? "An acceptable effort, but there is room for improvement in clarity and depth"
+//               : genPoint >= 46 && genPoint <= 51
+//               ? "Some understanding is demonstrated, but key concepts are missing or incorrect."
+//               : genPoint >= 51 && genPoint <= 55
+//               ? "You are making progress but need to develop your analysis further to meet the standard"
+//               : genPoint >= 56 && genPoint <= 61
+//               ? "A decent attempt that meets some expectations but lacks polish and depth in certain areas"
+//               : genPoint >= 61 && genPoint <= 65
+//               ? "Good work; keep striving for excellence."
+//               : genPoint >= 66 && genPoint <= 71
+//               ? "A solid understanding is evident, though there are areas to refine."
+//               : genPoint >= 71 && genPoint <= 75
+//               ? "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth."
+//               : genPoint >= 76 && genPoint <= 81
+//               ? "Strong work overall! A little more attention to detail could make it exceptional!"
+//               : genPoint >= 81 && genPoint <= 85
+//               ? "Well done! You have a good grasp of the material. Aim for more critical analysis next time!"
+//               : genPoint >= 86 && genPoint <= 91
+//               ? "Excellent work! You’ve exceeded expectations. Keep up the fantastic effort!"
+//               : genPoint >= 91 && genPoint <= 95
+//               ? "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!"
+//               : genPoint >= 96 && genPoint <= 100
+//               ? "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulation!"
+//               : ``;
+
+//           let nice = await cardReportModel.findByIdAndUpdate(
+//             report?.id,
+//             {
+//               points: genPoint,
+//               adminComment: x,
+//               classTeacherComment: xx,
+//               grade,
+//             },
+//             { new: true }
+//           );
+
+//           return res.status(201).json({
+//             message: "teacher updated report successfully",
+//             data: nice,
+
+//             status: 201,
+//           });
+//         } else {
+//           let x1 = 0;
+//           let x2 = 0;
+//           let x3 = 0;
+//           let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
+//           let x5 = !exam ? read?.exam : exam ? exam : 0;
+
+//           let y1 = 0;
+//           let y2 = 0;
+//           let y3 = 0;
+//           let y4 = x4 !== null ? x4 : 0;
+//           let y5 = x5 !== null ? x5 : 0;
+
+//           let mark = y1 + y2 + y3 + y4 + y5;
+
+//           let myTest1: number;
+//           let myTest2: number;
+//           let myTest3: number;
+//           let myTest4: number;
+//           let examination: number;
+
+//           let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
+//           let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
+//           let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
+//           let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
+//           let w5 = x5 !== 0 ? (examination = 60) : 0;
+
+//           let score = w1 + w2 + w3 + w4 + w5;
+
+//           const report = await cardReportModel.findByIdAndUpdate(
+//             getData?._id,
+//             {
+//               result: [
+//                 ...getData.result,
+//                 {
+//                   subject: !subject ? read?.subject : subject,
+//                   test1: y1,
+//                   test2: y2,
+//                   test3: y3,
+//                   test4: y4,
+//                   exam: y5,
+//                   mark,
+//                   score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
+//                   points:
+//                     y1 > 10
+//                       ? parseFloat(((mark / score) * 100).toFixed(2))
+//                       : parseFloat(((mark / score) * 100).toFixed(2)),
+//                   grade:
+//                     mark >= 0 && mark <= 39
+//                       ? "F9"
+//                       : mark >= 39 && mark <= 44
+//                       ? "E8"
+//                       : mark >= 44 && mark <= 49
+//                       ? "D7"
+//                       : mark >= 49 && mark <= 54
+//                       ? "C6"
+//                       : mark >= 54 && mark <= 59
+//                       ? "C5"
+//                       : mark >= 59 && mark <= 64
+//                       ? "C4"
+//                       : mark >= 64 && mark <= 69
+//                       ? "B3"
+//                       : mark >= 69 && mark <= 74
+//                       ? "B2"
+//                       : mark >= 74 && mark <= 100
+//                       ? "A1"
+//                       : null,
+//                 },
+//               ],
+//             },
+//             { new: true }
+//           );
+
+//           let genPoint = parseFloat(
+//             (
+//               report?.result
+//                 ?.map((el: any) => {
+//                   return el.points;
+//                 })
+//                 .reduce((a: number, b: number) => {
+//                   return a + b;
+//                 }, 0) / report?.result?.length!
+//             ).toFixed(2)
+//           );
+
+//           let grade =
+//             genPoint >= 0 && genPoint <= 39
+//               ? "F9"
+//               : genPoint >= 39 && genPoint <= 44
+//               ? "E8"
+//               : genPoint >= 44 && genPoint <= 49
+//               ? "D7"
+//               : genPoint >= 49 && genPoint <= 54
+//               ? "C6"
+//               : genPoint >= 54 && genPoint <= 59
+//               ? "C5"
+//               : genPoint >= 59 && genPoint <= 64
+//               ? "C4"
+//               : genPoint >= 64 && genPoint <= 69
+//               ? "B3"
+//               : genPoint >= 69 && genPoint <= 74
+//               ? "B2"
+//               : genPoint >= 74 && genPoint <= 100
+//               ? "A1"
+//               : null;
+
+//           let nice = await cardReportModel.findByIdAndUpdate(
+//             report?.id,
+//             {
+//               points: genPoint,
+//               grade,
+//             },
+//             { new: true }
+//           );
+//           return res.status(201).json({
+//             message: "can't report entry created successfully",
+//             data: nice,
+//             status: 201,
+//           });
+//         }
+//       } else {
+//         const report = await cardReportModel.create({
+//           result: [
+//             {
+//               subject,
+//               test1: 0,
+//               test2: 0,
+//               test3: 0,
+//               test4,
+//               exam,
+//             },
+//           ],
+//           classInfo: `${
+//             student?.classAssigned
+//           } session: ${school?.presentSession!}(${school?.presentTerm!})`,
+//           studentID,
+//         });
+
+//         let genPoint = parseFloat(
+//           (
+//             report?.result
+//               ?.map((el: any) => {
+//                 return el.points;
+//               })
+//               .reduce((a: number, b: number) => {
+//                 return a + b;
+//               }, 0) / report?.result?.length!
+//           ).toFixed(2)
+//         );
+
+//         let numb = [test1, test2, test3, test4, exam];
+//         let count = 0;
+//         let resultNumb = 0;
+//         let resultNumbAva = 0;
+
+//         for (let i = 0; i < numb.length; i++) {
+//           if (numb[i] > 0) {
+//             resultNumb += numb[i];
+
+//             count++;
+//           }
+//         }
+
+//         resultNumbAva = resultNumb / count;
+
+//         let grade =
+//           genPoint >= 0 && genPoint <= 39
+//             ? "F"
+//             : genPoint >= 40 && genPoint <= 49
+//             ? "E"
+//             : genPoint >= 50 && genPoint <= 59
+//             ? "D"
+//             : genPoint >= 60 && genPoint <= 69
+//             ? "C"
+//             : genPoint >= 70 && genPoint <= 79
+//             ? "B"
+//             : genPoint >= 80 && genPoint <= 100
+//             ? "A"
+//             : null;
+
+//         const nice = await cardReportModel.findByIdAndUpdate(
+//           report?.id,
+//           {
+//             points: resultNumb,
+//             grade: "Nill",
+//           },
+//           { new: true }
+//         );
+//         student?.reportCard?.push(new Types.ObjectId(nice?._id));
+//         student?.save();
+
+//         subjectData?.reportCard?.push(new Types.ObjectId(nice?._id));
+//         subjectData?.save();
+
+//         // school?.reportCard.push(new Types.ObjectId(report._id));
+//         // school?.save();
+//         console.log("report data: ");
+//         return res.status(201).json({
+//           message: "report entry created successfully",
+//           data: { nice, student },
+//           status: 201,
+//         });
+//       }
+//     } else {
+//       return res.status(404).json({
+//         message: "student and teacher doesn't exist for this class",
+//         status: 404,
+//       });
+//     }
+//   } catch (error: any) {
+//     return res.status(404).json({
+//       message: "Error creating class subject report",
+//       data: error.message,
+//       status: 404,
+//     });
+//   }
+// };
+
 export const createReportCardEntry = async (
   req: Request,
   res: Response
@@ -24,502 +535,281 @@ export const createReportCardEntry = async (
       exam = 0,
     } = req.body;
 
-    const teacher = await staffModel.findById(teacherID);
-    const school: any = await schoolModel
-      .findById(teacher?.schoolIDs)
-      .populate({
-        path: "session",
-        options: {
-          sort: {
-            createdAt: -1,
-          },
-        },
+    // Validate required fields
+    if (!subject) {
+      return res.status(400).json({
+        message: "Subject is required",
+        status: 400,
       });
+    }
 
-    const student: any = await studentModel.findById(studentID).populate({
-      path: "reportCard",
+    // Fetch teacher and verify existence
+    const teacher = await staffModel.findById(teacherID);
+    if (!teacher) {
+      return res.status(404).json({
+        message: "Teacher not found",
+        status: 404,
+      });
+    }
+
+    // Fetch school with current session info
+    const school: any = await schoolModel.findById(teacher.schoolIDs).populate({
+      path: "session",
+      options: { sort: { createdAt: -1 } },
     });
 
+    if (!school) {
+      return res.status(404).json({
+        message: "School not found",
+        status: 404,
+      });
+    }
+
+    // Fetch student with report cards
+    const student: any = await studentModel
+      .findById(studentID)
+      .populate({ path: "reportCard" });
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: 404,
+      });
+    }
+
+    // Fetch subject data
     const subjectData = await subjectModel.findOne({ subjectTitle: subject });
 
-    const studentCheck = student?.reportCard.some((el: any) => {
-      return (
-        el.classInfo ===
-        `${
-          student?.classAssigned
-        } session: ${school?.presentSession!}(${school?.presentTerm!})`
-      );
+    // Generate current class info identifier
+    const currentClassInfo = `${student.classAssigned} session: ${school.presentSession}(${school.presentTerm})`;
+
+    // Check if report card exists for current session/term
+    const existingReportCard = student.reportCard.find((card: any) => {
+      return card.classInfo === currentClassInfo;
     });
-    // presentSession;
 
-    if (teacher && student) {
-      if (studentCheck) {
-        console.log("Awesome!!");
+    // Helper function to calculate grade from marks
+    const calculateGrade = (mark: number): string | null => {
+      if (mark >= 74) return "A1";
+      if (mark >= 69) return "B2";
+      if (mark >= 64) return "B3";
+      if (mark >= 59) return "C4";
+      if (mark >= 54) return "C5";
+      if (mark >= 49) return "C6";
+      if (mark >= 44) return "D7";
+      if (mark >= 39) return "E8";
+      if (mark >= 0) return "F9";
+      return null;
+    };
 
-        const getReportSubject: any = await studentModel
-          .findById(studentID)
-          .populate({
-            path: "reportCard",
-          });
+    // Helper function to generate admin comment
+    const generateAdminComment = (points: number): string => {
+      if (points >= 96) return "Outstanding achievement; impressive work!";
+      if (points >= 91) return "Brilliant performance; you're a star!";
+      if (points >= 86) return "Outstanding achievement; impressive work!";
+      if (points >= 81) return "Exceptional result; keep up the great work!";
+      if (points >= 76) return "Excellent performance; well done!";
+      if (points >= 71) return "Very good; consistent effort is visible.";
+      if (points >= 66) return "Commendable effort; very good.";
+      if (points >= 61) return "Good work; keep striving for excellence.";
+      if (points >= 56) return "Satisfactory; good progress.";
+      if (points >= 51) return "Passable; satisfactory effort.";
+      if (points >= 46) return "Decent work; shows potential.";
+      if (points >= 41) return "Slightly above average; keep it up.";
+      if (points >= 36) return "Average; showing gradual improvement.";
+      if (points >= 31) return "Average; a steady effort is needed.";
+      if (points >= 26) return "Fair performance; potential for improvement.";
+      if (points >= 21) return "Fair but not satisfactory; strive harder.";
+      if (points >= 16) return "Below average; more effort required.";
+      if (points >= 11) return "Below average; needs significant improvement.";
+      if (points >= 6) return "This result is poor; it's not satisfactory.";
+      return "This is a very poor result.";
+    };
 
-        const getData: any = getReportSubject?.reportCard?.find((el: any) => {
-          return (
-            el.classInfo ===
-            `${
-              student?.classAssigned
-            } session: ${school?.presentSession!}(${school?.presentTerm!})`
-          );
-        });
+    // Helper function to generate teacher comment
+    const generateTeacherComment = (points: number): string => {
+      if (points >= 96)
+        return "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulations!";
+      if (points >= 91)
+        return "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!";
+      if (points >= 86)
+        return "Excellent work! You've exceeded expectations. Keep up the fantastic effort!";
+      if (points >= 81)
+        return "Well done! You have a good grasp of the material. Aim for more critical analysis next time!";
+      if (points >= 76)
+        return "Strong work overall! A little more attention to detail could make it exceptional!";
+      if (points >= 71)
+        return "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth.";
+      if (points >= 66)
+        return "A solid understanding is evident, though there are areas to refine.";
+      if (points >= 61) return "Good work; keep striving for excellence.";
+      if (points >= 56)
+        return "A decent attempt that meets some expectations but lacks polish and depth in certain areas.";
+      if (points >= 51)
+        return "You are making progress but need to develop your analysis further to meet the standard.";
+      if (points >= 46)
+        return "Some understanding is demonstrated, but key concepts are missing or incorrect.";
+      if (points >= 41)
+        return "An acceptable effort, but there is room for improvement in clarity and depth.";
+      if (points >= 36)
+        return "You are starting to grasp the material, but more depth and accuracy are needed.";
+      if (points >= 31)
+        return "A basic attempt is made, but it falls short of expectations. Review the feedback to improve.";
+      if (points >= 26)
+        return "The work shows minimal understanding of the topic. Focus on building your foundational knowledge.";
+      if (points >= 21)
+        return "Some attempt is evident, but significant gaps in understanding remain. More effort is required.";
+      if (points >= 16)
+        return "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions.";
+      if (points >= 11)
+        return "This effort does not meet the basic requirements. Please focus on the foundational concepts.";
+      if (points >= 6)
+        return "Very minimal effort is evident in the work. It's essential to review the material thoroughly.";
+      return "The submission demonstrates a lack of understanding of the topic. Please see me for guidance.";
+    };
 
-        const data = getReportSubject?.reportCard?.find((el: any) => {
-          return el.result.find((el: any) => {
-            return el.subject === subject;
-          });
-        });
+    // Calculate scores and grade for the subject
+    const calculateSubjectScore = (t4: number, ex: number) => {
+      const test4Score = t4 || 0;
+      const examScore = ex || 0;
+      const totalMark = test4Score + examScore;
 
-      
+      // Calculate actual score based on what tests were taken
+      // test4 is worth 40 points, exam is worth 60 points (total 100)
+      let maxScore = 0;
+      if (test4Score > 0) maxScore += 40;
+      if (examScore > 0) maxScore += 60;
 
-        const dataFIle = getReportSubject?.reportCard?.find((el: any) => {
-          return el.result.find((el: any) => {
-            return el.subject === subject;
-          });
-        });
+      return {
+        test4: test4Score,
+        exam: examScore,
+        mark: totalMark,
+        score: maxScore,
+        points: totalMark,
+        grade: calculateGrade(totalMark),
+      };
+    };
 
-        const read = dataFIle?.result.find((el: any) => {
-          return el.subject === subject;
-        });
+    if (existingReportCard) {
+      // Report card exists - update or add subject
+      const existingSubject = existingReportCard.result.find(
+        (r: any) => r.subject === subject
+      );
 
-        if (data) {
-          let x1 = 0;
-          let x2 = 0;
-          let x3 = 0;
-          let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
-          let x5 = !exam ? read?.exam : exam ? exam : 0;
+      let updatedResults;
+      if (existingSubject) {
+        // Update existing subject - merge with existing scores
+        const scores = calculateSubjectScore(
+          test4 || existingSubject.test4,
+          exam || existingSubject.exam
+        );
 
-          let y1 = 0;
-          let y2 = 0;
-          let y3 = 0;
-          let y4 = x4 !== null ? x4 : 0;
-          let y5 = x5 !== null ? x5 : 0;
-
-          let mark = y1 + y2 + y3 + y4 + y5;
-
-          let myTest1: number;
-          let myTest2: number;
-          let myTest3: number;
-          let myTest4: number;
-          let examination: number;
-
-          let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
-          let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
-          let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
-          let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
-          let w5 = x5 !== 0 ? (examination = 60) : 0;
-
-          let score = w1 + w2 + w3 + w4 + w5;
-
-          let updated = getData.result.filter((el: any) => {
-            return el.subject !== subject;
-          });
-
-          const report: any = await cardReportModel.findByIdAndUpdate(
-            getData?._id,
-            {
-              result: [
-                ...updated,
-                {
-                  subject: !subject ? read?.subject : subject,
-                  test1: 0,
-                  test2: 0,
-                  test3: 0,
-                  test4: y4,
-                  exam: y5,
-                  mark,
-                  score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
-                  points: mark,
-                  // y1 > 10
-                  //   ? parseFloat(((mark / score) * 100).toFixed(2))
-                  //   : parseFloat(((mark / score) * 100).toFixed(2)),
-                  grade:
-                    mark >= 0 && mark <= 39
-                      ? "F9"
-                      : mark >= 39 && mark <= 44
-                      ? "E8"
-                      : mark >= 44 && mark <= 49
-                      ? "D7"
-                      : mark >= 49 && mark <= 54
-                      ? "C6"
-                      : mark >= 54 && mark <= 59
-                      ? "C5"
-                      : mark >= 59 && mark <= 64
-                      ? "C4"
-                      : mark >= 64 && mark <= 69
-                      ? "B3"
-                      : mark >= 69 && mark <= 74
-                      ? "B2"
-                      : mark >= 74 && mark <= 100
-                      ? "A1"
-                      : null,
-                },
-              ],
-            },
-            { new: true }
-          );
-
-          let genPoint = parseFloat(
-            (
-              report?.result
-                ?.map((el: any) => {
-                  return el.points;
-                })
-                .reduce((a: number, b: number) => {
-                  return a + b;
-                }, 0) / report?.result?.length!
-            ).toFixed(2)
-          );
-
-          let grade =
-            genPoint >= 0 && genPoint <= 39
-              ? "F9"
-              : genPoint >= 39 && genPoint <= 44
-              ? "E8"
-              : genPoint >= 44 && genPoint <= 49
-              ? "D7"
-              : genPoint >= 49 && genPoint <= 54
-              ? "C6"
-              : genPoint >= 54 && genPoint <= 59
-              ? "C5"
-              : genPoint >= 59 && genPoint <= 64
-              ? "C4"
-              : genPoint >= 64 && genPoint <= 69
-              ? "B3"
-              : genPoint >= 69 && genPoint <= 74
-              ? "B2"
-              : genPoint >= 74 && genPoint <= 100
-              ? "A1"
-              : null;
-
-          let x =
-            genPoint >= 0 && genPoint <= 5
-              ? "This is a very poor result."
-              : genPoint >= 6 && genPoint <= 11
-              ? "This result is poor; it's not satisfactory."
-              : genPoint >= 11 && genPoint <= 15
-              ? "Below average; needs significant improvement."
-              : genPoint >= 16 && genPoint <= 21
-              ? "Below average; more effort required."
-              : genPoint >= 21 && genPoint <= 25
-              ? "Fair but not satisfactory; strive harder."
-              : genPoint >= 26 && genPoint <= 31
-              ? "Fair performance; potential for improvement."
-              : genPoint >= 31 && genPoint <= 35
-              ? "Average; a steady effort is needed."
-              : genPoint >= 36 && genPoint <= 41
-              ? "Average; showing gradual improvement."
-              : genPoint >= 41 && genPoint <= 45
-              ? "Slightly above average; keep it up."
-              : genPoint >= 46 && genPoint <= 51
-              ? "Decent work; shows potential."
-              : genPoint >= 51 && genPoint <= 55
-              ? "Passable; satisfactory effort."
-              : genPoint >= 56 && genPoint <= 61
-              ? "Satisfactory; good progress."
-              : genPoint >= 61 && genPoint <= 65
-              ? "Good work; keep striving for excellence."
-              : genPoint >= 66 && genPoint <= 71
-              ? "Commendable effort; very good."
-              : genPoint >= 71 && genPoint <= 75
-              ? "Very good; consistent effort is visible."
-              : genPoint >= 76 && genPoint <= 81
-              ? "Excellent performance; well done!"
-              : genPoint >= 81 && genPoint <= 85
-              ? "Exceptional result; keep up the great work!"
-              : genPoint >= 86 && genPoint <= 91
-              ? "Outstanding achievement; impressive work!"
-              : genPoint >= 91 && genPoint <= 95
-              ? "Brilliant performance; you’re a star!"
-              : genPoint >= 96 && genPoint <= 100
-              ? "Outstanding achievement; impressive work!"
-              : ``;
-
-          let xx =
-            genPoint >= 0 && genPoint <= 5
-              ? "The submission demonstrates a lack of understanding of the topic. Please see me for guidance"
-              : genPoint >= 6 && genPoint <= 11
-              ? "Very minimal effort is evident in the work. It's essential to review the material thoroughly."
-              : genPoint >= 11 && genPoint <= 15
-              ? "This effort does not meet the basic requirements. Please focus on the foundational concepts."
-              : genPoint >= 16 && genPoint <= 21
-              ? "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions."
-              : genPoint >= 21 && genPoint <= 25
-              ? "Some attempt is evident, but significant gaps in understanding remain. More effort is required."
-              : genPoint >= 26 && genPoint <= 31
-              ? "The work shows minimal understanding of the topic. Focus on building your foundational knowledge."
-              : genPoint >= 31 && genPoint <= 35
-              ? "A basic attempt is made, but it falls short of expectations. Review the feedback to improve"
-              : genPoint >= 36 && genPoint <= 41
-              ? "You are starting to grasp the material, but more depth and accuracy are needed."
-              : genPoint >= 41 && genPoint <= 45
-              ? "An acceptable effort, but there is room for improvement in clarity and depth"
-              : genPoint >= 46 && genPoint <= 51
-              ? "Some understanding is demonstrated, but key concepts are missing or incorrect."
-              : genPoint >= 51 && genPoint <= 55
-              ? "You are making progress but need to develop your analysis further to meet the standard"
-              : genPoint >= 56 && genPoint <= 61
-              ? "A decent attempt that meets some expectations but lacks polish and depth in certain areas"
-              : genPoint >= 61 && genPoint <= 65
-              ? "Good work; keep striving for excellence."
-              : genPoint >= 66 && genPoint <= 71
-              ? "A solid understanding is evident, though there are areas to refine."
-              : genPoint >= 71 && genPoint <= 75
-              ? "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth."
-              : genPoint >= 76 && genPoint <= 81
-              ? "Strong work overall! A little more attention to detail could make it exceptional!"
-              : genPoint >= 81 && genPoint <= 85
-              ? "Well done! You have a good grasp of the material. Aim for more critical analysis next time!"
-              : genPoint >= 86 && genPoint <= 91
-              ? "Excellent work! You’ve exceeded expectations. Keep up the fantastic effort!"
-              : genPoint >= 91 && genPoint <= 95
-              ? "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!"
-              : genPoint >= 96 && genPoint <= 100
-              ? "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulation!"
-              : ``;
-
-          let nice = await cardReportModel.findByIdAndUpdate(
-            report?.id,
-            {
-              points: genPoint,
-              adminComment: x,
-              classTeacherComment: xx,
-              grade,
-            },
-            { new: true }
-          );
-
-          return res.status(201).json({
-            message: "teacher updated report successfully",
-            data: nice,
-
-            status: 201,
-          });
-        } else {
-          let x1 = 0;
-          let x2 = 0;
-          let x3 = 0;
-          let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
-          let x5 = !exam ? read?.exam : exam ? exam : 0;
-
-          let y1 = 0;
-          let y2 = 0;
-          let y3 = 0;
-          let y4 = x4 !== null ? x4 : 0;
-          let y5 = x5 !== null ? x5 : 0;
-
-          let mark = y1 + y2 + y3 + y4 + y5;
-
-          let myTest1: number;
-          let myTest2: number;
-          let myTest3: number;
-          let myTest4: number;
-          let examination: number;
-
-          let w1 = x1 !== 0 ? (myTest1 = 10) : 0;
-          let w2 = x2 !== 0 ? (myTest2 = 10) : 0;
-          let w3 = x3 !== 0 ? (myTest3 = 10) : 0;
-          let w4 = x4 !== 0 ? (myTest4 = 10) : 0;
-          let w5 = x5 !== 0 ? (examination = 60) : 0;
-
-          let score = w1 + w2 + w3 + w4 + w5;
-
-          const report = await cardReportModel.findByIdAndUpdate(
-            getData?._id,
-            {
-              result: [
-                ...getData.result,
-                {
-                  subject: !subject ? read?.subject : subject,
-                  test1: y1,
-                  test2: y2,
-                  test3: y3,
-                  test4: y4,
-                  exam: y5,
-                  mark,
-                  score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
-                  points:
-                    y1 > 10
-                      ? parseFloat(((mark / score) * 100).toFixed(2))
-                      : parseFloat(((mark / score) * 100).toFixed(2)),
-                  grade:
-                    mark >= 0 && mark <= 39
-                      ? "F9"
-                      : mark >= 39 && mark <= 44
-                      ? "E8"
-                      : mark >= 44 && mark <= 49
-                      ? "D7"
-                      : mark >= 49 && mark <= 54
-                      ? "C6"
-                      : mark >= 54 && mark <= 59
-                      ? "C5"
-                      : mark >= 59 && mark <= 64
-                      ? "C4"
-                      : mark >= 64 && mark <= 69
-                      ? "B3"
-                      : mark >= 69 && mark <= 74
-                      ? "B2"
-                      : mark >= 74 && mark <= 100
-                      ? "A1"
-                      : null,
-                },
-              ],
-            },
-            { new: true }
-          );
-
-          let genPoint = parseFloat(
-            (
-              report?.result
-                ?.map((el: any) => {
-                  return el.points;
-                })
-                .reduce((a: number, b: number) => {
-                  return a + b;
-                }, 0) / report?.result?.length!
-            ).toFixed(2)
-          );
-
-          let grade =
-            genPoint >= 0 && genPoint <= 39
-              ? "F9"
-              : genPoint >= 39 && genPoint <= 44
-              ? "E8"
-              : genPoint >= 44 && genPoint <= 49
-              ? "D7"
-              : genPoint >= 49 && genPoint <= 54
-              ? "C6"
-              : genPoint >= 54 && genPoint <= 59
-              ? "C5"
-              : genPoint >= 59 && genPoint <= 64
-              ? "C4"
-              : genPoint >= 64 && genPoint <= 69
-              ? "B3"
-              : genPoint >= 69 && genPoint <= 74
-              ? "B2"
-              : genPoint >= 74 && genPoint <= 100
-              ? "A1"
-              : null;
-
-          let nice = await cardReportModel.findByIdAndUpdate(
-            report?.id,
-            {
-              points: genPoint,
-              grade,
-            },
-            { new: true }
-          );
-          return res.status(201).json({
-            message: "can't report entry created successfully",
-            data: nice,
-            status: 201,
-          });
-        }
-      } else {
-        const report = await cardReportModel.create({
-          result: [
-            {
+        updatedResults = existingReportCard.result.map((r: any) => {
+          if (r.subject === subject) {
+            return {
               subject,
               test1: 0,
               test2: 0,
               test3: 0,
-              test4,
-              exam,
-            },
-          ],
-          classInfo: `${
-            student?.classAssigned
-          } session: ${school?.presentSession!}(${school?.presentTerm!})`,
-          studentID,
-        });
-
-        let genPoint = parseFloat(
-          (
-            report?.result
-              ?.map((el: any) => {
-                return el.points;
-              })
-              .reduce((a: number, b: number) => {
-                return a + b;
-              }, 0) / report?.result?.length!
-          ).toFixed(2)
-        );
-
-        let numb = [test1, test2, test3, test4, exam];
-        let count = 0;
-        let resultNumb = 0;
-        let resultNumbAva = 0;
-
-        for (let i = 0; i < numb.length; i++) {
-          if (numb[i] > 0) {
-            resultNumb += numb[i];
-
-            count++;
+              ...scores,
+            };
           }
-        }
-
-        resultNumbAva = resultNumb / count;
-
-        let grade =
-          genPoint >= 0 && genPoint <= 39
-            ? "F"
-            : genPoint >= 40 && genPoint <= 49
-            ? "E"
-            : genPoint >= 50 && genPoint <= 59
-            ? "D"
-            : genPoint >= 60 && genPoint <= 69
-            ? "C"
-            : genPoint >= 70 && genPoint <= 79
-            ? "B"
-            : genPoint >= 80 && genPoint <= 100
-            ? "A"
-            : null;
-
-        const nice = await cardReportModel.findByIdAndUpdate(
-          report?.id,
-          {
-            points: resultNumb,
-            grade: "Nill",
-          },
-          { new: true }
-        );
-        student?.reportCard?.push(new Types.ObjectId(nice?._id));
-        student?.save();
-
-        subjectData?.reportCard?.push(new Types.ObjectId(nice?._id));
-        subjectData?.save();
-
-        // school?.reportCard.push(new Types.ObjectId(report._id));
-        // school?.save();
-        console.log("report data: ");
-        return res.status(201).json({
-          message: "report entry created successfully",
-          data: { nice, student },
-          status: 201,
+          return r;
         });
+      } else {
+        // Add new subject
+        const scores = calculateSubjectScore(test4, exam);
+        updatedResults = [
+          ...existingReportCard.result,
+          {
+            subject,
+            test1: 0,
+            test2: 0,
+            test3: 0,
+            ...scores,
+          },
+        ];
       }
+
+      // Update report card
+      const updatedReport: any = await cardReportModel.findByIdAndUpdate(
+        existingReportCard._id,
+        { result: updatedResults },
+        { new: true }
+      );
+
+      // Calculate overall points and grade
+      const totalPoints = updatedReport.result.reduce(
+        (sum: number, r: any) => sum + (r.points || 0),
+        0
+      );
+      const avgPoints = parseFloat(
+        (totalPoints / updatedReport.result.length).toFixed(2)
+      );
+      const overallGrade = calculateGrade(avgPoints);
+
+      // Update with calculated values and comments
+      const finalReport = await cardReportModel.findByIdAndUpdate(
+        updatedReport._id,
+        {
+          points: avgPoints,
+          grade: overallGrade,
+          adminComment: generateAdminComment(avgPoints),
+          classTeacherComment: generateTeacherComment(avgPoints),
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Report card updated successfully",
+        data: finalReport,
+        status: 200,
+      });
     } else {
-      return res.status(404).json({
-        message: "student and teacher doesn't exist for this class",
-        status: 404,
+      // Create new report card for this session/term
+      const scores = calculateSubjectScore(test4, exam);
+
+      const newReport = await cardReportModel.create({
+        result: [
+          {
+            subject,
+            test1: 0,
+            test2: 0,
+            test3: 0,
+            ...scores,
+          },
+        ],
+        classInfo: currentClassInfo,
+        studentID,
+        points: scores.points,
+        grade: scores.grade || "Nill",
+      });
+
+      // Link report card to student
+      student.reportCard.push(new Types.ObjectId(newReport._id));
+      await student.save();
+
+      // Link to subject if exists
+      if (subjectData) {
+        subjectData.reportCard.push(new Types.ObjectId(newReport._id));
+        await subjectData.save();
+      }
+
+      return res.status(201).json({
+        message: "Report card created successfully",
+        data: newReport,
+        status: 201,
       });
     }
   } catch (error: any) {
-    return res.status(404).json({
-      message: "Error creating class subject report",
-      data: error.message,
-      status: 404,
+    console.error("Error in createReportCardEntry:", error);
+    return res.status(500).json({
+      message: "Error creating/updating report card entry",
+      error: error.message,
+      status: 500,
     });
   }
 };
-
 export const createMidReportCardEntry = async (
   req: Request,
   res: Response

@@ -115,7 +115,7 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
                 path: "subjects",
             });
             const getClassRooms = school === null || school === void 0 ? void 0 : school.classRooms.find((el) => {
-                return el.className !== (i === null || i === void 0 ? void 0 : i.designated);
+                return el.className === (i === null || i === void 0 ? void 0 : i.designated);
             });
             const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
                 return (el.subjectTitle === (i === null || i === void 0 ? void 0 : i.subjectTitle) && el.designated === (i === null || i === void 0 ? void 0 : i.designated));

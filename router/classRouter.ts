@@ -7,6 +7,7 @@ import {
   updateSchoolClass1stFee,
   updateSchoolClassName,
   updateSchoolClassTeacher,
+  viewClassPositions,
   viewClassRM,
   viewClassTopStudent,
   viewClassesByStudent,
@@ -35,6 +36,8 @@ router.route("/view-one-classroom-info/:classID").get(viewOneClassRM);
 router
   .route("/view-classroom-info-timetable/:classID")
   .get(viewClassesByTimeTable);
+
+router.route("/view-classroom-position/:classID").get(viewClassPositions);
 
 router.route("/view-classroom-info-subject/:classID").get(viewClassesBySubject);
 

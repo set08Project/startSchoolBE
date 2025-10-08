@@ -17,6 +17,7 @@ router.route("/view-one-classroom-info/:classID").get(classController_1.viewOneC
 router
     .route("/view-classroom-info-timetable/:classID")
     .get(classController_1.viewClassesByTimeTable);
+router.route("/view-classroom-position/:classID").get(classController_1.viewClassPositions);
 router.route("/view-classroom-info-subject/:classID").get(classController_1.viewClassesBySubject);
 router.route("/view-classroom-info-student/:classID").get(classController_1.viewClassesByStudent);
 router.route("/view-classroom-info-name/").post(classController_1.viewSchoolClassesByName);

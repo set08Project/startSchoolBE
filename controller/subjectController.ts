@@ -123,7 +123,7 @@ export const createBulkClassSubjects = async (
       });
 
       const getClassRooms: any = school?.classRooms.find((el: any) => {
-        return el.className !== i?.designated;
+        return el.className === i?.designated;
       });
 
       const getClassRoomsSubj = schoolSubj?.subjects.some((el: any) => {

@@ -6,6 +6,7 @@ import classroomModel from "../model/classroomModel";
 import staffModel from "../model/staffModel";
 import lodash from "lodash";
 import studentModel from "../model/studentModel";
+import cardReportModel from "../model/cardReportModel";
 import { log } from "console";
 
 import csv from "csvtojson";
@@ -498,7 +499,6 @@ export const updateSchoolClassName = async (
       });
     }
   } catch (error) {
-    
     return res.status(404).json({
       message: "Error creating updating class name",
       status: 404,
@@ -735,6 +735,150 @@ export const studentOfWeek = async (
     return res.status(404).json({
       message: "Error creating school students",
       status: 404,
+    });
+  }
+};
+
+/**
+ * GET /view-class-positions/:classID?source=historical|report|mid&term=&session=
+ * source defaults to 'historical'.
+ * Computes positions for students in a class based on chosen source's total points.
+ */
+export const viewClassPositions = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+    // Always use report card (cardReportModel) for ranking.
+    const { term, session } = req.query as any;
+
+    // populate students and their reportCard entries so we can inspect per-student reports
+    const classDoc = await classroomModel.findById(classID).populate({
+      path: "students",
+      populate: { path: "reportCard" },
+    });
+
+    if (!classDoc) {
+      return res.status(404).json({ message: "Class not found", status: 404 });
+    }
+
+    const students: any[] = classDoc.students || [];
+
+    // Helper to get numeric score for a student using report cards only.
+    const getScoreForStudent = async (student: any): Promise<number> => {
+      try {
+        // Prefer using populated student.reportCard if available
+        const reports = Array.isArray(student?.reportCard)
+          ? student.reportCard
+          : [];
+
+        // filter candidate reports by class, term (classInfo), and session when provided
+        const candidates = reports.filter((r: any) => {
+          if (!r) return false;
+          // r may be an ObjectId if not populated
+          if (typeof r === "string" || r instanceof Types.ObjectId)
+            return false;
+          if (classID && r.classes && `${r.classes}` !== `${classID}`)
+            return false;
+          if (term && r.classInfo && `${r.classInfo}` !== `${term}`)
+            return false;
+          if (session && r.session && `${r.session}` !== `${session}`)
+            return false;
+          return true;
+        });
+
+        // choose most recent candidate if any
+        let chosen: any = null;
+        if (candidates.length > 0) {
+          chosen = candidates.sort((a: any, b: any) => {
+            const ta = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const tb = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return tb - ta;
+          })[0];
+        } else {
+          // fallback to querying report collection directly (in case student's reportCard wasn't populated)
+          const q: any = { student: student._id };
+          if (classID) q.classes = classID;
+          if (term) q.classInfo = term;
+          if (session) q.session = session;
+          chosen = await cardReportModel.findOne(q).sort({ createdAt: -1 });
+        }
+
+        if (!chosen) return 0;
+
+        // If points already set on the report, use it
+        if (typeof chosen.points === "number" && chosen.points > 0) {
+          return chosen.points;
+        }
+
+        // Otherwise try to compute from result array (per-subject points)
+        if (Array.isArray(chosen.result) && chosen.result.length > 0) {
+          const total = chosen.result.reduce(
+            (sum: number, r: any) => sum + (r.points || 0),
+            0
+          );
+          const avg = total / chosen.result.length;
+          return Number.isFinite(avg) ? parseFloat(avg.toFixed(2)) : 0;
+        }
+
+        // last fallback
+        return 0;
+      } catch (e) {
+        return 0;
+      }
+    };
+
+    // Build array of { student, score }
+    const scored: Array<{ student: any; score: number }> = [];
+
+    console.log("ed: ", students);
+
+    for (const s of students) {
+      // if historical/report/mid not present, fallback to student's totalPerformance
+      const scoreFromModel = await getScoreForStudent(s);
+      const fallback =
+        typeof s.totalPerformance === "number" ? s.totalPerformance : 0;
+      const score = scoreFromModel || fallback;
+      scored.push({ student: s, score });
+    }
+
+    // Sort descending by score
+    scored.sort((a, b) => b.score - a.score);
+
+    // Assign positions, handling ties (same score -> same position)
+    const ranked = scored.map((entry, idx) => ({
+      position: 0,
+      score: entry.score,
+      student: entry.student,
+    }));
+
+    let currentPos = 1;
+    for (let i = 0; i < ranked.length; i++) {
+      if (i === 0) {
+        ranked[i].position = currentPos;
+      } else {
+        if (ranked[i].score === ranked[i - 1].score) {
+          ranked[i].position = ranked[i - 1].position;
+        } else {
+          ranked[i].position = i + 1;
+        }
+      }
+    }
+
+    const best = ranked.length ? ranked[0] : null;
+    const worst = ranked.length ? ranked[ranked.length - 1] : null;
+
+    return res.status(200).json({
+      message: "Class positions computed",
+      status: 200,
+      data: { ranked, best, worst },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error computing positions",
+      error: error.message,
+      status: 500,
     });
   }
 };
