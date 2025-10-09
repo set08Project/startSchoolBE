@@ -111,74 +111,83 @@ export const createBulkClassSubjects = async (
       }
     };
 
-    const data = await csv().fromFile(req.file.path);
+  const data = await csv().fromFile(req.file.path);
 
-    for (let i of data) {
-      const school = await schoolModel.findById(schoolID).populate({
-        path: "classRooms",
-      });
+  let createdCount = 0;
+  let duplicateCount = 0;
+  const errors: string[] = [];
 
-      const schoolSubj = await schoolModel.findById(schoolID).populate({
-        path: "subjects",
-      });
+  for (let i of data) {
+    const school = await schoolModel.findById(schoolID).populate({
+      path: "classRooms",
+    });
 
-      const getClassRooms: any = school?.classRooms.find((el: any) => {
-        return el.className === i?.designated;
-      });
+    const schoolSubj = await schoolModel.findById(schoolID).populate({
+      path: "subjects",
+    });
 
-      const getClassRoomsSubj = schoolSubj?.subjects.some((el: any) => {
-        return (
-          el.subjectTitle === i?.subjectTitle && el.designated === i?.designated
-        );
-      });
+    const getClassRooms: any = school?.classRooms.find((el: any) => {
+      return el.className?.trim() === i?.designated;
+    });
 
-      const getClassRM = await classroomModel.findById(getClassRooms?._id);
-      console.log("data: ", getClassRM);
+    const getClassRoomsSubj = schoolSubj?.subjects.some((el: any) => {
+      return (
+        el.subjectTitle === i?.subjectTitle && el.designated === i?.designated
+      );
+    });
 
-      if (getClassRooms) {
-        if (school && school.schoolName && school.status === "school-admin") {
-          if (!getClassRoomsSubj) {
-            const subjects = await subjectModel.create({
-              schoolName: school.schoolName,
-              subjectTeacherName: i?.subjectTeacherName,
-              subjectTitle: i?.subjectTitle,
-              designated: i?.designated,
-              classDetails: getClassRooms,
-              subjectClassID: getClassRM?._id,
-              subjectClassIDs: getClassRooms?._id,
-            });
-
-            school.subjects.push(new Types.ObjectId(subjects._id));
-            school.save();
-
-            getClassRM?.classSubjects.push(new Types.ObjectId(subjects._id));
-            getClassRM?.save();
-
-            deleteFilesInFolder(filePath);
-          } else {
-            return res.status(404).json({
-              message: "duplicate subject",
-              status: 404,
-            });
-          }
-        } else {
-          return res.status(404).json({
-            message: "unable to read school",
-            status: 404,
-          });
-        }
-      } else {
-        return res.status(404).json({
-          message: "Error finding school classroom",
-          status: 404,
-        });
-      }
+    const getClassRM = await classroomModel.findById(getClassRooms?._id);
+    if (!getClassRooms) {
+      errors.push(`Error finding classroom for designated='${i?.designated}'`);
+      continue;
     }
 
-    return res.status(201).json({
-      message: "done with class entry",
-      status: 201,
-    });
+    if (!(school && school.schoolName && school.status === "school-admin")) {
+      errors.push(
+        `Unable to read school for row with subjectTitle='${i?.subjectTitle}'`
+      );
+      continue;
+    }
+
+    if (getClassRoomsSubj) {
+      duplicateCount++;
+      // skip duplicates but continue processing remaining rows
+      continue;
+    }
+
+    try {
+      const subjects = await subjectModel.create({
+        schoolName: school.schoolName,
+        subjectTeacherName: i?.subjectTeacherName,
+        subjectTitle: i?.subjectTitle,
+        designated: i?.designated,
+        classDetails: getClassRooms,
+        subjectClassID: getClassRM?._id,
+        subjectClassIDs: getClassRooms?._id,
+      });
+
+      // await saves to ensure DB state is consistent
+      school.subjects.push(new Types.ObjectId(subjects._id));
+      await school.save();
+
+      getClassRM?.classSubjects.push(new Types.ObjectId(subjects._id));
+      if (getClassRM) await getClassRM.save();
+
+      createdCount++;
+    } catch (err: any) {
+      errors.push(
+        `Error creating subject '${i?.subjectTitle}': ${err?.message || err}`
+      );
+    }
+  }
+  // delete uploaded files once after processing
+  deleteFilesInFolder(filePath);
+
+  return res.status(201).json({
+    message: "done with class entry",
+    status: 201,
+    summary: { created: createdCount, duplicates: duplicateCount, errors },
+  });
   } catch (error: any) {
     return res.status(404).json({
       message: "Error creating school session",
