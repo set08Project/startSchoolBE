@@ -2013,7 +2013,7 @@ export const createSchoolFeePayment = async (
           studentClass: student?.classAssigned,
           image: student?.avatar,
           date,
-          amount,
+          amount: amount * 10,
           purchasedID,
           reference,
         });

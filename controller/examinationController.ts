@@ -17,7 +17,7 @@ export const createSubjectExam = async (
 ): Promise<Response> => {
   try {
     const { classID, subjectID } = req.params;
-    const { instruction, duration, mark } = req.body;
+    const { theory, instruction, duration, mark } = req.body;
     let filePath = path.join(__dirname, "../uploads/examination");
 
     const classRoom = await classroomModel.findById(classID);
@@ -167,9 +167,15 @@ export const createSubjectExam = async (
         subjectID: checkForSubject?._id,
         session: school?.presentSession,
         term: school?.presentTerm,
+        // quiz: {
+        //   instruction: { duration, mark, instruction },
+        //   question: value,
+        // },
+
         quiz: {
           instruction: { duration, mark, instruction },
           question: value,
+          theory,
         },
         totalQuestions: value?.length,
         status: "examination",
