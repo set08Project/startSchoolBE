@@ -2,8 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const subjectController_1 = require("../controller/subjectController");
+const multer_1 = require("../utils/multer");
 const router = (0, express_1.Router)();
 router.route("/create-subject/:schoolID").post(subjectController_1.createSchoolSubject);
+router
+    .route("/create-bulk-subject/:schoolID")
+    .post(multer_1.fileUpload, subjectController_1.createBulkClassSubjects);
 router.route("/view-subjects/:schoolID").get(subjectController_1.viewSchoolSubjects);
 router.route("/view-subjects-info/:subjectID").get(subjectController_1.viewSubjectDetail);
 router

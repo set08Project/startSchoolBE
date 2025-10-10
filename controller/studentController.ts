@@ -307,7 +307,8 @@ export const createSchoolStudent = async (
     );
 
     const findClass: any = school?.classRooms?.find((el: any) => {
-      return el.className === classAssigned;
+      console.log(el.className.trim());
+      return el.className.trim() === classAssigned;
     });
 
     if (school && school.schoolName && school.status === "school-admin") {
@@ -404,87 +405,120 @@ export const createBulkSchoolStudent = async (
     };
 
     const data = await csv().fromFile(req.file.path);
+    let createdCount = 0;
+    let duplicateCount = 0;
+    const errors: string[] = [];
 
-    for (let i of data) {
+    for (const i of data) {
       const school = await schoolModel.findById(schoolID).populate({
         path: "classRooms",
       });
 
-      const enrollmentID = crypto.randomBytes(3).toString("hex");
+      const enrollmentID = crypto.randomBytes(4).toString("hex");
 
       const salt = await bcrypt.genSalt(10);
       const hashed = await bcrypt.hash(
         `${i?.studentFirstName
-          .replace(/ /gi, "")
+          ?.replace(/ /gi, "")
           .toLowerCase()}${i?.studentLastName
-          .replace(/ /gi, "")
+          ?.replace(/ /gi, "")
           .toLowerCase()}`,
         salt
       );
 
       const findClass: any = school?.classRooms?.find((el: any) => {
-        return el.className === i?.classAssigned;
+        return el.className.trim() === i?.classAssigned;
       });
 
-      if (school && school.schoolName && school.status === "school-admin") {
-        if (findClass) {
-          const student = await studentModel.create({
-            schoolIDs: schoolID,
-            presentClassID: findClass?._id,
-            classTermFee:
-              findClass?.presentTerm === "1st Term"
-                ? findClass?.class1stFee
-                : findClass?.presentTerm === "2nd Term"
-                ? findClass?.class2ndFee
-                : findClass?.presentTerm === "3rd Term"
-                ? findClass?.class3rdFee
-                : null,
+      if (!(school && school.schoolName && school.status === "school-admin")) {
+        errors.push(
+          `School not found or not admin for row ${JSON.stringify(i)}`
+        );
+        continue;
+      }
 
-            gender: i?.gender,
-            enrollmentID,
-            schoolID: school?.enrollmentID,
+      if (!findClass) {
+        errors.push(
+          `Class '${i?.classAssigned}' not found for row ${JSON.stringify(i)}`
+        );
+        continue;
+      }
+
+      // check duplicate by email or exact name within the same school
+      const email = `${i?.studentFirstName
+        ?.replace(/ /gi, "")
+        .toLowerCase()}${i?.studentLastName
+        ?.replace(/ /gi, "")
+        .toLowerCase()}@${school?.schoolName
+        ?.replace(/ /gi, "")
+        .toLowerCase()}.com`;
+
+      const existing = await studentModel.findOne({
+        $or: [
+          { email },
+          {
             studentFirstName: i?.studentFirstName,
             studentLastName: i?.studentLastName,
-            schoolName: school?.schoolName,
-            studentAddress: i?.studentAddress,
-            classAssigned: i?.classAssigned,
-            email: `${i?.studentFirstName
-              .replace(/ /gi, "")
-              .toLowerCase()}${i?.studentLastName
-              .replace(/ /gi, "")
-              .toLowerCase()}@${school?.schoolName
-              ?.replace(/ /gi, "")
-              .toLowerCase()}.com`,
-            password: hashed,
-            status: "school-student",
-          });
+            schoolIDs: schoolID,
+          },
+        ],
+      });
 
-          school?.students.push(new Types.ObjectId(student._id));
+      if (existing) {
+        duplicateCount++;
+        continue;
+      }
 
-          school?.historys?.push(new Types.ObjectId(student._id));
-          await school.save();
+      try {
+        const student = await studentModel.create({
+          schoolIDs: schoolID,
+          presentClassID: findClass?._id,
+          classTermFee:
+            findClass?.presentTerm === "1st Term"
+              ? findClass?.class1stFee
+              : findClass?.presentTerm === "2nd Term"
+              ? findClass?.class2ndFee
+              : findClass?.presentTerm === "3rd Term"
+              ? findClass?.class3rdFee
+              : null,
 
-          findClass?.students.push(new Types.ObjectId(student._id));
-          await findClass.save();
-
-          deleteFilesInFolder(filePath);
-        } else {
-          return res.status(404).json({
-            message: "class must exist",
-            status: 404,
-          });
-        }
-      } else {
-        return res.status(404).json({
-          message: "school not found",
-          status: 404,
+          gender: i?.gender,
+          enrollmentID,
+          schoolID: school?.enrollmentID,
+          studentFirstName: i?.studentFirstName,
+          studentLastName: i?.studentLastName,
+          schoolName: school?.schoolName,
+          studentAddress: i?.studentAddress,
+          classAssigned: i?.classAssigned,
+          email,
+          password: hashed,
+          status: "school-student",
         });
+
+        school?.students.push(new Types.ObjectId(student._id));
+        school?.historys?.push(new Types.ObjectId(student._id));
+        await school.save();
+
+        findClass?.students.push(new Types.ObjectId(student._id));
+        await findClass.save();
+
+        createdCount++;
+      } catch (err: any) {
+        errors.push(
+          `Error creating student for row ${JSON.stringify(i)}: ${
+            err?.message || err
+          }`
+        );
       }
     }
+
+    // delete uploaded files once after processing
+    deleteFilesInFolder(filePath);
 
     return res.status(201).json({
       message: "done with class entry",
       status: 201,
+      summary: { created: createdCount, duplicates: duplicateCount, errors },
     });
   } catch (error: any) {
     return res.status(404).json({

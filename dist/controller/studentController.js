@@ -385,6 +385,7 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
                     findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
                     yield findClass.save();
                     deleteFilesInFolder(filePath);
+                    deleteFilesInFolder(filePath);
                 }
                 else {
                     return res.status(404).json({

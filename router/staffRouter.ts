@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  createBulkTeachers,
   createSchoolPrincipal,
   createSchoolTeacher,
   createSchoolTeacherByAdmin,
@@ -25,6 +26,7 @@ import {
   updateStaffXAcct,
   updateTeacherSalary,
 } from "../controller/staffController";
+import { fileUpload } from "../utils/multer";
 import multer from "multer";
 const upload = multer({
   fileFilter: (req, file, cb) => {
@@ -44,6 +46,11 @@ const upload = multer({
 const router: Router = Router();
 
 router.route("/create-school-teacher/:schoolID").post(createSchoolTeacher);
+router
+  .route("/create-school-teacher-bulk/:schoolID")
+  .post(fileUpload, createBulkTeachers);
+
+
 router.route("/view-school-teacher/:schoolID").get(readSchooTeacher);
 
 router.route("/login-teacher").post(loginTeacher);

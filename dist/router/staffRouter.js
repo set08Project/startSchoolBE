@@ -5,8 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const staffController_1 = require("../controller/staffController");
-const multer_1 = __importDefault(require("multer"));
-const upload = (0, multer_1.default)({
+const multer_1 = require("../utils/multer");
+const multer_2 = __importDefault(require("multer"));
+const upload = (0, multer_2.default)({
     fileFilter: (req, file, cb) => {
         if (file.mimetype == "image/png" ||
             file.mimetype == "image/jpg" ||
@@ -21,6 +22,9 @@ const upload = (0, multer_1.default)({
 }).single("avatar");
 const router = (0, express_1.Router)();
 router.route("/create-school-teacher/:schoolID").post(staffController_1.createSchoolTeacher);
+router
+    .route("/create-school-teacher-bulk/:schoolID")
+    .post(multer_1.fileUpload, staffController_1.createBulkTeachers);
 router.route("/view-school-teacher/:schoolID").get(staffController_1.readSchooTeacher);
 router.route("/login-teacher").post(staffController_1.loginTeacher);
 router.route("/login-teacher-token").post(staffController_1.loginStaffWithToken);

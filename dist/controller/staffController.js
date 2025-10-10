@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.updateStaffSignature = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.updateStaffLinkedinAcct = exports.updateStaffInstagramAcct = exports.updateStaffXAcct = exports.updateFacebookAccount = exports.updateStaffAdress = exports.updateStaffGender = exports.updatePhoneNumber = exports.updateStaffName = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
+exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.updateStaffSignature = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.updateStaffLinkedinAcct = exports.updateStaffInstagramAcct = exports.updateStaffXAcct = exports.updateFacebookAccount = exports.updateStaffAdress = exports.updateStaffGender = exports.updatePhoneNumber = exports.updateStaffName = exports.createBulkTeachers = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -23,6 +23,9 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const streamifier_1 = require("../utils/streamifier");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const cron_1 = require("cron");
+const csvtojson_1 = __importDefault(require("csvtojson"));
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_path_1 = __importDefault(require("node:path"));
 const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
@@ -371,6 +374,76 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createSchoolTeacher = createSchoolTeacher;
+const createBulkTeachers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { schoolID } = req.params;
+        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
+        const deleteFilesInFolder = (folderPath) => {
+            if (node_fs_1.default.existsSync(folderPath)) {
+                const files = node_fs_1.default.readdirSync(folderPath);
+                files.forEach((file) => {
+                    const filePath = node_path_1.default.join(folderPath, file);
+                    node_fs_1.default.unlinkSync(filePath);
+                });
+                console.log(`All files in the folder '${folderPath}' have been deleted.`);
+            }
+            else {
+                console.log(`The folder '${folderPath}' does not exist.`);
+            }
+        };
+        const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        for (let i of data) {
+            const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
+            console.log("staff: ", i);
+            console.log("staff: ", i === null || i === void 0 ? void 0 : i.staffName);
+            const salt = yield bcrypt_1.default.genSalt(10);
+            const hashed = yield bcrypt_1.default.hash(`${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "")}`, salt);
+            const school = yield schoolModel_1.default.findById(schoolID).populate({
+                path: "subjects",
+            });
+            if (school && school.schoolName && school.status === "school-admin") {
+                // if (getSubject) {
+                const staff = yield staffModel_1.default.create({
+                    schoolIDs: schoolID,
+                    staffName: i === null || i === void 0 ? void 0 : i.staffName,
+                    schoolName: school.schoolName,
+                    staffRole: enums_1.staffDuty.TEACHER,
+                    // subjectAssigned: [{ title: subjectTitle, id: getSubject._id }],
+                    role: i === null || i === void 0 ? void 0 : i.role,
+                    status: "school-teacher",
+                    salary: i === null || i === void 0 ? void 0 : i.salary,
+                    gender: i === null || i === void 0 ? void 0 : i.gender,
+                    email: `${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "").toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                    enrollmentID,
+                    password: hashed,
+                    staffAddress: i === null || i === void 0 ? void 0 : i.staffAddress,
+                });
+                school.staff.push(new mongoose_1.Types.ObjectId(staff._id));
+                school.save();
+                deleteFilesInFolder(filePath);
+            }
+            else {
+                return res.status(404).json({
+                    message: "unable to read school",
+                    status: 404,
+                });
+            }
+        }
+        return res.status(201).json({
+            message: "done with class entry",
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating school session",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.createBulkTeachers = createBulkTeachers;
 const updateStaffName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {

@@ -52,164 +52,375 @@ const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createSchoolSession = createSchoolSession;
+// export const createNewSchoolSession = async (
+//   req: Request,
+//   res: Response
+// ): Promise<Response> => {
+//   try {
+//     const { schoolID } = req.params;
+//     const { year } = req.body;
+//     let paid = 0;
+//     let notPaid = 0;
+//     const school: any = await schoolModel
+//       .findById(schoolID)
+//       .populate({ path: "students" });
+//     const schoolClass: any = await schoolModel
+//       .findById(schoolID)
+//       .populate({ path: "classRooms" });
+//     const schoolTeacher: any = await schoolModel
+//       .findById(schoolID)
+//       .populate({ path: "staff" });
+//     const schl = await schoolModel.findByIdAndUpdate(
+//       schoolID,
+//       {
+//         presentSession: year,
+//         // presentSessionID: year,
+//       },
+//       { new: true }
+//     );
+//     // const schoolStudents: any = await schoolModel
+//     //   .findById(schoolID)
+//     //   .populate({ path: "students" });
+//     // const pushClass = await schoolModel.findById(schoolID).populate({
+//     //   path: "classHistory",
+//     // });
+//     let totalStudent = school?.students?.length;
+//     let totalStaff = school?.staff?.length;
+//     let totalSubjects = school?.subjects?.length;
+//     const students: any = school?.students;
+//     if (school && school.schoolName) {
+//       for (let i of students!) {
+//         totalStudent++;
+//         if (i.feesPaid1st || i.feesPaid2nd || i.feesPaid2nd) {
+//           paid++;
+//           await studentModel.findByIdAndUpdate(
+//             i?._id,
+//             { feesPaid1st: false, feesPaid2nd: false, feesPaid3rd: false }
+//             // { new: true }
+//           );
+//         } else {
+//           notPaid++;
+//         }
+//       }
+//       const session = await sessionModel.create({
+//         schoolID,
+//         year,
+//         // term,
+//         totalStudents: totalStudent,
+//         numberOfTeachers: totalStaff,
+//         numberOfSubjects: totalSubjects,
+//         studentFeesNotPaid: notPaid,
+//         studentFeesPaid: paid,
+//       });
+//       const schoolData = schoolModel.findByIdAndUpdate(
+//         schoolID,
+//         { presentSessionID: session?._id.toString() },
+//         { new: true }
+//       );
+//       school.session.push(new Types.ObjectId(session._id));
+//       school.classHistory.push(new Types.ObjectId(session?._id));
+//       school.save();
+//       schoolClass?.classRooms.find((el: any) => {
+//         return;
+//       });
+//       for (let i of schoolClass?.classRooms) {
+//         let num: number = parseInt(`${i.className}`?.match(/\d+/)![0]);
+//         let name = i?.className?.split(`${num}`);
+//         // {name[0].trim()} ${num + 1}${name[1].trim()}
+//         if (num < 4 && name[0].trim() === "JSS") {
+//           await classroomModel.findByIdAndUpdate(
+//             i?._id,
+//             {
+//               className: `
+//               ${
+//                 num + 1 > 3
+//                   ? `SSS ${1}${name[1]?.trim()}`
+//                   : `${name[0]?.trim()} ${num + 1}${name[1]?.trim()}`
+//               }
+//               `,
+//             },
+//             { new: true }
+//           );
+//         } else if (num < 3 && name[0]?.trim() === "SSS") {
+//           await classroomModel.findByIdAndUpdate(
+//             i?._id,
+//             {
+//               className: `
+//               ${name[0]?.trim()} ${num + 1}${name[1]?.trim()}
+//               `,
+//             },
+//             { new: true }
+//           );
+//         } else {
+//           await classroomModel.findByIdAndDelete(i?._id);
+//           schoolClass.classRooms.pull(new Types.ObjectId(i?._id));
+//           school?.classRooms?.pull(new Types.ObjectId(i?._id));
+//           school.save();
+//         }
+//       }
+//       for (let i of students!) {
+//         let num: number = parseInt(`${i.classAssigned}`?.match(/\d+/)![0]);
+//         let name = i?.classAssigned?.split(`${num}`);
+//         if (num < 4 && name[0].trim() === "JSS") {
+//           await studentModel.findByIdAndUpdate(
+//             i?._id,
+//             {
+//               classAssigned: ` ${
+//                 num + 1 > 3
+//                   ? `SSS ${1}${name[1]?.trim()}`
+//                   : `${name[0]?.trim()} ${num + 1}${name[1]?.trim()}`
+//               }`,
+//               attendance: null,
+//               performance: null,
+//               feesPaid1st: false,
+//               feesPaid2nd: false,
+//               feesPaid3rd: false,
+//             },
+//             { new: true }
+//           );
+//         } else if (num < 3 && name[0]?.trim() === "SSS") {
+//           await studentModel.findByIdAndUpdate(
+//             i?._id,
+//             {
+//               classAssigned: ` ${`${name[0]?.trim()} ${
+//                 num + 1
+//               }${name[1]?.trim()}`}`,
+//               attendance: null,
+//               performance: null,
+//               feesPaid1st: false,
+//               feesPaid2nd: false,
+//               feesPaid3rd: false,
+//             },
+//             { new: true }
+//           );
+//         } else {
+//           await studentModel.findByIdAndDelete(i?._id);
+//           schoolClass.students.pull(new Types.ObjectId(i?._id));
+//           school?.students.pull(new Types.ObjectId(i?._id));
+//           school?.save();
+//         }
+//       }
+//       for (let i of schoolTeacher?.staff!) {
+//         i?.classesAssigned.map(async (el: any) => {
+//           let num: number = parseInt(`${el?.className}`?.match(/\d+/)![0])
+//             ? parseInt(`${el?.className}`?.match(/\d+/)![0])
+//             : 0;
+//           let name = el?.className?.split(`${num}`);
+//           if (num < 4 && name[0].trim() === "JSS") {
+//             el.className = ` ${
+//               num + 1 > 3
+//                 ? `SSS ${1}${name[1]?.trim()}`
+//                 : `${name[0]?.trim()} ${num + 1}${name[1]?.trim()}`
+//             }`;
+//           } else if (num < 3 && name[0]?.trim() === "SSS") {
+//             el.className = ` ${`${name[0]?.trim()} ${
+//               num + 1
+//             }${name[1]?.trim()}`}`;
+//           } else {
+//           }
+//         });
+//         i.save();
+//       }
+//       schoolTeacher.save();
+//       return res.status(201).json({
+//         message: "session created successfully",
+//         data: session,
+//       });
+//     } else {
+//       return res.status(404).json({
+//         message: "unable to read school",
+//       });
+//     }
+//   } catch (error: any) {
+//     return res.status(404).json({
+//       message: "Error creating school session",
+//       data: error,
+//       error: error.stack,
+//     });
+//   }
+// };
 const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
+    var _a, _b;
     try {
         const { schoolID } = req.params;
         const { year } = req.body;
-        let paid = 0;
-        let notPaid = 0;
+        // Validation
+        if (!year || typeof year !== "string") {
+            return res.status(400).json({
+                message: "Invalid year format",
+            });
+        }
+        // Fetch school with all necessary populations in one query
         const school = yield schoolModel_1.default
             .findById(schoolID)
-            .populate({ path: "students" });
-        const schoolClass = yield schoolModel_1.default
-            .findById(schoolID)
-            .populate({ path: "classRooms" });
-        const schoolTeacher = yield schoolModel_1.default
-            .findById(schoolID)
-            .populate({ path: "staff" });
-        const schl = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
-            presentSession: year,
-            // presentSessionID: year,
-        }, { new: true });
-        // const schoolStudents: any = await schoolModel
-        //   .findById(schoolID)
-        //   .populate({ path: "students" });
-        // const pushClass = await schoolModel.findById(schoolID).populate({
-        //   path: "classHistory",
-        // });
-        let totalStudent = (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.length;
-        let totalStaff = (_b = school === null || school === void 0 ? void 0 : school.staff) === null || _b === void 0 ? void 0 : _b.length;
-        let totalSubjects = (_c = school === null || school === void 0 ? void 0 : school.subjects) === null || _c === void 0 ? void 0 : _c.length;
-        const students = school === null || school === void 0 ? void 0 : school.students;
-        if (school && school.schoolName) {
-            for (let i of students) {
-                totalStudent++;
-                if (i.feesPaid1st || i.feesPaid2nd || i.feesPaid2nd) {
-                    paid++;
-                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, { feesPaid1st: false, feesPaid2nd: false, feesPaid3rd: false }
-                    // { new: true }
-                    );
-                }
-                else {
-                    notPaid++;
-                }
-            }
-            const session = yield sessionModel_1.default.create({
-                schoolID,
-                year,
-                // term,
-                totalStudents: totalStudent,
-                numberOfTeachers: totalStaff,
-                numberOfSubjects: totalSubjects,
-                studentFeesNotPaid: notPaid,
-                studentFeesPaid: paid,
-            });
-            const schoolData = schoolModel_1.default.findByIdAndUpdate(schoolID, { presentSessionID: session === null || session === void 0 ? void 0 : session._id.toString() }, { new: true });
-            school.session.push(new mongoose_1.Types.ObjectId(session._id));
-            school.classHistory.push(new mongoose_1.Types.ObjectId(session === null || session === void 0 ? void 0 : session._id));
-            school.save();
-            schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms.find((el) => {
-                return;
-            });
-            for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
-                let num = parseInt((_d = `${i.className}`) === null || _d === void 0 ? void 0 : _d.match(/\d+/)[0]);
-                let name = (_e = i === null || i === void 0 ? void 0 : i.className) === null || _e === void 0 ? void 0 : _e.split(`${num}`);
-                // {name[0].trim()} ${num + 1}${name[1].trim()}
-                if (num < 4 && name[0].trim() === "JSS") {
-                    yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        className: `
-              ${num + 1 > 3
-                            ? `SSS ${1}${(_f = name[1]) === null || _f === void 0 ? void 0 : _f.trim()}`
-                            : `${(_g = name[0]) === null || _g === void 0 ? void 0 : _g.trim()} ${num + 1}${(_h = name[1]) === null || _h === void 0 ? void 0 : _h.trim()}`}
-              
-              `,
-                    }, { new: true });
-                }
-                else if (num < 3 && ((_j = name[0]) === null || _j === void 0 ? void 0 : _j.trim()) === "SSS") {
-                    yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        className: `
-              ${(_k = name[0]) === null || _k === void 0 ? void 0 : _k.trim()} ${num + 1}${(_l = name[1]) === null || _l === void 0 ? void 0 : _l.trim()}
-
-              `,
-                    }, { new: true });
-                }
-                else {
-                    yield classroomModel_1.default.findByIdAndDelete(i === null || i === void 0 ? void 0 : i._id);
-                    schoolClass.classRooms.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
-                    (_m = school === null || school === void 0 ? void 0 : school.classRooms) === null || _m === void 0 ? void 0 : _m.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
-                    school.save();
-                }
-            }
-            for (let i of students) {
-                let num = parseInt((_o = `${i.classAssigned}`) === null || _o === void 0 ? void 0 : _o.match(/\d+/)[0]);
-                let name = (_p = i === null || i === void 0 ? void 0 : i.classAssigned) === null || _p === void 0 ? void 0 : _p.split(`${num}`);
-                if (num < 4 && name[0].trim() === "JSS") {
-                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        classAssigned: ` ${num + 1 > 3
-                            ? `SSS ${1}${(_q = name[1]) === null || _q === void 0 ? void 0 : _q.trim()}`
-                            : `${(_r = name[0]) === null || _r === void 0 ? void 0 : _r.trim()} ${num + 1}${(_s = name[1]) === null || _s === void 0 ? void 0 : _s.trim()}`}`,
-                        attendance: null,
-                        performance: null,
-                        feesPaid1st: false,
-                        feesPaid2nd: false,
-                        feesPaid3rd: false,
-                    }, { new: true });
-                }
-                else if (num < 3 && ((_t = name[0]) === null || _t === void 0 ? void 0 : _t.trim()) === "SSS") {
-                    yield studentModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
-                        classAssigned: ` ${`${(_u = name[0]) === null || _u === void 0 ? void 0 : _u.trim()} ${num + 1}${(_v = name[1]) === null || _v === void 0 ? void 0 : _v.trim()}`}`,
-                        attendance: null,
-                        performance: null,
-                        feesPaid1st: false,
-                        feesPaid2nd: false,
-                        feesPaid3rd: false,
-                    }, { new: true });
-                }
-                else {
-                    yield studentModel_1.default.findByIdAndDelete(i === null || i === void 0 ? void 0 : i._id);
-                    schoolClass.students.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
-                    school === null || school === void 0 ? void 0 : school.students.pull(new mongoose_1.Types.ObjectId(i === null || i === void 0 ? void 0 : i._id));
-                    school === null || school === void 0 ? void 0 : school.save();
-                }
-            }
-            for (let i of schoolTeacher === null || schoolTeacher === void 0 ? void 0 : schoolTeacher.staff) {
-                i === null || i === void 0 ? void 0 : i.classesAssigned.map((el) => __awaiter(void 0, void 0, void 0, function* () {
-                    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-                    let num = parseInt((_a = `${el === null || el === void 0 ? void 0 : el.className}`) === null || _a === void 0 ? void 0 : _a.match(/\d+/)[0])
-                        ? parseInt((_b = `${el === null || el === void 0 ? void 0 : el.className}`) === null || _b === void 0 ? void 0 : _b.match(/\d+/)[0])
-                        : 0;
-                    let name = (_c = el === null || el === void 0 ? void 0 : el.className) === null || _c === void 0 ? void 0 : _c.split(`${num}`);
-                    if (num < 4 && name[0].trim() === "JSS") {
-                        el.className = ` ${num + 1 > 3
-                            ? `SSS ${1}${(_d = name[1]) === null || _d === void 0 ? void 0 : _d.trim()}`
-                            : `${(_e = name[0]) === null || _e === void 0 ? void 0 : _e.trim()} ${num + 1}${(_f = name[1]) === null || _f === void 0 ? void 0 : _f.trim()}`}`;
-                    }
-                    else if (num < 3 && ((_g = name[0]) === null || _g === void 0 ? void 0 : _g.trim()) === "SSS") {
-                        el.className = ` ${`${(_h = name[0]) === null || _h === void 0 ? void 0 : _h.trim()} ${num + 1}${(_j = name[1]) === null || _j === void 0 ? void 0 : _j.trim()}`}`;
-                    }
-                    else {
-                    }
-                }));
-                i.save();
-            }
-            schoolTeacher.save();
-            return res.status(201).json({
-                message: "session created successfully",
-                data: session,
-            });
-        }
-        else {
+            .populate({ path: "students" })
+            .populate({ path: "classRooms" })
+            .populate({ path: "staff" })
+            .populate({ path: "session" });
+        if (!school || !school.schoolName) {
             return res.status(404).json({
-                message: "unable to read school",
+                message: "School not found",
             });
         }
+        // Check for duplicate session
+        const existingSession = (_a = school.session) === null || _a === void 0 ? void 0 : _a.find((s) => s.year === year);
+        if (existingSession) {
+            return res.status(400).json({
+                message: `Session for year ${year} already exists`,
+            });
+        }
+        // Initialize counters
+        let paidStudents = 0;
+        let notPaidStudents = 0;
+        const students = school.students || [];
+        const classRooms = school.classRooms || [];
+        const staff = school.staff || [];
+        // Count paid/unpaid students
+        for (const student of students) {
+            if (student.feesPaid1st || student.feesPaid2nd || student.feesPaid3rd) {
+                paidStudents++;
+            }
+            else {
+                notPaidStudents++;
+            }
+        }
+        // Create new session record
+        const session = yield sessionModel_1.default.create({
+            schoolID,
+            year,
+            totalStudents: students.length,
+            numberOfTeachers: staff.length,
+            numberOfSubjects: ((_b = school.subjects) === null || _b === void 0 ? void 0 : _b.length) || 0,
+            studentFeesNotPaid: notPaidStudents,
+            studentFeesPaid: paidStudents,
+        });
+        // Update school with new session info
+        yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            presentSession: year,
+            presentSessionID: session._id.toString(),
+            $push: {
+                session: session._id,
+                classHistory: session._id,
+            },
+        }, { new: true });
+        // Helper function to promote class name
+        const promoteClassName = (className) => {
+            var _a, _b;
+            if (!className)
+                return null;
+            const match = className.match(/\d+/);
+            if (!match)
+                return null;
+            const num = parseInt(match[0]);
+            const parts = className.split(`${num}`);
+            const prefix = (_a = parts[0]) === null || _a === void 0 ? void 0 : _a.trim();
+            const suffix = ((_b = parts[1]) === null || _b === void 0 ? void 0 : _b.trim()) || "";
+            if (prefix === "JSS") {
+                if (num < 3) {
+                    return `JSS ${num + 1}${suffix}`;
+                }
+                else if (num === 3) {
+                    return `SSS 1${suffix}`;
+                }
+                else {
+                    return null; // Graduate
+                }
+            }
+            else if (prefix === "SSS") {
+                if (num < 3) {
+                    return `SSS ${num + 1}${suffix}`;
+                }
+                else {
+                    return null; // Graduate
+                }
+            }
+            return null;
+        };
+        // Batch operations for better performance
+        const classRoomUpdates = [];
+        const classRoomDeletions = [];
+        for (const classRoom of classRooms) {
+            const newClassName = promoteClassName(classRoom.className);
+            if (newClassName) {
+                classRoomUpdates.push(classroomModel_1.default.findByIdAndUpdate(classRoom._id, { className: newClassName }, { new: true }));
+            }
+            else {
+                classRoomDeletions.push(classRoom._id.toString());
+            }
+        }
+        // Execute classroom updates
+        yield Promise.all(classRoomUpdates);
+        // Delete graduated classrooms and update school
+        if (classRoomDeletions.length > 0) {
+            yield classroomModel_1.default.deleteMany({ _id: { $in: classRoomDeletions } });
+            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                $pull: { classRooms: { $in: classRoomDeletions } },
+            });
+        }
+        // Process students
+        const studentUpdates = [];
+        const studentDeletions = [];
+        for (const student of students) {
+            const newClassName = promoteClassName(student.classAssigned);
+            if (newClassName) {
+                studentUpdates.push(studentModel_1.default.findByIdAndUpdate(student._id, {
+                    classAssigned: newClassName,
+                    attendance: null,
+                    performance: null,
+                    feesPaid1st: false,
+                    feesPaid2nd: false,
+                    feesPaid3rd: false,
+                }, { new: true }));
+            }
+            else {
+                // Student has graduated
+                studentDeletions.push(student._id.toString());
+            }
+        }
+        // Execute student updates
+        yield Promise.all(studentUpdates);
+        // Delete graduated students and update school
+        if (studentDeletions.length > 0) {
+            yield studentModel_1.default.deleteMany({ _id: { $in: studentDeletions } });
+            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                $pull: { students: { $in: studentDeletions } },
+            });
+        }
+        // Process teachers' class assignments
+        const teacherUpdates = [];
+        for (const teacher of staff) {
+            if (teacher.classesAssigned && Array.isArray(teacher.classesAssigned)) {
+                const updatedClasses = teacher.classesAssigned
+                    .map((classAssignment) => {
+                    const newClassName = promoteClassName(classAssignment.className);
+                    if (newClassName) {
+                        return Object.assign(Object.assign({}, classAssignment), { className: newClassName });
+                    }
+                    return null;
+                })
+                    .filter((assignment) => assignment !== null);
+                if (updatedClasses.length !== teacher.classesAssigned.length) {
+                    teacherUpdates.push(staffModel_1.default.findByIdAndUpdate(teacher._id, { classesAssigned: updatedClasses }, { new: true }));
+                }
+            }
+        }
+        // Execute teacher updates
+        yield Promise.all(teacherUpdates);
+        return res.status(201).json({
+            message: "Session created and students promoted successfully",
+            data: {
+                session,
+                promotedStudents: studentUpdates.length,
+                graduatedStudents: studentDeletions.length,
+                deletedClassRooms: classRoomDeletions.length,
+            },
+        });
     }
     catch (error) {
-        return res.status(404).json({
+        console.error("Error creating school session:", error);
+        return res.status(500).json({
             message: "Error creating school session",
-            data: error,
-            error: error.stack,
+            error: error.message,
         });
     }
 });
