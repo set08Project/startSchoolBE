@@ -6,6 +6,7 @@ import {
   readSubjectExamination,
   startSubjectExamination,
   readExamination,
+  deleteExamination,
 } from "../controller/examinationController";
 
 const router: Router = Router();
@@ -20,5 +21,9 @@ router.route("/start-subject-exam/:examID/").patch(startSubjectExamination);
 router.route("/view-subject-exam/:subjectID").get(readSubjectExamination);
 
 router.route("/view-exam/:examID").get(readExamination);
+
+router
+  .route("/delete-exam/:teacherID/:subjectID/:examID")
+  .delete(deleteExamination);
 
 export default router;

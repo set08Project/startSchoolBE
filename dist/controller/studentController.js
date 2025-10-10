@@ -262,7 +262,8 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
             .replace(/ /gi, "")
             .toLowerCase()}`, salt);
         const findClass = (_a = school === null || school === void 0 ? void 0 : school.classRooms) === null || _a === void 0 ? void 0 : _a.find((el) => {
-            return el.className === classAssigned;
+            console.log(el.className.trim());
+            return el.className.trim() === classAssigned;
         });
         if (school && school.schoolName && school.status === "school-admin") {
             if (findClass) {
@@ -327,7 +328,7 @@ const createSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.createSchoolStudent = createSchoolStudent;
 const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f, _g;
     try {
         const { schoolID } = req.params;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
@@ -345,65 +346,83 @@ const createBulkSchoolStudent = (req, res) => __awaiter(void 0, void 0, void 0, 
             }
         };
         const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
-        for (let i of data) {
+        let createdCount = 0;
+        let duplicateCount = 0;
+        const errors = [];
+        for (const i of data) {
             const school = yield schoolModel_1.default.findById(schoolID).populate({
                 path: "classRooms",
             });
-            const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
+            const enrollmentID = crypto_1.default.randomBytes(4).toString("hex");
             const salt = yield bcrypt_1.default.genSalt(10);
-            const hashed = yield bcrypt_1.default.hash(`${i === null || i === void 0 ? void 0 : i.studentFirstName.replace(/ /gi, "").toLowerCase()}${i === null || i === void 0 ? void 0 : i.studentLastName.replace(/ /gi, "").toLowerCase()}`, salt);
-            const findClass = (_a = school === null || school === void 0 ? void 0 : school.classRooms) === null || _a === void 0 ? void 0 : _a.find((el) => {
-                return el.className === (i === null || i === void 0 ? void 0 : i.classAssigned);
+            const hashed = yield bcrypt_1.default.hash(`${(_a = i === null || i === void 0 ? void 0 : i.studentFirstName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}${(_b = i === null || i === void 0 ? void 0 : i.studentLastName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}`, salt);
+            const findClass = (_c = school === null || school === void 0 ? void 0 : school.classRooms) === null || _c === void 0 ? void 0 : _c.find((el) => {
+                return el.className.trim() === (i === null || i === void 0 ? void 0 : i.classAssigned);
             });
-            if (school && school.schoolName && school.status === "school-admin") {
-                if (findClass) {
-                    const student = yield studentModel_1.default.create({
-                        schoolIDs: schoolID,
-                        presentClassID: findClass === null || findClass === void 0 ? void 0 : findClass._id,
-                        classTermFee: (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "1st Term"
-                            ? findClass === null || findClass === void 0 ? void 0 : findClass.class1stFee
-                            : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "2nd Term"
-                                ? findClass === null || findClass === void 0 ? void 0 : findClass.class2ndFee
-                                : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "3rd Term"
-                                    ? findClass === null || findClass === void 0 ? void 0 : findClass.class3rdFee
-                                    : null,
-                        gender: i === null || i === void 0 ? void 0 : i.gender,
-                        enrollmentID,
-                        schoolID: school === null || school === void 0 ? void 0 : school.enrollmentID,
+            if (!(school && school.schoolName && school.status === "school-admin")) {
+                errors.push(`School not found or not admin for row ${JSON.stringify(i)}`);
+                continue;
+            }
+            if (!findClass) {
+                errors.push(`Class '${i === null || i === void 0 ? void 0 : i.classAssigned}' not found for row ${JSON.stringify(i)}`);
+                continue;
+            }
+            // check duplicate by email or exact name within the same school
+            const email = `${(_d = i === null || i === void 0 ? void 0 : i.studentFirstName) === null || _d === void 0 ? void 0 : _d.replace(/ /gi, "").toLowerCase()}${(_e = i === null || i === void 0 ? void 0 : i.studentLastName) === null || _e === void 0 ? void 0 : _e.replace(/ /gi, "").toLowerCase()}@${(_f = school === null || school === void 0 ? void 0 : school.schoolName) === null || _f === void 0 ? void 0 : _f.replace(/ /gi, "").toLowerCase()}.com`;
+            const existing = yield studentModel_1.default.findOne({
+                $or: [
+                    { email },
+                    {
                         studentFirstName: i === null || i === void 0 ? void 0 : i.studentFirstName,
                         studentLastName: i === null || i === void 0 ? void 0 : i.studentLastName,
-                        schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
-                        studentAddress: i === null || i === void 0 ? void 0 : i.studentAddress,
-                        classAssigned: i === null || i === void 0 ? void 0 : i.classAssigned,
-                        email: `${i === null || i === void 0 ? void 0 : i.studentFirstName.replace(/ /gi, "").toLowerCase()}${i === null || i === void 0 ? void 0 : i.studentLastName.replace(/ /gi, "").toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
-                        password: hashed,
-                        status: "school-student",
-                    });
-                    school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
-                    (_c = school === null || school === void 0 ? void 0 : school.historys) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(student._id));
-                    yield school.save();
-                    findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
-                    yield findClass.save();
-                    deleteFilesInFolder(filePath);
-                    deleteFilesInFolder(filePath);
-                }
-                else {
-                    return res.status(404).json({
-                        message: "class must exist",
-                        status: 404,
-                    });
-                }
+                        schoolIDs: schoolID,
+                    },
+                ],
+            });
+            if (existing) {
+                duplicateCount++;
+                continue;
             }
-            else {
-                return res.status(404).json({
-                    message: "school not found",
-                    status: 404,
+            try {
+                const student = yield studentModel_1.default.create({
+                    schoolIDs: schoolID,
+                    presentClassID: findClass === null || findClass === void 0 ? void 0 : findClass._id,
+                    classTermFee: (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "1st Term"
+                        ? findClass === null || findClass === void 0 ? void 0 : findClass.class1stFee
+                        : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "2nd Term"
+                            ? findClass === null || findClass === void 0 ? void 0 : findClass.class2ndFee
+                            : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "3rd Term"
+                                ? findClass === null || findClass === void 0 ? void 0 : findClass.class3rdFee
+                                : null,
+                    gender: i === null || i === void 0 ? void 0 : i.gender,
+                    enrollmentID,
+                    schoolID: school === null || school === void 0 ? void 0 : school.enrollmentID,
+                    studentFirstName: i === null || i === void 0 ? void 0 : i.studentFirstName,
+                    studentLastName: i === null || i === void 0 ? void 0 : i.studentLastName,
+                    schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
+                    studentAddress: i === null || i === void 0 ? void 0 : i.studentAddress,
+                    classAssigned: i === null || i === void 0 ? void 0 : i.classAssigned,
+                    email,
+                    password: hashed,
+                    status: "school-student",
                 });
+                school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
+                (_g = school === null || school === void 0 ? void 0 : school.historys) === null || _g === void 0 ? void 0 : _g.push(new mongoose_1.Types.ObjectId(student._id));
+                yield school.save();
+                findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
+                yield findClass.save();
+                createdCount++;
+            }
+            catch (err) {
+                errors.push(`Error creating student for row ${JSON.stringify(i)}: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
             }
         }
+        // delete uploaded files once after processing
+        deleteFilesInFolder(filePath);
         return res.status(201).json({
             message: "done with class entry",
             status: 201,
+            summary: { created: createdCount, duplicates: duplicateCount, errors },
         });
     }
     catch (error) {
@@ -1679,7 +1698,7 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                     studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
                     image: student === null || student === void 0 ? void 0 : student.avatar,
                     date,
-                    amount,
+                    amount: amount * 10,
                     purchasedID,
                     reference,
                 });

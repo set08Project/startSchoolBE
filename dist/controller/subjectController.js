@@ -107,6 +107,9 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
             }
         };
         const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        let createdCount = 0;
+        let duplicateCount = 0;
+        const errors = [];
         for (let i of data) {
             const school = yield schoolModel_1.default.findById(schoolID).populate({
                 path: "classRooms",
@@ -115,55 +118,54 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
                 path: "subjects",
             });
             const getClassRooms = school === null || school === void 0 ? void 0 : school.classRooms.find((el) => {
-                return el.className === (i === null || i === void 0 ? void 0 : i.designated);
+                var _a;
+                return ((_a = el.className) === null || _a === void 0 ? void 0 : _a.trim()) === (i === null || i === void 0 ? void 0 : i.designated);
             });
             const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
                 return (el.subjectTitle === (i === null || i === void 0 ? void 0 : i.subjectTitle) && el.designated === (i === null || i === void 0 ? void 0 : i.designated));
             });
             const getClassRM = yield classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
-            console.log("data: ", getClassRM);
-            if (getClassRooms) {
-                if (school && school.schoolName && school.status === "school-admin") {
-                    if (!getClassRoomsSubj) {
-                        const subjects = yield subjectModel_1.default.create({
-                            schoolName: school.schoolName,
-                            subjectTeacherName: i === null || i === void 0 ? void 0 : i.subjectTeacherName,
-                            subjectTitle: i === null || i === void 0 ? void 0 : i.subjectTitle,
-                            designated: i === null || i === void 0 ? void 0 : i.designated,
-                            classDetails: getClassRooms,
-                            subjectClassID: getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM._id,
-                            subjectClassIDs: getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id,
-                        });
-                        school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
-                        school.save();
-                        getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
-                        getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.save();
-                        deleteFilesInFolder(filePath);
-                    }
-                    else {
-                        return res.status(404).json({
-                            message: "duplicate subject",
-                            status: 404,
-                        });
-                    }
-                }
-                else {
-                    return res.status(404).json({
-                        message: "unable to read school",
-                        status: 404,
-                    });
-                }
+            if (!getClassRooms) {
+                errors.push(`Error finding classroom for designated='${i === null || i === void 0 ? void 0 : i.designated}'`);
+                continue;
             }
-            else {
-                return res.status(404).json({
-                    message: "Error finding school classroom",
-                    status: 404,
+            if (!(school && school.schoolName && school.status === "school-admin")) {
+                errors.push(`Unable to read school for row with subjectTitle='${i === null || i === void 0 ? void 0 : i.subjectTitle}'`);
+                continue;
+            }
+            if (getClassRoomsSubj) {
+                duplicateCount++;
+                // skip duplicates but continue processing remaining rows
+                continue;
+            }
+            try {
+                const subjects = yield subjectModel_1.default.create({
+                    schoolName: school.schoolName,
+                    subjectTeacherName: i === null || i === void 0 ? void 0 : i.subjectTeacherName,
+                    subjectTitle: i === null || i === void 0 ? void 0 : i.subjectTitle,
+                    designated: i === null || i === void 0 ? void 0 : i.designated,
+                    classDetails: getClassRooms,
+                    subjectClassID: getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM._id,
+                    subjectClassIDs: getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id,
                 });
+                // await saves to ensure DB state is consistent
+                school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
+                yield school.save();
+                getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
+                if (getClassRM)
+                    yield getClassRM.save();
+                createdCount++;
+            }
+            catch (err) {
+                errors.push(`Error creating subject '${i === null || i === void 0 ? void 0 : i.subjectTitle}': ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
             }
         }
+        // delete uploaded files once after processing
+        deleteFilesInFolder(filePath);
         return res.status(201).json({
             message: "done with class entry",
             status: 201,
+            summary: { created: createdCount, duplicates: duplicateCount, errors },
         });
     }
     catch (error) {

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readExamination = exports.startSubjectExamination = exports.readSubjectExamination = exports.createSubjectExam = void 0;
+exports.deleteExamination = exports.readExamination = exports.startSubjectExamination = exports.readSubjectExamination = exports.createSubjectExam = void 0;
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
 const lodash_1 = __importDefault(require("lodash"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
@@ -27,7 +27,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
     var _a, _b, _c, _d;
     try {
         const { classID, subjectID } = req.params;
-        const { instruction, duration, mark } = req.body;
+        const { theory, instruction, duration, mark } = req.body;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
@@ -145,9 +145,14 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
                 session: school === null || school === void 0 ? void 0 : school.presentSession,
                 term: school === null || school === void 0 ? void 0 : school.presentTerm,
+                // quiz: {
+                //   instruction: { duration, mark, instruction },
+                //   question: value,
+                // },
                 quiz: {
                     instruction: { duration, mark, instruction },
                     question: value,
+                    theory,
                 },
                 totalQuestions: value === null || value === void 0 ? void 0 : value.length,
                 status: "examination",
@@ -256,3 +261,28 @@ const readExamination = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.readExamination = readExamination;
+const deleteExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { examID, subjectID, teacherID } = req.params;
+        const quizSubject = yield subjectModel_1.default.findById(subjectID);
+        const quizTeacher = yield staffModel_1.default.findById(teacherID);
+        const quiz = yield examinationModel_1.default.findByIdAndDelete(examID);
+        quizSubject.pull(new mongoose_1.Types.ObjectId(examID));
+        quizSubject.save();
+        quizTeacher.pull(new mongoose_1.Types.ObjectId(examID));
+        quizTeacher.save();
+        return res.status(201).json({
+            message: "subject mid Test read successfully",
+            // data: quiz,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating subject mid Test",
+            data: error.message,
+            status: 404,
+        });
+    }
+});
+exports.deleteExamination = deleteExamination;

@@ -11,4 +11,7 @@ router
 router.route("/start-subject-exam/:examID/").patch(examinationController_1.startSubjectExamination);
 router.route("/view-subject-exam/:subjectID").get(examinationController_1.readSubjectExamination);
 router.route("/view-exam/:examID").get(examinationController_1.readExamination);
+router
+    .route("/delete-exam/:teacherID/:subjectID/:examID")
+    .delete(examinationController_1.deleteExamination);
 exports.default = router;

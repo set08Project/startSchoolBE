@@ -305,3 +305,35 @@ export const readExamination = async (
     });
   }
 };
+
+
+export const deleteExamination = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { examID, subjectID, teacherID } = req.params;
+
+    const quizSubject: any = await subjectModel.findById(subjectID);
+    const quizTeacher: any = await staffModel.findById(teacherID);
+
+    const quiz: any = await examinationModel.findByIdAndDelete(examID);
+
+    quizSubject.pull(new Types.ObjectId(examID));
+    quizSubject.save();
+    quizTeacher.pull(new Types.ObjectId(examID));
+    quizTeacher.save();
+
+    return res.status(201).json({
+      message: "subject mid Test read successfully",
+      // data: quiz,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating subject mid Test",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
