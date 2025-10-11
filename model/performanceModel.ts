@@ -17,6 +17,7 @@ interface iStaff {
 
   studentScore: number;
   performanceRating: number;
+  attemptNumber?: number;
 
   paymentID: string;
 
@@ -82,6 +83,10 @@ const performanceModel = new Schema<iStaffData>(
 
     performanceRating: {
       type: Number,
+    },
+    attemptNumber: {
+      type: Number,
+      default: 1,
     },
 
     student: {

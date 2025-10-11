@@ -48,6 +48,10 @@ const performanceModel = new mongoose_1.Schema({
     performanceRating: {
         type: Number,
     },
+    attemptNumber: {
+        type: Number,
+        default: 1,
+    },
     student: {
         type: mongoose_1.Types.ObjectId,
         ref: "students",

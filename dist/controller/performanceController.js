@@ -31,6 +31,9 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const quizData = yield quizModel_1.default.findById(quizID);
         const subject = yield subjectModel_1.default.findById(subjectID);
         if (quizData) {
+            // determine attempt number: count existing performance entries for this student and this quiz
+            const existingAttempts = yield performanceModel_1.default.countDocuments({ student: studentID, quizID });
+            const attemptNumber = existingAttempts + 1;
             const quizes = yield performanceModel_1.default.create({
                 remark,
                 subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
@@ -41,39 +44,34 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 quizDone: true,
                 status,
                 performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz[1]) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
+                attemptNumber,
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
                 studentAvatar: studentInfo.avatar,
                 subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
+                student: studentID,
             });
             (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
-            quizData === null || quizData === void 0 ? void 0 : quizData.save();
+            yield (quizData === null || quizData === void 0 ? void 0 : quizData.save());
             (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-            studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save();
+            yield (studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save());
             (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
-            subject === null || subject === void 0 ? void 0 : subject.save();
-            let view = [];
-            let notView = [];
+            yield (subject === null || subject === void 0 ? void 0 : subject.save());
+            // Recalculate student's totalPerformance using only valid numeric ratings
             const getStudent = yield studentModel_1.default.findById(studentID).populate({
                 path: "performance",
             });
-            let total = getStudent === null || getStudent === void 0 ? void 0 : getStudent.performance.map((el) => {
-                if (el.performanceRating !== undefined) {
-                    return view.push(el.performanceRating);
-                }
-                else {
-                    return notView.push(el.performanceRating);
+            const ratings = [];
+            (_e = getStudent === null || getStudent === void 0 ? void 0 : getStudent.performance) === null || _e === void 0 ? void 0 : _e.forEach((el) => {
+                if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+                    ratings.push(el.performanceRating);
                 }
             });
-            view.reduce((a, b) => {
-                return a + b;
-            }, 0);
-            const record = yield studentModel_1.default.findByIdAndUpdate(studentID, {
-                totalPerformance: view.reduce((a, b) => {
-                    return a + b;
-                }, 0) / ((_e = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _e === void 0 ? void 0 : _e.length),
-            }, { new: true });
+            const totalSum = ratings.reduce((a, b) => a + b, 0);
+            const count = ratings.length;
+            const avg = count > 0 ? totalSum / count : 0;
+            const record = yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
             return res.status(201).json({
                 message: "quiz entry created successfully",
                 data: quizes,
@@ -222,6 +220,8 @@ const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const quizData = yield examinationModel_1.default.findById(quizID);
         const subject = yield subjectModel_1.default.findById(subjectID);
         if (quizData) {
+            const existingAttempts = yield performanceModel_1.default.countDocuments({ student: studentID, quizID });
+            const attemptNumber = existingAttempts + 1;
             const quizes = yield performanceModel_1.default.create({
                 remark,
                 subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
@@ -232,39 +232,34 @@ const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 quizDone: true,
                 status,
                 performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
+                attemptNumber,
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
                 studentAvatar: studentInfo.avatar,
                 subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
+                student: studentID,
             });
             (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
-            quizData === null || quizData === void 0 ? void 0 : quizData.save();
+            yield (quizData === null || quizData === void 0 ? void 0 : quizData.save());
             (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-            studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save();
+            yield (studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save());
             (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
-            subject === null || subject === void 0 ? void 0 : subject.save();
-            let view = [];
-            let notView = [];
+            yield (subject === null || subject === void 0 ? void 0 : subject.save());
+            // Recalculate student's totalPerformance using only valid numeric ratings
             const getStudent = yield studentModel_1.default.findById(studentID).populate({
                 path: "performance",
             });
-            let total = getStudent === null || getStudent === void 0 ? void 0 : getStudent.performance.map((el) => {
-                if (el.performanceRating !== undefined) {
-                    return view.push(el.performanceRating);
-                }
-                else {
-                    return notView.push(el.performanceRating);
+            const ratings = [];
+            (_e = getStudent === null || getStudent === void 0 ? void 0 : getStudent.performance) === null || _e === void 0 ? void 0 : _e.forEach((el) => {
+                if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+                    ratings.push(el.performanceRating);
                 }
             });
-            view.reduce((a, b) => {
-                return a + b;
-            }, 0);
-            const record = yield studentModel_1.default.findByIdAndUpdate(studentID, {
-                totalPerformance: view.reduce((a, b) => {
-                    return a + b;
-                }, 0) / ((_e = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _e === void 0 ? void 0 : _e.length),
-            }, { new: true });
+            const totalSum = ratings.reduce((a, b) => a + b, 0);
+            const count = ratings.length;
+            const avg = count > 0 ? totalSum / count : 0;
+            yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
             return res.status(201).json({
                 message: "quiz entry created successfully",
                 data: quizes,
@@ -299,6 +294,8 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
         const quizData = yield midTestModel_1.default.findById(quizID);
         const subject = yield subjectModel_1.default.findById(subjectID);
         if (quizData) {
+            const existingAttempts = yield performanceModel_1.default.countDocuments({ student: studentID, quizID });
+            const attemptNumber = existingAttempts + 1;
             const quizes = yield performanceModel_1.default.create({
                 remark,
                 subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
@@ -309,40 +306,35 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
                 quizDone: true,
                 status,
                 performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
+                attemptNumber,
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
                 studentID,
                 studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
                 studentAvatar: studentInfo.avatar,
                 subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
+                student: studentID,
             });
             (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
-            quizData === null || quizData === void 0 ? void 0 : quizData.save();
+            yield (quizData === null || quizData === void 0 ? void 0 : quizData.save());
             (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-            studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save();
+            yield (studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save());
             (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
-            subject === null || subject === void 0 ? void 0 : subject.save();
-            let view = [];
-            let notView = [];
+            yield (subject === null || subject === void 0 ? void 0 : subject.save());
+            // Recalculate student's totalPerformance using only valid numeric ratings
             const getStudent = yield studentModel_1.default.findById(studentID).populate({
                 path: "performance",
             });
-            let total = getStudent === null || getStudent === void 0 ? void 0 : getStudent.performance.map((el) => {
-                if (el.performanceRating !== undefined) {
-                    return view.push(el.performanceRating);
-                }
-                else {
-                    return notView.push(el.performanceRating);
+            const ratings = [];
+            (_e = getStudent === null || getStudent === void 0 ? void 0 : getStudent.performance) === null || _e === void 0 ? void 0 : _e.forEach((el) => {
+                if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+                    ratings.push(el.performanceRating);
                 }
             });
-            view.reduce((a, b) => {
-                return a + b;
-            }, 0);
-            const record = yield studentModel_1.default.findByIdAndUpdate(studentID, {
-                totalPerformance: view.reduce((a, b) => {
-                    return a + b;
-                }, 0) / ((_e = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _e === void 0 ? void 0 : _e.length),
-            }, { new: true });
+            const totalSum = ratings.reduce((a, b) => a + b, 0);
+            const count = ratings.length;
+            const avg = count > 0 ? totalSum / count : 0;
+            yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
             return res.status(201).json({
                 message: "quiz entry created successfully",
                 data: quizes,

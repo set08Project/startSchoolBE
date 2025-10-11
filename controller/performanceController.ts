@@ -31,6 +31,10 @@ export const createQuizPerformance = async (
     const subject = await subjectModel.findById(subjectID);
 
     if (quizData) {
+      // determine attempt number: count existing performance entries for this student and this quiz
+      const existingAttempts = await performanceModel.countDocuments({ student: studentID, quizID });
+      const attemptNumber = existingAttempts + 1;
+
       const quizes = await performanceModel.create({
         remark,
         subjectTitle: quizData?.subjectTitle,
@@ -43,49 +47,43 @@ export const createQuizPerformance = async (
         performanceRating: parseInt(
           ((studentScore / quizData?.quiz[1]?.question.length) * 100).toFixed(2)
         ),
+        attemptNumber,
         className: studentInfo?.classAssigned,
         quizID: quizID,
         studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
         studentAvatar: studentInfo.avatar,
         subjectID: subject?._id,
+        student: studentID,
       });
 
-      quizData?.performance?.push(new Types.ObjectId(quizes._id));
-      quizData?.save();
+  quizData?.performance?.push(new Types.ObjectId(quizes._id));
+  await quizData?.save();
 
-      studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
-      studentInfo?.save();
+  studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
+  await studentInfo?.save();
 
-      subject?.performance?.push(new Types.ObjectId(quizes._id));
-      subject?.save();
+  subject?.performance?.push(new Types.ObjectId(quizes._id));
+  await subject?.save();
 
-      let view: number[] = [];
-      let notView: number[] = [];
-
+      // Recalculate student's totalPerformance using only valid numeric ratings
       const getStudent = await studentModel.findById(studentID).populate({
         path: "performance",
       });
 
-      let total = getStudent?.performance.map((el: any) => {
-        if (el.performanceRating !== undefined) {
-          return view.push(el.performanceRating);
-        } else {
-          return notView.push(el.performanceRating);
+      const ratings: number[] = [];
+      getStudent?.performance?.forEach((el: any) => {
+        if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+          ratings.push(el.performanceRating);
         }
       });
 
-      view.reduce((a: number, b: number) => {
-        return a + b;
-      }, 0);
+      const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
+      const count = ratings.length;
+      const avg = count > 0 ? totalSum / count : 0;
 
       const record = await studentModel.findByIdAndUpdate(
         studentID,
-        {
-          totalPerformance:
-            view.reduce((a: number, b: number) => {
-              return a + b;
-            }, 0) / studentInfo?.performance?.length,
-        },
+        { totalPerformance: avg },
         { new: true }
       );
 
@@ -269,6 +267,9 @@ export const createExamPerformance = async (
     const subject = await subjectModel.findById(subjectID);
 
     if (quizData) {
+      const existingAttempts = await performanceModel.countDocuments({ student: studentID, quizID });
+      const attemptNumber = existingAttempts + 1;
+
       const quizes = await performanceModel.create({
         remark,
         subjectTitle: quizData?.subjectTitle,
@@ -281,49 +282,43 @@ export const createExamPerformance = async (
         performanceRating: parseInt(
           ((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)
         ),
+        attemptNumber,
         className: studentInfo?.classAssigned,
         quizID: quizID,
         studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
         studentAvatar: studentInfo.avatar,
         subjectID: subject?._id,
+        student: studentID,
       });
 
       quizData?.performance?.push(new Types.ObjectId(quizes._id));
-      quizData?.save();
+      await quizData?.save();
 
       studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
-      studentInfo?.save();
+      await studentInfo?.save();
 
       subject?.performance?.push(new Types.ObjectId(quizes._id));
-      subject?.save();
+      await subject?.save();
 
-      let view: number[] = [];
-      let notView: number[] = [];
-
+      // Recalculate student's totalPerformance using only valid numeric ratings
       const getStudent = await studentModel.findById(studentID).populate({
         path: "performance",
       });
 
-      let total = getStudent?.performance.map((el: any) => {
-        if (el.performanceRating !== undefined) {
-          return view.push(el.performanceRating);
-        } else {
-          return notView.push(el.performanceRating);
+      const ratings: number[] = [];
+      getStudent?.performance?.forEach((el: any) => {
+        if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+          ratings.push(el.performanceRating);
         }
       });
 
-      view.reduce((a: number, b: number) => {
-        return a + b;
-      }, 0);
+      const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
+      const count = ratings.length;
+      const avg = count > 0 ? totalSum / count : 0;
 
-      const record = await studentModel.findByIdAndUpdate(
+      await studentModel.findByIdAndUpdate(
         studentID,
-        {
-          totalPerformance:
-            view.reduce((a: number, b: number) => {
-              return a + b;
-            }, 0) / studentInfo?.performance?.length,
-        },
+        { totalPerformance: avg },
         { new: true }
       );
 
@@ -373,6 +368,9 @@ export const createMidTestPerformance = async (
     const subject = await subjectModel.findById(subjectID);
 
     if (quizData) {
+      const existingAttempts = await performanceModel.countDocuments({ student: studentID, quizID });
+      const attemptNumber = existingAttempts + 1;
+
       const quizes = await performanceModel.create({
         remark,
         subjectTitle: quizData?.subjectTitle,
@@ -385,50 +383,44 @@ export const createMidTestPerformance = async (
         performanceRating: parseInt(
           ((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)
         ),
+        attemptNumber,
         className: studentInfo?.classAssigned,
         quizID: quizID,
         studentID,
         studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
         studentAvatar: studentInfo.avatar,
         subjectID: subject?._id,
+        student: studentID,
       });
 
       quizData?.performance?.push(new Types.ObjectId(quizes._id));
-      quizData?.save();
+      await quizData?.save();
 
       studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
-      studentInfo?.save();
+      await studentInfo?.save();
 
       subject?.performance?.push(new Types.ObjectId(quizes._id));
-      subject?.save();
+      await subject?.save();
 
-      let view: number[] = [];
-      let notView: number[] = [];
-
+      // Recalculate student's totalPerformance using only valid numeric ratings
       const getStudent = await studentModel.findById(studentID).populate({
         path: "performance",
       });
 
-      let total = getStudent?.performance.map((el: any) => {
-        if (el.performanceRating !== undefined) {
-          return view.push(el.performanceRating);
-        } else {
-          return notView.push(el.performanceRating);
+      const ratings: number[] = [];
+      getStudent?.performance?.forEach((el: any) => {
+        if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+          ratings.push(el.performanceRating);
         }
       });
 
-      view.reduce((a: number, b: number) => {
-        return a + b;
-      }, 0);
+      const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
+      const count = ratings.length;
+      const avg = count > 0 ? totalSum / count : 0;
 
-      const record = await studentModel.findByIdAndUpdate(
+      await studentModel.findByIdAndUpdate(
         studentID,
-        {
-          totalPerformance:
-            view.reduce((a: number, b: number) => {
-              return a + b;
-            }, 0) / studentInfo?.performance?.length,
-        },
+        { totalPerformance: avg },
         { new: true }
       );
 
