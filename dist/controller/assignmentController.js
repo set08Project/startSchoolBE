@@ -27,9 +27,7 @@ const createSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 0, 
         const { assignmentTopic, assignmentDetails, assignmentDeadline } = req.body;
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        const findTeacher = yield staffModel_1.default.findById({
-            _id: classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID,
-        });
+        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
         if (checkForSubject) {
             const quizes = yield assignmentModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,

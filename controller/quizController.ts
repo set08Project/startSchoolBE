@@ -25,13 +25,11 @@ export const createSubjectExam = async (
 
     const checkForSubject = await subjectModel.findById(subjectID);
 
-    const findTeacher = await staffModel.findById({
-      _id: checkForSubject?.teacherID,
-    });
+    const findTeacher = await staffModel.findById(checkForSubject?.teacherID);
 
-    const findSubjectTeacher = await subjectModel.findById({
-      _id: checkForSubject?.teacherID,
-    });
+    const findSubjectTeacher = await staffModel.findById(
+      checkForSubject?.teacherID
+    );
 
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
@@ -287,13 +285,11 @@ export const createSubjectQuiz = async (
 
     const checkForSubject = await subjectModel.findById(subjectID);
 
-    const findTeacher = await staffModel.findById({
-      _id: classRoom?.teacherID,
-    });
+    const findTeacher = await staffModel.findById(classRoom?.teacherID);
 
-    const findSubjectTeacher = await subjectModel.findById({
-      _id: checkForSubject?.teacherID,
-    });
+    const findSubjectTeacher = await staffModel.findById(
+      checkForSubject?.teacherID
+    );
 
     if (checkForSubject) {
       const quizes = await quizModel.create({

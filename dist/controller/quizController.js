@@ -32,12 +32,8 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const { instruction, duration, mark } = req.body;
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        const findTeacher = yield staffModel_1.default.findById({
-            _id: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID,
-        });
-        const findSubjectTeacher = yield subjectModel_1.default.findById({
-            _id: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID,
-        });
+        const findTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
         const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         // const { secure_url, public_id }: any = await streamUpload(req);
         let data = yield (0, csvtojson_1.default)().fromFile((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
@@ -240,12 +236,8 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const { quiz, totalQuestions } = req.body;
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        const findTeacher = yield staffModel_1.default.findById({
-            _id: classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID,
-        });
-        const findSubjectTeacher = yield subjectModel_1.default.findById({
-            _id: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID,
-        });
+        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
         if (checkForSubject) {
             const quizes = yield quizModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,

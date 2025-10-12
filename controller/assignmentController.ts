@@ -21,9 +21,7 @@ export const createSubjectAssignment = async (
 
     const checkForSubject = await subjectModel.findById(subjectID);
 
-    const findTeacher = await staffModel.findById({
-      _id: classRoom?.teacherID,
-    });
+    const findTeacher = await staffModel.findById(classRoom?.teacherID);
 
     if (checkForSubject) {
       const quizes = await assignmentModel.create({

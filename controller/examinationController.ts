@@ -24,13 +24,14 @@ export const createSubjectExam = async (
 
     const checkForSubject = await subjectModel.findById(subjectID);
 
-    const findTeacher = await staffModel.findById({
-      _id: classRoom?.teacherID,
-    });
+    // teacher assigned to the class
+    const findTeacher = await staffModel.findById(classRoom?.teacherID);
 
-    const findSubjectTeacher = await subjectModel.findById({
-      _id: checkForSubject?.teacherID,
-    });
+    // teacher assigned specifically to the subject (teacherID stored on subject)
+    const findSubjectTeacher = await staffModel.findById(
+      checkForSubject?.teacherID
+    );
+
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
     // const { secure_url, public_id }: any = await streamUpload(req);

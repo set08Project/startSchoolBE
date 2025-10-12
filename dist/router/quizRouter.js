@@ -2,13 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const quizController_1 = require("../controller/quizController");
+const multer_1 = require("../utils/multer");
 const router = (0, express_1.Router)();
 // examination
 // routercreate-subject-quiz
-//   .route("/create-subject-examination/:classID/:subjectID")
-//   .post(fileUploads, createSubjectExam);
-// router.route("/start-subject-exam/:examID/").patch(startSubjectExamination);
-// router.route("/view-subject-exam/:subjectID").get(readSubjectExamination);
+router
+    .route("/create-subject-examination/:classID/:subjectID")
+    .post(multer_1.fileUploads, quizController_1.createSubjectExam);
+router.route("/start-subject-exam/:examID/").patch(quizController_1.startSubjectExamination);
+router.route("/view-subject-exam/:subjectID").get(quizController_1.readSubjectExamination);
 // quiz
 router
     .route("/create-subject-quiz/:classID/:subjectID")
