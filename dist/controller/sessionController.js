@@ -390,16 +390,17 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
         const teacherUpdates = [];
         for (const teacher of staff) {
             if (teacher.classesAssigned && Array.isArray(teacher.classesAssigned)) {
-                const updatedClasses = teacher.classesAssigned
-                    .map((classAssignment) => {
+                // Build updated array preserving original entries but replacing className when promotion applies
+                const updatedClasses = teacher.classesAssigned.map((classAssignment) => {
                     const newClassName = promoteClassName(classAssignment.className);
                     if (newClassName) {
                         return Object.assign(Object.assign({}, classAssignment), { className: newClassName });
                     }
-                    return null;
-                })
-                    .filter((assignment) => assignment !== null);
-                if (updatedClasses.length !== teacher.classesAssigned.length) {
+                    return Object.assign({}, classAssignment);
+                });
+                // Detect if any className changed (compare by index)
+                const hasChanged = teacher.classesAssigned.some((orig, idx) => { var _a; return (orig === null || orig === void 0 ? void 0 : orig.className) !== ((_a = updatedClasses[idx]) === null || _a === void 0 ? void 0 : _a.className); });
+                if (hasChanged) {
                     teacherUpdates.push(staffModel_1.default.findByIdAndUpdate(teacher._id, { classesAssigned: updatedClasses }, { new: true }));
                 }
             }
