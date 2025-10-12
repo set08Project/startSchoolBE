@@ -525,7 +525,10 @@ export const createReportCardEntry = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { teacherID, studentID } = req.params;
+    const {
+      // teacherID,
+      studentID,
+    } = req.params;
     const {
       subject,
       test1 = 0,
@@ -544,7 +547,7 @@ export const createReportCardEntry = async (
     }
 
     // Fetch teacher and verify existence
-    const teacher = await staffModel.findById(teacherID);
+    const teacher = await studentModel.findById(studentID);
     if (!teacher) {
       return res.status(404).json({
         message: "Teacher not found",
@@ -815,10 +818,11 @@ export const createMidReportCardEntry = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { teacherID, studentID } = req.params;
+    const { studentID } = req.params;
     const { subject, test1, test2, test3, test4, exam } = req.body;
 
-    const teacher = await staffModel.findById(teacherID);
+    const teacher = await studentModel.findById(studentID);
+
     const school: any = await schoolModel
       .findById(teacher?.schoolIDs)
       .populate({

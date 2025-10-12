@@ -7,11 +7,9 @@ const router = (0, express_1.Router)();
 router
     .route("/create-report-card/:schoolID/:staffID/:studentID")
     .post(reportCardController_1.createStudentreportCard);
+router.route("/create-report-card/:studentID").post(cardReportController_1.createReportCardEntry);
 router
-    .route("/create-report-card/:teacherID/:studentID")
-    .post(cardReportController_1.createReportCardEntry);
-router
-    .route("/create-mid-report-card/:teacherID/:studentID")
+    .route("/create-mid-report-card/:studentID")
     .post(cardReportController_1.createMidReportCardEntry);
 router
     .route("/update-report-card/:teacherID/:studentID")

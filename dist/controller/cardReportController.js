@@ -489,7 +489,9 @@ const studentHistoricalResultModel_1 = __importDefault(require("../model/student
 // };
 const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { teacherID, studentID } = req.params;
+        const { 
+        // teacherID,
+        studentID, } = req.params;
         const { subject, test1 = 0, test2 = 0, test3 = 0, test4 = 0, exam = 0, } = req.body;
         // Validate required fields
         if (!subject) {
@@ -499,7 +501,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
         }
         // Fetch teacher and verify existence
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = yield studentModel_1.default.findById(studentID);
         if (!teacher) {
             return res.status(404).json({
                 message: "Teacher not found",
@@ -743,9 +745,9 @@ exports.createReportCardEntry = createReportCardEntry;
 const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     try {
-        const { teacherID, studentID } = req.params;
+        const { studentID } = req.params;
         const { subject, test1, test2, test3, test4, exam } = req.body;
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = yield studentModel_1.default.findById(studentID);
         const school = yield schoolModel_1.default
             .findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs)
             .populate({

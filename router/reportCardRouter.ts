@@ -19,12 +19,10 @@ router
   .route("/create-report-card/:schoolID/:staffID/:studentID")
   .post(createStudentreportCard);
 
-router
-  .route("/create-report-card/:teacherID/:studentID")
-  .post(createReportCardEntry);
+router.route("/create-report-card/:studentID").post(createReportCardEntry);
 
 router
-  .route("/create-mid-report-card/:teacherID/:studentID")
+  .route("/create-mid-report-card/:studentID")
   .post(createMidReportCardEntry);
 
 router
