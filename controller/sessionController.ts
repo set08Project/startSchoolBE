@@ -429,12 +429,42 @@ export const createNewSchoolSession = async (
     // Execute student updates
     await Promise.all(studentUpdates);
 
-    // Delete graduated students and update school
+    // Handle graduated students: create outGone entries, remove from school lists, and delete student records
     if (studentDeletions.length > 0) {
-      await studentModel.deleteMany({ _id: { $in: studentDeletions } });
-      await schoolModel.findByIdAndUpdate(schoolID, {
-        $pull: { students: { $in: studentDeletions } },
-      });
+      for (const studentId of studentDeletions) {
+        try {
+          const studentData: any = await studentModel.findById(studentId);
+          if (studentData) {
+            // create outGone record
+            const out = await(
+              await import("../model/outGoneStudentModel")
+            ).default.create({
+              studentName: `${studentData.studentFirstName} ${studentData.studentLastName}`,
+              student: studentId,
+              schoolInfo: schoolID,
+            });
+
+            // push to school's outGoneStudents
+            await schoolModel.findByIdAndUpdate(schoolID, {
+              $push: { outGoneStudents: out._id },
+            });
+          }
+
+          // remove student from school's student array
+          await schoolModel.findByIdAndUpdate(schoolID, {
+            $pull: { students: studentId },
+          });
+
+          // finally delete the student record
+          await studentModel.findByIdAndDelete(studentId);
+        } catch (err) {
+          // continue on errors for individual students
+          console.error(
+            `Error processing graduated student ${studentId}:`,
+            err
+          );
+        }
+      }
     }
 
     // Process teachers' class assignments
