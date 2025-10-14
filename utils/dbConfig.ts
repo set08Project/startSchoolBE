@@ -5,8 +5,10 @@ dotenv.config();
 export const dbConfig = async () => {
   try {
     const connectionString = process.env.MONGO_DB_URL_LOCAL;
+    // const DB =
+    //   "mongodb+srv://justtnext:justtnext@cluster0.9fh0y26.mongodb.net/nextIIDB?retryWrites=true&w=majority&appName=Cluster0";
     const DB =
-      "mongodb+srv://justtnext:justtnext@cluster0.9fh0y26.mongodb.net/nextIIDB?retryWrites=true&w=majority&appName=Cluster0";
+      "mongodb+srv://peterotunuya2:peterotunuya2@cluster0.i3bmjcu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
     await connect(DB!, {
       connectTimeoutMS: 30000, // Increase connection timeout to 30 seconds
