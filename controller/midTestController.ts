@@ -322,10 +322,15 @@ export const deleteMidTest = async (
     const quizSubject: any = await subjectModel.findById(subjectID);
     const quizTeacher: any = await staffModel.findById(teacherID);
 
-    const quiz: any = await midTestModel.findByIdAndDelete(midTestID);
+    await midTestModel.findByIdAndDelete(midTestID);
 
-    quizSubject.pull(new Types.ObjectId(midTestID));
-    quizSubject.save();
+    if (quizSubject && Array.isArray(quizSubject.midTest)) {
+      quizSubject.midTest = quizSubject.midTest.filter(
+        (id: any) => id.toString() !== midTestID
+      );
+      await quizSubject.save();
+    }
+
     quizTeacher.pull(new Types.ObjectId(midTestID));
     quizTeacher.save();
 

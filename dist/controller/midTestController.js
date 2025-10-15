@@ -284,9 +284,11 @@ const deleteMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const { midTestID, subjectID, teacherID } = req.params;
         const quizSubject = yield subjectModel_1.default.findById(subjectID);
         const quizTeacher = yield staffModel_1.default.findById(teacherID);
-        const quiz = yield midTestModel_1.default.findByIdAndDelete(midTestID);
-        quizSubject.pull(new mongoose_1.Types.ObjectId(midTestID));
-        quizSubject.save();
+        yield midTestModel_1.default.findByIdAndDelete(midTestID);
+        if (quizSubject && Array.isArray(quizSubject.midTest)) {
+            quizSubject.midTest = quizSubject.midTest.filter((id) => id.toString() !== midTestID);
+            yield quizSubject.save();
+        }
         quizTeacher.pull(new mongoose_1.Types.ObjectId(midTestID));
         quizTeacher.save();
         return res.status(201).json({
