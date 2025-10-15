@@ -7,9 +7,11 @@ import staffModel from "../model/staffModel";
 import schoolModel from "../model/schoolModel";
 import csv from "csvtojson";
 import mammoth from "mammoth";
+import cheerio from "cheerio";
 
 import path from "node:path";
 import fs from "node:fs";
+import { uploadDataUri } from "../utils/streamifier";
 import { Types } from "mongoose";
 
 export const createSubjectExam = async (
@@ -51,51 +53,122 @@ export const createSubjectExam = async (
     let value: any[] = [];
 
     if (ext === ".doc" || ext === ".docx") {
-      // Convert Word docx to plain text and parse into questions
-      const { value: rawText } = await mammoth.extractRawText({
-        path: uploadedPath,
-      });
-      const lines = rawText
-        .split("\n")
-        .map((l: string) => l.trim())
-        .filter((l: string) => l);
+      // Convert Word docx to HTML to preserve images and markup
+      const result = await mammoth.convertToHtml(
+        { path: uploadedPath },
+        { includeEmbeddedStyleMap: true }
+      );
+      const html = result.value || "";
+      const $ = cheerio.load(html);
+
+      // split by paragraphs and headings to get question blocks
+      const blocks: string[] = [];
+      const elems: any[] = $("p, h1, h2, h3, li").toArray();
+      for (const el of elems as any[]) {
+        const text = $(el as any)
+          .text()
+          .trim();
+        if (text) blocks.push(text);
+      }
+
+      // collect images mapped by their surrounding block index
+      const imagesByIndex: Record<number, string[]> = {};
+      const imgs: any[] = $("img").toArray();
+      for (const imgEl of imgs as any[]) {
+        const src = $(imgEl as any).attr("src");
+        if (!src) continue;
+        const parent = $(imgEl as any).closest("p, li, h1, h2, h3")[0] as any;
+        let idx = -1;
+        if (parent) {
+          idx = (elems as any[]).indexOf(parent);
+        }
+        const key = idx >= 0 ? idx : blocks.length;
+        imagesByIndex[key] = imagesByIndex[key] || [];
+        imagesByIndex[key].push(src);
+      }
+
+      // If images are data URIs (embedded), upload them to Cloudinary so they
+      // are visible and performant for students. Replace data URIs with hosted URLs.
+      for (const k of Object.keys(imagesByIndex)) {
+        const arr = imagesByIndex[Number(k)];
+        const uploadedUrls: string[] = [];
+        for (const src of arr) {
+          try {
+            if (typeof src === "string" && src.startsWith("data:")) {
+              const uploadRes: any = await uploadDataUri(src, "exams");
+              if (uploadRes && uploadRes.secure_url) {
+                uploadedUrls.push(uploadRes.secure_url);
+              }
+            } else if (typeof src === "string") {
+              // not a data URI (likely a valid src already) — keep as-is
+              uploadedUrls.push(src);
+            }
+          } catch (err) {
+            // on failure, keep the original src so diagram isn't lost
+            uploadedUrls.push(src);
+          }
+        }
+        imagesByIndex[Number(k)] = uploadedUrls;
+      }
 
       let questionData: any = {};
       let options: string[] = [];
 
-      for (const line of lines) {
+      const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+      for (let idx = 0; idx < blocks.length; idx++) {
+        let line = blocks[idx];
         if (/^\d+\./.test(line)) {
           // Save previous question
           if (Object.keys(questionData).length) {
             questionData.options = options;
+            // attach images if any
+            if (imagesByIndex[idx - 1])
+              questionData.images = imagesByIndex[idx - 1];
             value.push(questionData);
             questionData = {};
             options = [];
           }
-          questionData = { question: line.replace(/^\d+\.\s*/, "") };
+          // Extract bracketed image URL if present
+          const match = line.match(BRACKET_URL_REGEX);
+          const url = match ? match[1].trim() : null;
+          line = line.replace(BRACKET_URL_REGEX, "").trim();
+          questionData = { question: line };
+          if (url) {
+            questionData.images = [url];
+          }
         } else if (/^[A-D]\./.test(line)) {
-          options.push(line.replace(/^[A-D]\.\s*/, ""));
+          options.push(line.replace(/^[A-D]\./, ""));
         } else if (line.startsWith("Answer:")) {
           questionData.answer = line.replace("Answer:", "").trim();
         } else if (line.startsWith("Explanation:")) {
           questionData.explanation = line.replace("Explanation:", "").trim();
         } else {
-          // lines that don't match patterns — append to question text if no options yet
+          // append to question if no options yet
           if (questionData && !questionData.options) {
+            // Also extract bracketed image URL from continuation lines
+            const match = line.match(BRACKET_URL_REGEX);
+            const url = match ? match[1].trim() : null;
+            line = line.replace(BRACKET_URL_REGEX, "").trim();
             questionData.question = `${questionData.question} ${line}`.trim();
+            if (url) {
+              if (!questionData.images) questionData.images = [];
+              questionData.images.push(url);
+            }
           }
         }
       }
 
-      // push last question
       if (Object.keys(questionData).length) {
         questionData.options = options;
+        const lastIdx = blocks.length - 1;
+        if (imagesByIndex[lastIdx])
+          questionData.images = imagesByIndex[lastIdx];
         value.push(questionData);
       }
     } else {
       // treat as CSV
       const data = await csv().fromFile(uploadedPath);
-      for (const i of data) {
+      for (const i of data as any[]) {
         const opts = i.options ? i.options.split(";;") : [];
         const read = {
           question:

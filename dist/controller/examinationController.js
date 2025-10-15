@@ -21,8 +21,10 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const mammoth_1 = __importDefault(require("mammoth"));
+const cheerio_1 = __importDefault(require("cheerio"));
 const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
+const streamifier_1 = require("../utils/streamifier");
 const mongoose_1 = require("mongoose");
 const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
@@ -49,29 +51,88 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
         if (ext === ".doc" || ext === ".docx") {
-            // Convert Word docx to plain text and parse into questions
-            const { value: rawText } = yield mammoth_1.default.extractRawText({
-                path: uploadedPath,
-            });
-            const lines = rawText
-                .split("\n")
-                .map((l) => l.trim())
-                .filter((l) => l);
+            // Convert Word docx to HTML to preserve images and markup
+            const result = yield mammoth_1.default.convertToHtml({ path: uploadedPath }, { includeEmbeddedStyleMap: true });
+            const html = result.value || "";
+            const $ = cheerio_1.default.load(html);
+            // split by paragraphs and headings to get question blocks
+            const blocks = [];
+            const elems = $("p, h1, h2, h3, li").toArray();
+            for (const el of elems) {
+                const text = $(el)
+                    .text()
+                    .trim();
+                if (text)
+                    blocks.push(text);
+            }
+            // collect images mapped by their surrounding block index
+            const imagesByIndex = {};
+            const imgs = $("img").toArray();
+            for (const imgEl of imgs) {
+                const src = $(imgEl).attr("src");
+                if (!src)
+                    continue;
+                const parent = $(imgEl).closest("p, li, h1, h2, h3")[0];
+                let idx = -1;
+                if (parent) {
+                    idx = elems.indexOf(parent);
+                }
+                const key = idx >= 0 ? idx : blocks.length;
+                imagesByIndex[key] = imagesByIndex[key] || [];
+                imagesByIndex[key].push(src);
+            }
+            // If images are data URIs (embedded), upload them to Cloudinary so they
+            // are visible and performant for students. Replace data URIs with hosted URLs.
+            for (const k of Object.keys(imagesByIndex)) {
+                const arr = imagesByIndex[Number(k)];
+                const uploadedUrls = [];
+                for (const src of arr) {
+                    try {
+                        if (typeof src === "string" && src.startsWith("data:")) {
+                            const uploadRes = yield (0, streamifier_1.uploadDataUri)(src, "exams");
+                            if (uploadRes && uploadRes.secure_url) {
+                                uploadedUrls.push(uploadRes.secure_url);
+                            }
+                        }
+                        else if (typeof src === "string") {
+                            // not a data URI (likely a valid src already) — keep as-is
+                            uploadedUrls.push(src);
+                        }
+                    }
+                    catch (err) {
+                        // on failure, keep the original src so diagram isn't lost
+                        uploadedUrls.push(src);
+                    }
+                }
+                imagesByIndex[Number(k)] = uploadedUrls;
+            }
             let questionData = {};
             let options = [];
-            for (const line of lines) {
+            const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+            for (let idx = 0; idx < blocks.length; idx++) {
+                let line = blocks[idx];
                 if (/^\d+\./.test(line)) {
                     // Save previous question
                     if (Object.keys(questionData).length) {
                         questionData.options = options;
+                        // attach images if any
+                        if (imagesByIndex[idx - 1])
+                            questionData.images = imagesByIndex[idx - 1];
                         value.push(questionData);
                         questionData = {};
                         options = [];
                     }
-                    questionData = { question: line.replace(/^\d+\.\s*/, "") };
+                    // Extract bracketed image URL if present
+                    const match = line.match(BRACKET_URL_REGEX);
+                    const url = match ? match[1].trim() : null;
+                    line = line.replace(BRACKET_URL_REGEX, "").trim();
+                    questionData = { question: line };
+                    if (url) {
+                        questionData.images = [url];
+                    }
                 }
                 else if (/^[A-D]\./.test(line)) {
-                    options.push(line.replace(/^[A-D]\.\s*/, ""));
+                    options.push(line.replace(/^[A-D]\./, ""));
                 }
                 else if (line.startsWith("Answer:")) {
                     questionData.answer = line.replace("Answer:", "").trim();
@@ -80,15 +141,26 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     questionData.explanation = line.replace("Explanation:", "").trim();
                 }
                 else {
-                    // lines that don't match patterns — append to question text if no options yet
+                    // append to question if no options yet
                     if (questionData && !questionData.options) {
+                        // Also extract bracketed image URL from continuation lines
+                        const match = line.match(BRACKET_URL_REGEX);
+                        const url = match ? match[1].trim() : null;
+                        line = line.replace(BRACKET_URL_REGEX, "").trim();
                         questionData.question = `${questionData.question} ${line}`.trim();
+                        if (url) {
+                            if (!questionData.images)
+                                questionData.images = [];
+                            questionData.images.push(url);
+                        }
                     }
                 }
             }
-            // push last question
             if (Object.keys(questionData).length) {
                 questionData.options = options;
+                const lastIdx = blocks.length - 1;
+                if (imagesByIndex[lastIdx])
+                    questionData.images = imagesByIndex[lastIdx];
                 value.push(questionData);
             }
         }

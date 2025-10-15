@@ -57,7 +57,9 @@ export const createSubjectMidTest = async (
       let questionData: any = {};
       let options: string[] = [];
 
-      for (const line of lines) {
+      const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+      for (const lineOrig of lines) {
+        let line = lineOrig;
         if (/^\d+\./.test(line)) {
           if (Object.keys(questionData).length) {
             questionData.options = options;
@@ -65,16 +67,31 @@ export const createSubjectMidTest = async (
             questionData = {};
             options = [];
           }
-          questionData = { question: line.replace(/^\d+\.\s*/, "") };
+          // Extract bracketed image URL if present
+          const match = line.match(BRACKET_URL_REGEX);
+          const url = match ? match[1].trim() : null;
+          line = line.replace(BRACKET_URL_REGEX, "").trim();
+          questionData = { question: line };
+          if (url) {
+            questionData.images = [url];
+          }
         } else if (/^[A-D]\./.test(line)) {
-          options.push(line.replace(/^[A-D]\.\s*/, ""));
+          options.push(line.replace(/^[A-D]\./, ""));
         } else if (line.startsWith("Answer:")) {
           questionData.answer = line.replace("Answer:", "").trim();
         } else if (line.startsWith("Explanation:")) {
           questionData.explanation = line.replace("Explanation:", "").trim();
         } else {
           if (questionData && !questionData.options) {
+            // Also extract bracketed image URL from continuation lines
+            const match = line.match(BRACKET_URL_REGEX);
+            const url = match ? match[1].trim() : null;
+            line = line.replace(BRACKET_URL_REGEX, "").trim();
             questionData.question = `${questionData.question} ${line}`.trim();
+            if (url) {
+              if (!questionData.images) questionData.images = [];
+              questionData.images.push(url);
+            }
           }
         }
       }
