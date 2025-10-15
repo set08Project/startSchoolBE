@@ -6,6 +6,7 @@ import subjectModel from "../model/subjectModel";
 import staffModel from "../model/staffModel";
 import schoolModel from "../model/schoolModel";
 import csv from "csvtojson";
+import mammoth from "mammoth";
 
 import path from "node:path";
 import fs from "node:fs";
@@ -32,13 +33,73 @@ export const createSubjectMidTest = async (
 
     const school = await schoolModel.findById(findTeacher?.schoolIDs);
 
-    let data = await csv().fromFile(req?.file?.path);
+    const uploadedPath = req?.file?.path;
+    if (!uploadedPath) {
+      return res
+        .status(400)
+        .json({ message: "No upload file provided", status: 400 });
+    }
 
-    let value: any = [];
-    for (let i of data) {
-      i.options?.split(";;");
-      let read = { ...i, options: i.options?.split(";;") };
-      value.push(read);
+    const originalName = req?.file?.originalname || uploadedPath;
+    const ext = path.extname(originalName).toLowerCase();
+
+    let value: any[] = [];
+
+    if (ext === ".doc" || ext === ".docx") {
+      const { value: rawText } = await mammoth.extractRawText({
+        path: uploadedPath,
+      });
+      const lines = rawText
+        .split("\n")
+        .map((l: string) => l.trim())
+        .filter((l: string) => l);
+
+      let questionData: any = {};
+      let options: string[] = [];
+
+      for (const line of lines) {
+        if (/^\d+\./.test(line)) {
+          if (Object.keys(questionData).length) {
+            questionData.options = options;
+            value.push(questionData);
+            questionData = {};
+            options = [];
+          }
+          questionData = { question: line.replace(/^\d+\.\s*/, "") };
+        } else if (/^[A-D]\./.test(line)) {
+          options.push(line.replace(/^[A-D]\.\s*/, ""));
+        } else if (line.startsWith("Answer:")) {
+          questionData.answer = line.replace("Answer:", "").trim();
+        } else if (line.startsWith("Explanation:")) {
+          questionData.explanation = line.replace("Explanation:", "").trim();
+        } else {
+          if (questionData && !questionData.options) {
+            questionData.question = `${questionData.question} ${line}`.trim();
+          }
+        }
+      }
+
+      if (Object.keys(questionData).length) {
+        questionData.options = options;
+        value.push(questionData);
+      }
+    } else {
+      const data = await csv().fromFile(uploadedPath);
+      for (const i of data) {
+        const opts = i.options ? i.options.split(";;") : [];
+        const read = {
+          question:
+            i.Question ||
+            i.question ||
+            i.questionText ||
+            i.questionTitle ||
+            i.question,
+          options: opts,
+          answer: i.Answer || i.answer,
+          explanation: i.Explanation || i.explanation,
+        };
+        value.push(read);
+      }
     }
 
     let term = lodash.find(value, { term: school?.presentTerm });

@@ -44,4 +44,4 @@ const expenditureModel = new Schema<iExpenditureData>(
   { timestamps: true }
 );
 
-export default model<iExpenditureData>("announcements", expenditureModel);
+export default model<iExpenditureData>("expenditures", expenditureModel);

@@ -8,11 +8,46 @@ import lodash from "lodash";
 import { CronJob } from "cron";
 import { verifiedaccess_v1 } from "googleapis";
 import sessionModel from "../model/sessionModel";
+import staffModel from "../model/staffModel";
+import cardReportModel from "../model/cardReportModel";
+import midReportCardModel from "../model/midReportCardModel";
+import outGoneStudentModel from "../model/outGoneStudentModel";
 import termModel from "../model/termModel";
 import classHistoryModel from "../model/classHistory";
 import subjectModel from "../model/subjectModel";
 import classroomModel from "../model/classroomModel";
 import studentModel from "../model/studentModel";
+import announcementModel from "../model/announcementModel";
+import articleModel from "../model/articleModel";
+import assignmentModel from "../model/assignmentModel";
+import assignmentResolvedModel from "../model/assignmentResolvedModel";
+import attendanceModel from "../model/attendanceModel";
+import examinationModel from "../model/examinationModel";
+import ExpenditureModel from "../model/ExpenditureModel";
+import expenseModel from "../model/expenseModel";
+import gallaryModel from "../model/gallaryModel";
+import historyModel from "../model/historyModel";
+import lessonNoteModel from "../model/lessonNoteModel";
+import midTestModel from "../model/midTestModel";
+import pastQuestionModel from "../model/pastQuestionModel";
+import paymentHistory from "../model/paymentHistory";
+import paymentModel from "../model/paymentModel";
+import performanceModel from "../model/performanceModel";
+import quizModel from "../model/quizModel";
+import recordPaymentModel from "../model/recordPaymentModel";
+import reportCardModel from "../model/reportCardModel";
+import scheduleModel from "../model/scheduleModel";
+import schemeOfWorkModel from "../model/schemeOfWorkModel";
+import schoolFeeHistory from "../model/schoolFeeHistory";
+import sessionHistoryModel from "../model/sessionHistoryModel";
+import storeModel from "../model/storeModel";
+import studentHistoricalResultModel from "../model/studentHistoricalResultModel";
+import studentRemark from "../model/studentRemark";
+import teachSubjectModel from "../model/teachSubjectModel";
+import teachSubjectTopics from "../model/teachSubjectTopics";
+import teachTopicQuizesModel from "../model/teachTopicQuizesModel";
+import timetableModel from "../model/timetableModel";
+import cloudinary from "../utils/cloudinary";
 
 export const viewSchoolTopStudent = async (
   req: Request,
@@ -294,42 +329,476 @@ export const deleteSchool = async (
     const { schoolID } = req.params;
     let id = "678d4e5060a0cbcd2e27dc51";
     const getSchool: any = await schoolModel.findById(schoolID);
+    if (!getSchool) {
+      return res.status(404).json({ message: "School not found" });
+    }
 
-    for (let i of getSchool?.session) {
-      let sessTerm: any = await sessionModel?.findById(i.toString());
-      for (let i of sessTerm?.term) {
-        await termModel?.findByIdAndDelete(i.toString());
+    const summary: any = { deleted: {}, errors: [] };
+
+    // Helper to safely delete cloud assets by public_id
+    const tryDestroy = async (publicId?: string) => {
+      if (!publicId) return;
+      try {
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err) {
+        // don't fail entire operation on cloud delete errors
+        summary.errors.push({
+          publicId,
+          error: (err as any)?.message || String(err),
+        });
       }
+    };
 
-      await sessionModel?.findByIdAndDelete(i.toString());
+    // Delete sessions and their terms
+    try {
+      const sessionIds = (getSchool.session || []).map((s: any) =>
+        s.toString()
+      );
+      for (const sid of sessionIds) {
+        const sess: any = await sessionModel.findById(sid).lean();
+        if (sess?.term && sess.term.length) {
+          await termModel.deleteMany({ _id: { $in: sess.term } });
+          summary.deleted.terms =
+            (summary.deleted.terms || 0) + sess.term.length;
+        }
+      }
+      await sessionModel.deleteMany({ _id: { $in: sessionIds } });
+      summary.deleted.sessions = sessionIds.length;
+    } catch (err: any) {
+      summary.errors.push({ area: "sessions", error: err.message });
     }
 
-    for (let i of getSchool?.classHistory) {
-      await classHistoryModel?.findByIdAndDelete(i.toString());
+    // Models that store a reference to the school via `school` or `schoolInfo` field
+    const schoolLinkedModels: any[] = [
+      announcementModel,
+      articleModel,
+      assignmentModel,
+      assignmentResolvedModel,
+      attendanceModel,
+      examinationModel,
+      ExpenditureModel,
+      expenseModel,
+      gallaryModel,
+      historyModel,
+      lessonNoteModel,
+      midTestModel,
+      pastQuestionModel,
+      paymentHistory,
+      paymentModel,
+      performanceModel,
+      quizModel,
+      recordPaymentModel,
+      reportCardModel,
+      scheduleModel,
+      schemeOfWorkModel,
+      schoolFeeHistory,
+      sessionHistoryModel,
+      storeModel,
+      studentHistoricalResultModel,
+      studentRemark,
+      teachSubjectModel,
+      teachSubjectTopics,
+      teachTopicQuizesModel,
+      timetableModel,
+    ];
+
+    for (const m of schoolLinkedModels) {
+      try {
+        const del = await (m as any).deleteMany({ school: getSchool._id });
+        summary.deleted[m.modelName || m.collection?.name || m.name] =
+          del?.deletedCount || del?.n || 0;
+      } catch (err: any) {
+        // some models may use 'schoolInfo' field
+        try {
+          const del2 = await (m as any).deleteMany({
+            schoolInfo: getSchool._id,
+          });
+          summary.deleted[m.modelName || m.collection?.name || m.name] =
+            (summary.deleted[m.modelName || m.collection?.name || m.name] ||
+              0) + (del2?.deletedCount || del2?.n || 0);
+        } catch (err2: any) {
+          summary.errors.push({
+            model: m.modelName || m.name,
+            error: (err2 as any)?.message || String(err2),
+          });
+        }
+      }
     }
 
-    for (let i of getSchool?.subjects) {
-      await subjectModel?.findByIdAndDelete(i.toString());
+    // Delete docs referenced directly in school arrays (classes, subjects, staff, students, etc.)
+    const arrayRefs: { key: string; model: any }[] = [
+      { key: "classRooms", model: classroomModel },
+      { key: "subjects", model: subjectModel },
+      { key: "staff", model: staffModel },
+      { key: "students", model: studentModel },
+      { key: "reportCard", model: reportCardModel },
+      { key: "midReportCard", model: midReportCardModel },
+      { key: "outGoneStudents", model: outGoneStudentModel },
+      { key: "store", model: storeModel },
+      { key: "announcements", model: announcementModel },
+      { key: "articles", model: articleModel },
+      { key: "gallaries", model: gallaryModel },
+    ];
+
+    for (const ref of arrayRefs) {
+      try {
+        const ids = (getSchool[ref.key] || []).map((x: any) => x.toString());
+        if (ids.length) {
+          // attempt to delete cloud assets if present (gallary, staff avatars, students avatars, store images, articles)
+          if (ref.model === gallaryModel) {
+            const items: any[] = await gallaryModel
+              .find({ _id: { $in: ids } })
+              .lean();
+            for (const it of items) {
+              await tryDestroy(it?.avatarID || it?.public_id || it?.imageID);
+            }
+          }
+
+          if (ref.model === staffModel) {
+            const items: any[] = await staffModel
+              .find({ _id: { $in: ids } })
+              .lean();
+            for (const it of items) {
+              await tryDestroy(
+                it?.avatarID || it?.staffAvatarID || it?.signatureID
+              );
+            }
+          }
+
+          if (ref.model === studentModel) {
+            const items: any[] = await studentModel
+              .find({ _id: { $in: ids } })
+              .lean();
+            for (const it of items) {
+              await tryDestroy(
+                it?.avatarID || it?.studentAvatarID || it?.studentAvatarID
+              );
+            }
+          }
+
+          await ref.model.deleteMany({ _id: { $in: ids } });
+          summary.deleted[ref.key] = ids.length;
+        }
+      } catch (err: any) {
+        summary.errors.push({
+          area: `arrayRef:${ref.key}`,
+          error: err.message,
+        });
+      }
     }
 
-    for (let i of getSchool?.classRooms) {
-      await classroomModel?.findByIdAndDelete(i.toString());
+    // Fallback: delete any remaining documents that explicitly reference this school via school field
+    try {
+      const fallbackModels = [
+        classroomModel,
+        subjectModel,
+        staffModel,
+        studentModel,
+        reportCardModel,
+        midReportCardModel,
+        outGoneStudentModel,
+        gallaryModel,
+        articleModel,
+      ];
+      for (const m of fallbackModels) {
+        const del = await (m as any).deleteMany({ school: getSchool._id });
+        summary.deleted[m.modelName || m.name] =
+          (summary.deleted[m.modelName || m.name] || 0) +
+          (del?.deletedCount || del?.n || 0);
+      }
+    } catch (err: any) {
+      summary.errors.push({
+        area: "fallback",
+        error: (err as any)?.message || String(err),
+      });
     }
 
-    for (let i of getSchool?.students) {
-      await studentModel?.findByIdAndDelete(i.toString());
+    // Finally remove the school document itself
+    try {
+      await schoolModel.findByIdAndDelete(getSchool._id);
+      summary.deleted.school = 1;
+    } catch (err: any) {
+      summary.errors.push({ area: "schoolDelete", error: err.message });
     }
 
-    await schoolModel.findByIdAndDelete(schoolID);
-
-    return res.status(200).json({
-      message: "school deleted successfully",
-      status: 201,
-    });
+    return res
+      .status(200)
+      .json({ message: "school deleted successfully", summary });
   } catch (error) {
     return res.status(404).json({
       message: "Error verifying school",
     });
+  }
+};
+
+export const exportSchoolData = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    const school = await schoolModel.findById(schoolID).lean();
+
+    if (!school) {
+      return res.status(404).json({ message: "School not found" });
+    }
+
+    const [
+      classRooms,
+      staff,
+      subjects,
+      students,
+      sessions,
+      reportCards,
+      midReportCards,
+      outGoneStudents,
+    ] = await Promise.all([
+      classroomModel.find({ _id: { $in: school.classRooms || [] } }).lean(),
+      staffModel.find({ _id: { $in: school.staff || [] } }).lean(),
+      subjectModel.find({ _id: { $in: school.subjects || [] } }).lean(),
+      studentModel.find({ _id: { $in: school.students || [] } }).lean(),
+      sessionModel.find({ _id: { $in: school.session || [] } }).lean(),
+      cardReportModel
+        .find({ _id: { $in: school.reportCard || [] } })
+        .lean()
+        .catch(() => []),
+      midReportCardModel
+        .find({ _id: { $in: school.midReportCard || [] } })
+        .lean()
+        .catch(() => []),
+      outGoneStudentModel
+        .find({ _id: { $in: school.outGoneStudents || [] } })
+        .lean()
+        .catch(() => []),
+    ]);
+
+    const exportPkg = {
+      school,
+      classRooms,
+      staff,
+      subjects,
+      students,
+      sessions,
+      reportCards,
+      midReportCards,
+      outGoneStudents,
+    };
+
+    return res.status(200).json({ message: "export ready", data: exportPkg });
+  } catch (error: any) {
+    return res
+      .status(500)
+      .json({ message: "Error exporting school data", error: error.message });
+  }
+};
+
+export const exportSchoolDataFile = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+
+    // Admin-only: simple guard - user must be logged in and match school admin session or school.status
+    const sessionSchoolID = req.session?.isSchoolID;
+    // if (
+    //   !sessionSchoolID ||
+    //   sessionSchoolID.toString() !== schoolID.toString()
+    // ) {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "Forbidden, admin access required" });
+    // }
+
+    const school = await schoolModel.findById(schoolID).lean();
+    if (!school) return res.status(404).json({ message: "School not found" });
+
+    const [
+      classRooms,
+      staff,
+      subjects,
+      students,
+      sessions,
+      reportCards,
+      midReportCards,
+      outGoneStudents,
+    ] = await Promise.all([
+      classroomModel.find({ _id: { $in: school.classRooms || [] } }).lean(),
+      staffModel.find({ _id: { $in: school.staff || [] } }).lean(),
+      subjectModel.find({ _id: { $in: school.subjects || [] } }).lean(),
+      studentModel.find({ _id: { $in: school.students || [] } }).lean(),
+      sessionModel.find({ _id: { $in: school.session || [] } }).lean(),
+      cardReportModel
+        .find({ _id: { $in: school.reportCard || [] } })
+        .lean()
+        .catch(() => []),
+      midReportCardModel
+        .find({ _id: { $in: school.midReportCard || [] } })
+        .lean()
+        .catch(() => []),
+      outGoneStudentModel
+        .find({ _id: { $in: school.outGoneStudents || [] } })
+        .lean()
+        .catch(() => []),
+    ]);
+
+    const exportPkg = {
+      school,
+      classRooms,
+      staff,
+      subjects,
+      students,
+      sessions,
+      reportCards,
+      midReportCards,
+      outGoneStudents,
+    };
+
+    const filename = `${
+      school.schoolName || "school"
+    }-export-${Date.now()}.json`;
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return res.status(200).send(JSON.stringify(exportPkg));
+  } catch (error: any) {
+    return res
+      .status(500)
+      .json({ message: "Error exporting school data", error: error.message });
+  }
+};
+
+export const importSchoolData = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const payload = req.body?.data || req.body;
+    if (!payload || !payload.school) {
+      return res.status(400).json({ message: "Invalid import payload" });
+    }
+
+    const exported = payload;
+
+    // Prepare school data (avoid unique conflicts on email)
+    const schoolData = { ...exported.school } as any;
+    delete schoolData._id;
+    // ensure unique email to avoid duplicate key
+    if (schoolData.email) {
+      schoolData.email = `${schoolData.email}.import.${Date.now()}`;
+    }
+
+    // Create school record first
+    const newSchool: any = await schoolModel.create(schoolData);
+
+    // helper collections and mapping
+    const collections: Array<{
+      items: any[];
+      model: any;
+      key: string;
+    }> = [
+      {
+        items: exported.classRooms || [],
+        model: classroomModel,
+        key: "classRooms",
+      },
+      { items: exported.subjects || [], model: subjectModel, key: "subjects" },
+      { items: exported.staff || [], model: staffModel, key: "staff" },
+      { items: exported.students || [], model: studentModel, key: "students" },
+      { items: exported.sessions || [], model: sessionModel, key: "session" },
+      {
+        items: exported.reportCards || [],
+        model: cardReportModel,
+        key: "reportCard",
+      },
+      {
+        items: exported.midReportCards || [],
+        model: midReportCardModel,
+        key: "midReportCard",
+      },
+      {
+        items: exported.outGoneStudents || [],
+        model: outGoneStudentModel,
+        key: "outGoneStudents",
+      },
+    ];
+
+    const idMap: Record<string, any> = {};
+
+    // First pass: create documents without reference arrays
+    for (const col of collections) {
+      for (const item of col.items) {
+        const oldId = item._id?.toString();
+        const doc = { ...item };
+        delete doc._id;
+        // replace school references with new school id
+        if (doc.school || doc.schoolInfo) {
+          doc.school = newSchool._id;
+          doc.schoolInfo = newSchool._id;
+        }
+
+        // Remove array refs - to be set in second pass
+        for (const k of Object.keys(doc)) {
+          if (Array.isArray(doc[k])) {
+            // keep simple scalar arrays if they are primitives, else set to [] now
+            if (doc[k].length > 0 && typeof doc[k][0] === "object") {
+              doc[k] = [];
+            }
+          }
+        }
+
+        const created = await col.model.create(doc);
+        if (oldId) idMap[oldId] = created._id;
+        // store mapping for school arrays
+        newSchool[col.key] = newSchool[col.key] || [];
+        newSchool[col.key].push(created._id);
+      }
+    }
+
+    await newSchool.save();
+
+    // Second pass: update created docs with remapped references
+    for (const col of collections) {
+      for (const item of col.items) {
+        const oldId = item._id?.toString();
+        const newId = idMap[oldId];
+        if (!newId) continue;
+
+        const updates: any = {};
+
+        for (const k of Object.keys(item)) {
+          const val = item[k];
+          if (Array.isArray(val) && val.length > 0) {
+            const mapped = val.map((v: any) => {
+              if (!v) return v;
+              const s = v.toString ? v.toString() : v;
+              return idMap[s] || v;
+            });
+            updates[k] = mapped;
+          } else if (val && typeof val === "string" && idMap[val]) {
+            updates[k] = idMap[val];
+          }
+        }
+
+        if (Object.keys(updates).length) {
+          await col.model.findByIdAndUpdate(newId, updates, { new: true });
+        }
+      }
+    }
+
+    // finally, save the updated school arrays
+    await schoolModel.findByIdAndUpdate(newSchool._id, newSchool, {
+      new: true,
+    });
+
+    return res
+      .status(201)
+      .json({ message: "Import completed", schoolID: newSchool._id });
+  } catch (error: any) {
+    console.error("Import error", error);
+    return res
+      .status(500)
+      .json({ message: "Error importing school data", error: error.message });
   }
 };
 

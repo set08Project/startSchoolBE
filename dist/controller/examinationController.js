@@ -20,11 +20,12 @@ const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
+const mammoth_1 = __importDefault(require("mammoth"));
 const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const mongoose_1 = require("mongoose");
 const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c;
     try {
         const { classID, subjectID } = req.params;
         const { theory, instruction, duration, mark } = req.body;
@@ -37,12 +38,77 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
         const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         // const { secure_url, public_id }: any = await streamUpload(req);
-        let data = yield (0, csvtojson_1.default)().fromFile((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path);
+        const uploadedPath = (_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path;
+        if (!uploadedPath) {
+            return res.status(400).json({
+                message: "No upload file provided",
+                status: 400,
+            });
+        }
+        const originalName = ((_b = req === null || req === void 0 ? void 0 : req.file) === null || _b === void 0 ? void 0 : _b.originalname) || uploadedPath;
+        const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
-        for (let i of data) {
-            (_b = i.options) === null || _b === void 0 ? void 0 : _b.split(";;");
-            let read = Object.assign(Object.assign({}, i), { options: (_c = i.options) === null || _c === void 0 ? void 0 : _c.split(";;") });
-            value.push(read);
+        if (ext === ".doc" || ext === ".docx") {
+            // Convert Word docx to plain text and parse into questions
+            const { value: rawText } = yield mammoth_1.default.extractRawText({
+                path: uploadedPath,
+            });
+            const lines = rawText
+                .split("\n")
+                .map((l) => l.trim())
+                .filter((l) => l);
+            let questionData = {};
+            let options = [];
+            for (const line of lines) {
+                if (/^\d+\./.test(line)) {
+                    // Save previous question
+                    if (Object.keys(questionData).length) {
+                        questionData.options = options;
+                        value.push(questionData);
+                        questionData = {};
+                        options = [];
+                    }
+                    questionData = { question: line.replace(/^\d+\.\s*/, "") };
+                }
+                else if (/^[A-D]\./.test(line)) {
+                    options.push(line.replace(/^[A-D]\.\s*/, ""));
+                }
+                else if (line.startsWith("Answer:")) {
+                    questionData.answer = line.replace("Answer:", "").trim();
+                }
+                else if (line.startsWith("Explanation:")) {
+                    questionData.explanation = line.replace("Explanation:", "").trim();
+                }
+                else {
+                    // lines that don't match patterns — append to question text if no options yet
+                    if (questionData && !questionData.options) {
+                        questionData.question = `${questionData.question} ${line}`.trim();
+                    }
+                }
+            }
+            // push last question
+            if (Object.keys(questionData).length) {
+                questionData.options = options;
+                value.push(questionData);
+            }
+        }
+        else {
+            // treat as CSV
+            const data = yield (0, csvtojson_1.default)().fromFile(uploadedPath);
+            for (const i of data) {
+                const opts = i.options ? i.options.split(";;") : [];
+                const read = {
+                    question: i.Question ||
+                        i.question ||
+                        i.questionText ||
+                        i.questionTitle ||
+                        i.question,
+                    options: opts,
+                    answer: i.Answer || i.answer,
+                    explanation: i.Explanation || i.explanation,
+                };
+                value.push(read);
+            }
         }
         let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
         let session = lodash_1.default.find(value, { session: school === null || school === void 0 ? void 0 : school.presentSession });
@@ -157,7 +223,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 startExam: false,
             });
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            (_d = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_c = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
