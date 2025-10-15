@@ -27,7 +27,6 @@ router.route("/school-request-registration").post(schoolController_1.updateRegis
 router.route("/view-school-top-student/:schoolID").get(schoolController_1.viewSchoolTopStudent);
 router.route("/register-school/").post(schoolController_1.createSchool);
 router.route("/login-school/").post(schoolController_1.loginSchool);
-router.route("/delete-school/:schoolID").delete(schoolController_1.deleteSchool);
 router.route("/get-school-by-name/:schoolName").get(schoolController_1.viewSchoolStatusByName);
 router.route("/verify-school/:schoolID").get(schoolController_1.verifySchool);
 router.route("/view-school/:schoolID").get(schoolController_1.viewSchoolStatus);
@@ -35,6 +34,8 @@ router.route("/view-all-school").get(schoolController_1.viewAllSchools);
 router.route("/logout-school").delete(schoolController_1.logoutSchool);
 router.route("/get-school").get(schoolController_1.getSchoolRegistered);
 router.route("/read-school-cookie").get(schoolController_1.readSchoolCookie);
+// Admin-only export (downloads a JSON attachment)
+router.route("/export-school/:schoolID").get(schoolController_1.exportSchoolDataFile);
 router.route("/change-school-name/:schoolID").patch(schoolController_1.changeSchoolName);
 router.route("/change-school-location/:schoolID").patch(schoolController_1.changeSchoolAddress);
 router.route("/update-account-info/:schoolID").patch(schoolController_1.updateSchoolAccountDetail);
@@ -63,4 +64,8 @@ router
     .route("/remove-payment-option/:schoolID/:refID")
     .patch(schoolController_1.RemoveSchoolPaymentOptions);
 router.route("/update-school-admin-code/:schoolID").patch(schoolController_1.updateAdminCode);
+router.route("/export-data/:schoolID").get(schoolController_1.exportSchoolData);
+router.route("/export-data-file/:schoolID").get(schoolController_1.exportSchoolDataFile);
+router.route("/import-data").patch(schoolController_1.importSchoolData);
+router.route("/delete-school/:schoolID").delete(schoolController_1.deleteSchool);
 exports.default = router;

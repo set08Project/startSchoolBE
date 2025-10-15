@@ -48,6 +48,7 @@ import teachSubjectTopics from "../model/teachSubjectTopics";
 import teachTopicQuizesModel from "../model/teachTopicQuizesModel";
 import timetableModel from "../model/timetableModel";
 import cloudinary from "../utils/cloudinary";
+const archiver: any = require("archiver");
 
 export const viewSchoolTopStudent = async (
   req: Request,
@@ -655,12 +656,37 @@ export const exportSchoolDataFile = async (
       outGoneStudents,
     };
 
-    const filename = `${
-      school.schoolName || "school"
-    }-export-${Date.now()}.json`;
-    res.setHeader("Content-Type", "application/json");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    return res.status(200).send(JSON.stringify(exportPkg));
+    // Stream a zip containing the export JSON
+    const baseName = (school.schoolName || "school").replace(
+      /[^a-z0-9_-]/gi,
+      "_"
+    );
+    const zipName = `${baseName}-export-${Date.now()}.zip`;
+
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", `attachment; filename="${zipName}"`);
+
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    archive.on("error", (err: any) => {
+      console.error("Archive error", err);
+      try {
+        res.status(500).end();
+      } catch (e) {}
+    });
+
+    // Pipe archive data to the response
+    archive.pipe(res as any);
+
+    // Append export JSON as a file inside the zip
+    archive.append(JSON.stringify(exportPkg, null, 2), {
+      name: `${baseName}-export.json`,
+    });
+
+    // finalize the archive (this will end the response when done)
+    await archive.finalize();
+    // response is streamed; return a 200 OK handled by the stream
+    return res as any;
   } catch (error: any) {
     return res
       .status(500)

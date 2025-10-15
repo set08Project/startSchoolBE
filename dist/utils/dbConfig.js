@@ -19,9 +19,9 @@ dotenv_1.default.config();
 const dbConfig = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const connectionString = process.env.MONGO_DB_URL_LOCAL;
+        const DB = "mongodb+srv://justtnext:justtnext@cluster0.9fh0y26.mongodb.net/nextIIDB?retryWrites=true&w=majority&appName=Cluster0";
         // const DB =
-        //   "mongodb+srv://justtnext:justtnext@cluster0.9fh0y26.mongodb.net/nextIIDB?retryWrites=true&w=majority&appName=Cluster0";
-        const DB = "mongodb+srv://peterotunuya2:peterotunuya2@cluster0.i3bmjcu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+        //   "mongodb+srv://peterotunuya2:peterotunuya2@cluster0.i3bmjcu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
         yield (0, mongoose_1.connect)(DB, {
             connectTimeoutMS: 30000, // Increase connection timeout to 30 seconds
             socketTimeoutMS: 30000, // Increase socket timeout to 30 seconds

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.RemoveSchoolPaymentOptions = exports.updateSchoolPaymentOptions = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.RemoveSchoolPaymentOptions = exports.updateSchoolPaymentOptions = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.importSchoolData = exports.exportSchoolDataFile = exports.exportSchoolData = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -21,11 +21,46 @@ const streamifier_1 = require("../utils/streamifier");
 const lodash_1 = __importDefault(require("lodash"));
 const cron_1 = require("cron");
 const sessionModel_1 = __importDefault(require("../model/sessionModel"));
+const staffModel_1 = __importDefault(require("../model/staffModel"));
+const cardReportModel_1 = __importDefault(require("../model/cardReportModel"));
+const midReportCardModel_1 = __importDefault(require("../model/midReportCardModel"));
+const outGoneStudentModel_1 = __importDefault(require("../model/outGoneStudentModel"));
 const termModel_1 = __importDefault(require("../model/termModel"));
-const classHistory_1 = __importDefault(require("../model/classHistory"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
+const announcementModel_1 = __importDefault(require("../model/announcementModel"));
+const articleModel_1 = __importDefault(require("../model/articleModel"));
+const assignmentModel_1 = __importDefault(require("../model/assignmentModel"));
+const assignmentResolvedModel_1 = __importDefault(require("../model/assignmentResolvedModel"));
+const attendanceModel_1 = __importDefault(require("../model/attendanceModel"));
+const examinationModel_1 = __importDefault(require("../model/examinationModel"));
+const ExpenditureModel_1 = __importDefault(require("../model/ExpenditureModel"));
+const expenseModel_1 = __importDefault(require("../model/expenseModel"));
+const gallaryModel_1 = __importDefault(require("../model/gallaryModel"));
+const historyModel_1 = __importDefault(require("../model/historyModel"));
+const lessonNoteModel_1 = __importDefault(require("../model/lessonNoteModel"));
+const midTestModel_1 = __importDefault(require("../model/midTestModel"));
+const pastQuestionModel_1 = __importDefault(require("../model/pastQuestionModel"));
+const paymentHistory_1 = __importDefault(require("../model/paymentHistory"));
+const paymentModel_1 = __importDefault(require("../model/paymentModel"));
+const performanceModel_1 = __importDefault(require("../model/performanceModel"));
+const quizModel_1 = __importDefault(require("../model/quizModel"));
+const recordPaymentModel_1 = __importDefault(require("../model/recordPaymentModel"));
+const reportCardModel_1 = __importDefault(require("../model/reportCardModel"));
+const scheduleModel_1 = __importDefault(require("../model/scheduleModel"));
+const schemeOfWorkModel_1 = __importDefault(require("../model/schemeOfWorkModel"));
+const schoolFeeHistory_1 = __importDefault(require("../model/schoolFeeHistory"));
+const sessionHistoryModel_1 = __importDefault(require("../model/sessionHistoryModel"));
+const storeModel_1 = __importDefault(require("../model/storeModel"));
+const studentHistoricalResultModel_1 = __importDefault(require("../model/studentHistoricalResultModel"));
+const studentRemark_1 = __importDefault(require("../model/studentRemark"));
+const teachSubjectModel_1 = __importDefault(require("../model/teachSubjectModel"));
+const teachSubjectTopics_1 = __importDefault(require("../model/teachSubjectTopics"));
+const teachTopicQuizesModel_1 = __importDefault(require("../model/teachTopicQuizesModel"));
+const timetableModel_1 = __importDefault(require("../model/timetableModel"));
+const cloudinary_1 = __importDefault(require("../utils/cloudinary"));
+const archiver = require("archiver");
 const viewSchoolTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;
@@ -251,34 +286,195 @@ const viewAllSchools = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.viewAllSchools = viewAllSchools;
 const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
     try {
         const { schoolID } = req.params;
         let id = "678d4e5060a0cbcd2e27dc51";
         const getSchool = yield schoolModel_1.default.findById(schoolID);
-        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.session) {
-            let sessTerm = yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findById(i.toString()));
-            for (let i of sessTerm === null || sessTerm === void 0 ? void 0 : sessTerm.term) {
-                yield (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndDelete(i.toString()));
+        if (!getSchool) {
+            return res.status(404).json({ message: "School not found" });
+        }
+        const summary = { deleted: {}, errors: [] };
+        // Helper to safely delete cloud assets by public_id
+        const tryDestroy = (publicId) => __awaiter(void 0, void 0, void 0, function* () {
+            if (!publicId)
+                return;
+            try {
+                yield cloudinary_1.default.uploader.destroy(publicId);
             }
-            yield (sessionModel_1.default === null || sessionModel_1.default === void 0 ? void 0 : sessionModel_1.default.findByIdAndDelete(i.toString()));
-        }
-        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classHistory) {
-            yield (classHistory_1.default === null || classHistory_1.default === void 0 ? void 0 : classHistory_1.default.findByIdAndDelete(i.toString()));
-        }
-        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.subjects) {
-            yield (subjectModel_1.default === null || subjectModel_1.default === void 0 ? void 0 : subjectModel_1.default.findByIdAndDelete(i.toString()));
-        }
-        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.classRooms) {
-            yield (classroomModel_1.default === null || classroomModel_1.default === void 0 ? void 0 : classroomModel_1.default.findByIdAndDelete(i.toString()));
-        }
-        for (let i of getSchool === null || getSchool === void 0 ? void 0 : getSchool.students) {
-            yield (studentModel_1.default === null || studentModel_1.default === void 0 ? void 0 : studentModel_1.default.findByIdAndDelete(i.toString()));
-        }
-        yield schoolModel_1.default.findByIdAndDelete(schoolID);
-        return res.status(200).json({
-            message: "school deleted successfully",
-            status: 201,
+            catch (err) {
+                // don't fail entire operation on cloud delete errors
+                summary.errors.push({
+                    publicId,
+                    error: (err === null || err === void 0 ? void 0 : err.message) || String(err),
+                });
+            }
         });
+        // Delete sessions and their terms
+        try {
+            const sessionIds = (getSchool.session || []).map((s) => s.toString());
+            for (const sid of sessionIds) {
+                const sess = yield sessionModel_1.default.findById(sid).lean();
+                if ((sess === null || sess === void 0 ? void 0 : sess.term) && sess.term.length) {
+                    yield termModel_1.default.deleteMany({ _id: { $in: sess.term } });
+                    summary.deleted.terms =
+                        (summary.deleted.terms || 0) + sess.term.length;
+                }
+            }
+            yield sessionModel_1.default.deleteMany({ _id: { $in: sessionIds } });
+            summary.deleted.sessions = sessionIds.length;
+        }
+        catch (err) {
+            summary.errors.push({ area: "sessions", error: err.message });
+        }
+        // Models that store a reference to the school via `school` or `schoolInfo` field
+        const schoolLinkedModels = [
+            announcementModel_1.default,
+            articleModel_1.default,
+            assignmentModel_1.default,
+            assignmentResolvedModel_1.default,
+            attendanceModel_1.default,
+            examinationModel_1.default,
+            ExpenditureModel_1.default,
+            expenseModel_1.default,
+            gallaryModel_1.default,
+            historyModel_1.default,
+            lessonNoteModel_1.default,
+            midTestModel_1.default,
+            pastQuestionModel_1.default,
+            paymentHistory_1.default,
+            paymentModel_1.default,
+            performanceModel_1.default,
+            quizModel_1.default,
+            recordPaymentModel_1.default,
+            reportCardModel_1.default,
+            scheduleModel_1.default,
+            schemeOfWorkModel_1.default,
+            schoolFeeHistory_1.default,
+            sessionHistoryModel_1.default,
+            storeModel_1.default,
+            studentHistoricalResultModel_1.default,
+            studentRemark_1.default,
+            teachSubjectModel_1.default,
+            teachSubjectTopics_1.default,
+            teachTopicQuizesModel_1.default,
+            timetableModel_1.default,
+        ];
+        for (const m of schoolLinkedModels) {
+            try {
+                const del = yield m.deleteMany({ school: getSchool._id });
+                summary.deleted[m.modelName || ((_a = m.collection) === null || _a === void 0 ? void 0 : _a.name) || m.name] =
+                    (del === null || del === void 0 ? void 0 : del.deletedCount) || (del === null || del === void 0 ? void 0 : del.n) || 0;
+            }
+            catch (err) {
+                // some models may use 'schoolInfo' field
+                try {
+                    const del2 = yield m.deleteMany({
+                        schoolInfo: getSchool._id,
+                    });
+                    summary.deleted[m.modelName || ((_b = m.collection) === null || _b === void 0 ? void 0 : _b.name) || m.name] =
+                        (summary.deleted[m.modelName || ((_c = m.collection) === null || _c === void 0 ? void 0 : _c.name) || m.name] ||
+                            0) + ((del2 === null || del2 === void 0 ? void 0 : del2.deletedCount) || (del2 === null || del2 === void 0 ? void 0 : del2.n) || 0);
+                }
+                catch (err2) {
+                    summary.errors.push({
+                        model: m.modelName || m.name,
+                        error: (err2 === null || err2 === void 0 ? void 0 : err2.message) || String(err2),
+                    });
+                }
+            }
+        }
+        // Delete docs referenced directly in school arrays (classes, subjects, staff, students, etc.)
+        const arrayRefs = [
+            { key: "classRooms", model: classroomModel_1.default },
+            { key: "subjects", model: subjectModel_1.default },
+            { key: "staff", model: staffModel_1.default },
+            { key: "students", model: studentModel_1.default },
+            { key: "reportCard", model: reportCardModel_1.default },
+            { key: "midReportCard", model: midReportCardModel_1.default },
+            { key: "outGoneStudents", model: outGoneStudentModel_1.default },
+            { key: "store", model: storeModel_1.default },
+            { key: "announcements", model: announcementModel_1.default },
+            { key: "articles", model: articleModel_1.default },
+            { key: "gallaries", model: gallaryModel_1.default },
+        ];
+        for (const ref of arrayRefs) {
+            try {
+                const ids = (getSchool[ref.key] || []).map((x) => x.toString());
+                if (ids.length) {
+                    // attempt to delete cloud assets if present (gallary, staff avatars, students avatars, store images, articles)
+                    if (ref.model === gallaryModel_1.default) {
+                        const items = yield gallaryModel_1.default
+                            .find({ _id: { $in: ids } })
+                            .lean();
+                        for (const it of items) {
+                            yield tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.public_id) || (it === null || it === void 0 ? void 0 : it.imageID));
+                        }
+                    }
+                    if (ref.model === staffModel_1.default) {
+                        const items = yield staffModel_1.default
+                            .find({ _id: { $in: ids } })
+                            .lean();
+                        for (const it of items) {
+                            yield tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.staffAvatarID) || (it === null || it === void 0 ? void 0 : it.signatureID));
+                        }
+                    }
+                    if (ref.model === studentModel_1.default) {
+                        const items = yield studentModel_1.default
+                            .find({ _id: { $in: ids } })
+                            .lean();
+                        for (const it of items) {
+                            yield tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID));
+                        }
+                    }
+                    yield ref.model.deleteMany({ _id: { $in: ids } });
+                    summary.deleted[ref.key] = ids.length;
+                }
+            }
+            catch (err) {
+                summary.errors.push({
+                    area: `arrayRef:${ref.key}`,
+                    error: err.message,
+                });
+            }
+        }
+        // Fallback: delete any remaining documents that explicitly reference this school via school field
+        try {
+            const fallbackModels = [
+                classroomModel_1.default,
+                subjectModel_1.default,
+                staffModel_1.default,
+                studentModel_1.default,
+                reportCardModel_1.default,
+                midReportCardModel_1.default,
+                outGoneStudentModel_1.default,
+                gallaryModel_1.default,
+                articleModel_1.default,
+            ];
+            for (const m of fallbackModels) {
+                const del = yield m.deleteMany({ school: getSchool._id });
+                summary.deleted[m.modelName || m.name] =
+                    (summary.deleted[m.modelName || m.name] || 0) +
+                        ((del === null || del === void 0 ? void 0 : del.deletedCount) || (del === null || del === void 0 ? void 0 : del.n) || 0);
+            }
+        }
+        catch (err) {
+            summary.errors.push({
+                area: "fallback",
+                error: (err === null || err === void 0 ? void 0 : err.message) || String(err),
+            });
+        }
+        // Finally remove the school document itself
+        try {
+            yield schoolModel_1.default.findByIdAndDelete(getSchool._id);
+            summary.deleted.school = 1;
+        }
+        catch (err) {
+            summary.errors.push({ area: "schoolDelete", error: err.message });
+        }
+        return res
+            .status(200)
+            .json({ message: "school deleted successfully", summary });
     }
     catch (error) {
         return res.status(404).json({
@@ -287,6 +483,248 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.deleteSchool = deleteSchool;
+const exportSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { schoolID } = req.params;
+        const school = yield schoolModel_1.default.findById(schoolID).lean();
+        if (!school) {
+            return res.status(404).json({ message: "School not found" });
+        }
+        const [classRooms, staff, subjects, students, sessions, reportCards, midReportCards, outGoneStudents,] = yield Promise.all([
+            classroomModel_1.default.find({ _id: { $in: school.classRooms || [] } }).lean(),
+            staffModel_1.default.find({ _id: { $in: school.staff || [] } }).lean(),
+            subjectModel_1.default.find({ _id: { $in: school.subjects || [] } }).lean(),
+            studentModel_1.default.find({ _id: { $in: school.students || [] } }).lean(),
+            sessionModel_1.default.find({ _id: { $in: school.session || [] } }).lean(),
+            cardReportModel_1.default
+                .find({ _id: { $in: school.reportCard || [] } })
+                .lean()
+                .catch(() => []),
+            midReportCardModel_1.default
+                .find({ _id: { $in: school.midReportCard || [] } })
+                .lean()
+                .catch(() => []),
+            outGoneStudentModel_1.default
+                .find({ _id: { $in: school.outGoneStudents || [] } })
+                .lean()
+                .catch(() => []),
+        ]);
+        const exportPkg = {
+            school,
+            classRooms,
+            staff,
+            subjects,
+            students,
+            sessions,
+            reportCards,
+            midReportCards,
+            outGoneStudents,
+        };
+        return res.status(200).json({ message: "export ready", data: exportPkg });
+    }
+    catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Error exporting school data", error: error.message });
+    }
+});
+exports.exportSchoolData = exportSchoolData;
+const exportSchoolDataFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { schoolID } = req.params;
+        // Admin-only: simple guard - user must be logged in and match school admin session or school.status
+        const sessionSchoolID = (_a = req.session) === null || _a === void 0 ? void 0 : _a.isSchoolID;
+        // if (
+        //   !sessionSchoolID ||
+        //   sessionSchoolID.toString() !== schoolID.toString()
+        // ) {
+        //   return res
+        //     .status(403)
+        //     .json({ message: "Forbidden, admin access required" });
+        // }
+        const school = yield schoolModel_1.default.findById(schoolID).lean();
+        if (!school)
+            return res.status(404).json({ message: "School not found" });
+        const [classRooms, staff, subjects, students, sessions, reportCards, midReportCards, outGoneStudents,] = yield Promise.all([
+            classroomModel_1.default.find({ _id: { $in: school.classRooms || [] } }).lean(),
+            staffModel_1.default.find({ _id: { $in: school.staff || [] } }).lean(),
+            subjectModel_1.default.find({ _id: { $in: school.subjects || [] } }).lean(),
+            studentModel_1.default.find({ _id: { $in: school.students || [] } }).lean(),
+            sessionModel_1.default.find({ _id: { $in: school.session || [] } }).lean(),
+            cardReportModel_1.default
+                .find({ _id: { $in: school.reportCard || [] } })
+                .lean()
+                .catch(() => []),
+            midReportCardModel_1.default
+                .find({ _id: { $in: school.midReportCard || [] } })
+                .lean()
+                .catch(() => []),
+            outGoneStudentModel_1.default
+                .find({ _id: { $in: school.outGoneStudents || [] } })
+                .lean()
+                .catch(() => []),
+        ]);
+        const exportPkg = {
+            school,
+            classRooms,
+            staff,
+            subjects,
+            students,
+            sessions,
+            reportCards,
+            midReportCards,
+            outGoneStudents,
+        };
+        // Stream a zip containing the export JSON
+        const baseName = (school.schoolName || "school").replace(/[^a-z0-9_-]/gi, "_");
+        const zipName = `${baseName}-export-${Date.now()}.zip`;
+        res.setHeader("Content-Type", "application/zip");
+        res.setHeader("Content-Disposition", `attachment; filename="${zipName}"`);
+        const archive = archiver("zip", { zlib: { level: 9 } });
+        archive.on("error", (err) => {
+            console.error("Archive error", err);
+            try {
+                res.status(500).end();
+            }
+            catch (e) { }
+        });
+        // Pipe archive data to the response
+        archive.pipe(res);
+        // Append export JSON as a file inside the zip
+        archive.append(JSON.stringify(exportPkg, null, 2), {
+            name: `${baseName}-export.json`,
+        });
+        // finalize the archive (this will end the response when done)
+        yield archive.finalize();
+        // response is streamed; return a 200 OK handled by the stream
+        return res;
+    }
+    catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Error exporting school data", error: error.message });
+    }
+});
+exports.exportSchoolDataFile = exportSchoolDataFile;
+const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    try {
+        const payload = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.data) || req.body;
+        if (!payload || !payload.school) {
+            return res.status(400).json({ message: "Invalid import payload" });
+        }
+        const exported = payload;
+        // Prepare school data (avoid unique conflicts on email)
+        const schoolData = Object.assign({}, exported.school);
+        delete schoolData._id;
+        // ensure unique email to avoid duplicate key
+        if (schoolData.email) {
+            schoolData.email = `${schoolData.email}.import.${Date.now()}`;
+        }
+        // Create school record first
+        const newSchool = yield schoolModel_1.default.create(schoolData);
+        // helper collections and mapping
+        const collections = [
+            {
+                items: exported.classRooms || [],
+                model: classroomModel_1.default,
+                key: "classRooms",
+            },
+            { items: exported.subjects || [], model: subjectModel_1.default, key: "subjects" },
+            { items: exported.staff || [], model: staffModel_1.default, key: "staff" },
+            { items: exported.students || [], model: studentModel_1.default, key: "students" },
+            { items: exported.sessions || [], model: sessionModel_1.default, key: "session" },
+            {
+                items: exported.reportCards || [],
+                model: cardReportModel_1.default,
+                key: "reportCard",
+            },
+            {
+                items: exported.midReportCards || [],
+                model: midReportCardModel_1.default,
+                key: "midReportCard",
+            },
+            {
+                items: exported.outGoneStudents || [],
+                model: outGoneStudentModel_1.default,
+                key: "outGoneStudents",
+            },
+        ];
+        const idMap = {};
+        // First pass: create documents without reference arrays
+        for (const col of collections) {
+            for (const item of col.items) {
+                const oldId = (_b = item._id) === null || _b === void 0 ? void 0 : _b.toString();
+                const doc = Object.assign({}, item);
+                delete doc._id;
+                // replace school references with new school id
+                if (doc.school || doc.schoolInfo) {
+                    doc.school = newSchool._id;
+                    doc.schoolInfo = newSchool._id;
+                }
+                // Remove array refs - to be set in second pass
+                for (const k of Object.keys(doc)) {
+                    if (Array.isArray(doc[k])) {
+                        // keep simple scalar arrays if they are primitives, else set to [] now
+                        if (doc[k].length > 0 && typeof doc[k][0] === "object") {
+                            doc[k] = [];
+                        }
+                    }
+                }
+                const created = yield col.model.create(doc);
+                if (oldId)
+                    idMap[oldId] = created._id;
+                // store mapping for school arrays
+                newSchool[col.key] = newSchool[col.key] || [];
+                newSchool[col.key].push(created._id);
+            }
+        }
+        yield newSchool.save();
+        // Second pass: update created docs with remapped references
+        for (const col of collections) {
+            for (const item of col.items) {
+                const oldId = (_c = item._id) === null || _c === void 0 ? void 0 : _c.toString();
+                const newId = idMap[oldId];
+                if (!newId)
+                    continue;
+                const updates = {};
+                for (const k of Object.keys(item)) {
+                    const val = item[k];
+                    if (Array.isArray(val) && val.length > 0) {
+                        const mapped = val.map((v) => {
+                            if (!v)
+                                return v;
+                            const s = v.toString ? v.toString() : v;
+                            return idMap[s] || v;
+                        });
+                        updates[k] = mapped;
+                    }
+                    else if (val && typeof val === "string" && idMap[val]) {
+                        updates[k] = idMap[val];
+                    }
+                }
+                if (Object.keys(updates).length) {
+                    yield col.model.findByIdAndUpdate(newId, updates, { new: true });
+                }
+            }
+        }
+        // finally, save the updated school arrays
+        yield schoolModel_1.default.findByIdAndUpdate(newSchool._id, newSchool, {
+            new: true,
+        });
+        return res
+            .status(201)
+            .json({ message: "Import completed", schoolID: newSchool._id });
+    }
+    catch (error) {
+        console.error("Import error", error);
+        return res
+            .status(500)
+            .json({ message: "Error importing school data", error: error.message });
+    }
+});
+exports.importSchoolData = importSchoolData;
 const changeSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID } = req.params;

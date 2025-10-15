@@ -29,6 +29,7 @@ import {
   exportSchoolData,
   exportSchoolDataFile,
   RemoveSchoolPaymentOptions,
+  importSchoolData,
 } from "../controller/schoolController";
 import multer from "multer";
 
@@ -112,9 +113,11 @@ router
 
 router.route("/update-school-admin-code/:schoolID").patch(updateAdminCode);
 
-router.route("/export-data/:schoolID").patch(exportSchoolData);
+router.route("/export-data/:schoolID").get(exportSchoolData);
 
-router.route("/export-data-file/:schoolID").patch(exportSchoolDataFile);
+router.route("/export-data-file/:schoolID").get(exportSchoolDataFile);
+
+router.route("/import-data").patch(importSchoolData);
 
 router.route("/delete-school/:schoolID").delete(deleteSchool);
 

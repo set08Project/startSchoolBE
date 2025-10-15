@@ -25,4 +25,4 @@ const expenditureModel = new mongoose_1.Schema({
         ref: "schools",
     },
 }, { timestamps: true });
-exports.default = (0, mongoose_1.model)("announcements", expenditureModel);
+exports.default = (0, mongoose_1.model)("expenditures", expenditureModel);
