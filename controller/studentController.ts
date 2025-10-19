@@ -2432,34 +2432,49 @@ export const deleteStudent = async (
 ): Promise<Response> => {
   try {
     const { schoolID, studentID } = req.params;
-    const school: any = await schoolModel.findById(schoolID);
+    const school = await schoolModel.findById(schoolID);
 
     if (school) {
-      const student: any = await studentModel.findByIdAndDelete(studentID);
-      const checkClass = await classroomModel.find();
-      const checkStudentClass: any = await classroomModel.findOne(
-        student?.presentClassID
-      );
-
-      if (checkClass.length > 0) {
-        const teacherClass: any = checkClass[0];
-
-        school?.students?.pull(new Types.ObjectId(studentID));
-        teacherClass?.students?.pull(new Types.ObjectId(studentID));
-        checkStudentClass?.students?.pull(new Types.ObjectId(studentID));
-
-        school.save();
-        teacherClass.save();
+      // First get the student to get their class info before deletion
+      const student = await studentModel.findById(studentID);
+      if (!student) {
+        return res.status(404).json({
+          message: "Student not found",
+          status: 404,
+        });
       }
 
+      // Find and update the student's current classroom
+      if (student.presentClassID) {
+        await classroomModel.findByIdAndUpdate(
+          student.presentClassID,
+          {
+            $pull: { students: new Types.ObjectId(studentID) },
+          },
+          { new: true }
+        );
+      }
+
+      // Remove student from school's students array
+      await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          $pull: { students: new Types.ObjectId(studentID) },
+        },
+        { new: true }
+      );
+
+      // Finally delete the student
+      await studentModel.findByIdAndDelete(studentID);
+
       return res.status(200).json({
-        message: "Successfully Deleted Student",
+        message: "Successfully deleted student and removed all references",
         status: 200,
         data: student,
       });
     } else {
       return res.status(404).json({
-        message: "No School Found",
+        message: "School not found",
         status: 404,
       });
     }

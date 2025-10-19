@@ -1978,31 +1978,39 @@ const changeStudentClass = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.changeStudentClass = changeStudentClass;
 const deleteStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         if (school) {
-            const student = yield studentModel_1.default.findByIdAndDelete(studentID);
-            const checkClass = yield classroomModel_1.default.find();
-            const checkStudentClass = yield classroomModel_1.default.findOne(student === null || student === void 0 ? void 0 : student.presentClassID);
-            if (checkClass.length > 0) {
-                const teacherClass = checkClass[0];
-                (_a = school === null || school === void 0 ? void 0 : school.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
-                (_b = teacherClass === null || teacherClass === void 0 ? void 0 : teacherClass.students) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(studentID));
-                (_c = checkStudentClass === null || checkStudentClass === void 0 ? void 0 : checkStudentClass.students) === null || _c === void 0 ? void 0 : _c.pull(new mongoose_1.Types.ObjectId(studentID));
-                school.save();
-                teacherClass.save();
+            // First get the student to get their class info before deletion
+            const student = yield studentModel_1.default.findById(studentID);
+            if (!student) {
+                return res.status(404).json({
+                    message: "Student not found",
+                    status: 404,
+                });
             }
+            // Find and update the student's current classroom
+            if (student.presentClassID) {
+                yield classroomModel_1.default.findByIdAndUpdate(student.presentClassID, {
+                    $pull: { students: new mongoose_1.Types.ObjectId(studentID) },
+                }, { new: true });
+            }
+            // Remove student from school's students array
+            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                $pull: { students: new mongoose_1.Types.ObjectId(studentID) },
+            }, { new: true });
+            // Finally delete the student
+            yield studentModel_1.default.findByIdAndDelete(studentID);
             return res.status(200).json({
-                message: "Successfully Deleted Student",
+                message: "Successfully deleted student and removed all references",
                 status: 200,
                 data: student,
             });
         }
         else {
             return res.status(404).json({
-                message: "No School Found",
+                message: "School not found",
                 status: 404,
             });
         }
