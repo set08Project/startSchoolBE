@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import schoolModel from "../model/schoolModel";
 import studentModel from "../model/studentModel";
 import outGoneStudentModel from "../model/outGoneStudentModel";
+import classroomModel from "../model/classroomModel";
 import { Types } from "mongoose";
 
 export const createSchoolOutGoneStudent = async (
@@ -14,46 +15,63 @@ export const createSchoolOutGoneStudent = async (
     const school = await schoolModel.findById(schoolID);
     const student: any = await studentModel.findById(studentID);
 
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: 404,
+      });
+    }
+
     if (school && school.schoolName && school.status === "school-admin") {
       const checkFirst = (school?.students as Types.ObjectId[]).some(
         (el: any) => el.toString() === `${studentID}`
       );
 
       if (checkFirst) {
-        const classes = await outGoneStudentModel.create({
+        // Create outgone student record
+        const outGoneRecord = await outGoneStudentModel.create({
           studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
           student: studentID,
           schoolInfo: schoolID,
+          classAssigned: student?.classAssigned,
         });
 
-        school.students = (school?.students as Types.ObjectId[]).filter(
-          (id) => !id.equals(new Types.ObjectId(studentID))
-        );
+        // Remove from current class if they're in one
+        if (student.presentClassID) {
+          await classroomModel.findByIdAndUpdate(student.presentClassID, {
+            $pull: { students: new Types.ObjectId(studentID) },
+          });
+        }
 
-        school?.outGoneStudents.push(new Types.ObjectId(classes._id));
-        school.save();
+        // Remove from school's student list
+        await schoolModel.findByIdAndUpdate(schoolID, {
+          $pull: { students: new Types.ObjectId(studentID) },
+          $push: { outGoneStudents: new Types.ObjectId(outGoneRecord._id) },
+        });
 
         return res.status(201).json({
-          message: "student added to outgoing list successfully",
-          data: classes,
+          message:
+            "Student successfully moved to outgone list and removed from class",
+          data: outGoneRecord,
           status: 201,
         });
       } else {
         return res.status(404).json({
-          message: "student not found",
+          message: "Student not found in school records",
           status: 404,
         });
       }
     } else {
       return res.status(404).json({
-        message: "school not found",
+        message: "School not found or unauthorized",
         status: 404,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return res.status(404).json({
-      message: "Error creating school session",
+      message: "Error creating outgone student record",
       status: 404,
+      data: error.message,
     });
   }
 };

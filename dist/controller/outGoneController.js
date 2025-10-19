@@ -16,47 +16,65 @@ exports.findSchoolOutGoneStudents = exports.viewSchoolOutGoneStudents = exports.
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const outGoneStudentModel_1 = __importDefault(require("../model/outGoneStudentModel"));
+const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const mongoose_1 = require("mongoose");
 const createSchoolOutGoneStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, studentID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
         const student = yield studentModel_1.default.findById(studentID);
+        if (!student) {
+            return res.status(404).json({
+                message: "Student not found",
+                status: 404,
+            });
+        }
         if (school && school.schoolName && school.status === "school-admin") {
             const checkFirst = (school === null || school === void 0 ? void 0 : school.students).some((el) => el.toString() === `${studentID}`);
             if (checkFirst) {
-                const classes = yield outGoneStudentModel_1.default.create({
+                // Create outgone student record
+                const outGoneRecord = yield outGoneStudentModel_1.default.create({
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
                     student: studentID,
                     schoolInfo: schoolID,
+                    classAssigned: student === null || student === void 0 ? void 0 : student.classAssigned,
                 });
-                school.students = (school === null || school === void 0 ? void 0 : school.students).filter((id) => !id.equals(new mongoose_1.Types.ObjectId(studentID)));
-                school === null || school === void 0 ? void 0 : school.outGoneStudents.push(new mongoose_1.Types.ObjectId(classes._id));
-                school.save();
+                // Remove from current class if they're in one
+                if (student.presentClassID) {
+                    yield classroomModel_1.default.findByIdAndUpdate(student.presentClassID, {
+                        $pull: { students: new mongoose_1.Types.ObjectId(studentID) },
+                    });
+                }
+                // Remove from school's student list
+                yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                    $pull: { students: new mongoose_1.Types.ObjectId(studentID) },
+                    $push: { outGoneStudents: new mongoose_1.Types.ObjectId(outGoneRecord._id) },
+                });
                 return res.status(201).json({
-                    message: "student added to outgoing list successfully",
-                    data: classes,
+                    message: "Student successfully moved to outgone list and removed from class",
+                    data: outGoneRecord,
                     status: 201,
                 });
             }
             else {
                 return res.status(404).json({
-                    message: "student not found",
+                    message: "Student not found in school records",
                     status: 404,
                 });
             }
         }
         else {
             return res.status(404).json({
-                message: "school not found",
+                message: "School not found or unauthorized",
                 status: 404,
             });
         }
     }
     catch (error) {
         return res.status(404).json({
-            message: "Error creating school session",
+            message: "Error creating outgone student record",
             status: 404,
+            data: error.message,
         });
     }
 });
