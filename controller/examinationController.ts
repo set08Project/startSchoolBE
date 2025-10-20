@@ -117,35 +117,94 @@ export const createSubjectExam = async (
       const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
       for (let idx = 0; idx < blocks.length; idx++) {
         let line = blocks[idx];
+
+        // Normalize whitespace
+        line = line
+          .replace(/\t+/g, " ")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+
+        // If this is the start of a new numbered question
         if (/^\d+\./.test(line)) {
-          // Save previous question
+          // Save previous question if present
           if (Object.keys(questionData).length) {
             questionData.options = options;
-            // attach images if any
             if (imagesByIndex[idx - 1])
               questionData.images = imagesByIndex[idx - 1];
             value.push(questionData);
             questionData = {};
             options = [];
           }
-          // Extract bracketed image URL if present
-          const match = line.match(BRACKET_URL_REGEX);
-          const url = match ? match[1].trim() : null;
-          line = line.replace(BRACKET_URL_REGEX, "").trim();
-          questionData = { question: line };
-          if (url) {
-            questionData.images = [url];
+
+          // Extract and remove any inline Answer or Explanation from the same line
+          const inlineAnswerMatch = line.match(
+            /Answer:\s*([A-D])(?:\.\s*(.*))?/i
+          );
+          if (inlineAnswerMatch) {
+            // keep the answer text; if it contains option text, use it, else use the letter
+            questionData.answer = inlineAnswerMatch[2]
+              ? inlineAnswerMatch[2].trim()
+              : inlineAnswerMatch[1].toUpperCase();
+            line = line.replace(/Answer:\s*([A-D])(?:\.\s*(.*))?/i, "").trim();
+          }
+          const inlineExplMatch = line.match(/Explanation:\s*(.*)$/i);
+          if (inlineExplMatch) {
+            questionData.explanation = inlineExplMatch[1].trim();
+            line = line.replace(/Explanation:\s*(.*)$/i, "").trim();
+          }
+
+          // Extract bracketed image URL if present in same line
+          const bracketMatch = line.match(BRACKET_URL_REGEX);
+          const bracketUrl = bracketMatch ? bracketMatch[1].trim() : null;
+          if (bracketUrl) line = line.replace(BRACKET_URL_REGEX, "").trim();
+
+          // Detect inline options in the same line (A. ... B. ... C. ... D.)
+          const aIdx = line.search(/\bA\./);
+          const hasInlineOptions = aIdx > -1 && /\bB\./.test(line);
+
+          if (hasInlineOptions) {
+            // Stem is text before 'A.'
+            const stem = line
+              .slice(0, aIdx)
+              .replace(/^\d+\.\s*/, "")
+              .trim();
+            questionData = { question: stem };
+            // Options portion
+            const optPart = line.slice(aIdx);
+            const parts = optPart.split(/(?=[A-D]\.)/).filter(Boolean);
+            options = parts.map((p) => p.replace(/^[A-D]\.\s*/, "").trim());
+
+            // If we detected inline answer earlier, ensure it's present
+            if (questionData.answer) {
+              // nothing to do
+            }
+            if (bracketUrl) questionData.images = [bracketUrl];
+            // Do not push yet; behavior keeps consistent with multi-line format
+          } else {
+            // No inline options — treat whole line as stem (question text)
+            const stem = line.replace(/^\d+\.\s*/, "").trim();
+            questionData = { question: stem };
+            if (bracketUrl) questionData.images = [bracketUrl];
           }
         } else if (/^[A-D]\./.test(line)) {
-          options.push(line.replace(/^[A-D]\./, ""));
-        } else if (line.startsWith("Answer:")) {
-          questionData.answer = line.replace("Answer:", "").trim();
-        } else if (line.startsWith("Explanation:")) {
-          questionData.explanation = line.replace("Explanation:", "").trim();
+          // Option line
+          options.push(line.replace(/^[A-D]\./, "").trim());
+        } else if (/^Answer:\s*/.test(line)) {
+          // Answer on its own line; could be 'Answer: A' or 'Answer: A. option text'
+          const m = line.match(/Answer:\s*([A-D])(?:\.\s*(.*))?/i);
+          if (m) {
+            questionData.answer = m[2] ? m[2].trim() : m[1].toUpperCase();
+          } else {
+            questionData.answer = line.replace(/^Answer:\s*/i, "").trim();
+          }
+        } else if (/^Explanation:\s*/.test(line)) {
+          questionData.explanation = line
+            .replace(/^Explanation:\s*/i, "")
+            .trim();
         } else {
-          // append to question if no options yet
+          // Continuation of question stem (multi-line stem) — append if no options yet
           if (questionData && !questionData.options) {
-            // Also extract bracketed image URL from continuation lines
+            // also strip bracketed image urls if present
             const match = line.match(BRACKET_URL_REGEX);
             const url = match ? match[1].trim() : null;
             line = line.replace(BRACKET_URL_REGEX, "").trim();
@@ -159,9 +218,11 @@ export const createSubjectExam = async (
       }
 
       if (Object.keys(questionData).length) {
-        questionData.options = options;
+        // If options were parsed inline, ensure options array is set
+        if (!questionData.options) questionData.options = options;
+        // Attach images that were nearby (if none already attached)
         const lastIdx = blocks.length - 1;
-        if (imagesByIndex[lastIdx])
+        if (!questionData.images && imagesByIndex[lastIdx])
           questionData.images = imagesByIndex[lastIdx];
         value.push(questionData);
       }
