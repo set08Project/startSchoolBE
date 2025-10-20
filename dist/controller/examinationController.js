@@ -53,24 +53,15 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         if (ext === ".doc" || ext === ".docx") {
             // Convert Word docx to HTML to preserve images and markup
             const result = yield mammoth_1.default.convertToHtml({ path: uploadedPath }, { includeEmbeddedStyleMap: true });
-            let html = result.value || "";
-            // Remove all bullet/numbered lists from HTML
-            html = html.replace(/<(ul|ol)[^>]*>[\s\S]*?<\/\1>/gi, "");
-            // Remove <li> tags (if any remain)
-            html = html.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "$1");
-            // Remove common bullet characters from text (•, ◦, etc.)
-            html = html.replace(/[•◦‣▪–—]/g, "");
+            const html = result.value || "";
             const $ = cheerio_1.default.load(html);
             // split by paragraphs and headings to get question blocks
             const blocks = [];
-            const elems = $("p, h1, h2, h3").toArray();
+            const elems = $("p, h1, h2, h3, li").toArray();
             for (const el of elems) {
-                let text = $(el)
+                const text = $(el)
                     .text()
                     .trim();
-                // Remove leading numbering (e.g., "1. ", "2) ", "(a) ", "a. ")
-                text = text.replace(/^\s*\d+[\.|\)]\s*/g, "");
-                text = text.replace(/^\s*[a-zA-Z][\.|\)]\s*/g, "");
                 if (text)
                     blocks.push(text);
             }
@@ -120,94 +111,39 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
             for (let idx = 0; idx < blocks.length; idx++) {
                 let line = blocks[idx];
-                // Normalize whitespace
-                line = line
-                    .replace(/\t+/g, " ")
-                    .replace(/\s{2,}/g, " ")
-                    .trim();
-                // If this is the start of a new numbered question
                 if (/^\d+\./.test(line)) {
-                    // Save previous question if present
+                    // Save previous question
                     if (Object.keys(questionData).length) {
                         questionData.options = options;
+                        // attach images if any
                         if (imagesByIndex[idx - 1])
                             questionData.images = imagesByIndex[idx - 1];
                         value.push(questionData);
                         questionData = {};
                         options = [];
                     }
-                    // Extract and remove any inline Answer or Explanation from the same line
-                    const inlineAnswerMatch = line.match(/Answer:\s*([A-D])(?:\.\s*(.*))?/i);
-                    if (inlineAnswerMatch) {
-                        // keep the answer text; if it contains option text, use it, else use the letter
-                        questionData.answer = inlineAnswerMatch[2]
-                            ? inlineAnswerMatch[2].trim()
-                            : inlineAnswerMatch[1].toUpperCase();
-                        line = line.replace(/Answer:\s*([A-D])(?:\.\s*(.*))?/i, "").trim();
-                    }
-                    const inlineExplMatch = line.match(/Explanation:\s*(.*)$/i);
-                    if (inlineExplMatch) {
-                        questionData.explanation = inlineExplMatch[1].trim();
-                        line = line.replace(/Explanation:\s*(.*)$/i, "").trim();
-                    }
-                    // Extract bracketed image URL if present in same line
-                    const bracketMatch = line.match(BRACKET_URL_REGEX);
-                    const bracketUrl = bracketMatch ? bracketMatch[1].trim() : null;
-                    if (bracketUrl)
-                        line = line.replace(BRACKET_URL_REGEX, "").trim();
-                    // Detect inline options in the same line (A. ... B. ... C. ... D.)
-                    const aIdx = line.search(/\bA\./);
-                    const hasInlineOptions = aIdx > -1 && /\bB\./.test(line);
-                    if (hasInlineOptions) {
-                        // Stem is text before 'A.'
-                        const stem = line
-                            .slice(0, aIdx)
-                            .replace(/^\d+\.\s*/, "")
-                            .trim();
-                        questionData = { question: stem };
-                        // Options portion
-                        const optPart = line.slice(aIdx);
-                        const parts = optPart.split(/(?=[A-D]\.)/).filter(Boolean);
-                        options = parts.map((p) => p.replace(/^[A-D]\.\s*/, "").trim());
-                        // If we detected inline answer earlier, ensure it's present
-                        if (questionData.answer) {
-                            // nothing to do
-                        }
-                        if (bracketUrl)
-                            questionData.images = [bracketUrl];
-                        // Do not push yet; behavior keeps consistent with multi-line format
-                    }
-                    else {
-                        // No inline options — treat whole line as stem (question text)
-                        const stem = line.replace(/^\d+\.\s*/, "").trim();
-                        questionData = { question: stem };
-                        if (bracketUrl)
-                            questionData.images = [bracketUrl];
+                    // Extract bracketed image URL if present
+                    const match = line.match(BRACKET_URL_REGEX);
+                    const url = match ? match[1].trim() : null;
+                    line = line.replace(BRACKET_URL_REGEX, "").trim();
+                    questionData = { question: line };
+                    if (url) {
+                        questionData.images = [url];
                     }
                 }
                 else if (/^[A-D]\./.test(line)) {
-                    // Option line
-                    options.push(line.replace(/^[A-D]\./, "").trim());
+                    options.push(line.replace(/^[A-D]\./, ""));
                 }
-                else if (/^Answer:\s*/.test(line)) {
-                    // Answer on its own line; could be 'Answer: A' or 'Answer: A. option text'
-                    const m = line.match(/Answer:\s*([A-D])(?:\.\s*(.*))?/i);
-                    if (m) {
-                        questionData.answer = m[2] ? m[2].trim() : m[1].toUpperCase();
-                    }
-                    else {
-                        questionData.answer = line.replace(/^Answer:\s*/i, "").trim();
-                    }
+                else if (line.startsWith("Answer:")) {
+                    questionData.answer = line.replace("Answer:", "").trim();
                 }
-                else if (/^Explanation:\s*/.test(line)) {
-                    questionData.explanation = line
-                        .replace(/^Explanation:\s*/i, "")
-                        .trim();
+                else if (line.startsWith("Explanation:")) {
+                    questionData.explanation = line.replace("Explanation:", "").trim();
                 }
                 else {
-                    // Continuation of question stem (multi-line stem) — append if no options yet
+                    // append to question if no options yet
                     if (questionData && !questionData.options) {
-                        // also strip bracketed image urls if present
+                        // Also extract bracketed image URL from continuation lines
                         const match = line.match(BRACKET_URL_REGEX);
                         const url = match ? match[1].trim() : null;
                         line = line.replace(BRACKET_URL_REGEX, "").trim();
@@ -221,12 +157,9 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 }
             }
             if (Object.keys(questionData).length) {
-                // If options were parsed inline, ensure options array is set
-                if (!questionData.options)
-                    questionData.options = options;
-                // Attach images that were nearby (if none already attached)
+                questionData.options = options;
                 const lastIdx = blocks.length - 1;
-                if (!questionData.images && imagesByIndex[lastIdx])
+                if (imagesByIndex[lastIdx])
                     questionData.images = imagesByIndex[lastIdx];
                 value.push(questionData);
             }
