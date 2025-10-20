@@ -58,16 +58,26 @@ export const createSubjectExam = async (
         { path: uploadedPath },
         { includeEmbeddedStyleMap: true }
       );
-      const html = result.value || "";
+      let html = result.value || "";
+      // Remove all bullet/numbered lists from HTML
+      html = html.replace(/<(ul|ol)[^>]*>[\s\S]*?<\/\1>/gi, "");
+      // Remove <li> tags (if any remain)
+      html = html.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "$1");
+      // Remove common bullet characters from text (•, ◦, etc.)
+      html = html.replace(/[•◦‣▪–—]/g, "");
+
       const $ = cheerio.load(html);
 
       // split by paragraphs and headings to get question blocks
       const blocks: string[] = [];
-      const elems: any[] = $("p, h1, h2, h3, li").toArray();
+      const elems: any[] = $("p, h1, h2, h3").toArray();
       for (const el of elems as any[]) {
-        const text = $(el as any)
+        let text = $(el as any)
           .text()
           .trim();
+        // Remove leading numbering (e.g., "1. ", "2) ", "(a) ", "a. ")
+        text = text.replace(/^\s*\d+[\.|\)]\s*/g, "");
+        text = text.replace(/^\s*[a-zA-Z][\.|\)]\s*/g, "");
         if (text) blocks.push(text);
       }
 

@@ -53,15 +53,24 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         if (ext === ".doc" || ext === ".docx") {
             // Convert Word docx to HTML to preserve images and markup
             const result = yield mammoth_1.default.convertToHtml({ path: uploadedPath }, { includeEmbeddedStyleMap: true });
-            const html = result.value || "";
+            let html = result.value || "";
+            // Remove all bullet/numbered lists from HTML
+            html = html.replace(/<(ul|ol)[^>]*>[\s\S]*?<\/\1>/gi, "");
+            // Remove <li> tags (if any remain)
+            html = html.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "$1");
+            // Remove common bullet characters from text (•, ◦, etc.)
+            html = html.replace(/[•◦‣▪–—]/g, "");
             const $ = cheerio_1.default.load(html);
             // split by paragraphs and headings to get question blocks
             const blocks = [];
-            const elems = $("p, h1, h2, h3, li").toArray();
+            const elems = $("p, h1, h2, h3").toArray();
             for (const el of elems) {
-                const text = $(el)
+                let text = $(el)
                     .text()
                     .trim();
+                // Remove leading numbering (e.g., "1. ", "2) ", "(a) ", "a. ")
+                text = text.replace(/^\s*\d+[\.|\)]\s*/g, "");
+                text = text.replace(/^\s*[a-zA-Z][\.|\)]\s*/g, "");
                 if (text)
                     blocks.push(text);
             }
