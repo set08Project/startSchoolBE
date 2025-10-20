@@ -48,46 +48,84 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
             const { value: rawText } = yield mammoth_1.default.extractRawText({
                 path: uploadedPath,
             });
-            const lines = rawText
-                .split("\n")
+            // Clean rawText: remove common bullet characters and normalize numbering
+            let cleaned = rawText || "";
+            // remove bullet characters
+            cleaned = cleaned.replace(/[•◦‣▪–—]/g, " ");
+            // normalize multiple spaces and tabs
+            cleaned = cleaned.replace(/\t+/g, " ").replace(/ {2,}/g, " ");
+            // Split into non-empty lines
+            const rawLines = cleaned
+                .split(/\r?\n/)
                 .map((l) => l.trim())
                 .filter((l) => l);
             let questionData = {};
             let options = [];
             const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
-            for (const lineOrig of lines) {
+            for (const lineOrig of rawLines) {
                 let line = lineOrig;
-                if (/^\d+\./.test(line)) {
+                // Remove leading numbering like "1.", "2)", "(a)" etc for easier parsing
+                line = line.replace(/^\s*\(?\d+\)?[\.|\)]\s*/g, "");
+                line = line.replace(/^\s*\(?[a-zA-Z]\)?[\.|\)]\s*/g, "");
+                // Normalize whitespace
+                line = line.replace(/\s{2,}/g, " ").trim();
+                // Check for start of a new question
+                if (/^\d+\./.test(lineOrig) || /^\d+\)/.test(lineOrig)) {
+                    // save previous
                     if (Object.keys(questionData).length) {
                         questionData.options = options;
                         value.push(questionData);
                         questionData = {};
                         options = [];
                     }
-                    // Extract bracketed image URL if present
+                    // Extract inline bracketed URL
                     const match = line.match(BRACKET_URL_REGEX);
                     const url = match ? match[1].trim() : null;
-                    line = line.replace(BRACKET_URL_REGEX, "").trim();
-                    questionData = { question: line };
-                    if (url) {
+                    if (url)
+                        line = line.replace(BRACKET_URL_REGEX, "").trim();
+                    // detect inline options on the same line (A. ... B. ...)
+                    const aIdx = line.search(/\bA\./i);
+                    const hasInlineOptions = aIdx > -1 && /\bB\./i.test(line);
+                    if (hasInlineOptions) {
+                        const stem = line.slice(0, aIdx).trim();
+                        questionData = { question: stem };
+                        const optPart = line.slice(aIdx);
+                        const parts = optPart
+                            .split(/(?=[A-D]\.)/i)
+                            .filter(Boolean);
+                        options = parts.map((p) => p.replace(/^[A-D]\.|^[a-d]\./i, "").trim());
+                    }
+                    else {
+                        questionData = { question: line };
+                    }
+                    if (url)
                         questionData.images = [url];
+                }
+                else if (/^[A-D]\./i.test(line)) {
+                    // option line
+                    options.push(line.replace(/^[A-D]\./i, "").trim());
+                }
+                else if (/^Answer:\s*/i.test(line)) {
+                    const m = line.match(/^Answer:\s*([A-D])(?:\.\s*(.*))?/i);
+                    if (m) {
+                        questionData.answer = m[2] ? m[2].trim() : m[1].toUpperCase();
+                    }
+                    else {
+                        questionData.answer = line.replace(/^Answer:\s*/i, "").trim();
                     }
                 }
-                else if (/^[A-D]\./.test(line)) {
-                    options.push(line.replace(/^[A-D]\./, ""));
-                }
-                else if (line.startsWith("Answer:")) {
-                    questionData.answer = line.replace("Answer:", "").trim();
-                }
-                else if (line.startsWith("Explanation:")) {
-                    questionData.explanation = line.replace("Explanation:", "").trim();
+                else if (/^Explanation:\s*/i.test(line)) {
+                    questionData.explanation = line
+                        .replace(/^Explanation:\s*/i, "")
+                        .trim();
                 }
                 else {
+                    // continuation of stem
                     if (questionData && !questionData.options) {
-                        // Also extract bracketed image URL from continuation lines
                         const match = line.match(BRACKET_URL_REGEX);
                         const url = match ? match[1].trim() : null;
-                        line = line.replace(BRACKET_URL_REGEX, "").trim();
+                        if (url)
+                            line = line.replace(BRACKET_URL_REGEX, "").trim();
                         questionData.question = `${questionData.question} ${line}`.trim();
                         if (url) {
                             if (!questionData.images)
@@ -98,7 +136,8 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 }
             }
             if (Object.keys(questionData).length) {
-                questionData.options = options;
+                if (!questionData.options)
+                    questionData.options = options;
                 value.push(questionData);
             }
         }
