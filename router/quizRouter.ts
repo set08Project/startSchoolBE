@@ -34,7 +34,7 @@ router
 
 router
   .route("/create-subject-quiz-file/:classID/:subjectID")
-  .post(createSubjectQuizFromFile);
+  .post(fileUploads, createSubjectQuizFromFile);
 
 router.route("/view-subject-quiz/:subjectID").get(readSubjectQuiz);
 
