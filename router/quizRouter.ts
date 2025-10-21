@@ -11,6 +11,7 @@ import {
   createSubjectExam,
   readSubjectExamination,
   startSubjectExamination,
+  createSubjectQuizFromFile,
 } from "../controller/quizController";
 import { fileUploads } from "../utils/multer";
 
@@ -18,18 +19,22 @@ const router: Router = Router();
 
 // examination
 // routercreate-subject-quiz
-  router
-    .route("/create-subject-examination/:classID/:subjectID")
-    .post(fileUploads, createSubjectExam);
+router
+  .route("/create-subject-examination/:classID/:subjectID")
+  .post(fileUploads, createSubjectExam);
 
-  router.route("/start-subject-exam/:examID/").patch(startSubjectExamination);
-  router.route("/view-subject-exam/:subjectID").get(readSubjectExamination);
+router.route("/start-subject-exam/:examID/").patch(startSubjectExamination);
+router.route("/view-subject-exam/:subjectID").get(readSubjectExamination);
 
 // quiz
 
 router
   .route("/create-subject-quiz/:classID/:subjectID")
   .post(createSubjectQuiz);
+
+router
+  .route("/create-subject-quiz-file/:classID/:subjectID")
+  .post(createSubjectQuizFromFile);
 
 router.route("/view-subject-quiz/:subjectID").get(readSubjectQuiz);
 

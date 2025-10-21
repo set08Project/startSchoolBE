@@ -11,6 +11,7 @@ import lodash from "lodash";
 import schoolModel from "../model/schoolModel";
 import fs from "node:fs";
 import path from "node:path";
+import mammoth from "mammoth";
 
 // Examination
 export const createSubjectExam = async (
@@ -272,6 +273,173 @@ export const startSubjectExamination = async (
 };
 
 // Quiz
+
+export const createSubjectQuizFromFile = async (
+  req: any,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID, subjectID } = req.params;
+    const { instruction, duration, mark } = req.body;
+    let filePath = path.join(__dirname, "../uploads/quizzes");
+
+    const classRoom = await classroomModel.findById(classID);
+    const checkForSubject = await subjectModel.findById(subjectID);
+    const findTeacher = await staffModel.findById(classRoom?.teacherID);
+    const findSubjectTeacher = await staffModel.findById(
+      checkForSubject?.teacherID
+    );
+    const school = await schoolModel.findById(findTeacher?.schoolIDs);
+
+    const uploadedPath = req?.file?.path;
+    if (!uploadedPath) {
+      return res.status(400).json({
+        message: "No upload file provided",
+        status: 400,
+      });
+    }
+
+    const originalName = req?.file?.originalname || uploadedPath;
+    const ext = path.extname(originalName).toLowerCase();
+
+    let value: any[] = [];
+
+    if (ext === ".doc" || ext === ".docx") {
+      const { value: rawText } = await mammoth.extractRawText({
+        path: uploadedPath,
+      });
+      const lines = rawText
+        .split("\n")
+        .map((l: string) => l.trim())
+        .filter((l: string) => l);
+
+      let questionData: any = {};
+      let options: string[] = [];
+
+      const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+      for (const lineOrig of lines) {
+        let line = lineOrig;
+        if (/^\d+\./.test(line)) {
+          if (Object.keys(questionData).length) {
+            questionData.options = options;
+            value.push(questionData);
+            questionData = {};
+            options = [];
+          }
+          // Extract bracketed image URL if present
+          const match = line.match(BRACKET_URL_REGEX);
+          const url = match ? match[1].trim() : null;
+          line = line.replace(BRACKET_URL_REGEX, "").trim();
+          questionData = { question: line };
+          if (url) {
+            questionData.images = [url];
+          }
+        } else if (/^[A-D]\./.test(line)) {
+          options.push(line.replace(/^[A-D]\./, "").trim());
+        } else if (line.startsWith("Answer:")) {
+          questionData.answer = line.replace("Answer:", "").trim();
+        } else if (line.startsWith("Explanation:")) {
+          questionData.explanation = line.replace("Explanation:", "").trim();
+        } else {
+          if (questionData && !questionData.options) {
+            // Also extract bracketed image URL from continuation lines
+            const match = line.match(BRACKET_URL_REGEX);
+            const url = match ? match[1].trim() : null;
+            line = line.replace(BRACKET_URL_REGEX, "").trim();
+            questionData.question = `${questionData.question} ${line}`.trim();
+            if (url) {
+              if (!questionData.images) questionData.images = [];
+              questionData.images.push(url);
+            }
+          }
+        }
+      }
+
+      if (Object.keys(questionData).length) {
+        questionData.options = options;
+        value.push(questionData);
+      }
+    } else if (ext === ".csv") {
+      const data = await csv().fromFile(uploadedPath);
+      for (const i of data) {
+        const opts = i.options ? i.options.split(";;") : [];
+        const read = {
+          question:
+            i.Question || i.question || i.questionText || i.questionTitle,
+          options: opts,
+          answer: i.Answer || i.answer,
+          explanation: i.Explanation || i.explanation,
+        };
+        value.push(read);
+      }
+    } else {
+      return res.status(400).json({
+        message: "Invalid file format. Please upload a CSV, DOC, or DOCX file",
+        status: 400,
+      });
+    }
+
+    if (checkForSubject) {
+      const quizes = await quizModel.create({
+        subjectTitle: checkForSubject?.subjectTitle,
+        subjectID: checkForSubject?._id,
+        session: school?.presentSession,
+        term: school?.presentTerm,
+        quiz: {
+          instruction: { duration, mark, instruction },
+          question: value,
+        },
+        totalQuestions: value?.length,
+        status: "quiz",
+        startExam: false,
+      });
+
+      checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+      checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+      checkForSubject?.save();
+
+      findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findTeacher?.save();
+
+      findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+      findSubjectTeacher?.save();
+
+      // Clean up uploaded file
+      const deleteFilesInFolder = (folderPath: any) => {
+        if (fs.existsSync(folderPath)) {
+          const files = fs.readdirSync(folderPath);
+          files.forEach((file) => {
+            const filePath = path.join(folderPath, file);
+            fs.unlinkSync(filePath);
+          });
+        }
+      };
+
+      const x = setTimeout(async () => {
+        await deleteFilesInFolder(filePath);
+        clearTimeout(x);
+      }, 15000);
+
+      return res.status(201).json({
+        message: "quiz entry successfully created from file",
+        data: quizes,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Subject doesn't exist for this class",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error creating class subject quiz from file",
+      status: 404,
+      error: error,
+      data: error?.message,
+    });
+  }
+};
 
 export const createSubjectQuiz = async (
   req: Request,
