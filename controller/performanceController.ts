@@ -765,3 +765,96 @@ export const readOneSubjectMidTestResultPreformance = async (
     });
   }
 };
+
+export const deletePerformance = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { performanceID } = req.params;
+
+    if (!performanceID) {
+      return res
+        .status(400)
+        .json({ message: "performanceID is required", status: 400 });
+    }
+
+    const perf: any = await performanceModel.findById(performanceID);
+
+    if (!perf) {
+      return res
+        .status(404)
+        .json({ message: "Performance not found", status: 404 });
+    }
+
+    const studentID = perf.student;
+    const quizID = perf.quizID;
+
+    // Delete the performance document
+    await performanceModel.findByIdAndDelete(performanceID);
+
+    // Remove references from possible quiz/exam/midTest entries
+    await quizModel.updateMany(
+      { performance: performanceID },
+      { $pull: { performance: performanceID } }
+    );
+    await examinationModel.updateMany(
+      { performance: performanceID },
+      { $pull: { performance: performanceID } }
+    );
+    await midTestModel.updateMany(
+      { performance: performanceID },
+      { $pull: { performance: performanceID } }
+    );
+
+    // Remove from subject and student
+    await subjectModel.updateMany(
+      { performance: performanceID },
+      { $pull: { performance: performanceID } }
+    );
+    await studentModel.updateMany(
+      { performance: performanceID },
+      { $pull: { performance: performanceID } }
+    );
+
+    // Recalculate student's totalPerformance
+    if (studentID) {
+      const student = await studentModel
+        .findById(studentID)
+        .populate({ path: "performance" });
+      if (student) {
+        const ratings: number[] = [];
+        student.performance?.forEach((el: any) => {
+          if (
+            typeof el.performanceRating === "number" &&
+            !isNaN(el.performanceRating)
+          ) {
+            ratings.push(el.performanceRating);
+          }
+        });
+
+        const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
+        const count = ratings.length;
+        const avg = count > 0 ? totalSum / count : 0;
+
+        await studentModel.findByIdAndUpdate(
+          studentID,
+          { totalPerformance: avg },
+          { new: true }
+        );
+      }
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Performance deleted successfully", status: 200 });
+  } catch (error: any) {
+    return res
+      .status(500)
+      .json({
+        message: "Error deleting performance",
+        data: error.message,
+        status: 500,
+      });
+  }
+};

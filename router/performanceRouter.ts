@@ -3,6 +3,7 @@ import {
   createExamPerformance,
   createMidTestPerformance,
   createQuizPerformance,
+  deletePerformance,
   readExamResult,
   readMidTestResult,
   readOneSubjectExamResult,
@@ -81,5 +82,8 @@ router
   .get(readStudentMidTestResult);
 
 router.route("/view-mid-test-performance/:quizID").get(readMidTestResult);
+
+// delete performance
+router.route("/delete-performance/:performanceID").delete(deletePerformance);
 
 export default router;

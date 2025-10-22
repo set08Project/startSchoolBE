@@ -47,4 +47,6 @@ router
     .route("/view-student-mid-test-performance/:studentID")
     .get(performanceController_1.readStudentMidTestResult);
 router.route("/view-mid-test-performance/:quizID").get(performanceController_1.readMidTestResult);
+// delete performance
+router.route("/delete-performance/:performanceID").delete(performanceController_1.deletePerformance);
 exports.default = router;

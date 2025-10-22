@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readOneSubjectMidTestResultPreformance = exports.readMidTestResult = exports.readStudentMidTestResult = exports.readOneSubjectMidTestResult = exports.readExamResult = exports.readStudentExamResult = exports.readOneSubjectExamResult = exports.readSubjectExamResult = exports.readSubjectMidTestResult = exports.createMidTestPerformance = exports.createExamPerformance = exports.readQuizResult = exports.readStudentQuizResult = exports.readOneSubjectQuizResult = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
+exports.deletePerformance = exports.readOneSubjectMidTestResultPreformance = exports.readMidTestResult = exports.readStudentMidTestResult = exports.readOneSubjectMidTestResult = exports.readExamResult = exports.readStudentExamResult = exports.readOneSubjectExamResult = exports.readSubjectExamResult = exports.readSubjectMidTestResult = exports.createMidTestPerformance = exports.createExamPerformance = exports.readQuizResult = exports.readStudentQuizResult = exports.readOneSubjectQuizResult = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
 const mongoose_1 = require("mongoose");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
@@ -626,3 +626,63 @@ const readOneSubjectMidTestResultPreformance = (req, res) => __awaiter(void 0, v
     }
 });
 exports.readOneSubjectMidTestResultPreformance = readOneSubjectMidTestResultPreformance;
+const deletePerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { performanceID } = req.params;
+        if (!performanceID) {
+            return res
+                .status(400)
+                .json({ message: "performanceID is required", status: 400 });
+        }
+        const perf = yield performanceModel_1.default.findById(performanceID);
+        if (!perf) {
+            return res
+                .status(404)
+                .json({ message: "Performance not found", status: 404 });
+        }
+        const studentID = perf.student;
+        const quizID = perf.quizID;
+        // Delete the performance document
+        yield performanceModel_1.default.findByIdAndDelete(performanceID);
+        // Remove references from possible quiz/exam/midTest entries
+        yield quizModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        yield examinationModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        yield midTestModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        // Remove from subject and student
+        yield subjectModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        yield studentModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        // Recalculate student's totalPerformance
+        if (studentID) {
+            const student = yield studentModel_1.default
+                .findById(studentID)
+                .populate({ path: "performance" });
+            if (student) {
+                const ratings = [];
+                (_a = student.performance) === null || _a === void 0 ? void 0 : _a.forEach((el) => {
+                    if (typeof el.performanceRating === "number" &&
+                        !isNaN(el.performanceRating)) {
+                        ratings.push(el.performanceRating);
+                    }
+                });
+                const totalSum = ratings.reduce((a, b) => a + b, 0);
+                const count = ratings.length;
+                const avg = count > 0 ? totalSum / count : 0;
+                yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
+            }
+        }
+        return res
+            .status(200)
+            .json({ message: "Performance deleted successfully", status: 200 });
+    }
+    catch (error) {
+        return res
+            .status(500)
+            .json({
+            message: "Error deleting performance",
+            data: error.message,
+            status: 500,
+        });
+    }
+});
+exports.deletePerformance = deletePerformance;
