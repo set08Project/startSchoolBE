@@ -22,17 +22,37 @@ export const createQuizPerformance = async (
       status,
     } = req.body;
 
-    const studentInfo: any = await studentModel
-      .findById(studentID)
-      .populate({ path: "performance" });
+    const studentInfo: any = await studentModel.findById(studentID);
+
+    if (!studentInfo) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: 404,
+      });
+    }
+
+    // Initialize performance array if it doesn't exist
+    if (!studentInfo.performance) {
+      studentInfo.performance = [];
+    }
 
     const quizData: any = await quizModel.findById(quizID);
 
     const subject = await subjectModel.findById(subjectID);
 
+    if (!subject) {
+      return res.status(404).json({
+        message: "Subject not found",
+        status: 404,
+      });
+    }
+
     if (quizData) {
       // determine attempt number: count existing performance entries for this student and this quiz
-      const existingAttempts = await performanceModel.countDocuments({ student: studentID, quizID });
+      const existingAttempts = await performanceModel.countDocuments({
+        student: studentID,
+        quizID,
+      });
       const attemptNumber = existingAttempts + 1;
 
       const quizes = await performanceModel.create({
@@ -56,14 +76,26 @@ export const createQuizPerformance = async (
         student: studentID,
       });
 
-  quizData?.performance?.push(new Types.ObjectId(quizes._id));
-  await quizData?.save();
+      if (!quizData.performance) {
+        quizData.performance = [];
+      }
+      quizData.performance.push(new Types.ObjectId(quizes._id));
+      await quizData.save();
 
-  studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
-  await studentInfo?.save();
+      studentInfo.performance.push(new Types.ObjectId(quizes._id));
 
-  subject?.performance?.push(new Types.ObjectId(quizes._id));
-  await subject?.save();
+      await studentModel.findByIdAndUpdate(
+        studentID,
+        { $push: { performance: new Types.ObjectId(quizes._id) } },
+        { new: true }
+      );
+
+      if (!subject.performance) {
+        subject.performance = [];
+      }
+
+      subject.performance.push(new Types.ObjectId(quizes._id));
+      await subject?.save();
 
       // Recalculate student's totalPerformance using only valid numeric ratings
       const getStudent = await studentModel.findById(studentID).populate({
@@ -72,7 +104,10 @@ export const createQuizPerformance = async (
 
       const ratings: number[] = [];
       getStudent?.performance?.forEach((el: any) => {
-        if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+        if (
+          typeof el.performanceRating === "number" &&
+          !isNaN(el.performanceRating)
+        ) {
           ratings.push(el.performanceRating);
         }
       });
@@ -267,7 +302,10 @@ export const createExamPerformance = async (
     const subject = await subjectModel.findById(subjectID);
 
     if (quizData) {
-      const existingAttempts = await performanceModel.countDocuments({ student: studentID, quizID });
+      const existingAttempts = await performanceModel.countDocuments({
+        student: studentID,
+        quizID,
+      });
       const attemptNumber = existingAttempts + 1;
 
       const quizes = await performanceModel.create({
@@ -307,7 +345,10 @@ export const createExamPerformance = async (
 
       const ratings: number[] = [];
       getStudent?.performance?.forEach((el: any) => {
-        if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+        if (
+          typeof el.performanceRating === "number" &&
+          !isNaN(el.performanceRating)
+        ) {
           ratings.push(el.performanceRating);
         }
       });
@@ -368,7 +409,10 @@ export const createMidTestPerformance = async (
     const subject = await subjectModel.findById(subjectID);
 
     if (quizData) {
-      const existingAttempts = await performanceModel.countDocuments({ student: studentID, quizID });
+      const existingAttempts = await performanceModel.countDocuments({
+        student: studentID,
+        quizID,
+      });
       const attemptNumber = existingAttempts + 1;
 
       const quizes = await performanceModel.create({
@@ -396,8 +440,14 @@ export const createMidTestPerformance = async (
       quizData?.performance?.push(new Types.ObjectId(quizes._id));
       await quizData?.save();
 
-      studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
-      await studentInfo?.save();
+      // studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
+      // await studentInfo?.save();
+
+      await studentModel.findByIdAndUpdate(
+        studentID,
+        { $push: { performance: new Types.ObjectId(quizes._id) } },
+        { new: true }
+      );
 
       subject?.performance?.push(new Types.ObjectId(quizes._id));
       await subject?.save();
@@ -409,7 +459,10 @@ export const createMidTestPerformance = async (
 
       const ratings: number[] = [];
       getStudent?.performance?.forEach((el: any) => {
-        if (typeof el.performanceRating === "number" && !isNaN(el.performanceRating)) {
+        if (
+          typeof el.performanceRating === "number" &&
+          !isNaN(el.performanceRating)
+        ) {
           ratings.push(el.performanceRating);
         }
       });
