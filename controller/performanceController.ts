@@ -22,122 +22,123 @@ export const createQuizPerformance = async (
       status,
     } = req.body;
 
-    const studentInfo: any = await studentModel.findById(studentID);
-
-    if (!studentInfo) {
-      return res.status(404).json({
-        message: "Student not found",
-        status: 404,
+    if (!studentID || !quizID || !subjectID) {
+      return res.status(400).json({
+        message: "studentID, quizID and subjectID are required",
+        status: 400,
       });
     }
 
-    // Initialize performance array if it doesn't exist
-    if (!studentInfo.performance) {
-      studentInfo.performance = [];
+    const studentInfo: any = await studentModel.findById(studentID);
+    if (!studentInfo) {
+      return res
+        .status(404)
+        .json({ message: "Student not found", status: 404 });
     }
 
-    const quizData: any = await quizModel.findById(quizID);
+    const quizData: any = await examinationModel.findById(quizID);
+    if (!quizData) {
+      return res.status(404).json({ message: "Exam not found", status: 404 });
+    }
 
     const subject = await subjectModel.findById(subjectID);
-
     if (!subject) {
-      return res.status(404).json({
-        message: "Subject not found",
-        status: 404,
-      });
+      return res
+        .status(404)
+        .json({ message: "Subject not found", status: 404 });
     }
 
-    if (quizData) {
-      // determine attempt number: count existing performance entries for this student and this quiz
-      const existingAttempts = await performanceModel.countDocuments({
-        student: studentID,
-        quizID,
-      });
-      const attemptNumber = existingAttempts + 1;
+    // compute performanceRating safely
+    const questionCount = Array.isArray(quizData?.quiz?.question)
+      ? quizData.quiz.question.length
+      : typeof quizData?.quiz === "number"
+      ? quizData.quiz
+      : 0;
 
-      const quizes = await performanceModel.create({
-        remark,
-        subjectTitle: quizData?.subjectTitle,
-        studentScore,
-        studentGrade,
-        totalQuestions,
-        markPerQuestion,
-        quizDone: true,
-        status,
-        performanceRating: parseInt(
-          ((studentScore / quizData?.quiz[1]?.question.length) * 100).toFixed(2)
-        ),
-        attemptNumber,
-        className: studentInfo?.classAssigned,
-        quizID: quizID,
-        studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
-        studentAvatar: studentInfo.avatar,
-        subjectID: subject?._id,
-        student: studentID,
-      });
+    const perfRating =
+      questionCount > 0 && typeof studentScore === "number"
+        ? Number(((studentScore / questionCount) * 100).toFixed(2))
+        : 0;
 
-      if (!quizData.performance) {
-        quizData.performance = [];
+    // count existing attempts for this student and this quiz
+    const existingAttempts = await performanceModel.countDocuments({
+      student: studentID,
+      quizID,
+    });
+    const attemptNumber = existingAttempts + 1;
+
+    // create performance document
+    const performanceDoc: any = await performanceModel.create({
+      remark,
+      subjectTitle: quizData?.subjectTitle,
+      studentScore,
+      studentGrade,
+      totalQuestions,
+      markPerQuestion,
+      quizDone: true,
+      status,
+      performanceRating: perfRating,
+      attemptNumber,
+      className: studentInfo?.classAssigned,
+      quizID: quizID,
+      studentName: `${studentInfo?.studentFirstName || ""} ${
+        studentInfo?.studentLastName || ""
+      }`.trim(),
+      studentAvatar: studentInfo?.avatar,
+      subjectID: subject._id,
+      student: studentID,
+    });
+
+    // push performance id to examination, student and subject safely
+    const perfId = new Types.ObjectId(performanceDoc._id);
+
+    const ensureAndPush = async (Model: any, id: any) => {
+      const doc: any = await Model.findById(id).select("performance");
+      if (!doc) return;
+      if (!Array.isArray(doc.performance)) {
+        // initialize to empty array if null or not an array
+        doc.performance = [];
       }
-      quizData.performance.push(new Types.ObjectId(quizes._id));
-      await quizData.save();
+      doc.performance.push(perfId);
+      await doc.save();
+    };
 
-      studentInfo.performance.push(new Types.ObjectId(quizes._id));
+    await Promise.all([
+      ensureAndPush(examinationModel, quizID),
+      ensureAndPush(studentModel, studentID),
+      ensureAndPush(subjectModel, subjectID),
+    ]);
 
-      await studentModel.findByIdAndUpdate(
-        studentID,
-        { $push: { performance: new Types.ObjectId(quizes._id) } },
-        { new: true }
-      );
+    // Recalculate student's totalPerformance from performanceModel (source of truth)
+    const performances = await performanceModel
+      .find({ student: studentID })
+      .select("performanceRating")
+      .lean();
 
-      if (!subject.performance) {
-        subject.performance = [];
-      }
+    const ratings: number[] = (performances || [])
+      .map((p: any) =>
+        typeof p.performanceRating === "number" && !isNaN(p.performanceRating)
+          ? p.performanceRating
+          : null
+      )
+      .filter((r: number | null): r is number => r !== null);
 
-      subject.performance.push(new Types.ObjectId(quizes._id));
-      await subject?.save();
+    const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
+    const count = ratings.length;
+    const avg = count > 0 ? totalSum / count : 0;
 
-      // Recalculate student's totalPerformance using only valid numeric ratings
-      const getStudent = await studentModel.findById(studentID).populate({
-        path: "performance",
-      });
+    await studentModel.findByIdAndUpdate(studentID, { totalPerformance: avg });
 
-      const ratings: number[] = [];
-      getStudent?.performance?.forEach((el: any) => {
-        if (
-          typeof el.performanceRating === "number" &&
-          !isNaN(el.performanceRating)
-        ) {
-          ratings.push(el.performanceRating);
-        }
-      });
-
-      const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
-      const count = ratings.length;
-      const avg = count > 0 ? totalSum / count : 0;
-
-      const record = await studentModel.findByIdAndUpdate(
-        studentID,
-        { totalPerformance: avg },
-        { new: true }
-      );
-
-      return res.status(201).json({
-        message: "quiz entry created successfully",
-        data: quizes,
-        status: 201,
-      });
-    } else {
-      return res.status(404).json({
-        message: "Subject doesn't exist for this class",
-        status: 404,
-      });
-    }
+    return res.status(201).json({
+      message: "exam performance created successfully",
+      data: performanceDoc,
+      status: 201,
+    });
   } catch (error: any) {
-    return res.status(404).json({
-      message: "Error creating class subject quiz",
-      status: 404,
-      data: error.message,
+    return res.status(500).json({
+      message: "Error creating exam performance",
+      status: 500,
+      data: error?.message,
     });
   }
 };
@@ -338,20 +339,24 @@ export const createExamPerformance = async (
       subject?.performance?.push(new Types.ObjectId(quizes._id));
       await subject?.save();
 
-      // Recalculate student's totalPerformance using only valid numeric ratings
-      const getStudent = await studentModel.findById(studentID).populate({
-        path: "performance",
-      });
+      const getStudent = await studentModel.findByIdAndUpdate(
+        studentID,
+        { $push: { performance: new Types.ObjectId(quizes._id) } },
+        { new: true }
+      );
 
       const ratings: number[] = [];
-      getStudent?.performance?.forEach((el: any) => {
-        if (
-          typeof el.performanceRating === "number" &&
-          !isNaN(el.performanceRating)
-        ) {
-          ratings.push(el.performanceRating);
-        }
-      });
+      // getStudent?.performance?.forEach((el: any) => {
+      //   if (
+      //     typeof el.performanceRating === "number" &&
+      //     !isNaN(el.performanceRating)
+      //   ) {
+      //     ratings.push(el.performanceRating);
+      //   }
+      // });
+
+      // getStudent?.performance.push(new Types.ObjectId(quizes._id));
+      // await getStudent?.save();
 
       const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
       const count = ratings.length;
