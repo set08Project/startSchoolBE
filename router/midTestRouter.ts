@@ -8,6 +8,7 @@ import {
   startSubjectMidTest,
   deleteMidTest,
   updateSubjectMidTest,
+  randomizeSubjectMidTest,
 } from "../controller/midTestController";
 
 const router: Router = Router();
@@ -17,6 +18,9 @@ router
   .route("/create-subject-mid-test/:classID/:subjectID")
   .post(fileUploads, createSubjectMidTest);
 
+router
+  .route("/randomize-subject-mid-test/:midTestID/")
+  .patch(randomizeSubjectMidTest);
 router.route("/start-subject-mid-test/:midTestID/").patch(startSubjectMidTest);
 router
   .route("/update-subject-mid-test/:midTestID/")

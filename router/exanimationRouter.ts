@@ -7,6 +7,7 @@ import {
   startSubjectExamination,
   readExamination,
   deleteExamination,
+  randomizeSubjectExamination,
 } from "../controller/examinationController";
 
 const router: Router = Router();
@@ -17,6 +18,9 @@ router
   .post(fileUploads, createSubjectExam);
 
 router.route("/start-subject-exam/:examID/").patch(startSubjectExamination);
+router
+  .route("/randomize-subject-exam/:examID/")
+  .patch(randomizeSubjectExamination);
 
 router.route("/view-subject-exam/:subjectID").get(readSubjectExamination);
 

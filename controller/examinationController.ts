@@ -394,6 +394,35 @@ export const readSubjectExamination = async (
   }
 };
 
+export const randomizeSubjectExamination = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { examID } = req.params;
+    const { started } = req.body;
+
+    const subject = await examinationModel.findByIdAndUpdate(
+      examID,
+      {
+        randomize: started,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "start randomize subject exam read successfully",
+      data: subject,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error reading subject exam",
+      status: 404,
+    });
+  }
+};
+
 export const startSubjectExamination = async (
   req: Request,
   res: Response

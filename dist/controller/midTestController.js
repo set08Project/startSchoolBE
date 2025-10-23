@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMidTest = exports.readMidTest = exports.updateSubjectMidTest = exports.startSubjectMidTest = exports.readSubjectMidTest = exports.createSubjectMidTest = void 0;
+exports.deleteMidTest = exports.readMidTest = exports.updateSubjectMidTest = exports.randomizeSubjectMidTest = exports.startSubjectMidTest = exports.readSubjectMidTest = exports.createSubjectMidTest = void 0;
 const midTestModel_1 = __importDefault(require("../model/midTestModel"));
 const lodash_1 = __importDefault(require("lodash"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
@@ -233,6 +233,27 @@ const startSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.startSubjectMidTest = startSubjectMidTest;
+const randomizeSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { midTestID } = req.params;
+        const { started } = req.body;
+        const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
+            randomize: started,
+        }, { new: true });
+        return res.status(201).json({
+            message: "start randomize subject mid test read successfully",
+            data: subject,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error reading subject mid test",
+            status: 404,
+        });
+    }
+});
+exports.randomizeSubjectMidTest = randomizeSubjectMidTest;
 const updateSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {

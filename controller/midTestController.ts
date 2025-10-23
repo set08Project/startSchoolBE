@@ -255,6 +255,35 @@ export const startSubjectMidTest = async (
   }
 };
 
+export const randomizeSubjectMidTest = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { midTestID } = req.params;
+    const { started } = req.body;
+
+    const subject = await midTestModel.findByIdAndUpdate(
+      midTestID,
+      {
+        randomize: started,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "start randomize subject mid test read successfully",
+      data: subject,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error reading subject mid test",
+      status: 404,
+    });
+  }
+};
+
 export const updateSubjectMidTest = async (
   req: Request,
   res: Response
