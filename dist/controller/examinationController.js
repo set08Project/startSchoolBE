@@ -420,9 +420,9 @@ const readExamination = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.readExamination = readExamination;
 const deleteExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { examID, subjectID, teacherID } = req.params;
+        const { examID, subjectID } = req.params;
         const quizSubject = yield subjectModel_1.default.findById(subjectID);
-        const quizTeacher = yield staffModel_1.default.findById(teacherID);
+        const quizTeacher = yield staffModel_1.default.findById(quizSubject === null || quizSubject === void 0 ? void 0 : quizSubject.teacherID);
         const quiz = yield examinationModel_1.default.findByIdAndDelete(examID);
         quizSubject.pull(new mongoose_1.Types.ObjectId(examID));
         quizSubject.save();

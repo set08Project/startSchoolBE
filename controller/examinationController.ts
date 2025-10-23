@@ -481,10 +481,11 @@ export const deleteExamination = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { examID, subjectID, teacherID } = req.params;
+    const { examID, subjectID } = req.params;
 
     const quizSubject: any = await subjectModel.findById(subjectID);
-    const quizTeacher: any = await staffModel.findById(teacherID);
+
+    const quizTeacher: any = await staffModel.findById(quizSubject?.teacherID);
 
     const quiz: any = await examinationModel.findByIdAndDelete(examID);
 

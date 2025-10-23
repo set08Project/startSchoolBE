@@ -346,11 +346,12 @@ export const deleteMidTest = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { midTestID, subjectID, teacherID } = req.params;
+    const { midTestID, subjectID } = req.params;
 
     const quizSubject: any = await subjectModel.findById(subjectID);
-    const quizTeacher: any = await staffModel.findById(teacherID);
+    const quizTeacher: any = await staffModel.findById(quizSubject?.teacherID);
 
+    console.log("quizTeacher", quizTeacher);
     await midTestModel.findByIdAndDelete(midTestID);
 
     if (quizSubject && Array.isArray(quizSubject.midTest)) {

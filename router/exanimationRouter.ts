@@ -26,8 +26,6 @@ router.route("/view-subject-exam/:subjectID").get(readSubjectExamination);
 
 router.route("/view-exam/:examID").get(readExamination);
 
-router
-  .route("/delete-exam/:teacherID/:subjectID/:examID")
-  .delete(deleteExamination);
+router.route("/delete-exam/:subjectID/:examID").delete(deleteExamination);
 
 export default router;

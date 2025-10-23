@@ -17,7 +17,5 @@ router
     .patch(midTestController_1.updateSubjectMidTest);
 router.route("/view-subject-mid-test/:subjectID").get(midTestController_1.readSubjectMidTest);
 router.route("/view-mid-test/:midTestID").get(midTestController_1.readMidTest);
-router
-    .route("/delete-mid-test/:teacherID/:subjectID/:midTestID")
-    .delete(midTestController_1.deleteMidTest);
+router.route("/delete-mid/:subjectID/:midTestID").delete(midTestController_1.deleteMidTest);
 exports.default = router;

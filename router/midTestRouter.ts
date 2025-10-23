@@ -21,6 +21,7 @@ router
 router
   .route("/randomize-subject-mid-test/:midTestID/")
   .patch(randomizeSubjectMidTest);
+  
 router.route("/start-subject-mid-test/:midTestID/").patch(startSubjectMidTest);
 router
   .route("/update-subject-mid-test/:midTestID/")
@@ -29,8 +30,7 @@ router
 router.route("/view-subject-mid-test/:subjectID").get(readSubjectMidTest);
 
 router.route("/view-mid-test/:midTestID").get(readMidTest);
-router
-  .route("/delete-mid-test/:teacherID/:subjectID/:midTestID")
-  .delete(deleteMidTest);
+
+router.route("/delete-mid/:subjectID/:midTestID").delete(deleteMidTest);
 
 export default router;
