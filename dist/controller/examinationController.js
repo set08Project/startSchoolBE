@@ -30,7 +30,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
     var _a, _b, _c;
     try {
         const { classID, subjectID } = req.params;
-        const { theory, instruction, duration, mark } = req.body;
+        const { theory, instruction, duration, mark, randomize } = req.body;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
         const classRoom = yield classroomModel_1.default.findById(classID);
         const checkForSubject = yield subjectModel_1.default.findById(subjectID);

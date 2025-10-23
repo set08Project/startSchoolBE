@@ -25,6 +25,10 @@ const examModel = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    randomize: {
+        type: Boolean,
+        default: false,
+    },
     totalQuestions: {
         type: Number,
     },

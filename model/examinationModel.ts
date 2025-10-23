@@ -8,7 +8,8 @@ interface iExam {
   session: string;
   term: string;
   totalQuestions: number;
-  startExam: false;
+  startExam: boolean;
+  randomize: boolean;
 
   subject: {};
   staff: {};
@@ -39,6 +40,10 @@ const examModel = new Schema<iExamData>(
       type: String,
     },
     startExam: {
+      type: Boolean,
+      default: false,
+    },
+    randomize: {
       type: Boolean,
       default: false,
     },
