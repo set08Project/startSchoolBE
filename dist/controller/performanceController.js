@@ -37,7 +37,7 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 .status(404)
                 .json({ message: "Student not found", status: 404 });
         }
-        const quizData = yield examinationModel_1.default.findById(quizID);
+        const quizData = yield quizModel_1.default.findById(quizID);
         if (!quizData) {
             return res.status(404).json({ message: "Exam not found", status: 404 });
         }
@@ -285,16 +285,6 @@ const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             yield (subject === null || subject === void 0 ? void 0 : subject.save());
             const getStudent = yield studentModel_1.default.findByIdAndUpdate(studentID, { $push: { performance: new mongoose_1.Types.ObjectId(quizes._id) } }, { new: true });
             const ratings = [];
-            // getStudent?.performance?.forEach((el: any) => {
-            //   if (
-            //     typeof el.performanceRating === "number" &&
-            //     !isNaN(el.performanceRating)
-            //   ) {
-            //     ratings.push(el.performanceRating);
-            //   }
-            // });
-            // getStudent?.performance.push(new Types.ObjectId(quizes._id));
-            // await getStudent?.save();
             const totalSum = ratings.reduce((a, b) => a + b, 0);
             const count = ratings.length;
             const avg = count > 0 ? totalSum / count : 0;

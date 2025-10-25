@@ -36,7 +36,8 @@ export const createQuizPerformance = async (
         .json({ message: "Student not found", status: 404 });
     }
 
-    const quizData: any = await examinationModel.findById(quizID);
+    const quizData: any = await quizModel.findById(quizID);
+
     if (!quizData) {
       return res.status(404).json({ message: "Exam not found", status: 404 });
     }
@@ -346,18 +347,6 @@ export const createExamPerformance = async (
       );
 
       const ratings: number[] = [];
-      // getStudent?.performance?.forEach((el: any) => {
-      //   if (
-      //     typeof el.performanceRating === "number" &&
-      //     !isNaN(el.performanceRating)
-      //   ) {
-      //     ratings.push(el.performanceRating);
-      //   }
-      // });
-
-      // getStudent?.performance.push(new Types.ObjectId(quizes._id));
-      // await getStudent?.save();
-
       const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
       const count = ratings.length;
       const avg = count > 0 ? totalSum / count : 0;

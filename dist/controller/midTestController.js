@@ -237,7 +237,6 @@ const randomizeSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, 
     try {
         const { midTestID } = req.params;
         const { started } = req.body;
-        console.log("read: S", started);
         const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
             randomize: started,
         }, { new: true });

@@ -12,6 +12,8 @@ import schoolModel from "../model/schoolModel";
 import fs from "node:fs";
 import path from "node:path";
 import mammoth from "mammoth";
+// import { Cheerio } from "cheerio";
+// import { uploadDataUri } from "../utils/streamifier";
 
 // Examination
 export const createSubjectExam = async (
@@ -210,6 +212,353 @@ export const createSubjectExam = async (
     });
   }
 };
+
+// export const createSubjectExam = async (
+//   req: any,
+//   res: Response
+// ): Promise<Response> => {
+//   try {
+//     const { classID, subjectID } = req.params;
+//     const { theory, instruction, duration, mark, randomize } = req.body;
+//     let filePath = path.join(__dirname, "../uploads/examination");
+
+//     const classRoom = await classroomModel.findById(classID);
+
+//     const checkForSubject = await subjectModel.findById(subjectID);
+
+//     // teacher assigned to the class
+//     const findTeacher = await staffModel.findById(classRoom?.teacherID);
+
+//     // teacher assigned specifically to the subject (teacherID stored on subject)
+//     const findSubjectTeacher = await staffModel.findById(
+//       checkForSubject?.teacherID
+//     );
+
+//     const school = await schoolModel.findById(findTeacher?.schoolIDs);
+
+//     // const { secure_url, public_id }: any = await streamUpload(req);
+
+//     const uploadedPath = req?.file?.path;
+//     if (!uploadedPath) {
+//       return res.status(400).json({
+//         message: "No upload file provided",
+//         status: 400,
+//       });
+//     }
+
+//     const originalName = req?.file?.originalname || uploadedPath;
+//     const ext = path.extname(originalName).toLowerCase();
+
+//     let value: any[] = [];
+
+//     if (ext === ".doc" || ext === ".docx") {
+//       // Convert Word docx to HTML to preserve images and markup
+//       const result = await mammoth.convertToHtml(
+//         { path: uploadedPath },
+//         { includeEmbeddedStyleMap: true }
+//       );
+//       const html = result.value || "";
+//       const $ = Cheerio.load(html);
+
+//       // split by paragraphs and headings to get question blocks
+//       const blocks: string[] = [];
+//       const elems: any[] = $("p, h1, h2, h3, li").toArray();
+//       for (const el of elems as any[]) {
+//         const text = $(el as any)
+//           .text()
+//           .trim();
+//         if (text) blocks.push(text);
+//       }
+
+//       // collect images mapped by their surrounding block index
+//       const imagesByIndex: Record<number, string[]> = {};
+//       const imgs: any[] = $("img").toArray();
+//       for (const imgEl of imgs as any[]) {
+//         const src = $(imgEl as any).attr("src");
+//         if (!src) continue;
+//         const parent = $(imgEl as any).closest("p, li, h1, h2, h3")[0] as any;
+//         let idx = -1;
+//         if (parent) {
+//           idx = (elems as any[]).indexOf(parent);
+//         }
+//         const key = idx >= 0 ? idx : blocks.length;
+//         imagesByIndex[key] = imagesByIndex[key] || [];
+//         imagesByIndex[key].push(src);
+//       }
+
+//       // If images are data URIs (embedded), upload them to Cloudinary so they
+//       // are visible and performant for students. Replace data URIs with hosted URLs.
+//       for (const k of Object.keys(imagesByIndex)) {
+//         const arr = imagesByIndex[Number(k)];
+//         const uploadedUrls: string[] = [];
+//         for (const src of arr) {
+//           try {
+//             if (typeof src === "string" && src.startsWith("data:")) {
+//               const uploadRes: any = await uploadDataUri(src, "exams");
+//               if (uploadRes && uploadRes.secure_url) {
+//                 uploadedUrls.push(uploadRes.secure_url);
+//               }
+//             } else if (typeof src === "string") {
+//               // not a data URI (likely a valid src already) — keep as-is
+//               uploadedUrls.push(src);
+//             }
+//           } catch (err) {
+//             // on failure, keep the original src so diagram isn't lost
+//             uploadedUrls.push(src);
+//           }
+//         }
+//         imagesByIndex[Number(k)] = uploadedUrls;
+//       }
+
+//       let questionData: any = {};
+//       let options: string[] = [];
+
+//       const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+//       for (let idx = 0; idx < blocks.length; idx++) {
+//         let line = blocks[idx];
+//         if (/^\d+\./.test(line)) {
+//           // Save previous question
+//           if (Object.keys(questionData).length) {
+//             questionData.options = options;
+//             // attach images if any
+//             if (imagesByIndex[idx - 1])
+//               questionData.images = imagesByIndex[idx - 1];
+//             value.push(questionData);
+//             questionData = {};
+//             options = [];
+//           }
+//           // Extract bracketed image URL if present
+//           const match = line.match(BRACKET_URL_REGEX);
+//           const url = match ? match[1].trim() : null;
+//           line = line.replace(BRACKET_URL_REGEX, "").trim();
+//           questionData = { question: line };
+//           if (url) {
+//             questionData.images = [url];
+//           }
+//         } else if (/^[A-D]\./.test(line)) {
+//           options.push(line.replace(/^[A-D]\./, ""));
+//         } else if (line.startsWith("Answer:")) {
+//           questionData.answer = line.replace("Answer:", "").trim();
+//         } else if (line.startsWith("Explanation:")) {
+//           questionData.explanation = line.replace("Explanation:", "").trim();
+//         } else {
+//           // append to question if no options yet
+//           if (questionData && !questionData.options) {
+//             // Also extract bracketed image URL from continuation lines
+//             const match = line.match(BRACKET_URL_REGEX);
+//             const url = match ? match[1].trim() : null;
+//             line = line.replace(BRACKET_URL_REGEX, "").trim();
+//             questionData.question = `${questionData.question} ${line}`.trim();
+//             if (url) {
+//               if (!questionData.images) questionData.images = [];
+//               questionData.images.push(url);
+//             }
+//           }
+//         }
+//       }
+
+//       if (Object.keys(questionData).length) {
+//         questionData.options = options;
+//         const lastIdx = blocks.length - 1;
+//         if (imagesByIndex[lastIdx])
+//           questionData.images = imagesByIndex[lastIdx];
+//         value.push(questionData);
+//       }
+//     } else {
+//       // treat as CSV
+//       const data = await csv().fromFile(uploadedPath);
+//       for (const i of data as any[]) {
+//         const opts = i.options ? i.options.split(";;") : [];
+//         const read = {
+//           question:
+//             i.Question ||
+//             i.question ||
+//             i.questionText ||
+//             i.questionTitle ||
+//             i.question,
+//           options: opts,
+//           answer: i.Answer || i.answer,
+//           explanation: i.Explanation || i.explanation,
+//         };
+//         value.push(read);
+//       }
+//     }
+
+//     let term = lodash.find(value, { term: school?.presentTerm });
+//     let session = lodash.find(value, { session: school?.presentSession });
+
+//     const deleteFilesInFolder = (folderPath: any) => {
+//       if (fs.existsSync(folderPath)) {
+//         const files = fs.readdirSync(folderPath);
+
+//         files.forEach((file) => {
+//           const filePath = path.join(folderPath, file);
+//           fs.unlinkSync(filePath);
+//         });
+
+//         console.log(
+//           `All files in the folder '${folderPath}' have been deleted.`
+//         );
+//       } else {
+//         console.log(`The folder '${folderPath}' does not exist.`);
+//       }
+//     };
+
+//     // checkForSubject;
+//     if (checkForSubject) {
+//       // if (term && session) {
+//       //   const quizes = await quizModel.findByIdAndUpdate(
+//       //     term?._id,
+//       //     {
+//       //       quiz: {
+//       //         instruction: { duration, mark, instruction },
+//       //         question: value,
+//       //       },
+//       //       totalQuestions: value?.length,
+//       //       startExam: false,
+//       //     },
+//       //     { new: true }
+//       //   );
+
+//       //   let filePath = path.join(__dirname, "uploads");
+
+//       //   const deleteFilesInFolder = (folderPath: any) => {
+//       //     if (fs.existsSync(folderPath)) {
+//       //       const files = fs.readdirSync(folderPath);
+
+//       //       files.forEach((file) => {
+//       //         const filePath = path.join(folderPath, file);
+//       //         fs.unlinkSync(filePath);
+//       //       });
+
+//       //       console.log(
+//       //         `All files in the folder '${folderPath}' have been deleted.`
+//       //       );
+//       //     } else {
+//       //       console.log(`The folder '${folderPath}' does not exist.`);
+//       //     }
+//       //   };
+
+//       //   deleteFilesInFolder(filePath);
+
+//       //   return res.status(201).json({
+//       //     message: "update exam entry successfully",
+//       //     data: quizes,
+//       //     status: 201,
+//       //   });
+//       // } else {
+//       //   const quizes = await quizModel.create({
+//       //     subjectTitle: checkForSubject?.subjectTitle,
+//       //     subjectID: checkForSubject?._id,
+//       //     session: school?.presentSession,
+//       //     term: school?.presentTerm,
+//       //     quiz: {
+//       //       instruction: { duration, mark, instruction },
+//       //       question: value,
+//       //     },
+//       //     totalQuestions: value?.length,
+//       //     status: "examination",
+//       //     startExam: false,
+//       //   });
+
+//       //   checkForSubject?.quiz.push(new Types.ObjectId(quizes._id));
+
+//       //   checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
+//       //   checkForSubject?.save();
+
+//       //   findTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+//       //   findTeacher?.save();
+
+//       //   findSubjectTeacher?.quiz.push(new Types.ObjectId(quizes._id));
+//       //   findSubjectTeacher?.save();
+
+//       //   let filePath = path.join(__dirname, "uploads");
+
+//       //   const deleteFilesInFolder = (folderPath: any) => {
+//       //     if (fs.existsSync(folderPath)) {
+//       //       const files = fs.readdirSync(folderPath);
+
+//       //       files.forEach((file) => {
+//       //         const filePath = path.join(folderPath, file);
+//       //         fs.unlinkSync(filePath);
+//       //       });
+
+//       //       console.log(
+//       //         `All files in the folder '${folderPath}' have been deleted.`
+//       //       );
+//       //     } else {
+//       //       console.log(`The folder '${folderPath}' does not exist.`);
+//       //     }
+//       //   };
+
+//       //   return res.status(201).json({
+//       //     message: "exam entry successfully",
+//       //     // data: quizes,
+//       //     status: 201,
+//       //   });
+//       // }
+
+//       // await examinationModel.deleteMany();
+
+//       const quizes = await quizModel.create({
+//         subjectTitle: checkForSubject?.subjectTitle,
+//         subjectID: checkForSubject?._id,
+//         session: school?.presentSession,
+//         term: school?.presentTerm,
+//         // quiz: {
+//         //   instruction: { duration, mark, instruction },
+//         //   question: value,
+//         // },
+
+//         quiz: {
+//           instruction: { duration, mark, instruction },
+//           question: value,
+//           theory,
+//         },
+//         totalQuestions: value?.length,
+//         status: "examination",
+//         startExam: false,
+//       });
+
+//       checkForSubject?.examination.push(new Types.ObjectId(quizes._id));
+
+//       checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+
+//       checkForSubject?.save();
+
+//       findTeacher?.examination.push(new Types.ObjectId(quizes._id));
+//       findTeacher?.save();
+
+//       findSubjectTeacher?.examination.push(new Types.ObjectId(quizes._id));
+//       findSubjectTeacher?.save();
+
+//       const x = setTimeout(async () => {
+//         await deleteFilesInFolder(filePath);
+//         clearTimeout(x);
+//       }, 15000);
+
+//       return res.status(201).json({
+//         message: "exam entry successfully",
+//         data: quizes,
+//         exam: checkForSubject?.examination,
+//         status: 201,
+//       });
+//     } else {
+//       return res.status(404).json({
+//         message: "Subject doesn't exist for this class",
+//         status: 404,
+//       });
+//     }
+//   } catch (error: any) {
+//     return res.status(404).json({
+//       message: "Error creating class subject quiz",
+//       status: 404,
+//       error: error,
+//       data: error?.message,
+//     });
+//   }
+// };
 
 export const readSubjectExamination = async (
   req: Request,
