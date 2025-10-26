@@ -339,40 +339,81 @@ const viewSubjectDetail = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.viewSubjectDetail = viewSubjectDetail;
 const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { schoolID, teacherID, subjectID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const teacher = yield staffModel_1.default.findById(teacherID);
-        if (school && school.schoolName && school.status === "school-admin") {
-            const subjects = yield subjectModel_1.default.findById(subjectID);
-            let read = [...teacher === null || teacher === void 0 ? void 0 : teacher.subjectAssigned];
-            let subj = read === null || read === void 0 ? void 0 : read.filter((el) => {
-                return el.id.toString() !== subjectID;
-            });
-            yield (staffModel_1.default === null || staffModel_1.default === void 0 ? void 0 : staffModel_1.default.findByIdAndUpdate(teacherID, {
-                subjectAssigned: subj,
-            }, { new: true }));
-            yield subjectModel_1.default.findByIdAndUpdate(subjectID, {
-                subjectTeacherName: "",
-                teacherID: "",
-            }, { new: true });
-            return res.status(201).json({
-                message: "subjects  deleted successfully",
-                data: subjects,
-                status: 201,
+        // Validate required params
+        if (!schoolID || !teacherID || !subjectID) {
+            return res.status(400).json({
+                message: "schoolID, teacherID and subjectID are required",
+                status: 400,
             });
         }
-        else {
+        // Find school and verify admin status
+        const school = yield schoolModel_1.default.findById(schoolID);
+        if (!school || !school.schoolName || school.status !== "school-admin") {
             return res.status(404).json({
-                message: "unable to read school",
+                message: "School not found or not authorized",
                 status: 404,
             });
         }
+        // Find teacher
+        const teacher = yield staffModel_1.default.findById(teacherID);
+        if (!teacher) {
+            return res.status(404).json({
+                message: "Teacher not found",
+                status: 404,
+            });
+        }
+        // Find subject
+        const subject = yield subjectModel_1.default.findById(subjectID);
+        if (!subject) {
+            return res.status(404).json({
+                message: "Subject not found",
+                status: 404,
+            });
+        }
+        // Verify the subject is actually assigned to this teacher
+        const hasSubject = (_a = teacher.subjectAssigned) === null || _a === void 0 ? void 0 : _a.some((el) => el.id.toString() === subjectID);
+        if (!hasSubject) {
+            return res.status(400).json({
+                message: "Subject is not assigned to this teacher",
+                status: 400,
+            });
+        }
+        // Remove subject from teacher's assignments
+        const updatedAssignments = (teacher.subjectAssigned || []).filter((el) => el.id.toString() !== subjectID);
+        // Update both teacher and subject atomically
+        const [updatedTeacher, updatedSubject] = yield Promise.all([
+            staffModel_1.default.findByIdAndUpdate(teacherID, {
+                subjectAssigned: updatedAssignments,
+            }, { new: true }),
+            subjectModel_1.default.findByIdAndUpdate(subjectID, {
+                subjectTeacherName: "",
+                teacherID: null, // use null instead of empty string for ID field
+            }, { new: true }),
+        ]);
+        if (!updatedTeacher || !updatedSubject) {
+            return res.status(500).json({
+                message: "Error updating records",
+                status: 500,
+            });
+        }
+        return res.status(200).json({
+            message: "Subject removed from teacher successfully",
+            data: {
+                teacher: updatedTeacher,
+                subject: updatedSubject,
+            },
+            status: 200,
+        });
     }
     catch (error) {
-        return res.status(404).json({
-            message: "Error cdeleting subject",
-            status: 404,
+        console.error("Error removing subject from teacher:", error);
+        return res.status(500).json({
+            message: "Error removing subject from teacher",
+            error: error.message,
+            status: 500,
         });
     }
 });

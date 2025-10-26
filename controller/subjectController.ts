@@ -402,49 +402,99 @@ export const removeSubjectFromTeacher = async (
 ): Promise<Response> => {
   try {
     const { schoolID, teacherID, subjectID } = req.params;
-    const school: any = await schoolModel.findById(schoolID);
-    const teacher: any = await staffModel.findById(teacherID);
 
-    if (school && school.schoolName && school.status === "school-admin") {
-      const subjects = await subjectModel.findById(subjectID);
-      let read = [...teacher?.subjectAssigned];
-
-      let subj = read?.filter((el: any) => {
-        return el.id.toString() !== subjectID;
+    // Validate required params
+    if (!schoolID || !teacherID || !subjectID) {
+      return res.status(400).json({
+        message: "schoolID, teacherID and subjectID are required",
+        status: 400,
       });
+    }
 
-      await staffModel?.findByIdAndUpdate(
-        teacherID,
-        {
-          subjectAssigned: subj,
-        },
-        { new: true }
-      );
-
-      await subjectModel.findByIdAndUpdate(
-        subjectID,
-        {
-          subjectTeacherName: "",
-          teacherID: "",
-        },
-        { new: true }
-      );
-
-      return res.status(201).json({
-        message: "subjects  deleted successfully",
-        data: subjects,
-        status: 201,
-      });
-    } else {
+    // Find school and verify admin status
+    const school = await schoolModel.findById(schoolID);
+    if (!school || !school.schoolName || school.status !== "school-admin") {
       return res.status(404).json({
-        message: "unable to read school",
+        message: "School not found or not authorized",
         status: 404,
       });
     }
-  } catch (error) {
-    return res.status(404).json({
-      message: "Error cdeleting subject",
-      status: 404,
+
+    // Find teacher
+    const teacher = await staffModel.findById(teacherID);
+    if (!teacher) {
+      return res.status(404).json({
+        message: "Teacher not found",
+        status: 404,
+      });
+    }
+
+    // Find subject
+    const subject = await subjectModel.findById(subjectID);
+    if (!subject) {
+      return res.status(404).json({
+        message: "Subject not found",
+        status: 404,
+      });
+    }
+
+    // Verify the subject is actually assigned to this teacher
+    const hasSubject = teacher.subjectAssigned?.some(
+      (el: any) => el.id.toString() === subjectID
+    );
+
+    if (!hasSubject) {
+      return res.status(400).json({
+        message: "Subject is not assigned to this teacher",
+        status: 400,
+      });
+    }
+
+    // Remove subject from teacher's assignments
+    const updatedAssignments = (teacher.subjectAssigned || []).filter(
+      (el: any) => el.id.toString() !== subjectID
+    );
+
+    // Update both teacher and subject atomically
+    const [updatedTeacher, updatedSubject] = await Promise.all([
+      staffModel.findByIdAndUpdate(
+        teacherID,
+        {
+          subjectAssigned: updatedAssignments,
+        },
+        { new: true }
+      ),
+      subjectModel.findByIdAndUpdate(
+        subjectID,
+        {
+          subjectTeacherName: "",
+          teacherID: null, // use null instead of empty string for ID field
+        },
+        { new: true }
+      ),
+    ]);
+
+    if (!updatedTeacher || !updatedSubject) {
+      return res.status(500).json({
+        message: "Error updating records",
+        status: 500,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Subject removed from teacher successfully",
+      data: {
+        teacher: updatedTeacher,
+        subject: updatedSubject,
+      },
+      status: 200,
+    });
+  } catch (error: any) {
+    console.error("Error removing subject from teacher:", error);
+    return res.status(500).json({
+      message: "Error removing subject from teacher",
+      error: error.message,
+      status: 500,
     });
   }
 };
