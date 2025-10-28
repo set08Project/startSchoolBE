@@ -16,6 +16,7 @@ exports.deleteSchoolGallary = exports.viewSchoolGallary = exports.createRestrict
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const mongoose_1 = require("mongoose");
 const streamifier_1 = require("../utils/streamifier");
+const cloudinary_1 = __importDefault(require("../utils/cloudinary"));
 const gallaryModel_1 = __importDefault(require("../model/gallaryModel"));
 const createSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -124,23 +125,67 @@ exports.viewSchoolGallary = viewSchoolGallary;
 const deleteSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schoolID, galleryID } = req.params;
-        const gallary = yield schoolModel_1.default.findById(schoolID);
-        if (gallary) {
-            const gallery = yield gallaryModel_1.default.findByIdAndDelete(galleryID);
-            return res.status(200).json({
-                message: "delete school gallaries",
-                data: gallery,
+        if (!schoolID || !galleryID) {
+            return res.status(400).json({
+                message: "schoolID and galleryID are required",
+                status: 400,
             });
         }
-        else {
-            return res.status(404).json({
-                message: "error finding schoolID",
+        const school = yield schoolModel_1.default
+            .findById(schoolID)
+            .populate({ path: "gallaries" });
+        if (!school) {
+            return res.status(404).json({ message: "School not found", status: 404 });
+        }
+        const gallery = yield gallaryModel_1.default.findById(galleryID);
+        if (!gallery) {
+            return res
+                .status(404)
+                .json({ message: "Gallery item not found", status: 404 });
+        }
+        // ensure the gallery belongs to this school (either via gallery.school or school's gallaries array)
+        const belongsToSchool = (gallery.school && gallery.school.toString() === schoolID) ||
+            (Array.isArray(school.gallaries) &&
+                school.gallaries.some((g) => g && g._id
+                    ? g._id.toString() === galleryID
+                    : g.toString() === galleryID));
+        if (!belongsToSchool) {
+            return res.status(400).json({
+                message: "Gallery does not belong to the specified school",
+                status: 400,
             });
         }
+        // attempt to delete cloud asset if present, but don't fail the whole operation on cloud errors
+        const publicId = gallery.avatarID ||
+            gallery.public_id ||
+            gallery.imageID;
+        if (publicId) {
+            try {
+                yield cloudinary_1.default.uploader.destroy(publicId);
+            }
+            catch (err) {
+                console.error("Failed to destroy cloud asset", publicId, (err === null || err === void 0 ? void 0 : err.message) || err);
+                // continue — asset deletion failure shouldn't block DB cleanup
+            }
+        }
+        // delete the gallery document and remove reference from school.gallaries
+        const deleted = yield gallaryModel_1.default.findByIdAndDelete(galleryID).lean();
+        // remove reference safely using $pull (works even if school's gallaries contains null)
+        yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            $pull: { gallaries: galleryID },
+        });
+        return res.status(200).json({
+            message: "Gallery deleted successfully",
+            data: deleted,
+            status: 200,
+        });
     }
     catch (error) {
-        return res.status(404).json({
+        console.error("Error deleting school gallery:", error);
+        return res.status(500).json({
             message: "Error deleting school gallery",
+            error: error === null || error === void 0 ? void 0 : error.message,
+            status: 500,
         });
     }
 });

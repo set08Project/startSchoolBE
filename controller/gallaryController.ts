@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import schoolModel from "../model/schoolModel";
 import { Types } from "mongoose";
 import { streamUpload } from "../utils/streamifier";
+import cloudinary from "../utils/cloudinary";
 import gallaryModel from "../model/gallaryModel";
 
 export const createSchoolGallary = async (
@@ -127,22 +128,82 @@ export const deleteSchoolGallary = async (
 ): Promise<Response> => {
   try {
     const { schoolID, galleryID } = req.params;
-    const gallary = await schoolModel.findById(schoolID);
 
-    if (gallary) {
-      const gallery = await gallaryModel.findByIdAndDelete(galleryID);
-      return res.status(200).json({
-        message: "delete school gallaries",
-        data: gallery,
-      });
-    } else {
-      return res.status(404).json({
-        message: "error finding schoolID",
+    if (!schoolID || !galleryID) {
+      return res.status(400).json({
+        message: "schoolID and galleryID are required",
+        status: 400,
       });
     }
-  } catch (error) {
-    return res.status(404).json({
+
+    const school: any = await schoolModel
+      .findById(schoolID)
+      .populate({ path: "gallaries" });
+    if (!school) {
+      return res.status(404).json({ message: "School not found", status: 404 });
+    }
+
+    const gallery = await gallaryModel.findById(galleryID);
+    if (!gallery) {
+      return res
+        .status(404)
+        .json({ message: "Gallery item not found", status: 404 });
+    }
+
+    // ensure the gallery belongs to this school (either via gallery.school or school's gallaries array)
+    const belongsToSchool =
+      (gallery.school && gallery.school.toString() === schoolID) ||
+      (Array.isArray(school.gallaries) &&
+        school.gallaries.some((g: any) =>
+          g && g._id
+            ? g._id.toString() === galleryID
+            : g.toString() === galleryID
+        ));
+
+    if (!belongsToSchool) {
+      return res.status(400).json({
+        message: "Gallery does not belong to the specified school",
+        status: 400,
+      });
+    }
+
+    // attempt to delete cloud asset if present, but don't fail the whole operation on cloud errors
+    const publicId =
+      (gallery as any).avatarID ||
+      (gallery as any).public_id ||
+      (gallery as any).imageID;
+    if (publicId) {
+      try {
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err: any) {
+        console.error(
+          "Failed to destroy cloud asset",
+          publicId,
+          err?.message || err
+        );
+        // continue — asset deletion failure shouldn't block DB cleanup
+      }
+    }
+
+    // delete the gallery document and remove reference from school.gallaries
+    const deleted = await gallaryModel.findByIdAndDelete(galleryID).lean();
+
+    // remove reference safely using $pull (works even if school's gallaries contains null)
+    await schoolModel.findByIdAndUpdate(schoolID, {
+      $pull: { gallaries: galleryID },
+    });
+
+    return res.status(200).json({
+      message: "Gallery deleted successfully",
+      data: deleted,
+      status: 200,
+    });
+  } catch (error: any) {
+    console.error("Error deleting school gallery:", error);
+    return res.status(500).json({
       message: "Error deleting school gallery",
+      error: error?.message,
+      status: 500,
     });
   }
 };
