@@ -484,6 +484,25 @@ const updateSchoolClass1stFee = (req, res) => __awaiter(void 0, void 0, void 0, 
                     class2ndFee,
                     class3rdFee,
                 }, { new: true });
+                // After updating class fees, reflect the change on students in this class.
+                // Determine which term is active on the class and set students' classTermFee accordingly.
+                try {
+                    const term = update === null || update === void 0 ? void 0 : update.presentTerm;
+                    const feeForTerm = term === "1st Term"
+                        ? update === null || update === void 0 ? void 0 : update.class1stFee
+                        : term === "2nd Term"
+                            ? update === null || update === void 0 ? void 0 : update.class2ndFee
+                            : term === "3rd Term"
+                                ? update === null || update === void 0 ? void 0 : update.class3rdFee
+                                : null;
+                    if (feeForTerm !== null && feeForTerm !== undefined) {
+                        yield studentModel_1.default.updateMany({ presentClassID: classID }, { $set: { classTermFee: feeForTerm } });
+                    }
+                }
+                catch (err) {
+                    // Log but don't fail the entire request — the class fees were updated.
+                    console.error("Failed to update students' classTermFee:", (err === null || err === void 0 ? void 0 : err.message) || err);
+                }
                 return res.status(201).json({
                     message: "class term fee updated successfully",
                     data: update,

@@ -587,6 +587,33 @@ export const updateSchoolClass1stFee = async (req: Request, res: Response) => {
           { new: true }
         );
 
+        // After updating class fees, reflect the change on students in this class.
+        // Determine which term is active on the class and set students' classTermFee accordingly.
+        try {
+          const term = update?.presentTerm;
+          const feeForTerm =
+            term === "1st Term"
+              ? update?.class1stFee
+              : term === "2nd Term"
+              ? update?.class2ndFee
+              : term === "3rd Term"
+              ? update?.class3rdFee
+              : null;
+
+          if (feeForTerm !== null && feeForTerm !== undefined) {
+            await studentModel.updateMany(
+              { presentClassID: classID },
+              { $set: { classTermFee: feeForTerm } }
+            );
+          }
+        } catch (err: any) {
+          // Log but don't fail the entire request — the class fees were updated.
+          console.error(
+            "Failed to update students' classTermFee:",
+            err?.message || err
+          );
+        }
+
         return res.status(201).json({
           message: "class term fee updated successfully",
           data: update,

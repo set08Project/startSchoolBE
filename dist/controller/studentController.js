@@ -1698,7 +1698,7 @@ const createSchoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                     studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
                     image: student === null || student === void 0 ? void 0 : student.avatar,
                     date,
-                    amount: amount * 10,
+                    amount: amount,
                     purchasedID,
                     reference,
                 });

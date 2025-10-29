@@ -2047,7 +2047,7 @@ export const createSchoolFeePayment = async (
           studentClass: student?.classAssigned,
           image: student?.avatar,
           date,
-          amount: amount * 10,
+          amount: amount,
           purchasedID,
           reference,
         });
