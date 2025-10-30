@@ -11,6 +11,7 @@ import {
   studentMidReportRemark,
   classTeacherMidReportRemark,
   adminMidReportRemark,
+  removeSubjectFromResult,
 } from "../controller/cardReportController";
 
 const router: Router = Router();
@@ -46,10 +47,15 @@ router
   .patch(adminMidReportRemark);
 
 router
+  .route("/remove-mid-report-card/:studentID")
+  .patch(removeSubjectFromResult);
+
+router
   .route("/teacher-mid-report-card/:teacherID/:studentID")
   .patch(classTeacherMidReportRemark);
 
 router.route("/student-report-card/:studentID").get(studentReportRemark);
+
 router.route("/student-mid-report-card/:studentID").get(studentMidReportRemark);
 
 export default router;

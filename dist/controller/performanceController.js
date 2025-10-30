@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePerformance = exports.readOneSubjectMidTestResultPreformance = exports.readMidTestResult = exports.readStudentMidTestResult = exports.readOneSubjectMidTestResult = exports.readExamResult = exports.readStudentExamResult = exports.readOneSubjectExamResult = exports.readSubjectExamResult = exports.readSubjectMidTestResult = exports.createMidTestPerformance = exports.createExamPerformance = exports.readQuizResult = exports.readStudentQuizResult = exports.readOneSubjectQuizResult = exports.updateSubjectQuizResultRecorded = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
+exports.deletePerformance = exports.readOneSubjectMidTestResultPreformance = exports.readMidTestResult = exports.readStudentMidTestResult = exports.readOneSubjectMidTestResult = exports.readExamResult = exports.readStudentExamResult = exports.readOneSubjectExamResult = exports.readSubjectExamResult = exports.readSubjectMidTestResult = exports.createMidTestPerformance = exports.createExamPerformance = exports.readQuizResult = exports.readStudentQuizResult = exports.readOneSubjectQuizResult = exports.updateQuitSubjectQuizResultRecorded = exports.updateSubjectQuizResultRecorded = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
 const mongoose_1 = require("mongoose");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
@@ -173,6 +173,26 @@ const updateSubjectQuizResultRecorded = (req, res) => __awaiter(void 0, void 0, 
     }
 });
 exports.updateSubjectQuizResultRecorded = updateSubjectQuizResultRecorded;
+const updateQuitSubjectQuizResultRecorded = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { performanceID } = req.params;
+        const subject = yield performanceModel_1.default.findByIdAndUpdate(performanceID, {
+            quizRecorded: false,
+        }, { new: true });
+        return res.status(201).json({
+            message: "subject quiz performance recorded successfully",
+            data: subject,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error creating subject quiz",
+            status: 404,
+        });
+    }
+});
+exports.updateQuitSubjectQuizResultRecorded = updateQuitSubjectQuizResultRecorded;
 const readOneSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {

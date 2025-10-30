@@ -27,6 +27,9 @@ router
     .route("/admin-mid-report-card/:schoolID/:studentID")
     .patch(cardReportController_1.adminMidReportRemark);
 router
+    .route("/remove-mid-report-card/:studentID")
+    .patch(cardReportController_1.removeSubjectFromResult);
+router
     .route("/teacher-mid-report-card/:teacherID/:studentID")
     .patch(cardReportController_1.classTeacherMidReportRemark);
 router.route("/student-report-card/:studentID").get(cardReportController_1.studentReportRemark);

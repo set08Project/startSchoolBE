@@ -1972,3 +1972,200 @@ export const studentPsychoReport = async (
     });
   }
 };
+
+
+
+export const removeSubjectFromResult = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { studentID } = req.params;
+    const { subject } = req.body;
+
+    // Find the student with their report card
+    const student: any = await studentModel.findById(studentID).populate({
+      path: "midReportCard",
+    });
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: 404,
+      });
+    }
+
+    // Get the current session's report card midReportCardModel
+    const school: any = await schoolModel.findById(student?.schoolIDs);
+    const currentClassInfo = `${
+      student?.classAssigned
+    } session: ${school?.presentSession!}(${school?.presentTerm!})`;
+
+    const reportCard = student.midReportCard.find(
+      (card: any) => card.classInfo === currentClassInfo
+    );
+
+    if (!reportCard) {
+      return res.status(404).json({
+        message: "Report card not found for current session",
+        status: 404,
+      });
+    }
+
+    // Filter out the subject from results
+    const updatedResults = reportCard.result.filter(
+      (result: any) => result.subject !== subject
+    );
+
+    console.log("reading: ", updatedResults);
+
+    if (updatedResults.length === reportCard.result.length) {
+      return res.status(404).json({
+        message: "Subject not found in report card",
+        status: 404,
+      });
+    }
+
+    const numb = parseFloat(
+      (
+        updatedResults
+          .map((el: any) => el.points)
+          .reduce((a: number, b: number) => a + b, 0) / updatedResults.length
+      ).toFixed(2)
+    );
+
+    let x =
+      numb >= 0 && numb <= 5
+        ? "This is a very poor result."
+        : numb >= 6 && numb <= 11
+        ? "This result is poor; it's not satisfactory."
+        : numb >= 11 && numb <= 15
+        ? "Below average; needs significant improvement."
+        : numb >= 16 && numb <= 21
+        ? "Below average; more effort required."
+        : numb >= 21 && numb <= 25
+        ? "Fair but not satisfactory; strive harder."
+        : numb >= 26 && numb <= 31
+        ? "Fair performance; potential for improvement."
+        : numb >= 31 && numb <= 35
+        ? "Average; a steady effort is needed."
+        : numb >= 36 && numb <= 41
+        ? "Average; showing gradual improvement."
+        : numb >= 41 && numb <= 45
+        ? "Slightly above average; keep it up."
+        : numb >= 46 && numb <= 51
+        ? "Decent work; shows potential."
+        : numb >= 51 && numb <= 55
+        ? "Passable; satisfactory effort."
+        : numb >= 56 && numb <= 61
+        ? "Satisfactory; good progress."
+        : numb >= 61 && numb <= 65
+        ? "Good work; keep striving for excellence."
+        : numb >= 66 && numb <= 71
+        ? "Commendable effort; very good."
+        : numb >= 71 && numb <= 75
+        ? "Very good; consistent effort is visible."
+        : numb >= 76 && numb <= 81
+        ? "Excellent performance; well done!"
+        : numb >= 81 && numb <= 85
+        ? "Exceptional result; keep up the great work!"
+        : numb >= 86 && numb <= 91
+        ? "Outstanding achievement; impressive work!"
+        : numb >= 91 && numb <= 95
+        ? "Brilliant performance; you’re a star!"
+        : numb >= 96 && numb <= 100
+        ? "Outstanding achievement; impressive work!"
+        : ``;
+
+    let xx =
+      numb >= 0 && numb <= 5
+        ? "The submission demonstrates a lack of understanding of the topic. Please see me for guidance"
+        : numb >= 6 && numb <= 11
+        ? "Very minimal effort is evident in the work. It's essential to review the material thoroughly."
+        : numb >= 11 && numb <= 15
+        ? "This effort does not meet the basic requirements. Please focus on the foundational concepts."
+        : numb >= 16 && numb <= 21
+        ? "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions."
+        : numb >= 21 && numb <= 25
+        ? "Some attempt is evident, but significant gaps in understanding remain. More effort is required."
+        : numb >= 26 && numb <= 31
+        ? "The work shows minimal understanding of the topic. Focus on building your foundational knowledge."
+        : numb >= 31 && numb <= 35
+        ? "A basic attempt is made, but it falls short of expectations. Review the feedback to improve"
+        : numb >= 36 && numb <= 41
+        ? "You are starting to grasp the material, but more depth and accuracy are needed."
+        : numb >= 41 && numb <= 45
+        ? "An acceptable effort, but there is room for improvement in clarity and depth"
+        : numb >= 46 && numb <= 51
+        ? "Some understanding is demonstrated, but key concepts are missing or incorrect."
+        : numb >= 51 && numb <= 55
+        ? "You are making progress but need to develop your analysis further to meet the standard"
+        : numb >= 56 && numb <= 61
+        ? "A decent attempt that meets some expectations but lacks polish and depth in certain areas"
+        : numb >= 61 && numb <= 65
+        ? "Good work; keep striving for excellence."
+        : numb >= 66 && numb <= 71
+        ? "A solid understanding is evident, though there are areas to refine."
+        : numb >= 71 && numb <= 75
+        ? "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth."
+        : numb >= 76 && numb <= 81
+        ? "Strong work overall! A little more attention to detail could make it exceptional!"
+        : numb >= 81 && numb <= 85
+        ? "Well done! You have a good grasp of the material. Aim for more critical analysis next time!"
+        : numb >= 86 && numb <= 91
+        ? "Excellent work! You’ve exceeded expectations. Keep up the fantastic effort!"
+        : numb >= 91 && numb <= 95
+        ? "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!"
+        : numb >= 96 && numb <= 100
+        ? "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulation!"
+        : ``;
+
+    // Update report card with filtered results
+    const updatedReport = await midReportCardModel.findByIdAndUpdate(
+      reportCard._id,
+      {
+        result: updatedResults,
+        // Recalculate total points and grade based on remaining subjects
+        points: numb,
+
+        adminComment: x,
+        classTeacherComment: xx,
+        grade:
+          numb >= 0 && numb <= 39
+            ? "F9"
+            : numb >= 39 && numb <= 44
+            ? "E8"
+            : numb >= 44 && numb <= 49
+            ? "D7"
+            : numb >= 49 && numb <= 54
+            ? "C6"
+            : numb >= 54 && numb <= 59
+            ? "C5"
+            : numb >= 59 && numb <= 64
+            ? "C4"
+            : numb >= 64 && numb <= 69
+            ? "B3"
+            : numb >= 69 && numb <= 74
+            ? "B2"
+            : numb >= 74 && numb <= 100
+            ? "A1"
+            : null,
+      },
+      { new: true }
+    );
+
+    console.log("Updated Report: ", updatedReport);
+
+    return res.status(200).json({
+      message: "Subject removed from report card successfully",
+      data: updatedReport,
+      status: 200,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error removing subject from report card",
+      data: error.message,
+      status: 500,
+    });
+  }
+};

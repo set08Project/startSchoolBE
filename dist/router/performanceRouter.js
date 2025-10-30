@@ -13,6 +13,9 @@ router
     .route("/updated-subject-quiz-performance-record/:performanceID")
     .patch(performanceController_1.updateSubjectQuizResultRecorded);
 router
+    .route("/quit-subject-quiz-performance-record/:performanceID")
+    .patch(performanceController_1.updateQuitSubjectQuizResultRecorded);
+router
     .route("/view-onesubject-quiz-performance/:subjectID/:quizID")
     .get(performanceController_1.readOneSubjectQuizResult);
 router
