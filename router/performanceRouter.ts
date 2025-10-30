@@ -17,6 +17,7 @@ import {
   readSubjectExamResult,
   readSubjectMidTestResult,
   readSubjectQuizResult,
+  updateSubjectQuizResultRecorded,
 } from "../controller/performanceController";
 
 const router: Router = Router();
@@ -28,6 +29,10 @@ router
 router
   .route("/view-subject-quiz-performance/:subjectID")
   .get(readSubjectQuizResult);
+
+router
+  .route("/updated-subject-quiz-performance-record/:performanceID")
+  .patch(updateSubjectQuizResultRecorded);
 
 router
   .route("/view-onesubject-quiz-performance/:subjectID/:quizID")

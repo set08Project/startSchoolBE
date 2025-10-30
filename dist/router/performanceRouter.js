@@ -10,6 +10,9 @@ router
     .route("/view-subject-quiz-performance/:subjectID")
     .get(performanceController_1.readSubjectQuizResult);
 router
+    .route("/updated-subject-quiz-performance-record/:performanceID")
+    .patch(performanceController_1.updateSubjectQuizResultRecorded);
+router
     .route("/view-onesubject-quiz-performance/:subjectID/:quizID")
     .get(performanceController_1.readOneSubjectQuizResult);
 router

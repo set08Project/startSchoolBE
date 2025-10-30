@@ -15,6 +15,10 @@ const performanceModel = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    quizRecorded: {
+        type: Boolean,
+        default: false,
+    },
     className: {
         type: String,
     },

@@ -173,6 +173,34 @@ export const readSubjectQuizResult = async (
   }
 };
 
+export const updateSubjectQuizResultRecorded = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { performanceID } = req.params;
+
+    const subject = await performanceModel.findByIdAndUpdate(
+      performanceID,
+      {
+        quizRecorded: true,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "subject quiz performance recorded successfully",
+      data: subject,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating subject quiz",
+      status: 404,
+    });
+  }
+};
+
 export const readOneSubjectQuizResult = async (
   req: Request,
   res: Response

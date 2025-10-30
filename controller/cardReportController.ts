@@ -813,6 +813,8 @@ export const createReportCardEntry = async (
     });
   }
 };
+
+
 export const createMidReportCardEntry = async (
   req: Request,
   res: Response
@@ -917,44 +919,44 @@ export const createMidReportCardEntry = async (
           let updated = getData.result.filter((el: any) => {
             return el.subject !== subject;
           });
-          console.log("This is Second Create");
-          await midReportCardModel.create({
-            result: [
-              {
-                subject,
-                test1: 0,
-                test2: 0,
-                test3: 0,
-                test4,
-                exam,
-                total: exam,
-                grade:
-                  exam >= 0 && exam <= 39
-                    ? "F9"
-                    : exam >= 39 && exam <= 44
-                    ? "E8"
-                    : exam >= 44 && exam <= 49
-                    ? "D7"
-                    : exam >= 49 && exam <= 54
-                    ? "C6"
-                    : exam >= 54 && exam <= 59
-                    ? "C5"
-                    : exam >= 59 && exam <= 64
-                    ? "C4"
-                    : exam >= 64 && exam <= 69
-                    ? "B3"
-                    : exam >= 69 && exam <= 74
-                    ? "B2"
-                    : exam >= 74 && exam <= 100
-                    ? "A1"
-                    : null,
-              },
-            ],
-            classInfo: `${
-              student?.classAssigned
-            } session: ${school?.presentSession!}(${school?.presentTerm!})`,
-            studentID,
-          });
+          console.log("This isc Second Create");
+          // await midReportCardModel.create({
+          //   result: [
+          //     {
+          //       subject,
+          //       test1: 0,
+          //       test2: 0,
+          //       test3: 0,
+          //       test4,
+          //       exam,
+          //       total: exam,
+          //       grade:
+          //         exam >= 0 && exam <= 39
+          //           ? "F9"
+          //           : exam >= 39 && exam <= 44
+          //           ? "E8"
+          //           : exam >= 44 && exam <= 49
+          //           ? "D7"
+          //           : exam >= 49 && exam <= 54
+          //           ? "C6"
+          //           : exam >= 54 && exam <= 59
+          //           ? "C5"
+          //           : exam >= 59 && exam <= 64
+          //           ? "C4"
+          //           : exam >= 64 && exam <= 69
+          //           ? "B3"
+          //           : exam >= 69 && exam <= 74
+          //           ? "B2"
+          //           : exam >= 74 && exam <= 100
+          //           ? "A1"
+          //           : null,
+          //     },
+          //   ],
+          //   classInfo: `${
+          //     student?.classAssigned
+          //   } session: ${school?.presentSession!}(${school?.presentTerm!})`,
+          //   studentID,
+          // });
 
           const report: any = await midReportCardModel.findByIdAndUpdate(
             getData?._id,
@@ -968,6 +970,7 @@ export const createMidReportCardEntry = async (
                   test3: y3,
                   test4: y4,
                   exam: y5,
+                  approved: true,
                   mark,
                   score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
                   points: mark,
@@ -1137,10 +1140,10 @@ export const createMidReportCardEntry = async (
             status: 201,
           });
         } else {
-          let x1 = !test1 ? read?.test1 : test1 ? test1 : 0;
-          let x2 = !test2 ? read?.test2 : test2 ? test2 : 0;
-          let x3 = !test3 ? read?.test3 : test3 ? test3 : 0;
-          let x4 = !test4 ? read?.test4 : test4 ? test4 : 0;
+          let x1 = 0;
+          let x2 = 0;
+          let x3 = 0;
+          let x4 = 0;
           let x5 = !exam ? read?.exam : exam ? exam : 0;
 
           let y1 = x1 !== null ? x1 : 0;
@@ -1176,12 +1179,10 @@ export const createMidReportCardEntry = async (
                   test3: y3,
                   test4: y4,
                   exam: y5,
+                  approved: true,
                   mark,
                   score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
-                  points:
-                    y1 > 10
-                      ? parseFloat(((mark / score) * 100).toFixed(2))
-                      : parseFloat(((mark / score) * 100).toFixed(2)),
+                  points: mark,
                   grade:
                     mark >= 0 && mark <= 39
                       ? "F9"
@@ -1264,6 +1265,7 @@ export const createMidReportCardEntry = async (
               test1: 0,
               test2: 0,
               test3: 0,
+              approved: true,
               test4,
               exam,
               total: exam,

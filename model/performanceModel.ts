@@ -13,6 +13,7 @@ interface iStaff {
   quizID: string;
   remark: string;
   quizDone: boolean;
+  quizRecorded: boolean;
   status: string;
 
   studentScore: number;
@@ -41,6 +42,10 @@ const performanceModel = new Schema<iStaffData>(
       type: String,
     },
     quizDone: {
+      type: Boolean,
+      default: false,
+    },
+    quizRecorded: {
       type: Boolean,
       default: false,
     },

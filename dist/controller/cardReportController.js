@@ -817,41 +817,44 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                     let updated = getData.result.filter((el) => {
                         return el.subject !== subject;
                     });
-                    console.log("This is Second Create");
-                    yield midReportCardModel_1.default.create({
-                        result: [
-                            {
-                                subject,
-                                test1: 0,
-                                test2: 0,
-                                test3: 0,
-                                test4,
-                                exam,
-                                total: exam,
-                                grade: exam >= 0 && exam <= 39
-                                    ? "F9"
-                                    : exam >= 39 && exam <= 44
-                                        ? "E8"
-                                        : exam >= 44 && exam <= 49
-                                            ? "D7"
-                                            : exam >= 49 && exam <= 54
-                                                ? "C6"
-                                                : exam >= 54 && exam <= 59
-                                                    ? "C5"
-                                                    : exam >= 59 && exam <= 64
-                                                        ? "C4"
-                                                        : exam >= 64 && exam <= 69
-                                                            ? "B3"
-                                                            : exam >= 69 && exam <= 74
-                                                                ? "B2"
-                                                                : exam >= 74 && exam <= 100
-                                                                    ? "A1"
-                                                                    : null,
-                            },
-                        ],
-                        classInfo: `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`,
-                        studentID,
-                    });
+                    console.log("This isc Second Create");
+                    // await midReportCardModel.create({
+                    //   result: [
+                    //     {
+                    //       subject,
+                    //       test1: 0,
+                    //       test2: 0,
+                    //       test3: 0,
+                    //       test4,
+                    //       exam,
+                    //       total: exam,
+                    //       grade:
+                    //         exam >= 0 && exam <= 39
+                    //           ? "F9"
+                    //           : exam >= 39 && exam <= 44
+                    //           ? "E8"
+                    //           : exam >= 44 && exam <= 49
+                    //           ? "D7"
+                    //           : exam >= 49 && exam <= 54
+                    //           ? "C6"
+                    //           : exam >= 54 && exam <= 59
+                    //           ? "C5"
+                    //           : exam >= 59 && exam <= 64
+                    //           ? "C4"
+                    //           : exam >= 64 && exam <= 69
+                    //           ? "B3"
+                    //           : exam >= 69 && exam <= 74
+                    //           ? "B2"
+                    //           : exam >= 74 && exam <= 100
+                    //           ? "A1"
+                    //           : null,
+                    //     },
+                    //   ],
+                    //   classInfo: `${
+                    //     student?.classAssigned
+                    //   } session: ${school?.presentSession!}(${school?.presentTerm!})`,
+                    //   studentID,
+                    // });
                     const report = yield midReportCardModel_1.default.findByIdAndUpdate(getData === null || getData === void 0 ? void 0 : getData._id, {
                         result: [
                             ...updated,
@@ -862,6 +865,7 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                                 test3: y3,
                                 test4: y4,
                                 exam: y5,
+                                approved: true,
                                 mark,
                                 score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
                                 points: mark,
@@ -1010,10 +1014,10 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                     });
                 }
                 else {
-                    let x1 = !test1 ? read === null || read === void 0 ? void 0 : read.test1 : test1 ? test1 : 0;
-                    let x2 = !test2 ? read === null || read === void 0 ? void 0 : read.test2 : test2 ? test2 : 0;
-                    let x3 = !test3 ? read === null || read === void 0 ? void 0 : read.test3 : test3 ? test3 : 0;
-                    let x4 = !test4 ? read === null || read === void 0 ? void 0 : read.test4 : test4 ? test4 : 0;
+                    let x1 = 0;
+                    let x2 = 0;
+                    let x3 = 0;
+                    let x4 = 0;
                     let x5 = !exam ? read === null || read === void 0 ? void 0 : read.exam : exam ? exam : 0;
                     let y1 = x1 !== null ? x1 : 0;
                     let y2 = x2 !== null ? x2 : 0;
@@ -1042,11 +1046,10 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                                 test3: y3,
                                 test4: y4,
                                 exam: y5,
+                                approved: true,
                                 mark,
                                 score: y1 > 10 ? (y5 ? 60 : 0) + (y1 ? 40 : 0) : score,
-                                points: y1 > 10
-                                    ? parseFloat(((mark / score) * 100).toFixed(2))
-                                    : parseFloat(((mark / score) * 100).toFixed(2)),
+                                points: mark,
                                 grade: mark >= 0 && mark <= 39
                                     ? "F9"
                                     : mark >= 39 && mark <= 44
@@ -1113,6 +1116,7 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
                             test1: 0,
                             test2: 0,
                             test3: 0,
+                            approved: true,
                             test4,
                             exam,
                             total: exam,
