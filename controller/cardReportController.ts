@@ -2017,7 +2017,6 @@ export const removeSubjectFromResult = async (
       (result: any) => result.subject !== subject
     );
 
-    console.log("reading: ", updatedResults);
 
     if (updatedResults.length === reportCard.result.length) {
       return res.status(404).json({
@@ -2154,7 +2153,6 @@ export const removeSubjectFromResult = async (
       { new: true }
     );
 
-    console.log("Updated Report: ", updatedReport);
 
     return res.status(200).json({
       message: "Subject removed from report card successfully",
