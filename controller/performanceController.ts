@@ -435,6 +435,118 @@ export const createExamPerformance = async (
 
 // Mid Test
 
+// export const createMidTestPerformance = async (
+//   req: Request,
+//   res: Response
+// ): Promise<Response> => {
+//   try {
+//     const { studentID, quizID, subjectID } = req.params;
+//     const {
+//       studentScore,
+//       studentGrade,
+//       remark,
+//       totalQuestions,
+//       markPerQuestion,
+//       status,
+//     } = req.body;
+
+//     const studentInfo: any = await studentModel
+//       .findById(studentID)
+//       .populate({ path: "performance" });
+
+//     const quizData: any = await midTestModel.findById(quizID);
+
+//     const subject = await subjectModel.findById(subjectID);
+
+//     if (quizData) {
+//       const existingAttempts = await performanceModel.countDocuments({
+//         student: studentID,
+//         quizID,
+//       });
+//       const attemptNumber = existingAttempts + 1;
+
+//       const quizes = await performanceModel.create({
+//         remark,
+//         subjectTitle: quizData?.subjectTitle,
+//         studentScore,
+//         studentGrade,
+//         totalQuestions,
+//         markPerQuestion,
+//         quizDone: true,
+//         status,
+//         performanceRating: parseInt(
+//           ((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)
+//         ),
+//         attemptNumber,
+//         className: studentInfo?.classAssigned,
+//         quizID: quizID,
+//         studentID,
+//         studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
+//         studentAvatar: studentInfo.avatar,
+//         subjectID: subject?._id,
+//         student: studentID,
+//       });
+
+//       quizData?.performance?.push(new Types.ObjectId(quizes._id));
+//       await quizData?.save();
+
+//       // studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
+//       // await studentInfo?.save();
+
+//       await studentModel.findByIdAndUpdate(
+//         studentID,
+//         { $push: { performance: new Types.ObjectId(quizes._id) } },
+//         { new: true }
+//       );
+
+//       subject?.performance?.push(new Types.ObjectId(quizes._id));
+//       await subject?.save();
+
+//       // Recalculate student's totalPerformance using only valid numeric ratings
+//       const getStudent = await studentModel.findById(studentID).populate({
+//         path: "performance",
+//       });
+
+//       const ratings: number[] = [];
+//       getStudent?.performance?.forEach((el: any) => {
+//         if (
+//           typeof el.performanceRating === "number" &&
+//           !isNaN(el.performanceRating)
+//         ) {
+//           ratings.push(el.performanceRating);
+//         }
+//       });
+
+//       const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
+//       const count = ratings.length;
+//       const avg = count > 0 ? totalSum / count : 0;
+
+//       await studentModel.findByIdAndUpdate(
+//         studentID,
+//         { totalPerformance: avg },
+//         { new: true }
+//       );
+
+//       return res.status(201).json({
+//         message: "quiz entry created successfully",
+//         data: quizes,
+//         status: 201,
+//       });
+//     } else {
+//       return res.status(404).json({
+//         message: "Subject doesn't exist for this class",
+//         status: 404,
+//       });
+//     }
+//   } catch (error: any) {
+//     return res.status(404).json({
+//       message: "Error creating class subject quiz",
+//       status: 404,
+//       data: error.message,
+//     });
+//   }
+// };
+
 export const createMidTestPerformance = async (
   req: Request,
   res: Response
@@ -450,98 +562,156 @@ export const createMidTestPerformance = async (
       status,
     } = req.body;
 
-    const studentInfo: any = await studentModel
+    // Input validation
+    if (!studentID || !quizID || !subjectID) {
+      return res.status(400).json({
+        message: "studentID, quizID and subjectID are required",
+        status: 400,
+      });
+    }
+
+    if (typeof studentScore !== "number" || studentScore < 0) {
+      return res.status(400).json({
+        message: "Valid studentScore is required",
+        status: 400,
+      });
+    }
+
+    // Find required documents
+    const studentInfo = await studentModel
       .findById(studentID)
       .populate({ path: "performance" });
 
-    const quizData: any = await midTestModel.findById(quizID);
-
-    const subject = await subjectModel.findById(subjectID);
-
-    if (quizData) {
-      const existingAttempts = await performanceModel.countDocuments({
-        student: studentID,
-        quizID,
-      });
-      const attemptNumber = existingAttempts + 1;
-
-      const quizes = await performanceModel.create({
-        remark,
-        subjectTitle: quizData?.subjectTitle,
-        studentScore,
-        studentGrade,
-        totalQuestions,
-        markPerQuestion,
-        quizDone: true,
-        status,
-        performanceRating: parseInt(
-          ((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)
-        ),
-        attemptNumber,
-        className: studentInfo?.classAssigned,
-        quizID: quizID,
-        studentID,
-        studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
-        studentAvatar: studentInfo.avatar,
-        subjectID: subject?._id,
-        student: studentID,
-      });
-
-      quizData?.performance?.push(new Types.ObjectId(quizes._id));
-      await quizData?.save();
-
-      // studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
-      // await studentInfo?.save();
-
-      await studentModel.findByIdAndUpdate(
-        studentID,
-        { $push: { performance: new Types.ObjectId(quizes._id) } },
-        { new: true }
-      );
-
-      subject?.performance?.push(new Types.ObjectId(quizes._id));
-      await subject?.save();
-
-      // Recalculate student's totalPerformance using only valid numeric ratings
-      const getStudent = await studentModel.findById(studentID).populate({
-        path: "performance",
-      });
-
-      const ratings: number[] = [];
-      getStudent?.performance?.forEach((el: any) => {
-        if (
-          typeof el.performanceRating === "number" &&
-          !isNaN(el.performanceRating)
-        ) {
-          ratings.push(el.performanceRating);
-        }
-      });
-
-      const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
-      const count = ratings.length;
-      const avg = count > 0 ? totalSum / count : 0;
-
-      await studentModel.findByIdAndUpdate(
-        studentID,
-        { totalPerformance: avg },
-        { new: true }
-      );
-
-      return res.status(201).json({
-        message: "quiz entry created successfully",
-        data: quizes,
-        status: 201,
-      });
-    } else {
+    if (!studentInfo) {
       return res.status(404).json({
-        message: "Subject doesn't exist for this class",
+        message: "Student not found",
         status: 404,
       });
     }
+
+    const quizData:any = await midTestModel.findById(quizID);
+    if (!quizData) {
+      return res.status(404).json({
+        message: "Mid test not found",
+        status: 404,
+      });
+    }
+
+    const subject = await subjectModel.findById(subjectID);
+    if (!subject) {
+      return res.status(404).json({
+        message: "Subject not found",
+        status: 404,
+      });
+    }
+
+    // Calculate performance rating safely
+    const questionCount = Array.isArray(quizData?.quiz?.question)
+      ? quizData.quiz.question.length
+      : typeof quizData?.quiz === "number"
+      ? quizData.quiz
+      : 0;
+
+    if (questionCount === 0) {
+      return res.status(400).json({
+        message: "Invalid quiz question count",
+        status: 400,
+      });
+    }
+
+    const performanceRating = Number(
+      ((studentScore / questionCount) * 100).toFixed(2)
+    );
+
+    if (isNaN(performanceRating)) {
+      return res.status(400).json({
+        message: "Invalid performance rating calculation",
+        status: 400,
+      });
+    }
+
+    // Count existing attempts
+    const existingAttempts = await performanceModel.countDocuments({
+      student: studentID,
+      quizID,
+    });
+
+    // Create performance document
+    const quizes = await performanceModel.create({
+      remark,
+      subjectTitle: quizData.subjectTitle || "",
+      studentScore,
+      studentGrade,
+      totalQuestions,
+      markPerQuestion,
+      quizDone: true,
+      status,
+      performanceRating,
+      attemptNumber: existingAttempts + 1,
+      className: studentInfo.classAssigned || "",
+      quizID: quizID,
+      studentID,
+      studentName: `${studentInfo.studentFirstName || ""} ${
+        studentInfo.studentLastName || ""
+      }`.trim(),
+      studentAvatar: studentInfo.avatar || "",
+      subjectID: subject._id,
+      student: studentID,
+    });
+
+    // Update references atomically
+    await Promise.all([
+      midTestModel.findByIdAndUpdate(
+        quizID,
+        { $push: { performance: new Types.ObjectId(quizes._id) } },
+        { new: true }
+      ),
+      studentModel.findByIdAndUpdate(
+        studentID,
+        { $push: { performance: new Types.ObjectId(quizes._id) } },
+        { new: true }
+      ),
+      subjectModel.findByIdAndUpdate(
+        subjectID,
+        { $push: { performance: new Types.ObjectId(quizes._id) } },
+        { new: true }
+      ),
+    ]);
+
+    // Recalculate student's performance
+    const performances = await performanceModel
+      .find({ student: studentID })
+      .select("performanceRating");
+
+    const ratings = performances
+      .map((p) =>
+        typeof p.performanceRating === "number" && !isNaN(p.performanceRating)
+          ? p.performanceRating
+          : null
+      )
+      .filter((r): r is number => r !== null);
+
+    const avg =
+      ratings.length > 0
+        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+        : 0;
+
+    await studentModel.findByIdAndUpdate(
+      studentID,
+      { totalPerformance: avg },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "Mid test performance created successfully",
+      data: quizes,
+      status: 201,
+    });
   } catch (error: any) {
-    return res.status(404).json({
-      message: "Error creating class subject quiz",
-      status: 404,
+    console.error("Error creating mid test performance:", error);
+    return res.status(500).json({
+      message: "Error creating mid test performance",
+      status: 500,
       data: error.message,
     });
   }
