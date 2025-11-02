@@ -83,6 +83,12 @@ const schoolModel = new mongoose_2.Schema({
     signatureID: {
         type: String,
     },
+    stamp: {
+        type: String,
+    },
+    stampID: {
+        type: String,
+    },
     address: {
         type: String,
     },

@@ -45,6 +45,7 @@ router
 router
     .route("/upload-school-signature/:schoolID")
     .patch(upload, schoolController_1.updateSchoolSignature);
+router.route("/upload-school-stamp/:schoolID").patch(upload, schoolController_1.updateSchoolStamp);
 router.route("/change-school-phone/:schoolID").patch(schoolController_1.changeSchoolPhoneNumber);
 router
     .route("/change-school-personal-name/:schoolID")
