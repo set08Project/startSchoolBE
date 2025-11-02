@@ -1003,6 +1003,42 @@ export const updateSchoolAvatar = async (req: any, res: Response) => {
   }
 };
 
+export const updateSchoolStamp = async (req: any, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+
+    if (school) {
+      const { secure_url, public_id }: any = await streamUpload(req);
+
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          stamp: secure_url,
+          stampID: public_id,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "school stamp has been, added",
+        data: updatedSchool,
+        status: 201,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error creating user",
+    });
+  }
+};
+// school shool has started
+
 export const updateSchoolSignature = async (req: any, res: Response) => {
   try {
     const { schoolID } = req.params;

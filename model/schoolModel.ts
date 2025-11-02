@@ -35,6 +35,9 @@ interface iSchool {
   signature: string;
   signatureID: string;
 
+  stamp: string;
+  stampID: string;
+
   adminCode: string;
   plan: string;
   phone: string;
@@ -174,6 +177,14 @@ const schoolModel = new Schema<iSchoolData>(
     },
 
     signatureID: {
+      type: String,
+    },
+
+    stamp: {
+      type: String,
+    },
+
+    stampID: {
       type: String,
     },
 

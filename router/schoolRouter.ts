@@ -30,6 +30,7 @@ import {
   exportSchoolDataFile,
   RemoveSchoolPaymentOptions,
   importSchoolData,
+  updateSchoolStamp,
 } from "../controller/schoolController";
 import multer from "multer";
 
@@ -87,6 +88,8 @@ router
 router
   .route("/upload-school-signature/:schoolID")
   .patch(upload, updateSchoolSignature);
+
+router.route("/upload-school-stamp/:schoolID").patch(upload, updateSchoolStamp);
 
 router.route("/change-school-phone/:schoolID").patch(changeSchoolPhoneNumber);
 router
