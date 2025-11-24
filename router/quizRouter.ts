@@ -22,7 +22,7 @@ const router: Router = Router();
 
 // examination
 // routercreate-subject-quiz
-router.route("/create-subject-examination-post24/:classID/:subjectID").post(
+router.route("/create-subject-examination-post/:classID/:subjectID").post(
   fileUploads,
   // createSubjectExam,
   createSubjectExamination
