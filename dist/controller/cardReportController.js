@@ -1753,7 +1753,7 @@ const classTeacherPhychoReportRemark = (req, res) => __awaiter(void 0, void 0, v
 });
 exports.classTeacherPhychoReportRemark = classTeacherPhychoReportRemark;
 const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { studentID, schoolID } = req.params;
         const { adminComment } = req.body;
@@ -1788,7 +1788,7 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 school,
                 student,
             });
-            (_a = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(result._id));
+            (_b = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(result._id));
             student === null || student === void 0 ? void 0 : student.save();
             return res.status(201).json({
                 message: "admin report remark successfully",
@@ -1812,7 +1812,7 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.adminReportRemark = adminReportRemark;
 const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _c;
     try {
         const { teacherID, studentID, classID } = req.params;
         const { teacherComment, attendance } = req.body;
@@ -1834,7 +1834,7 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
             return el.className === (student === null || student === void 0 ? void 0 : student.classAssigned);
         });
         const x = student === null || student === void 0 ? void 0 : student.presentClassID;
-        const xx = (_a = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned) === null || _a === void 0 ? void 0 : _a.find((el) => {
+        const xx = (_c = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned) === null || _c === void 0 ? void 0 : _c.find((el) => {
             return (el === null || el === void 0 ? void 0 : el.classID) === `${x}`;
         });
         if ((xx === null || xx === void 0 ? void 0 : xx.classID) === x) {

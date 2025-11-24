@@ -677,8 +677,8 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
             },
         })
             .then((data) => __awaiter(void 0, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-            const check = (_a = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions) === null || _a === void 0 ? void 0 : _a.some((el) => el.reference === ref);
+            var _c, _d, _e, _f, _g, _h, _j, _k, _l;
+            const check = (_c = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions) === null || _c === void 0 ? void 0 : _c.some((el) => el.reference === ref);
             if (!check) {
                 let id = crypto_1.default.randomBytes(4).toString("hex");
                 let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
@@ -691,8 +691,8 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
                             paymentMode: "online",
                             confirm: false,
                             paymentDetails: paymentName,
-                            paymentAmount: parseFloat((_c = (_b = data === null || data === void 0 ? void 0 : data.data) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.amount) / 100,
-                            reference: (_e = (_d = data === null || data === void 0 ? void 0 : data.data) === null || _d === void 0 ? void 0 : _d.data) === null || _e === void 0 ? void 0 : _e.reference,
+                            paymentAmount: parseFloat((_e = (_d = data === null || data === void 0 ? void 0 : data.data) === null || _d === void 0 ? void 0 : _d.data) === null || _e === void 0 ? void 0 : _e.amount) / 100,
+                            reference: (_g = (_f = data === null || data === void 0 ? void 0 : data.data) === null || _f === void 0 ? void 0 : _f.data) === null || _g === void 0 ? void 0 : _g.reference,
                             studentID,
                             schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
                             termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
@@ -712,8 +712,8 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
                             paymentMode: "online",
                             confirm: false,
                             paymentDetails: paymentName,
-                            paymentAmount: parseFloat((_g = (_f = data === null || data === void 0 ? void 0 : data.data) === null || _f === void 0 ? void 0 : _f.data) === null || _g === void 0 ? void 0 : _g.amount) / 100,
-                            reference: (_j = (_h = data === null || data === void 0 ? void 0 : data.data) === null || _h === void 0 ? void 0 : _h.data) === null || _j === void 0 ? void 0 : _j.reference,
+                            paymentAmount: parseFloat((_j = (_h = data === null || data === void 0 ? void 0 : data.data) === null || _h === void 0 ? void 0 : _h.data) === null || _j === void 0 ? void 0 : _j.amount) / 100,
+                            reference: (_l = (_k = data === null || data === void 0 ? void 0 : data.data) === null || _k === void 0 ? void 0 : _k.data) === null || _l === void 0 ? void 0 : _l.reference,
                             studentID,
                             schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
                             termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
@@ -748,7 +748,7 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
 });
 exports.verifySchoolTransaction = verifySchoolTransaction;
 const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _m, _o, _p;
     try {
         const { studentID } = req.params;
         const { paymentName, paymentAmount } = req.body;
@@ -756,11 +756,11 @@ const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, voi
         const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
             path: "session",
         });
-        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
+        const readSession = (_m = school === null || school === void 0 ? void 0 : school.session) === null || _m === void 0 ? void 0 : _m.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
         const termly = yield sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
             path: "term",
         });
-        const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
+        const readTerm = (_o = termly === null || termly === void 0 ? void 0 : termly.term) === null || _o === void 0 ? void 0 : _o.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
             el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
         const mainTerm = yield termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
         let id = crypto_1.default.randomBytes(4).toString("hex");
@@ -816,7 +816,7 @@ const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, voi
             return res.status(200).json({
                 message: "payment verified",
                 status: 200,
-                data: newData === null || newData === void 0 ? void 0 : newData.paymentOptions[((_c = newData === null || newData === void 0 ? void 0 : newData.paymentOptions) === null || _c === void 0 ? void 0 : _c.length) - 1],
+                data: newData === null || newData === void 0 ? void 0 : newData.paymentOptions[((_p = newData === null || newData === void 0 ? void 0 : newData.paymentOptions) === null || _p === void 0 ? void 0 : _p.length) - 1],
             });
         }
         else {

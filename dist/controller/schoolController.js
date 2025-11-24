@@ -286,7 +286,7 @@ const viewAllSchools = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.viewAllSchools = viewAllSchools;
 const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _e, _f, _g;
     try {
         const { schoolID } = req.params;
         let id = "678d4e5060a0cbcd2e27dc51";
@@ -363,7 +363,7 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         for (const m of schoolLinkedModels) {
             try {
                 const del = yield m.deleteMany({ school: getSchool._id });
-                summary.deleted[m.modelName || ((_a = m.collection) === null || _a === void 0 ? void 0 : _a.name) || m.name] =
+                summary.deleted[m.modelName || ((_e = m.collection) === null || _e === void 0 ? void 0 : _e.name) || m.name] =
                     (del === null || del === void 0 ? void 0 : del.deletedCount) || (del === null || del === void 0 ? void 0 : del.n) || 0;
             }
             catch (err) {
@@ -372,8 +372,8 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     const del2 = yield m.deleteMany({
                         schoolInfo: getSchool._id,
                     });
-                    summary.deleted[m.modelName || ((_b = m.collection) === null || _b === void 0 ? void 0 : _b.name) || m.name] =
-                        (summary.deleted[m.modelName || ((_c = m.collection) === null || _c === void 0 ? void 0 : _c.name) || m.name] ||
+                    summary.deleted[m.modelName || ((_f = m.collection) === null || _f === void 0 ? void 0 : _f.name) || m.name] =
+                        (summary.deleted[m.modelName || ((_g = m.collection) === null || _g === void 0 ? void 0 : _g.name) || m.name] ||
                             0) + ((del2 === null || del2 === void 0 ? void 0 : del2.deletedCount) || (del2 === null || del2 === void 0 ? void 0 : del2.n) || 0);
                 }
                 catch (err2) {
@@ -530,11 +530,11 @@ const exportSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.exportSchoolData = exportSchoolData;
 const exportSchoolDataFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _h;
     try {
         const { schoolID } = req.params;
         // Admin-only: simple guard - user must be logged in and match school admin session or school.status
-        const sessionSchoolID = (_a = req.session) === null || _a === void 0 ? void 0 : _a.isSchoolID;
+        const sessionSchoolID = (_h = req.session) === null || _h === void 0 ? void 0 : _h.isSchoolID;
         // if (
         //   !sessionSchoolID ||
         //   sessionSchoolID.toString() !== schoolID.toString()
@@ -608,9 +608,9 @@ const exportSchoolDataFile = (req, res) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.exportSchoolDataFile = exportSchoolDataFile;
 const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _j, _k, _l;
     try {
-        const payload = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.data) || req.body;
+        const payload = ((_j = req.body) === null || _j === void 0 ? void 0 : _j.data) || req.body;
         if (!payload || !payload.school) {
             return res.status(400).json({ message: "Invalid import payload" });
         }
@@ -655,7 +655,7 @@ const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // First pass: create documents without reference arrays
         for (const col of collections) {
             for (const item of col.items) {
-                const oldId = (_b = item._id) === null || _b === void 0 ? void 0 : _b.toString();
+                const oldId = (_k = item._id) === null || _k === void 0 ? void 0 : _k.toString();
                 const doc = Object.assign({}, item);
                 delete doc._id;
                 // replace school references with new school id
@@ -684,7 +684,7 @@ const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // Second pass: update created docs with remapped references
         for (const col of collections) {
             for (const item of col.items) {
-                const oldId = (_c = item._id) === null || _c === void 0 ? void 0 : _c.toString();
+                const oldId = (_l = item._id) === null || _l === void 0 ? void 0 : _l.toString();
                 const newId = idMap[oldId];
                 if (!newId)
                     continue;

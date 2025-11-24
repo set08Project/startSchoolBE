@@ -255,7 +255,7 @@ const randomizeSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, 
 });
 exports.randomizeSubjectMidTest = randomizeSubjectMidTest;
 const updateSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _d, _e;
     try {
         const { midTestID } = req.params;
         const { mark, duration } = req.body;
@@ -263,8 +263,8 @@ const updateSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
             quiz: {
                 instruction: { duration, mark },
-                question: (_a = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _a === void 0 ? void 0 : _a.question,
-                theory: (_b = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _b === void 0 ? void 0 : _b.theory,
+                question: (_d = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _d === void 0 ? void 0 : _d.question,
+                theory: (_e = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _e === void 0 ? void 0 : _e.theory,
             },
         }, { new: true });
         return res.status(201).json({

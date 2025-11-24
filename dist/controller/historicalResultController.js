@@ -78,7 +78,7 @@ const viewResultHistory = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.viewResultHistory = viewResultHistory;
 const deleteResultHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { studentID, schoolID, teacherID, resultID } = req.params;
         const school = yield schoolModel_1.default.findById(schoolID);
@@ -91,7 +91,7 @@ const deleteResultHistory = (req, res) => __awaiter(void 0, void 0, void 0, func
             },
         });
         yield (studentHistoricalResultModel_1.default === null || studentHistoricalResultModel_1.default === void 0 ? void 0 : studentHistoricalResultModel_1.default.findByIdAndDelete(resultID));
-        yield ((_a = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(resultID)));
+        yield ((_b = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(resultID)));
         student.save();
         return res.status(201).json({
             message: "done",

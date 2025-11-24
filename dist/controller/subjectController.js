@@ -339,7 +339,7 @@ const viewSubjectDetail = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.viewSubjectDetail = viewSubjectDetail;
 const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _c;
     try {
         const { schoolID, teacherID, subjectID } = req.params;
         // Validate required params
@@ -374,7 +374,7 @@ const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Verify the subject is actually assigned to this teacher
-        const hasSubject = (_a = teacher.subjectAssigned) === null || _a === void 0 ? void 0 : _a.some((el) => el.id.toString() === subjectID);
+        const hasSubject = (_c = teacher.subjectAssigned) === null || _c === void 0 ? void 0 : _c.some((el) => el.id.toString() === subjectID);
         if (!hasSubject) {
             return res.status(400).json({
                 message: "Subject is not assigned to this teacher",
