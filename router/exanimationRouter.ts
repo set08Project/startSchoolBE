@@ -8,6 +8,7 @@ import {
   readExamination,
   deleteExamination,
   randomizeSubjectExamination,
+  updateSubjectExam,
 } from "../controller/examinationController";
 
 const router: Router = Router();
@@ -23,6 +24,7 @@ router
   .patch(randomizeSubjectExamination);
 
 router.route("/view-subject-exam/:subjectID").get(readSubjectExamination);
+router.route("/update-subject-exam/:examID").patch(updateSubjectExam);
 
 router.route("/view-exam/:examID").get(readExamination);
 

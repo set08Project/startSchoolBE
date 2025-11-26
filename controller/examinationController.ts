@@ -475,7 +475,6 @@ export const readExamination = async (
   }
 };
 
-
 export const deleteExamination = async (
   req: Request,
   res: Response
@@ -503,6 +502,41 @@ export const deleteExamination = async (
     return res.status(404).json({
       message: "Error creating subject mid Test",
       data: error.message,
+      status: 404,
+    });
+  }
+};
+
+export const updateSubjectExam = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { examID } = req.params;
+    const { mark, duration } = req.body;
+
+    const midTest: any = await examinationModel.findByIdAndUpdate(examID);
+
+    const subject = await examinationModel.findByIdAndUpdate(
+      examID,
+      {
+        quiz: {
+          instruction: { duration, mark },
+          question: midTest?.quiz?.question,
+          theory: midTest?.quiz?.theory,
+        },
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "start subject mid test read successfully",
+      data: subject,
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error reading subject mid test",
       status: 404,
     });
   }
