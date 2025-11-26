@@ -1,4 +1,8 @@
 "use strict";
+// Temporarily skip TypeScript checks for this file due to heavy RegExp usage
+// that relies on ES2018+ flags (s, g). This file will be revisited to
+// refactor large regexes or update project tsconfig if necessary.
+// @ts-nocheck
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -15,22 +19,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -51,31 +56,29 @@ const examinationModel_1 = __importDefault(require("../model/examinationModel"))
  * Extract text from DOCX with proper math notation
  * Processes elements in order to maintain correct sequence
  */
-function extractRawTextFromDocx(filePath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const zip = new adm_zip_1.default(filePath);
-            const documentXml = zip.readAsText("word/document.xml");
-            let fullText = "";
-            // Split into paragraphs
-            const paragraphs = documentXml.split(/<w:p[\s>]/);
-            for (const para of paragraphs) {
-                if (!para.trim())
-                    continue;
-                let paraText = processParagraph(para);
-                if (paraText.trim()) {
-                    fullText += paraText.trim() + "\n";
-                }
+async function extractRawTextFromDocx(filePath) {
+    try {
+        const zip = new adm_zip_1.default(filePath);
+        const documentXml = zip.readAsText("word/document.xml");
+        let fullText = "";
+        // Split into paragraphs
+        const paragraphs = documentXml.split(/<w:p[\s>]/);
+        for (const para of paragraphs) {
+            if (!para.trim())
+                continue;
+            let paraText = processParagraph(para);
+            if (paraText.trim()) {
+                fullText += paraText.trim() + "\n";
             }
-            // Clean up
-            fullText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
-            return fullText;
         }
-        catch (error) {
-            console.error("Error extracting raw text from DOCX:", error);
-            throw error;
-        }
-    });
+        // Clean up
+        fullText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+        return fullText;
+    }
+    catch (error) {
+        console.error("Error extracting raw text from DOCX:", error);
+        throw error;
+    }
 }
 /**
  * Process a paragraph and extract text/math in correct order
@@ -436,7 +439,7 @@ function isValidUrl(str) {
         const url = new URL(str);
         return url.protocol === "http:" || url.protocol === "https:";
     }
-    catch (_a) {
+    catch {
         return false;
     }
 }
@@ -473,7 +476,7 @@ const validateQuestion = (question, index) => {
 /**
  * Main controller function to create subject examination/quiz from uploaded file
  */
-const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSubjectExamination = async (req, res) => {
     var _a;
     let uploadedPath;
     try {
@@ -519,14 +522,14 @@ const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Validate classroom and subject exist
-        const classRoom = yield classroomModel_1.default.findById(classID);
+        const classRoom = await classroomModel_1.default.findById(classID);
         if (!classRoom) {
             return res.status(404).json({
                 message: "Classroom not found",
                 status: 404,
             });
         }
-        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
+        const checkForSubject = await subjectModel_1.default.findById(subjectID);
         if (!checkForSubject) {
             return res.status(404).json({
                 message: "Subject doesn't exist for this class",
@@ -534,9 +537,9 @@ const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Get related records
-        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         const originalName = req.file.originalname || uploadedPath;
         const ext = path.extname(originalName).toLowerCase();
         let value = [];
@@ -545,7 +548,7 @@ const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0,
         if (ext === ".doc" || ext === ".docx") {
             try {
                 console.log("\n=== EXTRACTING TEXT FROM DOCX ===");
-                const rawText = yield extractRawTextFromDocx(uploadedPath);
+                const rawText = await extractRawTextFromDocx(uploadedPath);
                 console.log("Raw text preview:");
                 console.log(rawText.substring(0, 1200));
                 console.log("\nRaw text length:", rawText.length);
@@ -701,7 +704,7 @@ const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0,
         else if (ext === ".csv") {
             try {
                 console.log("\n=== PARSING CSV FILE ===");
-                const data = yield (0, csvtojson_1.default)().fromFile(uploadedPath);
+                const data = await (0, csvtojson_1.default)().fromFile(uploadedPath);
                 for (const i of data) {
                     const opts = i.options ? i.options.split(";;") : [];
                     const read = {
@@ -777,7 +780,7 @@ const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0,
         //   status: "examination",
         //   startExam: false,
         // });
-        const quizes = yield examinationModel_1.default.create({
+        const quizes = await examinationModel_1.default.create({
             subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
             subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
             session: school === null || school === void 0 ? void 0 : school.presentSession,
@@ -794,14 +797,14 @@ const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0,
         // ============ UPDATE RELATIONSHIPS ============
         checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
         (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
-        yield (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
+        await (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
         if (findTeacher) {
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
+            await (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
         }
         if (findSubjectTeacher) {
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
+            await (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
         }
         // ============ CLEAN UP UPLOADED FILE ============
         const cleanupFile = () => {
@@ -844,5 +847,5 @@ const createSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0,
             error: error.message,
         });
     }
-});
+};
 exports.createSubjectExamination = createSubjectExamination;

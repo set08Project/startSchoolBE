@@ -13,6 +13,7 @@ router
     .route("/randomize-subject-exam/:examID/")
     .patch(examinationController_1.randomizeSubjectExamination);
 router.route("/view-subject-exam/:subjectID").get(examinationController_1.readSubjectExamination);
+router.route("/update-subject-exam/:examID").patch(examinationController_1.updateSubjectExam);
 router.route("/view-exam/:examID").get(examinationController_1.readExamination);
 router.route("/delete-exam/:subjectID/:examID").delete(examinationController_1.deleteExamination);
 exports.default = router;

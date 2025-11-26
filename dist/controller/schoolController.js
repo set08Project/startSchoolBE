@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -61,10 +52,10 @@ const teachTopicQuizesModel_1 = __importDefault(require("../model/teachTopicQuiz
 const timetableModel_1 = __importDefault(require("../model/timetableModel"));
 const cloudinary_1 = __importDefault(require("../utils/cloudinary"));
 const archiver = require("archiver");
-const viewSchoolTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolTopStudent = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const schoolClasses = yield schoolModel_1.default.findById(schoolID).populate({
+        const schoolClasses = await schoolModel_1.default.findById(schoolID).populate({
             path: "students",
             options: {
                 sort: {
@@ -86,12 +77,12 @@ const viewSchoolTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, fun
             data: error.message,
         });
     }
-});
+};
 exports.viewSchoolTopStudent = viewSchoolTopStudent;
-const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const loginSchool = async (req, res) => {
     try {
         const { email, enrollmentID } = req.body;
-        const school = yield schoolModel_1.default.findOne({
+        const school = await schoolModel_1.default.findOne({
             email,
         });
         if (school) {
@@ -134,14 +125,14 @@ const loginSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             data: error.message,
         });
     }
-});
+};
 exports.loginSchool = loginSchool;
-const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchool = async (req, res) => {
     try {
         const { email } = req.body;
         const id = crypto_1.default.randomBytes(4).toString("hex");
         const adminCode = crypto_1.default.randomBytes(6).toString("hex");
-        const school = yield schoolModel_1.default.create({
+        const school = await schoolModel_1.default.create({
             email,
             enrollmentID: id,
             adminCode,
@@ -149,19 +140,19 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
         // verifiedEmail(school);
         const job = new cron_1.CronJob(" * * * * 7", // cronTime
-        () => __awaiter(void 0, void 0, void 0, function* () {
+        async () => {
             var _a, _b, _c, _d;
-            const viewSchool = yield schoolModel_1.default.findById(school._id);
+            const viewSchool = await schoolModel_1.default.findById(school._id);
             if (((_a = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.staff) === null || _a === void 0 ? void 0 : _a.length) === 0 &&
                 ((_b = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.students) === null || _b === void 0 ? void 0 : _b.length) === 0 &&
                 ((_c = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.classRooms) === null || _c === void 0 ? void 0 : _c.length) === 0 &&
                 ((_d = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.subjects) === null || _d === void 0 ? void 0 : _d.length) === 0 &&
                 !(viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.started) &&
                 !(viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.verify)) {
-                yield schoolModel_1.default.findByIdAndDelete(school._id);
+                await schoolModel_1.default.findByIdAndDelete(school._id);
             }
             job.stop();
-        }), // onTick
+        }, // onTick
         null, // onComplete
         true // start
         );
@@ -178,14 +169,14 @@ const createSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             status: 404,
         });
     }
-});
+};
 exports.createSchool = createSchool;
-const verifySchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const verifySchool = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { verify: true }, { new: true });
+            const verified = await schoolModel_1.default.findByIdAndUpdate(schoolID, { verify: true }, { new: true });
             return res.status(201).json({
                 message: "school verified successfully",
                 data: verified,
@@ -203,12 +194,12 @@ const verifySchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: "Error verifying school",
         });
     }
-});
+};
 exports.verifySchool = verifySchool;
-const viewSchoolStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolStatus = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         return res.status(200).json({
             message: "viewing school record",
             data: school,
@@ -220,12 +211,12 @@ const viewSchoolStatus = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: "Error verifying school",
         });
     }
-});
+};
 exports.viewSchoolStatus = viewSchoolStatus;
-const viewSchoolStatusByName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolStatusByName = async (req, res) => {
     try {
         const { schoolName } = req.params;
-        const school = yield schoolModel_1.default.findOne({ schoolName });
+        const school = await schoolModel_1.default.findOne({ schoolName });
         return res.status(200).json({
             message: "viewing school record by her name",
             data: school,
@@ -237,9 +228,9 @@ const viewSchoolStatusByName = (req, res) => __awaiter(void 0, void 0, void 0, f
             message: "Error verifying school",
         });
     }
-});
+};
 exports.viewSchoolStatusByName = viewSchoolStatusByName;
-const logoutSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const logoutSchool = async (req, res) => {
     try {
         req.session.destroy();
         return res.status(200).json({
@@ -251,9 +242,9 @@ const logoutSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: "Error verifying school",
         });
     }
-});
+};
 exports.logoutSchool = logoutSchool;
-const readSchoolCookie = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSchoolCookie = async (req, res) => {
     try {
         const readSchool = req.session.isSchoolID;
         return res.status(200).json({
@@ -266,11 +257,11 @@ const readSchoolCookie = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: "Error verifying school",
         });
     }
-});
+};
 exports.readSchoolCookie = readSchoolCookie;
-const viewAllSchools = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewAllSchools = async (req, res) => {
     try {
-        const school = yield schoolModel_1.default.find();
+        const school = await schoolModel_1.default.find();
         return res.status(200).json({
             total: `Number of Schools: ${school.length} on our platform`,
             length: school.length,
@@ -283,24 +274,24 @@ const viewAllSchools = (req, res) => __awaiter(void 0, void 0, void 0, function*
             message: "Error verifying school",
         });
     }
-});
+};
 exports.viewAllSchools = viewAllSchools;
-const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f, _g;
+const deleteSchool = async (req, res) => {
+    var _a, _b, _c;
     try {
         const { schoolID } = req.params;
         let id = "678d4e5060a0cbcd2e27dc51";
-        const getSchool = yield schoolModel_1.default.findById(schoolID);
+        const getSchool = await schoolModel_1.default.findById(schoolID);
         if (!getSchool) {
             return res.status(404).json({ message: "School not found" });
         }
         const summary = { deleted: {}, errors: [] };
         // Helper to safely delete cloud assets by public_id
-        const tryDestroy = (publicId) => __awaiter(void 0, void 0, void 0, function* () {
+        const tryDestroy = async (publicId) => {
             if (!publicId)
                 return;
             try {
-                yield cloudinary_1.default.uploader.destroy(publicId);
+                await cloudinary_1.default.uploader.destroy(publicId);
             }
             catch (err) {
                 // don't fail entire operation on cloud delete errors
@@ -309,19 +300,19 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     error: (err === null || err === void 0 ? void 0 : err.message) || String(err),
                 });
             }
-        });
+        };
         // Delete sessions and their terms
         try {
             const sessionIds = (getSchool.session || []).map((s) => s.toString());
             for (const sid of sessionIds) {
-                const sess = yield sessionModel_1.default.findById(sid).lean();
+                const sess = await sessionModel_1.default.findById(sid).lean();
                 if ((sess === null || sess === void 0 ? void 0 : sess.term) && sess.term.length) {
-                    yield termModel_1.default.deleteMany({ _id: { $in: sess.term } });
+                    await termModel_1.default.deleteMany({ _id: { $in: sess.term } });
                     summary.deleted.terms =
                         (summary.deleted.terms || 0) + sess.term.length;
                 }
             }
-            yield sessionModel_1.default.deleteMany({ _id: { $in: sessionIds } });
+            await sessionModel_1.default.deleteMany({ _id: { $in: sessionIds } });
             summary.deleted.sessions = sessionIds.length;
         }
         catch (err) {
@@ -362,18 +353,18 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         ];
         for (const m of schoolLinkedModels) {
             try {
-                const del = yield m.deleteMany({ school: getSchool._id });
-                summary.deleted[m.modelName || ((_e = m.collection) === null || _e === void 0 ? void 0 : _e.name) || m.name] =
+                const del = await m.deleteMany({ school: getSchool._id });
+                summary.deleted[m.modelName || ((_a = m.collection) === null || _a === void 0 ? void 0 : _a.name) || m.name] =
                     (del === null || del === void 0 ? void 0 : del.deletedCount) || (del === null || del === void 0 ? void 0 : del.n) || 0;
             }
             catch (err) {
                 // some models may use 'schoolInfo' field
                 try {
-                    const del2 = yield m.deleteMany({
+                    const del2 = await m.deleteMany({
                         schoolInfo: getSchool._id,
                     });
-                    summary.deleted[m.modelName || ((_f = m.collection) === null || _f === void 0 ? void 0 : _f.name) || m.name] =
-                        (summary.deleted[m.modelName || ((_g = m.collection) === null || _g === void 0 ? void 0 : _g.name) || m.name] ||
+                    summary.deleted[m.modelName || ((_b = m.collection) === null || _b === void 0 ? void 0 : _b.name) || m.name] =
+                        (summary.deleted[m.modelName || ((_c = m.collection) === null || _c === void 0 ? void 0 : _c.name) || m.name] ||
                             0) + ((del2 === null || del2 === void 0 ? void 0 : del2.deletedCount) || (del2 === null || del2 === void 0 ? void 0 : del2.n) || 0);
                 }
                 catch (err2) {
@@ -404,30 +395,30 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 if (ids.length) {
                     // attempt to delete cloud assets if present (gallary, staff avatars, students avatars, store images, articles)
                     if (ref.model === gallaryModel_1.default) {
-                        const items = yield gallaryModel_1.default
+                        const items = await gallaryModel_1.default
                             .find({ _id: { $in: ids } })
                             .lean();
                         for (const it of items) {
-                            yield tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.public_id) || (it === null || it === void 0 ? void 0 : it.imageID));
+                            await tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.public_id) || (it === null || it === void 0 ? void 0 : it.imageID));
                         }
                     }
                     if (ref.model === staffModel_1.default) {
-                        const items = yield staffModel_1.default
+                        const items = await staffModel_1.default
                             .find({ _id: { $in: ids } })
                             .lean();
                         for (const it of items) {
-                            yield tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.staffAvatarID) || (it === null || it === void 0 ? void 0 : it.signatureID));
+                            await tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.staffAvatarID) || (it === null || it === void 0 ? void 0 : it.signatureID));
                         }
                     }
                     if (ref.model === studentModel_1.default) {
-                        const items = yield studentModel_1.default
+                        const items = await studentModel_1.default
                             .find({ _id: { $in: ids } })
                             .lean();
                         for (const it of items) {
-                            yield tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID));
+                            await tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID));
                         }
                     }
-                    yield ref.model.deleteMany({ _id: { $in: ids } });
+                    await ref.model.deleteMany({ _id: { $in: ids } });
                     summary.deleted[ref.key] = ids.length;
                 }
             }
@@ -452,7 +443,7 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 articleModel_1.default,
             ];
             for (const m of fallbackModels) {
-                const del = yield m.deleteMany({ school: getSchool._id });
+                const del = await m.deleteMany({ school: getSchool._id });
                 summary.deleted[m.modelName || m.name] =
                     (summary.deleted[m.modelName || m.name] || 0) +
                         ((del === null || del === void 0 ? void 0 : del.deletedCount) || (del === null || del === void 0 ? void 0 : del.n) || 0);
@@ -466,7 +457,7 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
         // Finally remove the school document itself
         try {
-            yield schoolModel_1.default.findByIdAndDelete(getSchool._id);
+            await schoolModel_1.default.findByIdAndDelete(getSchool._id);
             summary.deleted.school = 1;
         }
         catch (err) {
@@ -481,16 +472,16 @@ const deleteSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: "Error verifying school",
         });
     }
-});
+};
 exports.deleteSchool = deleteSchool;
-const exportSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const exportSchoolData = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID).lean();
+        const school = await schoolModel_1.default.findById(schoolID).lean();
         if (!school) {
             return res.status(404).json({ message: "School not found" });
         }
-        const [classRooms, staff, subjects, students, sessions, reportCards, midReportCards, outGoneStudents,] = yield Promise.all([
+        const [classRooms, staff, subjects, students, sessions, reportCards, midReportCards, outGoneStudents,] = await Promise.all([
             classroomModel_1.default.find({ _id: { $in: school.classRooms || [] } }).lean(),
             staffModel_1.default.find({ _id: { $in: school.staff || [] } }).lean(),
             subjectModel_1.default.find({ _id: { $in: school.subjects || [] } }).lean(),
@@ -527,14 +518,14 @@ const exportSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
             .status(500)
             .json({ message: "Error exporting school data", error: error.message });
     }
-});
+};
 exports.exportSchoolData = exportSchoolData;
-const exportSchoolDataFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h;
+const exportSchoolDataFile = async (req, res) => {
+    var _a;
     try {
         const { schoolID } = req.params;
         // Admin-only: simple guard - user must be logged in and match school admin session or school.status
-        const sessionSchoolID = (_h = req.session) === null || _h === void 0 ? void 0 : _h.isSchoolID;
+        const sessionSchoolID = (_a = req.session) === null || _a === void 0 ? void 0 : _a.isSchoolID;
         // if (
         //   !sessionSchoolID ||
         //   sessionSchoolID.toString() !== schoolID.toString()
@@ -543,10 +534,10 @@ const exportSchoolDataFile = (req, res) => __awaiter(void 0, void 0, void 0, fun
         //     .status(403)
         //     .json({ message: "Forbidden, admin access required" });
         // }
-        const school = yield schoolModel_1.default.findById(schoolID).lean();
+        const school = await schoolModel_1.default.findById(schoolID).lean();
         if (!school)
             return res.status(404).json({ message: "School not found" });
-        const [classRooms, staff, subjects, students, sessions, reportCards, midReportCards, outGoneStudents,] = yield Promise.all([
+        const [classRooms, staff, subjects, students, sessions, reportCards, midReportCards, outGoneStudents,] = await Promise.all([
             classroomModel_1.default.find({ _id: { $in: school.classRooms || [] } }).lean(),
             staffModel_1.default.find({ _id: { $in: school.staff || [] } }).lean(),
             subjectModel_1.default.find({ _id: { $in: school.subjects || [] } }).lean(),
@@ -596,7 +587,7 @@ const exportSchoolDataFile = (req, res) => __awaiter(void 0, void 0, void 0, fun
             name: `${baseName}-export.json`,
         });
         // finalize the archive (this will end the response when done)
-        yield archive.finalize();
+        await archive.finalize();
         // response is streamed; return a 200 OK handled by the stream
         return res;
     }
@@ -605,25 +596,25 @@ const exportSchoolDataFile = (req, res) => __awaiter(void 0, void 0, void 0, fun
             .status(500)
             .json({ message: "Error exporting school data", error: error.message });
     }
-});
+};
 exports.exportSchoolDataFile = exportSchoolDataFile;
-const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j, _k, _l;
+const importSchoolData = async (req, res) => {
+    var _a, _b, _c;
     try {
-        const payload = ((_j = req.body) === null || _j === void 0 ? void 0 : _j.data) || req.body;
+        const payload = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.data) || req.body;
         if (!payload || !payload.school) {
             return res.status(400).json({ message: "Invalid import payload" });
         }
         const exported = payload;
         // Prepare school data (avoid unique conflicts on email)
-        const schoolData = Object.assign({}, exported.school);
+        const schoolData = { ...exported.school };
         delete schoolData._id;
         // ensure unique email to avoid duplicate key
         if (schoolData.email) {
             schoolData.email = `${schoolData.email}.import.${Date.now()}`;
         }
         // Create school record first
-        const newSchool = yield schoolModel_1.default.create(schoolData);
+        const newSchool = await schoolModel_1.default.create(schoolData);
         // helper collections and mapping
         const collections = [
             {
@@ -655,8 +646,8 @@ const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // First pass: create documents without reference arrays
         for (const col of collections) {
             for (const item of col.items) {
-                const oldId = (_k = item._id) === null || _k === void 0 ? void 0 : _k.toString();
-                const doc = Object.assign({}, item);
+                const oldId = (_b = item._id) === null || _b === void 0 ? void 0 : _b.toString();
+                const doc = { ...item };
                 delete doc._id;
                 // replace school references with new school id
                 if (doc.school || doc.schoolInfo) {
@@ -672,7 +663,7 @@ const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
                         }
                     }
                 }
-                const created = yield col.model.create(doc);
+                const created = await col.model.create(doc);
                 if (oldId)
                     idMap[oldId] = created._id;
                 // store mapping for school arrays
@@ -680,11 +671,11 @@ const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 newSchool[col.key].push(created._id);
             }
         }
-        yield newSchool.save();
+        await newSchool.save();
         // Second pass: update created docs with remapped references
         for (const col of collections) {
             for (const item of col.items) {
-                const oldId = (_l = item._id) === null || _l === void 0 ? void 0 : _l.toString();
+                const oldId = (_c = item._id) === null || _c === void 0 ? void 0 : _c.toString();
                 const newId = idMap[oldId];
                 if (!newId)
                     continue;
@@ -705,12 +696,12 @@ const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
                     }
                 }
                 if (Object.keys(updates).length) {
-                    yield col.model.findByIdAndUpdate(newId, updates, { new: true });
+                    await col.model.findByIdAndUpdate(newId, updates, { new: true });
                 }
             }
         }
         // finally, save the updated school arrays
-        yield schoolModel_1.default.findByIdAndUpdate(newSchool._id, newSchool, {
+        await schoolModel_1.default.findByIdAndUpdate(newSchool._id, newSchool, {
             new: true,
         });
         return res
@@ -723,15 +714,15 @@ const importSchoolData = (req, res) => __awaiter(void 0, void 0, void 0, functio
             .status(500)
             .json({ message: "Error importing school data", error: error.message });
     }
-});
+};
 exports.importSchoolData = importSchoolData;
-const changeSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const changeSchoolName = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { schoolName } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { schoolName }, { new: true });
+            const verified = await schoolModel_1.default.findByIdAndUpdate(schoolID, { schoolName }, { new: true });
             return res.status(201).json({
                 message: "school verified successfully",
                 data: verified,
@@ -749,15 +740,15 @@ const changeSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: "Error verifying school",
         });
     }
-});
+};
 exports.changeSchoolName = changeSchoolName;
-const changeSchoolAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const changeSchoolAddress = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { address } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { address }, { new: true });
+            const verified = await schoolModel_1.default.findByIdAndUpdate(schoolID, { address }, { new: true });
             return res.status(201).json({
                 message: "school verified successfully",
                 data: verified,
@@ -775,15 +766,15 @@ const changeSchoolAddress = (req, res) => __awaiter(void 0, void 0, void 0, func
             message: "Error verifying school",
         });
     }
-});
+};
 exports.changeSchoolAddress = changeSchoolAddress;
-const changeSchoolPhoneNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const changeSchoolPhoneNumber = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { phone } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { phone }, { new: true });
+            const verified = await schoolModel_1.default.findByIdAndUpdate(schoolID, { phone }, { new: true });
             return res.status(201).json({
                 message: "school phone number changes successfully",
                 data: verified,
@@ -801,15 +792,15 @@ const changeSchoolPhoneNumber = (req, res) => __awaiter(void 0, void 0, void 0, 
             message: "Error verifying school",
         });
     }
-});
+};
 exports.changeSchoolPhoneNumber = changeSchoolPhoneNumber;
-const changeSchoolPersonalName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const changeSchoolPersonalName = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { name, name2 } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { name, name2 }, { new: true });
+            const verified = await schoolModel_1.default.findByIdAndUpdate(schoolID, { name, name2 }, { new: true });
             return res.status(201).json({
                 message: "school name changes successfully",
                 data: verified,
@@ -827,16 +818,16 @@ const changeSchoolPersonalName = (req, res) => __awaiter(void 0, void 0, void 0,
             message: "Error verifying school",
         });
     }
-});
+};
 exports.changeSchoolPersonalName = changeSchoolPersonalName;
 // school Image/Logo
-const updateSchoolAvatar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolAvatar = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 avatar: secure_url,
                 avatarID: public_id,
             }, { new: true });
@@ -857,15 +848,15 @@ const updateSchoolAvatar = (req, res) => __awaiter(void 0, void 0, void 0, funct
             message: "Error creating user",
         });
     }
-});
+};
 exports.updateSchoolAvatar = updateSchoolAvatar;
-const updateSchoolStamp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolStamp = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 stamp: secure_url,
                 stampID: public_id,
             }, { new: true });
@@ -886,16 +877,16 @@ const updateSchoolStamp = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Error creating user",
         });
     }
-});
+};
 exports.updateSchoolStamp = updateSchoolStamp;
 // school shool has started
-const updateSchoolSignature = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolSignature = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 signature: secure_url,
                 signatureID: public_id,
             }, { new: true });
@@ -916,15 +907,15 @@ const updateSchoolSignature = (req, res) => __awaiter(void 0, void 0, void 0, fu
             message: "Error creating user",
         });
     }
-});
+};
 exports.updateSchoolSignature = updateSchoolSignature;
 // school shool has started
-const updateSchoolStartPossition = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolStartPossition = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school.schoolName) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 started: true,
             }, { new: true });
             return res.status(200).json({
@@ -943,16 +934,16 @@ const updateSchoolStartPossition = (req, res) => __awaiter(void 0, void 0, void 
             message: "Error creating user",
         });
     }
-});
+};
 exports.updateSchoolStartPossition = updateSchoolStartPossition;
 // school school Account info
-const updateSchoolAccountDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolAccountDetail = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { bankDetails } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school.schoolName) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 bankDetails,
             }, { new: true });
             return res.status(200).json({
@@ -971,16 +962,16 @@ const updateSchoolAccountDetail = (req, res) => __awaiter(void 0, void 0, void 0
             message: "Error updating account details",
         });
     }
-});
+};
 exports.updateSchoolAccountDetail = updateSchoolAccountDetail;
-const updateSchoolPaymentOptions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolPaymentOptions = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { paymentDetails, paymentAmount } = req.body;
         let id = crypto_1.default.randomBytes(4).toString("hex");
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school.schoolName) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 paymentOptions: [
                     ...school === null || school === void 0 ? void 0 : school.paymentOptions,
                     { id, paymentDetails, paymentAmount },
@@ -1003,19 +994,19 @@ const updateSchoolPaymentOptions = (req, res) => __awaiter(void 0, void 0, void 
             message: "Error updating account details",
         });
     }
-});
+};
 exports.updateSchoolPaymentOptions = updateSchoolPaymentOptions;
-const RemoveSchoolPaymentOptions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const RemoveSchoolPaymentOptions = async (req, res) => {
     try {
         const { schoolID, refID } = req.params;
         const { paymentDetails, paymentAmount } = req.body;
         let id = crypto_1.default.randomBytes(4).toString("hex");
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         const mainOption = school === null || school === void 0 ? void 0 : school.paymentOptions.filter((el) => {
             return (el === null || el === void 0 ? void 0 : el.id) !== refID;
         });
         if (school.schoolName) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 paymentOptions: mainOption,
             }, { new: true });
             return res.status(201).json({
@@ -1035,16 +1026,16 @@ const RemoveSchoolPaymentOptions = (req, res) => __awaiter(void 0, void 0, void 
             message: "Error updating account details",
         });
     }
-});
+};
 exports.RemoveSchoolPaymentOptions = RemoveSchoolPaymentOptions;
-const updateAdminCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateAdminCode = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { adminCode } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         // const adminCode = crypto.randomBytes(6).toString("hex");
         if (school.schoolName) {
-            const updatedSchoolAdminCode = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const updatedSchoolAdminCode = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 adminCode,
             }, { new: true });
             return res.status(200).json({
@@ -1063,15 +1054,15 @@ const updateAdminCode = (req, res) => __awaiter(void 0, void 0, void 0, function
             message: "Error updating admin code details",
         });
     }
-});
+};
 exports.updateAdminCode = updateAdminCode;
-const updateSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolName = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { schoolName } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school.schoolName) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 schoolName,
             }, { new: true });
             return res.status(200).json({
@@ -1090,16 +1081,16 @@ const updateSchoolName = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: "Error updating account details",
         });
     }
-});
+};
 exports.updateSchoolName = updateSchoolName;
-const updateRegisterationStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateRegisterationStatus = async (req, res) => {
     try {
         const { schoolName, email, schoolPhoneNumber, schoolCategory, schoolLocation, schoolOrganization, } = req.body;
-        const school = yield schoolModel_1.default.findOne({ email });
+        const school = await schoolModel_1.default.findOne({ email });
         // const id = crypto.randomBytes(4).toString("hex");
         // const adminCode = crypto.randomBytes(6).toString("hex");
         // if (school) {
-        const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
+        const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
             // adminCode,
             // enrollmentID: id,
             status: "school-admin",
@@ -1122,7 +1113,7 @@ const updateRegisterationStatus = (req, res) => __awaiter(void 0, void 0, void 0
             error: error,
         });
     }
-});
+};
 exports.updateRegisterationStatus = updateRegisterationStatus;
 // export const approvedRegisteration = async (req: any, res: Response) => {
 //   try {
@@ -1153,9 +1144,9 @@ exports.updateRegisterationStatus = updateRegisterationStatus;
 //     });
 //   }
 // };
-const getSchoolRegistered = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getSchoolRegistered = async (req, res) => {
     try {
-        const school = yield schoolModel_1.default.find();
+        const school = await schoolModel_1.default.find();
         return res.status(200).json({
             message: "school Has Approved",
             data: school,
@@ -1167,19 +1158,19 @@ const getSchoolRegistered = (req, res) => __awaiter(void 0, void 0, void 0, func
             message: "Error updating account details",
         });
     }
-});
+};
 exports.getSchoolRegistered = getSchoolRegistered;
-const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const approveRegistration = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { email } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const updatedSchool = yield schoolModel_1.default.findByIdAndUpdate(school._id, {
+            const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(school._id, {
                 started: true,
                 verify: true,
             }, { new: true });
-            yield (0, email_1.verifiedEmail)(school);
+            await (0, email_1.verifiedEmail)(school);
             return res.status(200).json({
                 message: "School has been approved",
                 data: updatedSchool,
@@ -1199,15 +1190,15 @@ const approveRegistration = (req, res) => __awaiter(void 0, void 0, void 0, func
             error: error.message,
         });
     }
-});
+};
 exports.approveRegistration = approveRegistration;
-const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const changeSchoolTag = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { schoolTags } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const verified = yield schoolModel_1.default.findByIdAndUpdate(schoolID, { schoolTags }, { new: true });
+            const verified = await schoolModel_1.default.findByIdAndUpdate(schoolID, { schoolTags }, { new: true });
             return res.status(201).json({
                 message: "school verified successfully",
                 data: verified,
@@ -1225,13 +1216,13 @@ const changeSchoolTag = (req, res) => __awaiter(void 0, void 0, void 0, function
             message: "Error verifying school",
         });
     }
-});
+};
 exports.changeSchoolTag = changeSchoolTag;
-const createSchoolTimetableRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolTimetableRecord = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { startBreak, startClass, endClass, endBreak, peroid } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         const timeStructure = (startTime, endTime, interval) => {
             const timeSlots = [];
             let [startHour, startMinute] = startTime.split(":").map(Number);
@@ -1271,7 +1262,7 @@ const createSchoolTimetableRecord = (req, res) => __awaiter(void 0, void 0, void
         const startPeriod = parseInt(startBreak) >= 12 ? "PM" : "AM";
         const endPeriod = parseInt(endBreak) >= 12 ? "PM" : "AM";
         if (school) {
-            const classStructure = yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const classStructure = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 startBreak,
                 startClass,
                 endClass,
@@ -1297,5 +1288,5 @@ const createSchoolTimetableRecord = (req, res) => __awaiter(void 0, void 0, void
             message: "Error creating school timetable",
         });
     }
-});
+};
 exports.createSchoolTimetableRecord = createSchoolTimetableRecord;

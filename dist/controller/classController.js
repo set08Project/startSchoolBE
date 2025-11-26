@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -24,11 +15,11 @@ const cardReportModel_1 = __importDefault(require("../model/cardReportModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
-const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolClasses = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { classTeacherName, className, class2ndFee, class3rdFee, class1stFee, } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "classRooms",
         });
         const checkClass = school === null || school === void 0 ? void 0 : school.classRooms.some((el) => {
@@ -36,7 +27,7 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         if (school && school.status === "school-admin") {
             if (!checkClass) {
-                const classes = yield classroomModel_1.default.create({
+                const classes = await classroomModel_1.default.create({
                     schoolName: school.schoolName,
                     classTeacherName,
                     className,
@@ -75,9 +66,9 @@ const createSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, func
             error,
         });
     }
-});
+};
 exports.createSchoolClasses = createSchoolClasses;
-const createBulkSchoolClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createBulkSchoolClassroom = async (req, res) => {
     var _a;
     try {
         const { schoolID } = req.params;
@@ -96,10 +87,10 @@ const createBulkSchoolClassroom = (req, res) => __awaiter(void 0, void 0, void 0
             }
         };
         console.log("data: ", filePath, req.file.path);
-        const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        const data = await (0, csvtojson_1.default)().fromFile(req.file.path);
         console.log(data);
         for (let i of data) {
-            const school = yield schoolModel_1.default.findById(schoolID).populate({
+            const school = await schoolModel_1.default.findById(schoolID).populate({
                 path: "classRooms",
             });
             const checkClass = school === null || school === void 0 ? void 0 : school.classRooms.some((el) => {
@@ -110,7 +101,7 @@ const createBulkSchoolClassroom = (req, res) => __awaiter(void 0, void 0, void 0
             });
             if (school && school.status === "school-admin") {
                 if (!checkClass) {
-                    const classes = yield classroomModel_1.default.create({
+                    const classes = await classroomModel_1.default.create({
                         schoolName: school.schoolName,
                         classTeacherName: i === null || i === void 0 ? void 0 : i.classTeacherName,
                         className: i === null || i === void 0 ? void 0 : i.className,
@@ -155,15 +146,15 @@ const createBulkSchoolClassroom = (req, res) => __awaiter(void 0, void 0, void 0
             status: 404,
         });
     }
-});
+};
 exports.createBulkSchoolClassroom = createBulkSchoolClassroom;
-const updateSchoolClassesPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolClassesPerformance = async (req, res) => {
     try {
         const { schoolID, subjectID } = req.params;
         const { subjectTitle } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const subjects = yield subjectModel_1.default.findByIdAndUpdate(subjectID, {
+            const subjects = await subjectModel_1.default.findByIdAndUpdate(subjectID, {
                 subjectTitle,
             }, { new: true });
             return res.status(201).json({
@@ -185,12 +176,12 @@ const updateSchoolClassesPerformance = (req, res) => __awaiter(void 0, void 0, v
             status: 404,
         });
     }
-});
+};
 exports.updateSchoolClassesPerformance = updateSchoolClassesPerformance;
-const viewClassesByTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewClassesByTimeTable = async (req, res) => {
     try {
         const { classID } = req.params;
-        const schoolClasses = yield classroomModel_1.default.findById(classID).populate({
+        const schoolClasses = await classroomModel_1.default.findById(classID).populate({
             path: "timeTable",
             options: {
                 sort: {
@@ -211,12 +202,12 @@ const viewClassesByTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, f
             data: error.message,
         });
     }
-});
+};
 exports.viewClassesByTimeTable = viewClassesByTimeTable;
-const viewClassesByStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewClassesByStudent = async (req, res) => {
     try {
         const { classID } = req.params;
-        const schoolClasses = yield classroomModel_1.default.findById(classID).populate({
+        const schoolClasses = await classroomModel_1.default.findById(classID).populate({
             path: "students",
             options: {
                 sort: {
@@ -237,12 +228,12 @@ const viewClassesByStudent = (req, res) => __awaiter(void 0, void 0, void 0, fun
             data: error.message,
         });
     }
-});
+};
 exports.viewClassesByStudent = viewClassesByStudent;
-const viewClassesBySubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewClassesBySubject = async (req, res) => {
     try {
         const { classID } = req.params;
-        const schoolClasses = yield classroomModel_1.default.findById(classID).populate({
+        const schoolClasses = await classroomModel_1.default.findById(classID).populate({
             path: "classSubjects",
             options: {
                 sort: {
@@ -263,12 +254,12 @@ const viewClassesBySubject = (req, res) => __awaiter(void 0, void 0, void 0, fun
             data: error.message,
         });
     }
-});
+};
 exports.viewClassesBySubject = viewClassesBySubject;
-const viewSchoolClassesByName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolClassesByName = async (req, res) => {
     try {
         const { className } = req.body;
-        const schoolClasses = yield classroomModel_1.default.findOne({ className }).populate({
+        const schoolClasses = await classroomModel_1.default.findOne({ className }).populate({
             path: "classSubjects",
         });
         return res.status(200).json({
@@ -284,12 +275,12 @@ const viewSchoolClassesByName = (req, res) => __awaiter(void 0, void 0, void 0, 
             data: error.message,
         });
     }
-});
+};
 exports.viewSchoolClassesByName = viewSchoolClassesByName;
-const viewSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolClasses = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const schoolClasses = yield schoolModel_1.default.findById(schoolID).populate({
+        const schoolClasses = await schoolModel_1.default.findById(schoolID).populate({
             path: "classRooms",
             options: {
                 sort: {
@@ -310,12 +301,12 @@ const viewSchoolClasses = (req, res) => __awaiter(void 0, void 0, void 0, functi
             data: error.message,
         });
     }
-});
+};
 exports.viewSchoolClasses = viewSchoolClasses;
-const viewOneClassRM = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewOneClassRM = async (req, res) => {
     try {
         const { classID } = req.params;
-        const schoolClasses = yield classroomModel_1.default.findById(classID);
+        const schoolClasses = await classroomModel_1.default.findById(classID);
         return res.status(200).json({
             message: "School's class info found",
             status: 200,
@@ -329,12 +320,12 @@ const viewOneClassRM = (req, res) => __awaiter(void 0, void 0, void 0, function*
             data: error.message,
         });
     }
-});
+};
 exports.viewOneClassRM = viewOneClassRM;
-const viewClassRM = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewClassRM = async (req, res) => {
     try {
         const { classID } = req.params;
-        const schoolClasses = yield classroomModel_1.default.findById(classID).populate({
+        const schoolClasses = await classroomModel_1.default.findById(classID).populate({
             path: "classSubjects",
         });
         return res.status(200).json({
@@ -350,25 +341,25 @@ const viewClassRM = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             data: error.message,
         });
     }
-});
+};
 exports.viewClassRM = viewClassRM;
-const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolClassName = async (req, res) => {
     try {
         const { schoolID, classID } = req.params;
         const { className } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const subjects = yield classroomModel_1.default.findByIdAndUpdate(classID, {
+            const subjects = await classroomModel_1.default.findByIdAndUpdate(classID, {
                 className,
             }, { new: true });
             for (let i of school.students) {
-                let student = yield studentModel_1.default.findById(i);
+                let student = await studentModel_1.default.findById(i);
                 if ((student === null || student === void 0 ? void 0 : student.presentClassID) === classID) {
-                    yield studentModel_1.default.findByIdAndUpdate(i, { classAssigned: className }, { new: true });
+                    await studentModel_1.default.findByIdAndUpdate(i, { classAssigned: className }, { new: true });
                 }
             }
             for (let i of school.staff) {
-                let staff = yield staffModel_1.default.findById(i);
+                let staff = await staffModel_1.default.findById(i);
                 if ((staff === null || staff === void 0 ? void 0 : staff.presentClassID) === classID) {
                     let myClass = staff === null || staff === void 0 ? void 0 : staff.classesAssigned.find((el) => {
                         return el.classID === classID;
@@ -380,11 +371,11 @@ const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     let subj = staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.find((el) => {
                         return el.classID === classID;
                     });
-                    subj = Object.assign(Object.assign({}, subj), { classMeant: className });
+                    subj = { ...subj, classMeant: className };
                     let yy = staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.filter((el) => {
                         return el.classID !== classID;
                     });
-                    yield staffModel_1.default.findByIdAndUpdate(i, {
+                    await staffModel_1.default.findByIdAndUpdate(i, {
                         classesAssigned: [...xx, myClass],
                         subjectAssigned: [
                             ...staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.filter((el) => {
@@ -396,9 +387,9 @@ const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 }
             }
             for (let i of school.subjects) {
-                let subject = yield subjectModel_1.default.findById(i);
+                let subject = await subjectModel_1.default.findById(i);
                 if ((subject === null || subject === void 0 ? void 0 : subject.subjectClassID) === classID) {
-                    yield subjectModel_1.default.findByIdAndUpdate(i, { designated: className }, { new: true });
+                    await subjectModel_1.default.findByIdAndUpdate(i, { designated: className }, { new: true });
                 }
             }
             return res.status(201).json({
@@ -420,23 +411,23 @@ const updateSchoolClassName = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 404,
         });
     }
-});
+};
 exports.updateSchoolClassName = updateSchoolClassName;
-const updateSchoolClassTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolClassTeacher = async (req, res) => {
     try {
         const { schoolID, classID } = req.params;
         const { classTeacherName } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const getTeacher = yield staffModel_1.default.findOne({
+        const school = await schoolModel_1.default.findById(schoolID);
+        const getTeacher = await staffModel_1.default.findOne({
             staffName: classTeacherName,
         });
         if (school && school.schoolName && school.status === "school-admin") {
             if (getTeacher) {
-                const subjects = yield classroomModel_1.default.findByIdAndUpdate(classID, {
+                const subjects = await classroomModel_1.default.findByIdAndUpdate(classID, {
                     classTeacherName,
                     teacherID: getTeacher._id,
                 }, { new: true });
-                yield staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
+                await staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
                     classesAssigned: [
                         ...getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.classesAssigned,
                         { className: subjects === null || subjects === void 0 ? void 0 : subjects.className, classID },
@@ -469,17 +460,17 @@ const updateSchoolClassTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.updateSchoolClassTeacher = updateSchoolClassTeacher;
-const updateSchoolClass1stFee = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolClass1stFee = async (req, res) => {
     try {
         const { schoolID, classID } = req.params;
         const { class1stFee, class2ndFee, class3rdFee } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const getClass = yield classroomModel_1.default.findById(classID);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const getClass = await classroomModel_1.default.findById(classID);
         if (school && school.schoolName && school.status === "school-admin") {
             if (getClass) {
-                const update = yield classroomModel_1.default.findByIdAndUpdate(getClass._id, {
+                const update = await classroomModel_1.default.findByIdAndUpdate(getClass._id, {
                     class1stFee,
                     class2ndFee,
                     class3rdFee,
@@ -496,7 +487,7 @@ const updateSchoolClass1stFee = (req, res) => __awaiter(void 0, void 0, void 0, 
                                 ? update === null || update === void 0 ? void 0 : update.class3rdFee
                                 : null;
                     if (feeForTerm !== null && feeForTerm !== undefined) {
-                        yield studentModel_1.default.updateMany({ presentClassID: classID }, { $set: { classTermFee: feeForTerm } });
+                        await studentModel_1.default.updateMany({ presentClassID: classID }, { $set: { classTermFee: feeForTerm } });
                     }
                 }
                 catch (err) {
@@ -530,14 +521,14 @@ const updateSchoolClass1stFee = (req, res) => __awaiter(void 0, void 0, void 0, 
             data: error.message,
         });
     }
-});
+};
 exports.updateSchoolClass1stFee = updateSchoolClass1stFee;
-const deleteSchoolClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteSchoolClass = async (req, res) => {
     try {
         const { schoolID, classID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const subjects = yield classroomModel_1.default.findByIdAndDelete(classID);
+            const subjects = await classroomModel_1.default.findByIdAndDelete(classID);
             school.classRooms.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
             school.save();
             return res.status(201).json({
@@ -559,12 +550,12 @@ const deleteSchoolClass = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.deleteSchoolClass = deleteSchoolClass;
-const viewClassTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewClassTopStudent = async (req, res) => {
     try {
         const { classID } = req.params;
-        const schoolClasses = yield classroomModel_1.default.findById(classID).populate({
+        const schoolClasses = await classroomModel_1.default.findById(classID).populate({
             path: "students",
             options: {
                 sort: {
@@ -586,14 +577,14 @@ const viewClassTopStudent = (req, res) => __awaiter(void 0, void 0, void 0, func
             data: error.message,
         });
     }
-});
+};
 exports.viewClassTopStudent = viewClassTopStudent;
-const studentOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const studentOfWeek = async (req, res) => {
     try {
         const { teacherID } = req.params;
         const { studentName, remark } = req.body;
-        const teacher = yield staffModel_1.default.findById(teacherID);
-        const classRM = yield classroomModel_1.default
+        const teacher = await staffModel_1.default.findById(teacherID);
+        const classRM = await classroomModel_1.default
             .findById(teacher === null || teacher === void 0 ? void 0 : teacher.presentClassID)
             .populate({
             path: "students",
@@ -602,9 +593,9 @@ const studentOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return (`${el.studentFirstName}` === studentName.trim().split(" ")[0] &&
                 `${el.studentLastName}` === studentName.trim().split(" ")[1]);
         });
-        const studentData = yield studentModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent._id);
+        const studentData = await studentModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent._id);
         if ((teacher === null || teacher === void 0 ? void 0 : teacher.status) === "school-teacher" && classRM && studentData) {
-            const week = yield classroomModel_1.default.findByIdAndUpdate(classRM === null || classRM === void 0 ? void 0 : classRM._id, {
+            const week = await classroomModel_1.default.findByIdAndUpdate(classRM === null || classRM === void 0 ? void 0 : classRM._id, {
                 weekStudent: {
                     student: studentData,
                     remark,
@@ -629,20 +620,20 @@ const studentOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             status: 404,
         });
     }
-});
+};
 exports.studentOfWeek = studentOfWeek;
 /**
  * GET /view-class-positions/:classID?source=historical|report|mid&term=&session=
  * source defaults to 'historical'.
  * Computes positions for students in a class based on chosen source's total points.
  */
-const viewClassPositions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewClassPositions = async (req, res) => {
     try {
         const { classID } = req.params;
         // Always use report card (cardReportModel) for ranking.
         const { term, session } = req.query;
         // populate students and their reportCard entries so we can inspect per-student reports
-        const classDoc = yield classroomModel_1.default.findById(classID).populate({
+        const classDoc = await classroomModel_1.default.findById(classID).populate({
             path: "students",
             populate: { path: "reportCard" },
         });
@@ -651,7 +642,7 @@ const viewClassPositions = (req, res) => __awaiter(void 0, void 0, void 0, funct
         }
         const students = classDoc.students || [];
         // Helper to get numeric score for a student using report cards only.
-        const getScoreForStudent = (student) => __awaiter(void 0, void 0, void 0, function* () {
+        const getScoreForStudent = async (student) => {
             try {
                 // Prefer using populated student.reportCard if available
                 const reports = Array.isArray(student === null || student === void 0 ? void 0 : student.reportCard)
@@ -690,7 +681,7 @@ const viewClassPositions = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         q.classInfo = term;
                     if (session)
                         q.session = session;
-                    chosen = yield cardReportModel_1.default.findOne(q).sort({ createdAt: -1 });
+                    chosen = await cardReportModel_1.default.findOne(q).sort({ createdAt: -1 });
                 }
                 if (!chosen)
                     return 0;
@@ -710,13 +701,13 @@ const viewClassPositions = (req, res) => __awaiter(void 0, void 0, void 0, funct
             catch (e) {
                 return 0;
             }
-        });
+        };
         // Build array of { student, score }
         const scored = [];
         console.log("ed: ", students);
         for (const s of students) {
             // if historical/report/mid not present, fallback to student's totalPerformance
-            const scoreFromModel = yield getScoreForStudent(s);
+            const scoreFromModel = await getScoreForStudent(s);
             const fallback = typeof s.totalPerformance === "number" ? s.totalPerformance : 0;
             const score = scoreFromModel || fallback;
             scored.push({ student: s, score });
@@ -758,5 +749,5 @@ const viewClassPositions = (req, res) => __awaiter(void 0, void 0, void 0, funct
             status: 500,
         });
     }
-});
+};
 exports.viewClassPositions = viewClassPositions;

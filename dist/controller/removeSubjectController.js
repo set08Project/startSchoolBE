@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -16,12 +7,12 @@ exports.removeSubjectFromResult = void 0;
 const cardReportModel_1 = __importDefault(require("../model/cardReportModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
-const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const removeSubjectFromResult = async (req, res) => {
     try {
         const { studentID } = req.params;
         const { subject } = req.body;
         // Find the student with their report card
-        const student = yield studentModel_1.default.findById(studentID).populate({
+        const student = await studentModel_1.default.findById(studentID).populate({
             path: "reportCard",
         });
         if (!student) {
@@ -31,7 +22,7 @@ const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, 
             });
         }
         // Get the current session's report card
-        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
         const currentClassInfo = `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`;
         const reportCard = student.reportCard.find((card) => card.classInfo === currentClassInfo);
         if (!reportCard) {
@@ -49,7 +40,7 @@ const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, 
             });
         }
         // Update report card with filtered results
-        const updatedReport = yield cardReportModel_1.default.findByIdAndUpdate(reportCard._id, {
+        const updatedReport = await cardReportModel_1.default.findByIdAndUpdate(reportCard._id, {
             result: updatedResults,
             // Recalculate total points and grade based on remaining subjects
             points: parseFloat((updatedResults
@@ -69,5 +60,5 @@ const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, 
             status: 500,
         });
     }
-});
+};
 exports.removeSubjectFromResult = removeSubjectFromResult;

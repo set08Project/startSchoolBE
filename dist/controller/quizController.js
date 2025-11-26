@@ -15,27 +15,29 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStudentQuizRecords = exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = exports.startSubjectExamination = exports.readSubjectExamination = exports.createSubjectExam = exports.createSubjectQuizFromFile = exports.testDocxParsing = void 0;
+exports.getStudentQuizRecords = exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = exports.startSubjectExamination = exports.readSubjectExamination = exports.createSubjectExam = exports.createSubjectQuizFromFile = void 0;
+exports.testDocxParsing = testDocxParsing;
 const mongoose_1 = require("mongoose");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
@@ -88,120 +90,117 @@ const stripLeadingOptionLetter = (html) => {
 };
 // Test utility to debug DOCX parsing
 // Run this separately to see what's being extracted
-function testDocxParsing(filePath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log("\n🔍 Testing DOCX Parsing...\n");
-        console.log("File:", filePath);
-        try {
-            // Check if file exists
-            if (!node_fs_1.default.existsSync(filePath)) {
-                console.error("❌ File not found:", filePath);
+async function testDocxParsing(filePath) {
+    console.log("\n🔍 Testing DOCX Parsing...\n");
+    console.log("File:", filePath);
+    try {
+        // Check if file exists
+        if (!node_fs_1.default.existsSync(filePath)) {
+            console.error("❌ File not found:", filePath);
+            return;
+        }
+        // Convert DOCX to HTML
+        console.log("\n📄 Converting DOCX to HTML...");
+        const result = await mammoth_1.default.convertToHtml({ path: filePath }, {
+            includeDefaultStyleMap: true,
+            includeEmbeddedStyleMap: true
+        });
+        const html = result.value || "";
+        console.log("\n=== RAW HTML OUTPUT ===");
+        console.log(html);
+        console.log("=== END HTML ===\n");
+        if (!html || html.trim() === "") {
+            console.error("❌ HTML is empty!");
+            return;
+        }
+        // Parse with Cheerio
+        const $ = cheerio.load(html);
+        const elems = $("body").children();
+        console.log(`\n📊 Found ${elems.length} elements in body\n`);
+        let value = [];
+        let questionData = {};
+        let options = [];
+        console.log("=== PARSING ELEMENTS ===\n");
+        elems.each((i, el) => {
+            var _a;
+            const rawText = $(el).text().trim();
+            const normalizedText = normalizeText(rawText);
+            const htmlContent = ((_a = $(el).html()) === null || _a === void 0 ? void 0 : _a.trim()) || "";
+            console.log(`[${i}] Element Type: ${el.tagName}`);
+            console.log(`    Raw Text: "${rawText}"`);
+            console.log(`    Normalized: "${normalizedText}"`);
+            console.log(`    HTML: "${htmlContent.substring(0, 100)}..."`);
+            if (!normalizedText) {
+                console.log("    ⚠️ Skipped (empty)");
                 return;
             }
-            // Convert DOCX to HTML
-            console.log("\n📄 Converting DOCX to HTML...");
-            const result = yield mammoth_1.default.convertToHtml({ path: filePath }, {
-                includeDefaultStyleMap: true,
-                includeEmbeddedStyleMap: true
-            });
-            const html = result.value || "";
-            console.log("\n=== RAW HTML OUTPUT ===");
-            console.log(html);
-            console.log("=== END HTML ===\n");
-            if (!html || html.trim() === "") {
-                console.error("❌ HTML is empty!");
-                return;
+            // Test question pattern
+            const questionMatch = /^\d+[\.\)]/u.test(normalizedText);
+            console.log(`    Question pattern match: ${questionMatch}`);
+            if (questionMatch) {
+                // Save previous question
+                if (Object.keys(questionData).length > 0) {
+                    questionData.options = options;
+                    value.push(questionData);
+                    console.log(`    ✅ Saved previous question (${options.length} options)`);
+                    questionData = {};
+                    options = [];
+                }
+                const cleanHtml = stripLeadingNumberFromHtml(htmlContent);
+                questionData = { question: cleanHtml };
+                console.log(`    ✅ NEW QUESTION: "${cleanHtml}"`);
             }
-            // Parse with Cheerio
-            const $ = cheerio.load(html);
-            const elems = $("body").children();
-            console.log(`\n📊 Found ${elems.length} elements in body\n`);
-            let value = [];
-            let questionData = {};
-            let options = [];
-            console.log("=== PARSING ELEMENTS ===\n");
-            elems.each((i, el) => {
-                var _a;
-                const rawText = $(el).text().trim();
-                const normalizedText = normalizeText(rawText);
-                const htmlContent = ((_a = $(el).html()) === null || _a === void 0 ? void 0 : _a.trim()) || "";
-                console.log(`[${i}] Element Type: ${el.tagName}`);
-                console.log(`    Raw Text: "${rawText}"`);
-                console.log(`    Normalized: "${normalizedText}"`);
-                console.log(`    HTML: "${htmlContent.substring(0, 100)}..."`);
-                if (!normalizedText) {
-                    console.log("    ⚠️ Skipped (empty)");
-                    return;
-                }
-                // Test question pattern
-                const questionMatch = /^\d+[\.\)]/u.test(normalizedText);
-                console.log(`    Question pattern match: ${questionMatch}`);
-                if (questionMatch) {
-                    // Save previous question
-                    if (Object.keys(questionData).length > 0) {
-                        questionData.options = options;
-                        value.push(questionData);
-                        console.log(`    ✅ Saved previous question (${options.length} options)`);
-                        questionData = {};
-                        options = [];
-                    }
-                    const cleanHtml = stripLeadingNumberFromHtml(htmlContent);
-                    questionData = { question: cleanHtml };
-                    console.log(`    ✅ NEW QUESTION: "${cleanHtml}"`);
-                }
-                // Test option pattern
-                const optionMatch = /^[A-D][\.\)]/u.test(normalizedText);
-                console.log(`    Option pattern match: ${optionMatch}`);
-                if (optionMatch) {
-                    const cleanOption = stripLeadingOptionLetter(htmlContent);
-                    options.push(cleanOption);
-                    console.log(`    ✅ OPTION: "${cleanOption}"`);
-                }
-                // Test answer pattern
-                const answerMatch = /^Answer:/i.test(normalizedText);
-                console.log(`    Answer pattern match: ${answerMatch}`);
-                if (answerMatch) {
-                    const answerText = normalizedText.replace(/^Answer:\s*/i, "").trim();
-                    questionData.answer = answerText;
-                    console.log(`    ✅ ANSWER: "${answerText}"`);
-                }
-                // Test explanation pattern
-                const explanationMatch = /^Explanation:/i.test(normalizedText);
-                console.log(`    Explanation pattern match: ${explanationMatch}`);
-                if (explanationMatch) {
-                    const explanationText = normalizedText.replace(/^Explanation:\s*/i, "").trim();
-                    questionData.explanation = explanationText;
-                    console.log(`    ✅ EXPLANATION: "${explanationText}"`);
-                }
-            });
-            // Save last question
-            if (Object.keys(questionData).length > 0) {
-                questionData.options = options;
-                value.push(questionData);
+            // Test option pattern
+            const optionMatch = /^[A-D][\.\)]/u.test(normalizedText);
+            console.log(`    Option pattern match: ${optionMatch}`);
+            if (optionMatch) {
+                const cleanOption = stripLeadingOptionLetter(htmlContent);
+                options.push(cleanOption);
+                console.log(`    ✅ OPTION: "${cleanOption}"`);
             }
-            console.log("\n\n=== FINAL PARSED QUESTIONS ===\n");
-            console.log(JSON.stringify(value, null, 2));
-            console.log("\n=== END ===\n");
-            console.log(`\n✅ Successfully parsed ${value.length} questions`);
-            // Validation
-            console.log("\n📋 Validation Results:\n");
-            value.forEach((q, i) => {
-                var _a;
-                console.log(`Question ${i + 1}:`);
-                console.log(`  - Has question text: ${!!q.question && q.question !== ""}`);
-                console.log(`  - Options count: ${((_a = q.options) === null || _a === void 0 ? void 0 : _a.length) || 0}`);
-                console.log(`  - Has answer: ${!!q.answer && q.answer !== ""}`);
-                console.log(`  - Has explanation: ${!!q.explanation && q.explanation !== ""}`);
-            });
-            return value;
+            // Test answer pattern
+            const answerMatch = /^Answer:/i.test(normalizedText);
+            console.log(`    Answer pattern match: ${answerMatch}`);
+            if (answerMatch) {
+                const answerText = normalizedText.replace(/^Answer:\s*/i, "").trim();
+                questionData.answer = answerText;
+                console.log(`    ✅ ANSWER: "${answerText}"`);
+            }
+            // Test explanation pattern
+            const explanationMatch = /^Explanation:/i.test(normalizedText);
+            console.log(`    Explanation pattern match: ${explanationMatch}`);
+            if (explanationMatch) {
+                const explanationText = normalizedText.replace(/^Explanation:\s*/i, "").trim();
+                questionData.explanation = explanationText;
+                console.log(`    ✅ EXPLANATION: "${explanationText}"`);
+            }
+        });
+        // Save last question
+        if (Object.keys(questionData).length > 0) {
+            questionData.options = options;
+            value.push(questionData);
         }
-        catch (error) {
-            console.error("\n❌ Error:", error.message);
-            console.error(error.stack);
-        }
-    });
+        console.log("\n\n=== FINAL PARSED QUESTIONS ===\n");
+        console.log(JSON.stringify(value, null, 2));
+        console.log("\n=== END ===\n");
+        console.log(`\n✅ Successfully parsed ${value.length} questions`);
+        // Validation
+        console.log("\n📋 Validation Results:\n");
+        value.forEach((q, i) => {
+            var _a;
+            console.log(`Question ${i + 1}:`);
+            console.log(`  - Has question text: ${!!q.question && q.question !== ""}`);
+            console.log(`  - Options count: ${((_a = q.options) === null || _a === void 0 ? void 0 : _a.length) || 0}`);
+            console.log(`  - Has answer: ${!!q.answer && q.answer !== ""}`);
+            console.log(`  - Has explanation: ${!!q.explanation && q.explanation !== ""}`);
+        });
+        return value;
+    }
+    catch (error) {
+        console.error("\n❌ Error:", error.message);
+        console.error(error.stack);
+    }
 }
-exports.testDocxParsing = testDocxParsing;
 // Usage:
 // Place your test file in the same directory or provide full path
 const testFilePath = node_path_1.default.join(__dirname, "MathTest.docx");
@@ -242,11 +241,11 @@ const isValidUrl = (url) => {
         const urlObj = new URL(url);
         return urlObj.protocol === "http:" || urlObj.protocol === "https:";
     }
-    catch (_a) {
+    catch {
         return false;
     }
 };
-const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSubjectQuizFromFile = async (req, res) => {
     var _a, _b, _c;
     let uploadedPath;
     try {
@@ -266,23 +265,23 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
                 status: 400,
             });
         }
-        const classRoom = yield classroomModel_1.default.findById(classID);
+        const classRoom = await classroomModel_1.default.findById(classID);
         if (!classRoom) {
             return res.status(404).json({
                 message: "Classroom not found",
                 status: 404,
             });
         }
-        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
+        const checkForSubject = await subjectModel_1.default.findById(subjectID);
         if (!checkForSubject) {
             return res.status(404).json({
                 message: "Subject doesn't exist for this class",
                 status: 404,
             });
         }
-        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         uploadedPath = (_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path;
         if (!uploadedPath) {
             return res.status(400).json({
@@ -299,7 +298,7 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
             console.log("found docx");
             try {
                 // Convert DOCX to HTML with options to preserve more content
-                const result = yield mammoth_1.default.convertToHtml({ path: uploadedPath }, {
+                const result = await mammoth_1.default.convertToHtml({ path: uploadedPath }, {
                     includeDefaultStyleMap: true,
                     includeEmbeddedStyleMap: true
                 });
@@ -333,7 +332,7 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
                         // Save previous question if exists
                         if (Object.keys(questionData).length > 0) {
                             questionData.options = options;
-                            debugInfo.push(Object.assign(Object.assign({}, questionData), { optionsCount: options.length }));
+                            debugInfo.push({ ...questionData, optionsCount: options.length });
                             value.push(questionData);
                             questionData = {};
                             options = [];
@@ -403,7 +402,7 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
                 // Save last question
                 if (Object.keys(questionData).length > 0) {
                     questionData.options = options;
-                    debugInfo.push(Object.assign(Object.assign({}, questionData), { optionsCount: options.length }));
+                    debugInfo.push({ ...questionData, optionsCount: options.length });
                     value.push(questionData);
                 }
                 console.log("=== PARSED QUESTIONS ===");
@@ -432,7 +431,7 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
         }
         else if (ext === ".csv") {
             try {
-                const data = yield (0, csvtojson_1.default)().fromFile(uploadedPath);
+                const data = await (0, csvtojson_1.default)().fromFile(uploadedPath);
                 for (const i of data) {
                     const opts = i.options ? i.options.split(";;") : [];
                     const read = {
@@ -482,7 +481,7 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
             });
         }
         // Create quiz
-        const quizes = yield quizModel_1.default.create({
+        const quizes = await quizModel_1.default.create({
             subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
             subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
             session: school === null || school === void 0 ? void 0 : school.presentSession,
@@ -498,14 +497,14 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
         // Update relationships
         checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
         (_c = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-        yield (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
+        await (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
         if (findTeacher) {
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
+            await (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
         }
         if (findSubjectTeacher) {
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
+            await (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
         }
         // Clean up uploaded file after successful processing
         const cleanupFile = () => {
@@ -545,25 +544,23 @@ const createSubjectQuizFromFile = (req, res) => __awaiter(void 0, void 0, void 0
             error: error.message,
         });
     }
-});
+};
 exports.createSubjectQuizFromFile = createSubjectQuizFromFile;
 // Examination
 // CRITICAL FIX: Extract raw text from DOCX to preserve LaTeX
-function extractRawTextFromDocx(filePath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            // Use mammoth to extract raw text (preserves special characters better)
-            const result = yield mammoth_1.default.extractRawText({ path: filePath });
-            return result.value || "";
-        }
-        catch (error) {
-            console.error("Error extracting raw text:", error);
-            return "";
-        }
-    });
+async function extractRawTextFromDocx(filePath) {
+    try {
+        // Use mammoth to extract raw text (preserves special characters better)
+        const result = await mammoth_1.default.extractRawText({ path: filePath });
+        return result.value || "";
+    }
+    catch (error) {
+        console.error("Error extracting raw text:", error);
+        return "";
+    }
 }
-const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+const createSubjectExam = async (req, res) => {
+    var _a;
     let uploadedPath;
     try {
         const { classID, subjectID } = req.params;
@@ -605,23 +602,23 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 status: 400,
             });
         }
-        const classRoom = yield classroomModel_1.default.findById(classID);
+        const classRoom = await classroomModel_1.default.findById(classID);
         if (!classRoom) {
             return res.status(404).json({
                 message: "Classroom not found",
                 status: 404,
             });
         }
-        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
+        const checkForSubject = await subjectModel_1.default.findById(subjectID);
         if (!checkForSubject) {
             return res.status(404).json({
                 message: "Subject doesn't exist for this class",
                 status: 404,
             });
         }
-        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         const originalName = req.file.originalname || uploadedPath;
         const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
@@ -630,7 +627,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             try {
                 console.log("\n=== EXTRACTING RAW TEXT FROM DOCX (preserves LaTeX) ===");
                 // Extract raw text to preserve LaTeX expressions
-                const rawText = yield extractRawTextFromDocx(uploadedPath);
+                const rawText = await extractRawTextFromDocx(uploadedPath);
                 console.log("Raw text preview:");
                 console.log(rawText.substring(0, 500));
                 console.log("\nRaw text length:", rawText.length);
@@ -755,7 +752,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         else if (ext === ".csv") {
             try {
                 console.log("\n=== PARSING CSV FILE ===");
-                const data = yield (0, csvtojson_1.default)().fromFile(uploadedPath);
+                const data = await (0, csvtojson_1.default)().fromFile(uploadedPath);
                 for (const i of data) {
                     const opts = i.options ? i.options.split(";;") : [];
                     const read = {
@@ -817,7 +814,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         console.log("=== VALIDATION PASSED ===\n");
         // Create quiz
-        const quizes = yield quizModel_1.default.create({
+        const quizes = await quizModel_1.default.create({
             subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
             subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
             session: school === null || school === void 0 ? void 0 : school.presentSession,
@@ -832,15 +829,15 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         // Update relationships
         checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-        (_d = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
-        yield (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
+        (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
+        await (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
         if (findTeacher) {
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
+            await (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
         }
         if (findSubjectTeacher) {
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
+            await (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
         }
         // Clean up uploaded file
         const cleanupFile = () => {
@@ -882,7 +879,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             error: error.message,
         });
     }
-});
+};
 exports.createSubjectExam = createSubjectExam;
 // export const createSubjectExam = async (
 //   req: any,
@@ -1688,10 +1685,10 @@ exports.createSubjectExam = createSubjectExam;
 //   // Remove leading option letter like "A." or "B." from HTML while preserving the rest
 //   return html.replace(/^([A-D]\.?\s*)/, "").trim();
 // };
-const readSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectExamination = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "quiz",
             options: {
                 sort: {
@@ -1713,13 +1710,13 @@ const readSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, f
             status: 404,
         });
     }
-});
+};
 exports.readSubjectExamination = readSubjectExamination;
-const startSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const startSubjectExamination = async (req, res) => {
     try {
         const { examID } = req.params;
         const { started } = req.body;
-        const subject = yield quizModel_1.default.findByIdAndUpdate(examID, {
+        const subject = await quizModel_1.default.findByIdAndUpdate(examID, {
             startExam: started,
         }, { new: true });
         return res.status(201).json({
@@ -1734,7 +1731,7 @@ const startSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, 
             status: 404,
         });
     }
-});
+};
 exports.startSubjectExamination = startSubjectExamination;
 // Quiz
 // export const createSubjectQuizFromFile = async (
@@ -1885,17 +1882,17 @@ exports.startSubjectExamination = startSubjectExamination;
 //     });
 //   }
 // };
-const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+const createSubjectQuiz = async (req, res) => {
+    var _a;
     try {
         const { classID, subjectID } = req.params;
         const { quiz, totalQuestions } = req.body;
-        const classRoom = yield classroomModel_1.default.findById(classID);
-        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const classRoom = await classroomModel_1.default.findById(classID);
+        const checkForSubject = await subjectModel_1.default.findById(subjectID);
+        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
         if (checkForSubject) {
-            const quizes = yield quizModel_1.default.create({
+            const quizes = await quizModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
                 subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
                 quiz,
@@ -1903,7 +1900,7 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 status: "quiz",
             });
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            (_e = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _e === void 0 ? void 0 : _e.push(new mongoose_1.Types.ObjectId(quizes._id));
+            (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
             checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
@@ -1928,12 +1925,12 @@ const createSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.createSubjectQuiz = createSubjectQuiz;
-const readSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectQuiz = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "quiz",
             options: {
                 sort: {
@@ -1953,12 +1950,12 @@ const readSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function
             status: 404,
         });
     }
-});
+};
 exports.readSubjectQuiz = readSubjectQuiz;
-const readTeacherSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTeacherSubjectQuiz = async (req, res) => {
     try {
         const { teacherID } = req.params;
-        const quiz = yield staffModel_1.default
+        const quiz = await staffModel_1.default
             .findById(teacherID)
             .populate({ path: "quiz" });
         return res.status(201).json({
@@ -1974,12 +1971,12 @@ const readTeacherSubjectQuiz = (req, res) => __awaiter(void 0, void 0, void 0, f
             status: 404,
         });
     }
-});
+};
 exports.readTeacherSubjectQuiz = readTeacherSubjectQuiz;
-const readQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readQuiz = async (req, res) => {
     try {
         const { quizID } = req.params;
-        const quiz = yield quizModel_1.default.findById(quizID);
+        const quiz = await quizModel_1.default.findById(quizID);
         return res.status(201).json({
             message: "subject quiz read successfully",
             data: quiz,
@@ -1993,11 +1990,11 @@ const readQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             status: 404,
         });
     }
-});
+};
 exports.readQuiz = readQuiz;
-const readQuizes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readQuizes = async (req, res) => {
     try {
-        const quiz = yield quizModel_1.default.find().populate({
+        const quiz = await quizModel_1.default.find().populate({
             path: "performance",
         });
         return res.status(201).json({
@@ -2013,12 +2010,12 @@ const readQuizes = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             status: 404,
         });
     }
-});
+};
 exports.readQuizes = readQuizes;
-const getQuizRecords = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getQuizRecords = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const quizzes = yield studentModel_1.default
+        const quizzes = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "performance" });
         return res.status(200).json({
@@ -2034,21 +2031,21 @@ const getQuizRecords = (req, res) => __awaiter(void 0, void 0, void 0, function*
             status: 500,
         });
     }
-});
+};
 exports.getQuizRecords = getQuizRecords;
-const deleteQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteQuiz = async (req, res) => {
     try {
         const { quizID } = req.params;
-        const quiz = yield quizModel_1.default.findByIdAndDelete(quizID);
+        const quiz = await quizModel_1.default.findByIdAndDelete(quizID);
         if (!quiz) {
             return res.status(404).json({
                 message: "Quiz not found",
                 status: 404,
             });
         }
-        const subjectUpdate = yield subjectModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
-        const staffUpdate = yield staffModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
-        const studentUpdate = yield studentModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
+        const subjectUpdate = await subjectModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
+        const staffUpdate = await staffModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
+        const studentUpdate = await studentModel_1.default.updateMany({ quiz: quizID }, { $pull: { quiz: quizID } });
         return res.status(200).json({
             message: "Quiz deleted successfully",
             data: {
@@ -2067,12 +2064,12 @@ const deleteQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             status: 500,
         });
     }
-});
+};
 exports.deleteQuiz = deleteQuiz;
-const getStudentQuizRecords = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getStudentQuizRecords = async (req, res) => {
     try {
         const { teacherID } = req.params;
-        const staff = yield staffModel_1.default.findById(teacherID).populate({
+        const staff = await staffModel_1.default.findById(teacherID).populate({
             path: "quiz",
             populate: {
                 path: "performance",
@@ -2098,5 +2095,5 @@ const getStudentQuizRecords = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 500,
         });
     }
-});
+};
 exports.getStudentQuizRecords = getStudentQuizRecords;

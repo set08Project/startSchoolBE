@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,11 +9,11 @@ const studentModel_1 = __importDefault(require("../model/studentModel"));
 const outGoneStudentModel_1 = __importDefault(require("../model/outGoneStudentModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const mongoose_1 = require("mongoose");
-const createSchoolOutGoneStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolOutGoneStudent = async (req, res) => {
     try {
         const { schoolID, studentID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const student = yield studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const student = await studentModel_1.default.findById(studentID);
         if (!student) {
             return res.status(404).json({
                 message: "Student not found",
@@ -33,7 +24,7 @@ const createSchoolOutGoneStudent = (req, res) => __awaiter(void 0, void 0, void 
             const checkFirst = (school === null || school === void 0 ? void 0 : school.students).some((el) => el.toString() === `${studentID}`);
             if (checkFirst) {
                 // Create outgone student record
-                const outGoneRecord = yield outGoneStudentModel_1.default.create({
+                const outGoneRecord = await outGoneStudentModel_1.default.create({
                     studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
                     student: studentID,
                     schoolInfo: schoolID,
@@ -41,12 +32,12 @@ const createSchoolOutGoneStudent = (req, res) => __awaiter(void 0, void 0, void 
                 });
                 // Remove from current class if they're in one
                 if (student.presentClassID) {
-                    yield classroomModel_1.default.findByIdAndUpdate(student.presentClassID, {
+                    await classroomModel_1.default.findByIdAndUpdate(student.presentClassID, {
                         $pull: { students: new mongoose_1.Types.ObjectId(studentID) },
                     });
                 }
                 // Remove from school's student list
-                yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                     $pull: { students: new mongoose_1.Types.ObjectId(studentID) },
                     $push: { outGoneStudents: new mongoose_1.Types.ObjectId(outGoneRecord._id) },
                 });
@@ -77,12 +68,12 @@ const createSchoolOutGoneStudent = (req, res) => __awaiter(void 0, void 0, void 
             data: error.message,
         });
     }
-});
+};
 exports.createSchoolOutGoneStudent = createSchoolOutGoneStudent;
-const viewSchoolOutGoneStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolOutGoneStudents = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const announcement = yield schoolModel_1.default.findById(schoolID).populate({
+        const announcement = await schoolModel_1.default.findById(schoolID).populate({
             path: "outGoneStudents",
             options: {
                 sort: {
@@ -102,13 +93,13 @@ const viewSchoolOutGoneStudents = (req, res) => __awaiter(void 0, void 0, void 0
             status: 404,
         });
     }
-});
+};
 exports.viewSchoolOutGoneStudents = viewSchoolOutGoneStudents;
-const findSchoolOutGoneStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const findSchoolOutGoneStudents = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { studentName } = req.body;
-        const announcement = yield schoolModel_1.default
+        const announcement = await schoolModel_1.default
             .findById(schoolID)
             .populate({
             path: "outGoneStudents",
@@ -131,5 +122,5 @@ const findSchoolOutGoneStudents = (req, res) => __awaiter(void 0, void 0, void 0
             status: 404,
         });
     }
-});
+};
 exports.findSchoolOutGoneStudents = findSchoolOutGoneStudents;

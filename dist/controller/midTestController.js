@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -24,17 +15,17 @@ const mammoth_1 = __importDefault(require("mammoth"));
 const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const mongoose_1 = require("mongoose");
-const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSubjectMidTest = async (req, res) => {
     var _a, _b, _c;
     try {
         const { classID, subjectID } = req.params;
         const { instruction, duration, mark, theory } = req.body;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
-        const classRoom = yield classroomModel_1.default.findById(classID);
-        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = yield subjectModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const classRoom = await classroomModel_1.default.findById(classID);
+        const checkForSubject = await subjectModel_1.default.findById(subjectID);
+        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findSubjectTeacher = await subjectModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         const uploadedPath = (_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path;
         if (!uploadedPath) {
             return res
@@ -45,7 +36,7 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
         if (ext === ".doc" || ext === ".docx") {
-            const { value: rawText } = yield mammoth_1.default.extractRawText({
+            const { value: rawText } = await mammoth_1.default.extractRawText({
                 path: uploadedPath,
             });
             const lines = rawText
@@ -103,7 +94,7 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
             }
         }
         else {
-            const data = yield (0, csvtojson_1.default)().fromFile(uploadedPath);
+            const data = await (0, csvtojson_1.default)().fromFile(uploadedPath);
             for (const i of data) {
                 const opts = i.options ? i.options.split(";;") : [];
                 const read = {
@@ -135,7 +126,7 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
             }
         };
         if (checkForSubject) {
-            const quizes = yield midTestModel_1.default.create({
+            const quizes = await midTestModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
                 subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
                 session: school === null || school === void 0 ? void 0 : school.presentSession,
@@ -156,10 +147,10 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
-            const x = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-                yield deleteFilesInFolder(filePath);
+            const x = setTimeout(async () => {
+                await deleteFilesInFolder(filePath);
                 clearTimeout(x);
-            }), 15000);
+            }, 15000);
             return res.status(201).json({
                 message: "midTest entry successfully",
                 data: quizes,
@@ -182,12 +173,12 @@ const createSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
             data: error === null || error === void 0 ? void 0 : error.message,
         });
     }
-});
+};
 exports.createSubjectMidTest = createSubjectMidTest;
-const readSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectMidTest = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "midTest",
             options: {
                 sort: {
@@ -210,13 +201,13 @@ const readSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, funct
             status: 404,
         });
     }
-});
+};
 exports.readSubjectMidTest = readSubjectMidTest;
-const startSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const startSubjectMidTest = async (req, res) => {
     try {
         const { midTestID } = req.params;
         const { started } = req.body;
-        const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
+        const subject = await midTestModel_1.default.findByIdAndUpdate(midTestID, {
             startMidTest: started,
         }, { new: true });
         return res.status(201).json({
@@ -231,13 +222,13 @@ const startSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, func
             status: 404,
         });
     }
-});
+};
 exports.startSubjectMidTest = startSubjectMidTest;
-const randomizeSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const randomizeSubjectMidTest = async (req, res) => {
     try {
         const { midTestID } = req.params;
         const { started } = req.body;
-        const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
+        const subject = await midTestModel_1.default.findByIdAndUpdate(midTestID, {
             randomize: started,
         }, { new: true });
         return res.status(201).json({
@@ -252,19 +243,19 @@ const randomizeSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, 
             status: 404,
         });
     }
-});
+};
 exports.randomizeSubjectMidTest = randomizeSubjectMidTest;
-const updateSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e;
+const updateSubjectMidTest = async (req, res) => {
+    var _a, _b;
     try {
         const { midTestID } = req.params;
         const { mark, duration } = req.body;
-        const midTest = yield midTestModel_1.default.findByIdAndUpdate(midTestID);
-        const subject = yield midTestModel_1.default.findByIdAndUpdate(midTestID, {
+        const midTest = await midTestModel_1.default.findByIdAndUpdate(midTestID);
+        const subject = await midTestModel_1.default.findByIdAndUpdate(midTestID, {
             quiz: {
                 instruction: { duration, mark },
-                question: (_d = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _d === void 0 ? void 0 : _d.question,
-                theory: (_e = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _e === void 0 ? void 0 : _e.theory,
+                question: (_a = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _a === void 0 ? void 0 : _a.question,
+                theory: (_b = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _b === void 0 ? void 0 : _b.theory,
             },
         }, { new: true });
         return res.status(201).json({
@@ -279,12 +270,12 @@ const updateSubjectMidTest = (req, res) => __awaiter(void 0, void 0, void 0, fun
             status: 404,
         });
     }
-});
+};
 exports.updateSubjectMidTest = updateSubjectMidTest;
-const readMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readMidTest = async (req, res) => {
     try {
         const { midTestID } = req.params;
-        const quiz = yield midTestModel_1.default.findById(midTestID);
+        const quiz = await midTestModel_1.default.findById(midTestID);
         return res.status(201).json({
             message: "subject mid Test read successfully",
             data: quiz,
@@ -298,18 +289,18 @@ const readMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: 404,
         });
     }
-});
+};
 exports.readMidTest = readMidTest;
-const deleteMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteMidTest = async (req, res) => {
     try {
         const { midTestID, subjectID } = req.params;
-        const quizSubject = yield subjectModel_1.default.findById(subjectID);
-        const quizTeacher = yield staffModel_1.default.findById(quizSubject === null || quizSubject === void 0 ? void 0 : quizSubject.teacherID);
+        const quizSubject = await subjectModel_1.default.findById(subjectID);
+        const quizTeacher = await staffModel_1.default.findById(quizSubject === null || quizSubject === void 0 ? void 0 : quizSubject.teacherID);
         console.log("quizTeacher", quizTeacher);
-        yield midTestModel_1.default.findByIdAndDelete(midTestID);
+        await midTestModel_1.default.findByIdAndDelete(midTestID);
         if (quizSubject && Array.isArray(quizSubject.midTest)) {
             quizSubject.midTest = quizSubject.midTest.filter((id) => id.toString() !== midTestID);
-            yield quizSubject.save();
+            await quizSubject.save();
         }
         quizTeacher.pull(new mongoose_1.Types.ObjectId(midTestID));
         quizTeacher.save();
@@ -326,5 +317,5 @@ const deleteMidTest = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             status: 404,
         });
     }
-});
+};
 exports.deleteMidTest = deleteMidTest;

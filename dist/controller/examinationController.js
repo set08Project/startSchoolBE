@@ -1,18 +1,9 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteExamination = exports.readExamination = exports.startSubjectExamination = exports.randomizeSubjectExamination = exports.readSubjectExamination = exports.createSubjectExam = void 0;
+exports.updateSubjectExam = exports.deleteExamination = exports.readExamination = exports.startSubjectExamination = exports.randomizeSubjectExamination = exports.readSubjectExamination = exports.createSubjectExam = void 0;
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
 const lodash_1 = __importDefault(require("lodash"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
@@ -26,19 +17,19 @@ const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const streamifier_1 = require("../utils/streamifier");
 const mongoose_1 = require("mongoose");
-const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSubjectExam = async (req, res) => {
     var _a, _b, _c;
     try {
         const { classID, subjectID } = req.params;
         const { theory, instruction, duration, mark, randomize } = req.body;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
-        const classRoom = yield classroomModel_1.default.findById(classID);
-        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
+        const classRoom = await classroomModel_1.default.findById(classID);
+        const checkForSubject = await subjectModel_1.default.findById(subjectID);
         // teacher assigned to the class
-        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
         // teacher assigned specifically to the subject (teacherID stored on subject)
-        const findSubjectTeacher = yield staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = yield schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
         // const { secure_url, public_id }: any = await streamUpload(req);
         const uploadedPath = (_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path;
         if (!uploadedPath) {
@@ -52,7 +43,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         let value = [];
         if (ext === ".doc" || ext === ".docx") {
             // Convert Word docx to HTML to preserve images and markup
-            const result = yield mammoth_1.default.convertToHtml({ path: uploadedPath }, { includeEmbeddedStyleMap: true });
+            const result = await mammoth_1.default.convertToHtml({ path: uploadedPath }, { includeEmbeddedStyleMap: true });
             const html = result.value || "";
             const $ = cheerio_1.default.load(html);
             // split by paragraphs and headings to get question blocks
@@ -89,7 +80,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 for (const src of arr) {
                     try {
                         if (typeof src === "string" && src.startsWith("data:")) {
-                            const uploadRes = yield (0, streamifier_1.uploadDataUri)(src, "exams");
+                            const uploadRes = await (0, streamifier_1.uploadDataUri)(src, "exams");
                             if (uploadRes && uploadRes.secure_url) {
                                 uploadedUrls.push(uploadRes.secure_url);
                             }
@@ -166,7 +157,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         else {
             // treat as CSV
-            const data = yield (0, csvtojson_1.default)().fromFile(uploadedPath);
+            const data = await (0, csvtojson_1.default)().fromFile(uploadedPath);
             for (const i of data) {
                 const opts = i.options ? i.options.split(";;") : [];
                 const read = {
@@ -276,7 +267,7 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             //   });
             // }
             // await examinationModel.deleteMany();
-            const quizes = yield examinationModel_1.default.create({
+            const quizes = await examinationModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
                 subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
                 session: school === null || school === void 0 ? void 0 : school.presentSession,
@@ -301,10 +292,10 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
             findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
-            const x = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-                yield deleteFilesInFolder(filePath);
+            const x = setTimeout(async () => {
+                await deleteFilesInFolder(filePath);
                 clearTimeout(x);
-            }), 15000);
+            }, 15000);
             return res.status(201).json({
                 message: "exam entry successfully",
                 data: quizes,
@@ -327,12 +318,12 @@ const createSubjectExam = (req, res) => __awaiter(void 0, void 0, void 0, functi
             data: error === null || error === void 0 ? void 0 : error.message,
         });
     }
-});
+};
 exports.createSubjectExam = createSubjectExam;
-const readSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectExamination = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "examination",
             options: {
                 sort: {
@@ -355,13 +346,13 @@ const readSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, f
             status: 404,
         });
     }
-});
+};
 exports.readSubjectExamination = readSubjectExamination;
-const randomizeSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const randomizeSubjectExamination = async (req, res) => {
     try {
         const { examID } = req.params;
         const { started } = req.body;
-        const subject = yield examinationModel_1.default.findByIdAndUpdate(examID, {
+        const subject = await examinationModel_1.default.findByIdAndUpdate(examID, {
             randomize: started,
         }, { new: true });
         return res.status(201).json({
@@ -376,13 +367,13 @@ const randomizeSubjectExamination = (req, res) => __awaiter(void 0, void 0, void
             status: 404,
         });
     }
-});
+};
 exports.randomizeSubjectExamination = randomizeSubjectExamination;
-const startSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const startSubjectExamination = async (req, res) => {
     try {
         const { examID } = req.params;
         const { started } = req.body;
-        const subject = yield examinationModel_1.default.findByIdAndUpdate(examID, {
+        const subject = await examinationModel_1.default.findByIdAndUpdate(examID, {
             startExam: started,
         }, { new: true });
         return res.status(201).json({
@@ -397,12 +388,12 @@ const startSubjectExamination = (req, res) => __awaiter(void 0, void 0, void 0, 
             status: 404,
         });
     }
-});
+};
 exports.startSubjectExamination = startSubjectExamination;
-const readExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readExamination = async (req, res) => {
     try {
         const { examID } = req.params;
-        const quiz = yield examinationModel_1.default.findById(examID);
+        const quiz = await examinationModel_1.default.findById(examID);
         return res.status(201).json({
             message: "subject quiz read successfully",
             data: quiz,
@@ -416,14 +407,14 @@ const readExamination = (req, res) => __awaiter(void 0, void 0, void 0, function
             status: 404,
         });
     }
-});
+};
 exports.readExamination = readExamination;
-const deleteExamination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteExamination = async (req, res) => {
     try {
         const { examID, subjectID } = req.params;
-        const quizSubject = yield subjectModel_1.default.findById(subjectID);
-        const quizTeacher = yield staffModel_1.default.findById(quizSubject === null || quizSubject === void 0 ? void 0 : quizSubject.teacherID);
-        const quiz = yield examinationModel_1.default.findByIdAndDelete(examID);
+        const quizSubject = await subjectModel_1.default.findById(subjectID);
+        const quizTeacher = await staffModel_1.default.findById(quizSubject === null || quizSubject === void 0 ? void 0 : quizSubject.teacherID);
+        const quiz = await examinationModel_1.default.findByIdAndDelete(examID);
         quizSubject.pull(new mongoose_1.Types.ObjectId(examID));
         quizSubject.save();
         quizTeacher.pull(new mongoose_1.Types.ObjectId(examID));
@@ -441,5 +432,32 @@ const deleteExamination = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.deleteExamination = deleteExamination;
+const updateSubjectExam = async (req, res) => {
+    var _a, _b;
+    try {
+        const { examID } = req.params;
+        const { mark, duration } = req.body;
+        const midTest = await examinationModel_1.default.findByIdAndUpdate(examID);
+        const subject = await examinationModel_1.default.findByIdAndUpdate(examID, {
+            quiz: {
+                instruction: { duration, mark },
+                question: (_a = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _a === void 0 ? void 0 : _a.question,
+                theory: (_b = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _b === void 0 ? void 0 : _b.theory,
+            },
+        }, { new: true });
+        return res.status(201).json({
+            message: "start subject mid test read successfully",
+            data: subject,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error reading subject mid test",
+            status: 404,
+        });
+    }
+};
+exports.updateSubjectExam = updateSubjectExam;

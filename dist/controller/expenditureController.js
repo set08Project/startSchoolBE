@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -19,15 +10,15 @@ const expenseModel_1 = __importDefault(require("../model/expenseModel"));
 const mongoose_1 = require("mongoose");
 const moment_1 = __importDefault(require("moment"));
 const lodash_1 = __importDefault(require("lodash"));
-const createExpenditure = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createExpenditure = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { item, description, amount, paymentCategory, paymentMode } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const getTerm = yield termModel_1.default.findById(school.presentTermID);
+            const getTerm = await termModel_1.default.findById(school.presentTermID);
             if (getTerm) {
-                let createExpense = yield expenseModel_1.default.create({
+                let createExpense = await expenseModel_1.default.create({
                     item,
                     description,
                     amount,
@@ -60,14 +51,14 @@ const createExpenditure = (req, res) => __awaiter(void 0, void 0, void 0, functi
             data: error.message,
         });
     }
-});
+};
 exports.createExpenditure = createExpenditure;
-const readTermExpenditure = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTermExpenditure = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const getTerm = yield termModel_1.default.findById(school.presentTermID).populate({
+            const getTerm = await termModel_1.default.findById(school.presentTermID).populate({
                 path: "expense",
                 options: {
                     sort: {
@@ -93,14 +84,14 @@ const readTermExpenditure = (req, res) => __awaiter(void 0, void 0, void 0, func
             data: error.message,
         });
     }
-});
+};
 exports.readTermExpenditure = readTermExpenditure;
-const readTermBudget = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTermBudget = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const getTerm = yield termModel_1.default.findById(school.presentTermID).populate({
+            const getTerm = await termModel_1.default.findById(school.presentTermID).populate({
                 path: "expense",
                 options: {
                     sort: {
@@ -126,15 +117,15 @@ const readTermBudget = (req, res) => __awaiter(void 0, void 0, void 0, function*
             data: error.message,
         });
     }
-});
+};
 exports.readTermBudget = readTermBudget;
-const setTermlyBudget = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const setTermlyBudget = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { budget } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const getTerm = yield termModel_1.default.findByIdAndUpdate(school.presentTermID, {
+            const getTerm = await termModel_1.default.findByIdAndUpdate(school.presentTermID, {
                 budget,
             }, { new: true });
             return res.status(201).json({
@@ -155,15 +146,15 @@ const setTermlyBudget = (req, res) => __awaiter(void 0, void 0, void 0, function
             data: error.message,
         });
     }
-});
+};
 exports.setTermlyBudget = setTermlyBudget;
-const createDailyExpenses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createDailyExpenses = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { item, description, amount, paymentCategory, paymentMode } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const getTerm = yield termModel_1.default.findById(school.presentTermID);
+            const getTerm = await termModel_1.default.findById(school.presentTermID);
             const getWeekNumber = (date) => {
                 const currentDate = new Date(date.getTime());
                 const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
@@ -175,7 +166,7 @@ const createDailyExpenses = (req, res) => __awaiter(void 0, void 0, void 0, func
             };
             const today = new Date();
             if (getTerm) {
-                let createExpense = yield termModel_1.default.findByIdAndUpdate(getTerm._id, {
+                let createExpense = await termModel_1.default.findByIdAndUpdate(getTerm._id, {
                     expensePayOut: [
                         ...getTerm.expensePayOut,
                         {
@@ -215,14 +206,14 @@ const createDailyExpenses = (req, res) => __awaiter(void 0, void 0, void 0, func
             data: error.message,
         });
     }
-});
+};
 exports.createDailyExpenses = createDailyExpenses;
-const readTermDailyExpenses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTermDailyExpenses = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const getTerm = yield termModel_1.default.findById(school.presentTermID);
+            const getTerm = await termModel_1.default.findById(school.presentTermID);
             let filterByMonth = lodash_1.default.groupBy(getTerm === null || getTerm === void 0 ? void 0 : getTerm.expensePayOut, "month");
             let filterByWeek = lodash_1.default.groupBy(getTerm === null || getTerm === void 0 ? void 0 : getTerm.expensePayOut, "weekValue");
             return res.status(201).json({
@@ -247,5 +238,5 @@ const readTermDailyExpenses = (req, res) => __awaiter(void 0, void 0, void 0, fu
             data: error.message,
         });
     }
-});
+};
 exports.readTermDailyExpenses = readTermDailyExpenses;

@@ -15,22 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -44,13 +45,13 @@ const termModel_1 = __importDefault(require("../model/termModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const classHistory_1 = __importDefault(require("../model/classHistory"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
-const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolSession = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { year, term } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName) {
-            const session = yield sessionModel_1.default.create({
+            const session = await sessionModel_1.default.create({
                 year,
                 term,
             });
@@ -73,7 +74,7 @@ const createSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, func
             message: "Error creating school session",
         });
     }
-});
+};
 exports.createSchoolSession = createSchoolSession;
 // export const createNewSchoolSession = async (
 //   req: Request,
@@ -262,7 +263,7 @@ exports.createSchoolSession = createSchoolSession;
 //     });
 //   }
 // };
-const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createNewSchoolSession = async (req, res) => {
     var _a, _b;
     try {
         const { schoolID } = req.params;
@@ -274,7 +275,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             });
         }
         // Fetch school with all necessary populations in one query
-        const school = yield schoolModel_1.default
+        const school = await schoolModel_1.default
             .findById(schoolID)
             .populate({ path: "students" })
             .populate({ path: "classRooms" })
@@ -308,7 +309,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             }
         }
         // Create new session record
-        const session = yield sessionModel_1.default.create({
+        const session = await sessionModel_1.default.create({
             schoolID,
             year,
             totalStudents: students.length,
@@ -318,7 +319,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             studentFeesPaid: paidStudents,
         });
         // Update school with new session info
-        yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+        await schoolModel_1.default.findByIdAndUpdate(schoolID, {
             presentSession: year,
             presentSessionID: session._id.toString(),
             $push: {
@@ -372,11 +373,11 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             }
         }
         // Execute classroom updates
-        yield Promise.all(classRoomUpdates);
+        await Promise.all(classRoomUpdates);
         // Delete graduated classrooms and update school
         if (classRoomDeletions.length > 0) {
-            yield classroomModel_1.default.deleteMany({ _id: { $in: classRoomDeletions } });
-            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            await classroomModel_1.default.deleteMany({ _id: { $in: classRoomDeletions } });
+            await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 $pull: { classRooms: { $in: classRoomDeletions } },
             });
         }
@@ -401,30 +402,30 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             }
         }
         // Execute student updates
-        yield Promise.all(studentUpdates);
+        await Promise.all(studentUpdates);
         // Handle graduated students: create outGone entries, remove from school lists, and delete student records
         if (studentDeletions.length > 0) {
             for (const studentId of studentDeletions) {
                 try {
-                    const studentData = yield studentModel_1.default.findById(studentId);
+                    const studentData = await studentModel_1.default.findById(studentId);
                     if (studentData) {
                         // create outGone record
-                        const out = yield (yield Promise.resolve().then(() => __importStar(require("../model/outGoneStudentModel")))).default.create({
+                        const out = await (await Promise.resolve().then(() => __importStar(require("../model/outGoneStudentModel")))).default.create({
                             studentName: `${studentData.studentFirstName} ${studentData.studentLastName}`,
                             student: studentId,
                             schoolInfo: schoolID,
                         });
                         // push to school's outGoneStudents
-                        yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                        await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                             $push: { outGoneStudents: out._id },
                         });
                     }
                     // remove student from school's student array
-                    yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                    await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                         $pull: { students: studentId },
                     });
                     // finally delete the student record
-                    yield studentModel_1.default.findByIdAndDelete(studentId);
+                    await studentModel_1.default.findByIdAndDelete(studentId);
                 }
                 catch (err) {
                     // continue on errors for individual students
@@ -440,9 +441,9 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 const updatedClasses = teacher.classesAssigned.map((classAssignment) => {
                     const newClassName = promoteClassName(classAssignment.className);
                     if (newClassName) {
-                        return Object.assign(Object.assign({}, classAssignment), { className: newClassName });
+                        return { ...classAssignment, className: newClassName };
                     }
-                    return Object.assign({}, classAssignment);
+                    return { ...classAssignment };
                 });
                 // Detect if any className changed (compare by index)
                 const hasChanged = teacher.classesAssigned.some((orig, idx) => { var _a; return (orig === null || orig === void 0 ? void 0 : orig.className) !== ((_a = updatedClasses[idx]) === null || _a === void 0 ? void 0 : _a.className); });
@@ -452,7 +453,7 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             }
         }
         // Execute teacher updates
-        yield Promise.all(teacherUpdates);
+        await Promise.all(teacherUpdates);
         return res.status(201).json({
             message: "Session created and students promoted successfully",
             data: {
@@ -470,12 +471,12 @@ const createNewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             error: error.message,
         });
     }
-});
+};
 exports.createNewSchoolSession = createNewSchoolSession;
-const viewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolSession = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "session",
             options: {
                 sort: {
@@ -494,12 +495,12 @@ const viewSchoolSession = (req, res) => __awaiter(void 0, void 0, void 0, functi
             data: error.message,
         });
     }
-});
+};
 exports.viewSchoolSession = viewSchoolSession;
-const viewSchoolPresentSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolPresentSession = async (req, res) => {
     try {
         const { sessionID } = req.params;
-        const school = yield sessionModel_1.default.findById(sessionID).populate({
+        const school = await sessionModel_1.default.findById(sessionID).populate({
             path: "term",
         });
         return res.status(200).json({
@@ -513,12 +514,12 @@ const viewSchoolPresentSession = (req, res) => __awaiter(void 0, void 0, void 0,
             data: error.message,
         });
     }
-});
+};
 exports.viewSchoolPresentSession = viewSchoolPresentSession;
-const viewSchoolPresentSessionTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolPresentSessionTerm = async (req, res) => {
     try {
         const { termID } = req.params;
-        const school = yield termModel_1.default.findById(termID);
+        const school = await termModel_1.default.findById(termID);
         return res.status(200).json({
             message: "viewing school session",
             data: school,
@@ -530,15 +531,15 @@ const viewSchoolPresentSessionTerm = (req, res) => __awaiter(void 0, void 0, voi
             data: error.message,
         });
     }
-});
+};
 exports.viewSchoolPresentSessionTerm = viewSchoolPresentSessionTerm;
-const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const studentsPerSession = async (req, res) => {
     try {
         const { sessionID } = req.params;
         const { totalStudents } = req.body;
-        const session = yield sessionModel_1.default.findById(sessionID);
+        const session = await sessionModel_1.default.findById(sessionID);
         if (session) {
-            const students = yield sessionModel_1.default.findByIdAndUpdate(sessionID, { totalStudents }, { new: true });
+            const students = await sessionModel_1.default.findByIdAndUpdate(sessionID, { totalStudents }, { new: true });
             return res.status(200).json({
                 message: "viewing session session",
                 data: students,
@@ -555,17 +556,17 @@ const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, funct
             message: "Error viewing school session",
         });
     }
-});
+};
 exports.studentsPerSession = studentsPerSession;
-const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g, _h;
+const termPerSession = async (req, res) => {
+    var _a, _b, _c, _d, _e, _f;
     try {
         const { sessionID } = req.params;
         let { term } = req.body;
-        const session = yield sessionModel_1.default.findById(sessionID).populate({
+        const session = await sessionModel_1.default.findById(sessionID).populate({
             path: "term",
         });
-        const schoolClass = yield schoolModel_1.default
+        const schoolClass = await schoolModel_1.default
             .findById(session === null || session === void 0 ? void 0 : session.schoolID)
             .populate({ path: "classRooms" });
         if (session) {
@@ -593,17 +594,17 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 }
                 else {
                     // presentTerm
-                    const viewDetail = yield termModel_1.default.findById((_c = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 1]) === null || _c === void 0 ? void 0 : _c._id);
+                    const viewDetail = await termModel_1.default.findById((_a = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 1]) === null || _a === void 0 ? void 0 : _a._id);
                     let resultHist = [];
                     for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
-                        resultHist.push(Object.assign({}, i));
-                        yield termModel_1.default.findByIdAndUpdate((_d = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 1]) === null || _d === void 0 ? void 0 : _d._id, {
+                        resultHist.push({ ...i });
+                        await termModel_1.default.findByIdAndUpdate((_b = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 1]) === null || _b === void 0 ? void 0 : _b._id, {
                             classResult: resultHist,
                         }, { new: true });
                     }
-                    const sessionRecorde = yield sessionModel_1.default.findByIdAndUpdate(sessionID, { presentTerm: capitalizedText(term) }, { new: true });
+                    const sessionRecorde = await sessionModel_1.default.findByIdAndUpdate(sessionID, { presentTerm: capitalizedText(term) }, { new: true });
                     for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
-                        yield classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                        await classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
                             presentTerm: capitalizedText(term),
                             attendance: [],
                             timeTable: [],
@@ -614,21 +615,21 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
                             weekStudent: {},
                         }, { new: true });
                     }
-                    const sessionTerm = yield termModel_1.default.create({
+                    const sessionTerm = await termModel_1.default.create({
                         term: capitalizedText(term),
                         year: session === null || session === void 0 ? void 0 : session.year,
                         presentTerm: term,
                     });
-                    yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
-                        presentTermID: (_e = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _e === void 0 ? void 0 : _e.toString(),
+                    await schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
+                        presentTermID: (_c = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _c === void 0 ? void 0 : _c.toString(),
                         presentSessionID: sessionID,
                         presentTerm: term,
                     }, { new: true });
                     session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
                     session === null || session === void 0 ? void 0 : session.save();
-                    if (((_f = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _f === void 0 ? void 0 : _f.length) > 1 || ((_g = session === null || session === void 0 ? void 0 : session.term) === null || _g === void 0 ? void 0 : _g.length) > 1) {
-                        yield schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
-                            presentTermID: (_h = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _h === void 0 ? void 0 : _h.toString(),
+                    if (((_d = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _d === void 0 ? void 0 : _d.length) > 1 || ((_e = session === null || session === void 0 ? void 0 : session.term) === null || _e === void 0 ? void 0 : _e.length) > 1) {
+                        await schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
+                            presentTermID: (_f = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _f === void 0 ? void 0 : _f.toString(),
                             freeMode: false,
                         }, { new: true });
                     }
@@ -656,12 +657,12 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
             message: "Error viewing school session",
         });
     }
-});
+};
 exports.termPerSession = termPerSession;
-const viewTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewTerm = async (req, res) => {
     try {
         const { termID } = req.params;
-        const getAll = yield termModel_1.default.findById(termID);
+        const getAll = await termModel_1.default.findById(termID);
         return res.status(200).json({
             message: "viewing term details",
             data: getAll,
@@ -673,11 +674,11 @@ const viewTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             data: error.message,
         });
     }
-});
+};
 exports.viewTerm = viewTerm;
-const getAllSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllSession = async (req, res) => {
     try {
-        const getAll = yield sessionModel_1.default.find().populate({
+        const getAll = await sessionModel_1.default.find().populate({
             path: "term",
         });
         return res.status(200).json({
@@ -691,13 +692,13 @@ const getAllSession = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             data: error.message,
         });
     }
-});
+};
 exports.getAllSession = getAllSession;
-const updateTermPay = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateTermPay = async (req, res) => {
     try {
         const { termID } = req.params;
         const { costPaid, payRef } = req.body;
-        const getAll = yield termModel_1.default.findByIdAndUpdate(termID, {
+        const getAll = await termModel_1.default.findByIdAndUpdate(termID, {
             plan: true,
             costPaid,
             payRef,
@@ -713,25 +714,25 @@ const updateTermPay = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             data: error.message,
         });
     }
-});
+};
 exports.updateTermPay = updateTermPay;
-const createSessionHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSessionHistory = async (req, res) => {
     try {
         const { classID } = req.params;
         const { text } = req.body;
-        const getClassRoom = yield classroomModel_1.default.findById(classID);
-        const teacher = yield staffModel_1.default.findById(getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.teacherID);
-        const getSchool = yield schoolModel_1.default
+        const getClassRoom = await classroomModel_1.default.findById(classID);
+        const teacher = await staffModel_1.default.findById(getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.teacherID);
+        const getSchool = await schoolModel_1.default
             .findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs)
             .populate({ path: "session" });
         let history = [];
         for (let i of getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.students) {
-            let getStudentsData = yield studentModel_1.default
+            let getStudentsData = await studentModel_1.default
                 .findById(i)
                 .populate({ path: "reportCard" });
             history.push(getStudentsData);
         }
-        const getAll = yield classHistory_1.default.create({
+        const getAll = await classHistory_1.default.create({
             resultHistory: history,
             // session: getSchool?.session[0]?.year!,
             // term: getSchool?.session[0]?.presentTerm!,
@@ -754,12 +755,12 @@ const createSessionHistory = (req, res) => __awaiter(void 0, void 0, void 0, fun
             data: error.message,
         });
     }
-});
+};
 exports.createSessionHistory = createSessionHistory;
-const getAllClassSessionResults = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllClassSessionResults = async (req, res) => {
     try {
         const { classID } = req.params;
-        const getAll = yield classroomModel_1.default.findById(classID).populate({
+        const getAll = await classroomModel_1.default.findById(classID).populate({
             path: "classHistory",
         });
         return res.status(200).json({
@@ -773,5 +774,5 @@ const getAllClassSessionResults = (req, res) => __awaiter(void 0, void 0, void 0
             data: error.message,
         });
     }
-});
+};
 exports.getAllClassSessionResults = getAllClassSessionResults;

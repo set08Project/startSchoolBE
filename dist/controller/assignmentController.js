@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -21,15 +12,15 @@ const quizModel_1 = __importDefault(require("../model/quizModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const assignmentResolvedModel_1 = __importDefault(require("../model/assignmentResolvedModel"));
 const assignmentModel_1 = __importDefault(require("../model/assignmentModel"));
-const createSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSubjectAssignment = async (req, res) => {
     try {
         const { classID, subjectID } = req.params;
         const { assignmentTopic, assignmentDetails, assignmentDeadline } = req.body;
-        const classRoom = yield classroomModel_1.default.findById(classID);
-        const checkForSubject = yield subjectModel_1.default.findById(subjectID);
-        const findTeacher = yield staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const classRoom = await classroomModel_1.default.findById(classID);
+        const checkForSubject = await subjectModel_1.default.findById(subjectID);
+        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
         if (checkForSubject) {
-            const quizes = yield assignmentModel_1.default.create({
+            const quizes = await assignmentModel_1.default.create({
                 subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
                 assignmentTopic,
                 assignmentDetails,
@@ -60,12 +51,12 @@ const createSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 0, 
             status: 404,
         });
     }
-});
+};
 exports.createSubjectAssignment = createSubjectAssignment;
-const readSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectAssignment = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "assignment",
             options: {
                 sort: {
@@ -85,7 +76,7 @@ const readSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 404,
         });
     }
-});
+};
 exports.readSubjectAssignment = readSubjectAssignment;
 // export const readClassSubjectAssignment = async (
 //   req: Request,
@@ -112,10 +103,10 @@ exports.readSubjectAssignment = readSubjectAssignment;
 //     });
 //   }
 // };
-const readClassSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readClassSubjectAssignment = async (req, res) => {
     try {
         const { classID } = req.params;
-        const quiz = yield classroomModel_1.default.findById(classID).populate({
+        const quiz = await classroomModel_1.default.findById(classID).populate({
             path: "assignment",
             options: {
                 sort: { createdAt: -1 },
@@ -134,12 +125,12 @@ const readClassSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 
             status: 404,
         });
     }
-});
+};
 exports.readClassSubjectAssignment = readClassSubjectAssignment;
-const readTeacherSubjectAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTeacherSubjectAssignment = async (req, res) => {
     try {
         const { teacherID } = req.params;
-        const quiz = yield staffModel_1.default.findById(teacherID).populate({
+        const quiz = await staffModel_1.default.findById(teacherID).populate({
             path: "assignment",
             options: {
                 sort: { createdAt: -1 },
@@ -158,12 +149,12 @@ const readTeacherSubjectAssignment = (req, res) => __awaiter(void 0, void 0, voi
             status: 404,
         });
     }
-});
+};
 exports.readTeacherSubjectAssignment = readTeacherSubjectAssignment;
-const readAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readAssignment = async (req, res) => {
     try {
         const { assignmentID } = req.params;
-        const quiz = yield quizModel_1.default.findById(assignmentID);
+        const quiz = await quizModel_1.default.findById(assignmentID);
         return res.status(201).json({
             message: "subject quiz read successfully",
             data: quiz,
@@ -177,23 +168,23 @@ const readAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function*
             status: 404,
         });
     }
-});
+};
 exports.readAssignment = readAssignment;
 // Assignment Resolve Session/EndPoints
-const createAssignmentPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createAssignmentPerformance = async (req, res) => {
     var _a;
     try {
         const { studentID, assignmentID } = req.params;
         const { studentScore, studentGrade, remark, assignmentResult } = req.body;
-        const studentInfo = yield studentModel_1.default
+        const studentInfo = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "assignment" });
-        const quizData = yield assignmentModel_1.default.findById(assignmentID);
-        const findSubject = yield subjectModel_1.default.findOne({
+        const quizData = await assignmentModel_1.default.findById(assignmentID);
+        const findSubject = await subjectModel_1.default.findOne({
             subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
         });
         if (quizData) {
-            const quizes = yield assignmentResolvedModel_1.default.create({
+            const quizes = await assignmentResolvedModel_1.default.create({
                 assignmentResult,
                 subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
                 // studentScore,
@@ -214,10 +205,10 @@ const createAssignmentPerformance = (req, res) => __awaiter(void 0, void 0, void
             findSubject === null || findSubject === void 0 ? void 0 : findSubject.save();
             let view = [];
             let notView = [];
-            const getStudent = yield studentModel_1.default.findById(studentID).populate({
+            const getStudent = await studentModel_1.default.findById(studentID).populate({
                 path: "performance",
             });
-            const record = yield studentModel_1.default.findByIdAndUpdate(studentID, {
+            const record = await studentModel_1.default.findByIdAndUpdate(studentID, {
                 totalPerformance: view.reduce((a, b) => {
                     return a + b;
                 }, 0) / ((_a = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _a === void 0 ? void 0 : _a.length),
@@ -241,12 +232,12 @@ const createAssignmentPerformance = (req, res) => __awaiter(void 0, void 0, void
             status: 404,
         });
     }
-});
+};
 exports.createAssignmentPerformance = createAssignmentPerformance;
-const readSubjectAssignmentResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectAssignmentResult = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "assignmentResolve",
             options: {
                 sort: {
@@ -266,12 +257,12 @@ const readSubjectAssignmentResult = (req, res) => __awaiter(void 0, void 0, void
             status: 404,
         });
     }
-});
+};
 exports.readSubjectAssignmentResult = readSubjectAssignmentResult;
-const readStudentAssignmentResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readStudentAssignmentResult = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const subject = yield studentModel_1.default.findById(studentID).populate({
+        const subject = await studentModel_1.default.findById(studentID).populate({
             path: "assignmentResolve",
             options: {
                 sort: {
@@ -291,12 +282,12 @@ const readStudentAssignmentResult = (req, res) => __awaiter(void 0, void 0, void
             status: 404,
         });
     }
-});
+};
 exports.readStudentAssignmentResult = readStudentAssignmentResult;
-const readAssignmentResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readAssignmentResult = async (req, res) => {
     try {
         const { resolveID } = req.params;
-        const subject = yield assignmentResolvedModel_1.default.findById(resolveID).populate({
+        const subject = await assignmentResolvedModel_1.default.findById(resolveID).populate({
             path: "assignmentResolve",
             options: {
                 sort: {
@@ -316,6 +307,6 @@ const readAssignmentResult = (req, res) => __awaiter(void 0, void 0, void 0, fun
             status: 404,
         });
     }
-});
+};
 exports.readAssignmentResult = readAssignmentResult;
 // update to mark

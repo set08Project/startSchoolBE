@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -488,7 +479,7 @@ const studentHistoricalResultModel_1 = __importDefault(require("../model/student
 //   }
 // };
 // 
-const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createReportCardEntry = async (req, res) => {
     try {
         const { 
         // teacherID,
@@ -502,7 +493,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
         }
         // Fetch teacher and verify existence
-        const teacher = yield studentModel_1.default.findById(studentID);
+        const teacher = await studentModel_1.default.findById(studentID);
         if (!teacher) {
             return res.status(404).json({
                 message: "Teacher not found",
@@ -510,7 +501,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
         }
         // Fetch school with current session info
-        const school = yield schoolModel_1.default.findById(teacher.schoolIDs).populate({
+        const school = await schoolModel_1.default.findById(teacher.schoolIDs).populate({
             path: "session",
             options: { sort: { createdAt: -1 } },
         });
@@ -521,7 +512,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
         }
         // Fetch student with report cards
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "reportCard" });
         if (!student) {
@@ -531,7 +522,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
         }
         // Fetch subject data
-        const subjectData = yield subjectModel_1.default.findOne({ subjectTitle: subject });
+        const subjectData = await subjectModel_1.default.findOne({ subjectTitle: subject });
         // Generate current class info identifier
         const currentClassInfo = `${student.classAssigned} session: ${school.presentSession}(${school.presentTerm})`;
         // Check if report card exists for current session/term
@@ -674,7 +665,13 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 const scores = calculateSubjectScore(test4 || existingSubject.test4, exam || existingSubject.exam);
                 updatedResults = existingReportCard.result.map((r) => {
                     if (r.subject === subject) {
-                        return Object.assign({ subject, test1: 0, test2: 0, test3: 0 }, scores);
+                        return {
+                            subject,
+                            test1: 0,
+                            test2: 0,
+                            test3: 0,
+                            ...scores,
+                        };
                     }
                     return r;
                 });
@@ -684,17 +681,23 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 const scores = calculateSubjectScore(test4, exam);
                 updatedResults = [
                     ...existingReportCard.result,
-                    Object.assign({ subject, test1: 0, test2: 0, test3: 0 }, scores),
+                    {
+                        subject,
+                        test1: 0,
+                        test2: 0,
+                        test3: 0,
+                        ...scores,
+                    },
                 ];
             }
             // Update report card
-            const updatedReport = yield cardReportModel_1.default.findByIdAndUpdate(existingReportCard._id, { result: updatedResults }, { new: true });
+            const updatedReport = await cardReportModel_1.default.findByIdAndUpdate(existingReportCard._id, { result: updatedResults }, { new: true });
             // Calculate overall points and grade
             const totalPoints = updatedReport.result.reduce((sum, r) => sum + (r.points || 0), 0);
             const avgPoints = parseFloat((totalPoints / updatedReport.result.length).toFixed(2));
             const overallGrade = calculateGrade(avgPoints);
             // Update with calculated values and comments
-            const finalReport = yield cardReportModel_1.default.findByIdAndUpdate(updatedReport._id, {
+            const finalReport = await cardReportModel_1.default.findByIdAndUpdate(updatedReport._id, {
                 points: avgPoints,
                 grade: overallGrade,
                 adminComment: generateAdminComment(avgPoints),
@@ -709,9 +712,15 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
         else {
             // Create new report card for this session/term
             const scores = calculateSubjectScore(test4, exam);
-            const newReport = yield cardReportModel_1.default.create({
+            const newReport = await cardReportModel_1.default.create({
                 result: [
-                    Object.assign({ subject, test1: 0, test2: 0, test3: 0 }, scores),
+                    {
+                        subject,
+                        test1: 0,
+                        test2: 0,
+                        test3: 0,
+                        ...scores,
+                    },
                 ],
                 classInfo: currentClassInfo,
                 studentID,
@@ -720,11 +729,11 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
             // Link report card to student
             student.reportCard.push(new mongoose_1.Types.ObjectId(newReport._id));
-            yield student.save();
+            await student.save();
             // Link to subject if exists
             if (subjectData) {
                 subjectData.reportCard.push(new mongoose_1.Types.ObjectId(newReport._id));
-                yield subjectData.save();
+                await subjectData.save();
             }
             return res.status(201).json({
                 message: "Report card created successfully",
@@ -741,7 +750,7 @@ const createReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 500,
         });
     }
-});
+};
 exports.createReportCardEntry = createReportCardEntry;
 // {""}
 // export const createMidReportCardEntry = async (
@@ -1374,23 +1383,23 @@ exports.createReportCardEntry = createReportCardEntry;
 //     });
 //   }
 // };
-const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createMidReportCardEntry = async (req, res) => {
     var _a;
     try {
         const { studentID } = req.params;
         const { subject, test4, exam } = req.body;
         // Fetch teacher, school, and student data
-        const teacher = yield studentModel_1.default.findById(studentID);
-        const school = yield schoolModel_1.default
+        const teacher = await studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default
             .findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs)
             .populate({
             path: "session",
             options: { sort: { createdAt: -1 } },
         });
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "midReportCard" });
-        const subjectData = yield subjectModel_1.default.findOne({ subjectTitle: subject });
+        const subjectData = await subjectModel_1.default.findOne({ subjectTitle: subject });
         if (!teacher || !student) {
             return res.status(404).json({
                 message: "Student and teacher doesn't exist for this class",
@@ -1402,11 +1411,11 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
         const existingReport = (_a = student === null || student === void 0 ? void 0 : student.midReportCard) === null || _a === void 0 ? void 0 : _a.find((el) => el.classInfo === classInfo);
         if (existingReport) {
             // Update existing report
-            return yield updateExistingReport(res, studentID, existingReport, subject, test4, exam, classInfo);
+            return await updateExistingReport(res, studentID, existingReport, subject, test4, exam, classInfo);
         }
         else {
             // Create new report
-            return yield createNewReport(res, student, subjectData, subject, test4, exam, classInfo, studentID);
+            return await createNewReport(res, student, subjectData, subject, test4, exam, classInfo, studentID);
         }
     }
     catch (error) {
@@ -1416,7 +1425,7 @@ const createMidReportCardEntry = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.createMidReportCardEntry = createMidReportCardEntry;
 // Helper function to calculate grade
 const calculateGrade = (mark) => {
@@ -1525,112 +1534,108 @@ const getTeacherComment = (points) => {
     return "The submission demonstrates a lack of understanding of the topic. Please see me for guidance";
 };
 // Update existing report card
-function updateExistingReport(res, studentID, existingReport, subject, test4, exam, classInfo) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e;
-        const getReportSubject = yield studentModel_1.default
-            .findById(studentID)
-            .populate({ path: "midReportCard" });
-        const reportCard = (_a = getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject.midReportCard) === null || _a === void 0 ? void 0 : _a.find((el) => el.classInfo === classInfo);
-        const existingSubject = (_b = reportCard === null || reportCard === void 0 ? void 0 : reportCard.result) === null || _b === void 0 ? void 0 : _b.find((el) => el.subject === subject);
-        // Calculate scores
-        const safeTest4 = (_c = test4 !== null && test4 !== void 0 ? test4 : existingSubject === null || existingSubject === void 0 ? void 0 : existingSubject.test4) !== null && _c !== void 0 ? _c : 0;
-        const safeExam = (_d = exam !== null && exam !== void 0 ? exam : existingSubject === null || existingSubject === void 0 ? void 0 : existingSubject.exam) !== null && _d !== void 0 ? _d : 0;
-        const mark = safeTest4 + safeExam;
-        // Calculate total possible score (test4: 10, exam: 60)
-        const score = (safeTest4 !== 0 ? 10 : 0) + (safeExam !== 0 ? 60 : 0);
-        // Remove existing subject entry if it exists
-        const updatedResults = reportCard.result.filter((el) => el.subject !== subject);
-        // Add new/updated subject entry
-        const report = yield midReportCardModel_1.default.findByIdAndUpdate(reportCard._id, {
-            result: [
-                ...updatedResults,
-                {
-                    subject,
-                    test1: 0,
-                    test2: 0,
-                    test3: 0,
-                    test4: safeTest4,
-                    exam: safeExam,
-                    approved: true,
-                    mark,
-                    score,
-                    points: mark,
-                    grade: calculateGrade(mark),
-                },
-            ],
-        }, { new: true });
-        // Calculate overall average points
-        const validPoints = (_e = report === null || report === void 0 ? void 0 : report.result) === null || _e === void 0 ? void 0 : _e.map((el) => el === null || el === void 0 ? void 0 : el.points).filter((points) => points != null);
-        const genPoint = validPoints.length > 0
-            ? parseFloat((validPoints.reduce((a, b) => a + b, 0) /
-                validPoints.length).toFixed(2))
-            : 0;
-        const grade = calculateGrade(genPoint);
-        // Update report with overall metrics
-        const finalReport = yield midReportCardModel_1.default.findByIdAndUpdate(report._id, {
-            points: genPoint,
-            adminComment: getAdminComment(genPoint),
-            classTeacherComment: getTeacherComment(genPoint),
-            grade,
-        }, { new: true });
-        return res.status(201).json({
-            message: "Teacher updated report successfully",
-            data: finalReport,
-            status: 201,
-        });
+async function updateExistingReport(res, studentID, existingReport, subject, test4, exam, classInfo) {
+    var _a, _b, _c, _d, _e;
+    const getReportSubject = await studentModel_1.default
+        .findById(studentID)
+        .populate({ path: "midReportCard" });
+    const reportCard = (_a = getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject.midReportCard) === null || _a === void 0 ? void 0 : _a.find((el) => el.classInfo === classInfo);
+    const existingSubject = (_b = reportCard === null || reportCard === void 0 ? void 0 : reportCard.result) === null || _b === void 0 ? void 0 : _b.find((el) => el.subject === subject);
+    // Calculate scores
+    const safeTest4 = (_c = test4 !== null && test4 !== void 0 ? test4 : existingSubject === null || existingSubject === void 0 ? void 0 : existingSubject.test4) !== null && _c !== void 0 ? _c : 0;
+    const safeExam = (_d = exam !== null && exam !== void 0 ? exam : existingSubject === null || existingSubject === void 0 ? void 0 : existingSubject.exam) !== null && _d !== void 0 ? _d : 0;
+    const mark = safeTest4 + safeExam;
+    // Calculate total possible score (test4: 10, exam: 60)
+    const score = (safeTest4 !== 0 ? 10 : 0) + (safeExam !== 0 ? 60 : 0);
+    // Remove existing subject entry if it exists
+    const updatedResults = reportCard.result.filter((el) => el.subject !== subject);
+    // Add new/updated subject entry
+    const report = await midReportCardModel_1.default.findByIdAndUpdate(reportCard._id, {
+        result: [
+            ...updatedResults,
+            {
+                subject,
+                test1: 0,
+                test2: 0,
+                test3: 0,
+                test4: safeTest4,
+                exam: safeExam,
+                approved: true,
+                mark,
+                score,
+                points: mark,
+                grade: calculateGrade(mark),
+            },
+        ],
+    }, { new: true });
+    // Calculate overall average points
+    const validPoints = (_e = report === null || report === void 0 ? void 0 : report.result) === null || _e === void 0 ? void 0 : _e.map((el) => el === null || el === void 0 ? void 0 : el.points).filter((points) => points != null);
+    const genPoint = validPoints.length > 0
+        ? parseFloat((validPoints.reduce((a, b) => a + b, 0) /
+            validPoints.length).toFixed(2))
+        : 0;
+    const grade = calculateGrade(genPoint);
+    // Update report with overall metrics
+    const finalReport = await midReportCardModel_1.default.findByIdAndUpdate(report._id, {
+        points: genPoint,
+        adminComment: getAdminComment(genPoint),
+        classTeacherComment: getTeacherComment(genPoint),
+        grade,
+    }, { new: true });
+    return res.status(201).json({
+        message: "Teacher updated report successfully",
+        data: finalReport,
+        status: 201,
     });
 }
 // Create new report card
-function createNewReport(res, student, subjectData, subject, test4, exam, classInfo, studentID) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
-        const safeTest4 = test4 !== null && test4 !== void 0 ? test4 : 0;
-        const safeExam = exam !== null && exam !== void 0 ? exam : 0;
-        const mark = safeTest4 + safeExam;
-        const report = yield midReportCardModel_1.default.create({
-            result: [
-                {
-                    subject,
-                    test1: 0,
-                    test2: 0,
-                    test3: 0,
-                    test4: safeTest4,
-                    exam: safeExam,
-                    approved: true,
-                    mark,
-                    score: (safeTest4 !== 0 ? 10 : 0) + (safeExam !== 0 ? 60 : 0),
-                    points: mark,
-                    grade: calculateGrade(mark),
-                },
-            ],
-            classInfo,
-            studentID,
-        });
-        const genPoint = mark; // For single subject, genPoint equals mark
-        const finalReport = yield midReportCardModel_1.default.findByIdAndUpdate(report._id, {
-            points: genPoint,
-            adminComment: getAdminComment(genPoint),
-            classTeacherComment: getTeacherComment(genPoint),
-            grade: calculateGrade(genPoint),
-        }, { new: true });
-        // Link report to student and subject
-        (_a = student === null || student === void 0 ? void 0 : student.midReportCard) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(finalReport === null || finalReport === void 0 ? void 0 : finalReport._id));
-        yield (student === null || student === void 0 ? void 0 : student.save());
-        (_b = subjectData === null || subjectData === void 0 ? void 0 : subjectData.midReportCard) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(finalReport === null || finalReport === void 0 ? void 0 : finalReport._id));
-        yield (subjectData === null || subjectData === void 0 ? void 0 : subjectData.save());
-        return res.status(201).json({
-            message: "Report entry created successfully",
-            data: { report: finalReport, student },
-            status: 201,
-        });
+async function createNewReport(res, student, subjectData, subject, test4, exam, classInfo, studentID) {
+    var _a, _b;
+    const safeTest4 = test4 !== null && test4 !== void 0 ? test4 : 0;
+    const safeExam = exam !== null && exam !== void 0 ? exam : 0;
+    const mark = safeTest4 + safeExam;
+    const report = await midReportCardModel_1.default.create({
+        result: [
+            {
+                subject,
+                test1: 0,
+                test2: 0,
+                test3: 0,
+                test4: safeTest4,
+                exam: safeExam,
+                approved: true,
+                mark,
+                score: (safeTest4 !== 0 ? 10 : 0) + (safeExam !== 0 ? 60 : 0),
+                points: mark,
+                grade: calculateGrade(mark),
+            },
+        ],
+        classInfo,
+        studentID,
+    });
+    const genPoint = mark; // For single subject, genPoint equals mark
+    const finalReport = await midReportCardModel_1.default.findByIdAndUpdate(report._id, {
+        points: genPoint,
+        adminComment: getAdminComment(genPoint),
+        classTeacherComment: getTeacherComment(genPoint),
+        grade: calculateGrade(genPoint),
+    }, { new: true });
+    // Link report to student and subject
+    (_a = student === null || student === void 0 ? void 0 : student.midReportCard) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(finalReport === null || finalReport === void 0 ? void 0 : finalReport._id));
+    await (student === null || student === void 0 ? void 0 : student.save());
+    (_b = subjectData === null || subjectData === void 0 ? void 0 : subjectData.midReportCard) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(finalReport === null || finalReport === void 0 ? void 0 : finalReport._id));
+    await (subjectData === null || subjectData === void 0 ? void 0 : subjectData.save());
+    return res.status(201).json({
+        message: "Report entry created successfully",
+        data: { report: finalReport, student },
+        status: 201,
     });
 }
-const updateReportScores = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateReportScores = async (req, res) => {
     try {
         const { studentID, teacherID } = req.params;
         const { subject, test1, test2, test3, exam } = req.body;
-        const student = yield studentModel_1.default.findById(studentID).populate({
+        const student = await studentModel_1.default.findById(studentID).populate({
             path: "reportCard",
         });
         const getReportSubject = student === null || student === void 0 ? void 0 : student.reportCard.find((el) => {
@@ -1639,13 +1644,13 @@ const updateReportScores = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 return (el === null || el === void 0 ? void 0 : el.subject) === subject;
             });
         });
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = await staffModel_1.default.findById(teacherID);
         if (teacher && student) {
             if (teacher) {
                 const data = getReportSubject.result.find((el) => {
                     return el.subject === subject;
                 });
-                const report = yield midReportCardModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+                const report = await midReportCardModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                     result: [
                         {
                             subject: !subject ? data === null || data === void 0 ? void 0 : data.subject : subject,
@@ -1682,17 +1687,17 @@ const updateReportScores = (req, res) => __awaiter(void 0, void 0, void 0, funct
             status: 404,
         });
     }
-});
+};
 exports.updateReportScores = updateReportScores;
-const classTeacherPhychoReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const classTeacherPhychoReportRemark = async (req, res) => {
     try {
         const { teacherID, studentID, classID } = req.params;
         const { confidence, presentational, hardworking, resilient, sportship, empathy, punctuality, communication, leadership, } = req.body;
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "reportCard" });
-        const classRM = yield classroomModel_1.default.findById(classID);
-        const school = yield schoolModel_1.default
+        const classRM = await classroomModel_1.default.findById(classID);
+        const school = await schoolModel_1.default
             .findById(student === null || student === void 0 ? void 0 : student.schoolIDs)
             .populate({
             path: "session",
@@ -1701,12 +1706,12 @@ const classTeacherPhychoReportRemark = (req, res) => __awaiter(void 0, void 0, v
             return (el.classInfo ===
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = await staffModel_1.default.findById(teacherID);
         const teacherClassDataRomm = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned.find((el) => {
             return el.className === (student === null || student === void 0 ? void 0 : student.classAssigned);
         });
         if ((teacherClassDataRomm === null || teacherClassDataRomm === void 0 ? void 0 : teacherClassDataRomm.className) === (student === null || student === void 0 ? void 0 : student.classAssigned)) {
-            const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+            const report = await cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 peopleSkill: [
                     {
                         confidence,
@@ -1750,20 +1755,20 @@ const classTeacherPhychoReportRemark = (req, res) => __awaiter(void 0, void 0, v
             data: error.message,
         });
     }
-});
+};
 exports.classTeacherPhychoReportRemark = classTeacherPhychoReportRemark;
-const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+const adminReportRemark = async (req, res) => {
+    var _a;
     try {
         const { studentID, schoolID } = req.params;
         const { adminComment } = req.body;
-        const studentHistory = yield studentModel_1.default.findById(studentID).populate({
+        const studentHistory = await studentModel_1.default.findById(studentID).populate({
             path: "historicalResult",
         });
-        const student = yield studentModel_1.default.findById(studentID).populate({
+        const student = await studentModel_1.default.findById(studentID).populate({
             path: "reportCard",
         });
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "session",
         });
         const getReportSubject = student === null || student === void 0 ? void 0 : student.reportCard.find((el) => {
@@ -1771,12 +1776,12 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
         if (school) {
-            const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+            const report = await cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 approve: true,
                 adminComment,
             }, { new: true });
             console.log("This is the report: ", report);
-            const result = yield studentHistoricalResultModel_1.default.create({
+            const result = await studentHistoricalResultModel_1.default.create({
                 results: report === null || report === void 0 ? void 0 : report.result,
                 totalPoints: report === null || report === void 0 ? void 0 : report.points,
                 mainGrade: report === null || report === void 0 ? void 0 : report.grade,
@@ -1788,7 +1793,7 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 school,
                 student,
             });
-            (_b = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(result._id));
+            (_a = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(result._id));
             student === null || student === void 0 ? void 0 : student.save();
             return res.status(201).json({
                 message: "admin report remark successfully",
@@ -1809,18 +1814,18 @@ const adminReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.adminReportRemark = adminReportRemark;
-const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+const classTeacherReportRemark = async (req, res) => {
+    var _a;
     try {
         const { teacherID, studentID, classID } = req.params;
         const { teacherComment, attendance } = req.body;
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "reportCard" });
-        const classRM = yield classroomModel_1.default.findById(classID);
-        const school = yield schoolModel_1.default
+        const classRM = await classroomModel_1.default.findById(classID);
+        const school = await schoolModel_1.default
             .findById(student === null || student === void 0 ? void 0 : student.schoolIDs)
             .populate({
             path: "session",
@@ -1829,16 +1834,16 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
             return (el.classInfo ===
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = await staffModel_1.default.findById(teacherID);
         const teacherClassDataRomm = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned.find((el) => {
             return el.className === (student === null || student === void 0 ? void 0 : student.classAssigned);
         });
         const x = student === null || student === void 0 ? void 0 : student.presentClassID;
-        const xx = (_c = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned) === null || _c === void 0 ? void 0 : _c.find((el) => {
+        const xx = (_a = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned) === null || _a === void 0 ? void 0 : _a.find((el) => {
             return (el === null || el === void 0 ? void 0 : el.classID) === `${x}`;
         });
         if ((xx === null || xx === void 0 ? void 0 : xx.classID) === x) {
-            const report = yield cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+            const report = await cardReportModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 attendance,
                 classTeacherComment: teacherComment,
             }, { new: true });
@@ -1862,17 +1867,17 @@ const classTeacherReportRemark = (req, res) => __awaiter(void 0, void 0, void 0,
             data: error.message,
         });
     }
-});
+};
 exports.classTeacherReportRemark = classTeacherReportRemark;
-const classTeacherMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const classTeacherMidReportRemark = async (req, res) => {
     try {
         const { teacherID, studentID, classID } = req.params;
         const { teacherComment, attendance } = req.body;
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "midReportCard" });
-        const classRM = yield classroomModel_1.default.findById(classID);
-        const school = yield schoolModel_1.default
+        const classRM = await classroomModel_1.default.findById(classID);
+        const school = await schoolModel_1.default
             .findById(student === null || student === void 0 ? void 0 : student.schoolIDs)
             .populate({
             path: "session",
@@ -1881,12 +1886,12 @@ const classTeacherMidReportRemark = (req, res) => __awaiter(void 0, void 0, void
             return (el.classInfo ===
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = await staffModel_1.default.findById(teacherID);
         const teacherClassDataRomm = teacher === null || teacher === void 0 ? void 0 : teacher.classesAssigned.find((el) => {
             return el.className === (student === null || student === void 0 ? void 0 : student.classAssigned);
         });
         if ((teacherClassDataRomm === null || teacherClassDataRomm === void 0 ? void 0 : teacherClassDataRomm.className) === (student === null || student === void 0 ? void 0 : student.classAssigned)) {
-            const report = yield midReportCardModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+            const report = await midReportCardModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 attendance,
                 classTeacherComment: teacherComment,
             }, { new: true });
@@ -1910,16 +1915,16 @@ const classTeacherMidReportRemark = (req, res) => __awaiter(void 0, void 0, void
             data: error.message,
         });
     }
-});
+};
 exports.classTeacherMidReportRemark = classTeacherMidReportRemark;
-const adminMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const adminMidReportRemark = async (req, res) => {
     try {
         const { studentID, schoolID } = req.params;
         const { adminComment } = req.body;
-        const student = yield studentModel_1.default.findById(studentID).populate({
+        const student = await studentModel_1.default.findById(studentID).populate({
             path: "midReportCard",
         });
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "session",
         });
         const getReportSubject = student === null || student === void 0 ? void 0 : student.midReportCard.find((el) => {
@@ -1927,7 +1932,7 @@ const adminMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`);
         });
         if (school) {
-            const report = yield midReportCardModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
+            const report = await midReportCardModel_1.default.findByIdAndUpdate(getReportSubject === null || getReportSubject === void 0 ? void 0 : getReportSubject._id, {
                 approve: true,
                 adminComment,
             }, { new: true });
@@ -1950,12 +1955,12 @@ const adminMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, fun
             status: 404,
         });
     }
-});
+};
 exports.adminMidReportRemark = adminMidReportRemark;
-const studentReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const studentReportRemark = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "reportCard" });
         return res.status(201).json({
@@ -1971,12 +1976,12 @@ const studentReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, func
             data: error.message,
         });
     }
-});
+};
 exports.studentReportRemark = studentReportRemark;
-const studentMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const studentMidReportRemark = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "midReportCard" });
         return res.status(201).json({
@@ -1992,12 +1997,12 @@ const studentMidReportRemark = (req, res) => __awaiter(void 0, void 0, void 0, f
             data: error.message,
         });
     }
-});
+};
 exports.studentMidReportRemark = studentMidReportRemark;
-const studentPsychoReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const studentPsychoReport = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const student = yield studentModel_1.default
+        const student = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "reportCard" });
         return res.status(201).json({
@@ -2013,14 +2018,14 @@ const studentPsychoReport = (req, res) => __awaiter(void 0, void 0, void 0, func
             data: error.message,
         });
     }
-});
+};
 exports.studentPsychoReport = studentPsychoReport;
-const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const removeSubjectFromResult = async (req, res) => {
     try {
         const { studentID } = req.params;
         const { subject } = req.body;
         // Find the student with their report card
-        const student = yield studentModel_1.default.findById(studentID).populate({
+        const student = await studentModel_1.default.findById(studentID).populate({
             path: "midReportCard",
         });
         if (!student) {
@@ -2030,7 +2035,7 @@ const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, 
             });
         }
         // Get the current session's report card midReportCardModel
-        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
         const currentClassInfo = `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`;
         const reportCard = student.midReportCard.find((card) => card.classInfo === currentClassInfo);
         if (!reportCard) {
@@ -2133,7 +2138,7 @@ const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, 
                                                                                         ? "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulation!"
                                                                                         : ``;
         // Update report card with filtered results
-        const updatedReport = yield midReportCardModel_1.default.findByIdAndUpdate(reportCard._id, {
+        const updatedReport = await midReportCardModel_1.default.findByIdAndUpdate(reportCard._id, {
             result: updatedResults,
             // Recalculate total points and grade based on remaining subjects
             points: numb,
@@ -2172,5 +2177,5 @@ const removeSubjectFromResult = (req, res) => __awaiter(void 0, void 0, void 0, 
             status: 500,
         });
     }
-});
+};
 exports.removeSubjectFromResult = removeSubjectFromResult;

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -29,17 +20,17 @@ const sessionModel_1 = __importDefault(require("../model/sessionModel"));
 dotenv_1.default.config();
 const URL = process.env.APP_URL_DEPLOY;
 const https = require("https");
-const makePaymentWithCron = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const makePaymentWithCron = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName) {
             const startDate = new Date();
             const startedDate = new Date().setTime(startDate.getTime());
             // const dataPeriod = startDate.setFullYear(startDate.getFullYear() + 1);
             const dataPeriod = startDate.setMinutes(startDate.getMinutes() + 1);
             const paymentID = crypto_1.default.randomBytes(3).toString("hex");
-            const payments = yield paymentModel_1.default.create({
+            const payments = await paymentModel_1.default.create({
                 cost: 200000,
                 schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
                 expiryDate: (0, moment_1.default)(dataPeriod).format("LLLL"),
@@ -48,15 +39,15 @@ const makePaymentWithCron = (req, res) => __awaiter(void 0, void 0, void 0, func
             });
             school.payments.push(new mongoose_1.Types.ObjectId(payments._id));
             school.save();
-            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 plan: "active",
             }, { new: true });
-            const timer = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-                yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            const timer = setTimeout(async () => {
+                await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                     plan: "in active",
                 }, { new: true });
                 clearTimeout(timer);
-            }), 1000 * 60);
+            }, 1000 * 60);
             // const cronParser = require("cron-parser");
             return res.status(201).json({
                 message: "payment created successfully",
@@ -74,12 +65,12 @@ const makePaymentWithCron = (req, res) => __awaiter(void 0, void 0, void 0, func
             message: "Error creating school session",
         });
     }
-});
+};
 exports.makePaymentWithCron = makePaymentWithCron;
-const viewSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolPayment = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "payments",
         });
         return res.status(200).json({
@@ -92,12 +83,12 @@ const viewSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Error viewing school payments",
         });
     }
-});
+};
 exports.viewSchoolPayment = viewSchoolPayment;
-const makeSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const makeSchoolPayment = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
             cron_1.CronJob;
         }
@@ -111,12 +102,12 @@ const makeSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Error viewing school payments",
         });
     }
-});
+};
 exports.makeSchoolPayment = makeSchoolPayment;
-const viewVerifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewVerifyTransaction = async (req, res) => {
     try {
         const { ref } = req.params;
-        yield axios_1.default
+        await axios_1.default
             .get(`https://api.paystack.co/transaction/verify/${ref}`, {
             headers: {
                 authorization: `Bearer ${process.env.APP_PAYSTACK}`,
@@ -140,7 +131,7 @@ const viewVerifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 404,
         });
     }
-});
+};
 exports.viewVerifyTransaction = viewVerifyTransaction;
 const paymentFromStore = (req, res) => {
     try {
@@ -268,18 +259,18 @@ const getBankAccount = (req, res) => {
 };
 exports.getBankAccount = getBankAccount;
 // Perfect integration and selected...
-const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createPayment = async (req, res) => {
     try {
         const { schoolID } = req.params;
         // const { cost, schoolName, expiryDate, datePaid, paymentID } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName) {
             const startDate = new Date();
             const startedDate = new Date().setTime(startDate.getTime());
             // const dataPeriod = startDate.setFullYear(startDate.getFullYear() + 1);
             const dataPeriod = startDate.setMinutes(startDate.getMinutes() + 1);
             const paymentID = crypto_1.default.randomBytes(3).toString("hex");
-            const payments = yield paymentModel_1.default.create({
+            const payments = await paymentModel_1.default.create({
                 cost: (school === null || school === void 0 ? void 0 : school.students.length) * 1000,
                 schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
                 expiryDate: (0, moment_1.default)(dataPeriod).format("LLLL"),
@@ -288,7 +279,7 @@ const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             });
             school.payments.push(new mongoose_1.Types.ObjectId(payments._id));
             school.save();
-            yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 plan: "active",
             }, { new: true });
             // const timer = setTimeout(async () => {
@@ -318,13 +309,13 @@ const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             message: "Error creating school session",
         });
     }
-});
+};
 exports.createPayment = createPayment;
-const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const makePayment = async (req, res) => {
     try {
         const { email } = req.body;
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         let amount = (school === null || school === void 0 ? void 0 : school.students.length) * 1000;
         let termID = school === null || school === void 0 ? void 0 : school.presentTermID;
         let token = jsonwebtoken_1.default.sign({ termID }, process.env.API_SECRET_KEY, {
@@ -376,14 +367,14 @@ const makePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: 404,
         });
     }
-});
+};
 exports.makePayment = makePayment;
-const verifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const verifyTransaction = async (req, res) => {
     try {
         const { ref } = req.params;
         const url = `https://api.paystack.co/transaction/verify/${ref}`;
         console.log(ref);
-        yield axios_1.default
+        await axios_1.default
             .get(url, {
             headers: {
                 Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
@@ -403,9 +394,9 @@ const verifyTransaction = (req, res) => __awaiter(void 0, void 0, void 0, functi
             data: error.message,
         });
     }
-});
+};
 exports.verifyTransaction = verifyTransaction;
-const makeSplitPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const makeSplitPayment = async (req, res) => {
     try {
         const { accountName, accountNumber, accountBankCode } = req.body;
         const params = JSON.stringify({
@@ -449,9 +440,9 @@ const makeSplitPayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: "Error viewing store",
         });
     }
-});
+};
 exports.makeSplitPayment = makeSplitPayment;
-const storePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const storePayment = async (req, res) => {
     try {
         const { subAccountCode, email, amount } = req.body;
         const params = JSON.stringify({
@@ -499,9 +490,9 @@ const storePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             data: error.message,
         });
     }
-});
+};
 exports.storePayment = storePayment;
-const makeSplitSchoolfeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const makeSplitSchoolfeePayment = async (req, res) => {
     try {
         const { accountName, accountNumber, accountBankCode } = req.body;
         const params = JSON.stringify({
@@ -545,9 +536,9 @@ const makeSplitSchoolfeePayment = (req, res) => __awaiter(void 0, void 0, void 0
             message: "Error viewing store",
         });
     }
-});
+};
 exports.makeSplitSchoolfeePayment = makeSplitSchoolfeePayment;
-const schoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const schoolFeePayment = async (req, res) => {
     try {
         const { subAccountCode, email, amount } = req.body;
         const params = JSON.stringify({
@@ -595,9 +586,9 @@ const schoolFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
             data: error.message,
         });
     }
-});
+};
 exports.schoolFeePayment = schoolFeePayment;
-const makeOtherSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const makeOtherSchoolPayment = async (req, res) => {
     try {
         const { subAccountCode, email, paymentAmount, paymentName } = req.body;
         const params = JSON.stringify({
@@ -650,38 +641,38 @@ const makeOtherSchoolPayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             data: error.message,
         });
     }
-});
+};
 exports.makeOtherSchoolPayment = makeOtherSchoolPayment;
-const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const verifySchoolTransaction = async (req, res) => {
     var _a, _b;
     try {
         const { ref, studentID } = req.params;
         const { paymentName } = req.body;
-        const student = yield studentModel_1.default.findById(studentID);
-        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
+        const student = await studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
             path: "session",
         });
         const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
-        const termly = yield sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
+        const termly = await sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
             path: "term",
         });
         const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
             el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
-        const mainTerm = yield termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
+        const mainTerm = await termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
         const url = `https://api.paystack.co/transaction/verify/${ref}`;
         console.log("ref: ", ref);
-        return yield axios_1.default
+        return await axios_1.default
             .get(url, {
             headers: {
                 Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
             },
         })
-            .then((data) => __awaiter(void 0, void 0, void 0, function* () {
-            var _c, _d, _e, _f, _g, _h, _j, _k, _l;
-            const check = (_c = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions) === null || _c === void 0 ? void 0 : _c.some((el) => el.reference === ref);
+            .then(async (data) => {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+            const check = (_a = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions) === null || _a === void 0 ? void 0 : _a.some((el) => el.reference === ref);
             if (!check) {
                 let id = crypto_1.default.randomBytes(4).toString("hex");
-                let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+                let newData = await termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
                     paymentOptions: [
                         ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
                         {
@@ -691,8 +682,8 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
                             paymentMode: "online",
                             confirm: false,
                             paymentDetails: paymentName,
-                            paymentAmount: parseFloat((_e = (_d = data === null || data === void 0 ? void 0 : data.data) === null || _d === void 0 ? void 0 : _d.data) === null || _e === void 0 ? void 0 : _e.amount) / 100,
-                            reference: (_g = (_f = data === null || data === void 0 ? void 0 : data.data) === null || _f === void 0 ? void 0 : _f.data) === null || _g === void 0 ? void 0 : _g.reference,
+                            paymentAmount: parseFloat((_c = (_b = data === null || data === void 0 ? void 0 : data.data) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.amount) / 100,
+                            reference: (_e = (_d = data === null || data === void 0 ? void 0 : data.data) === null || _d === void 0 ? void 0 : _d.data) === null || _e === void 0 ? void 0 : _e.reference,
                             studentID,
                             schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
                             termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
@@ -702,7 +693,7 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
                         },
                     ],
                 }, { new: true });
-                yield studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
+                await studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
                     otherPayment: [
                         ...student === null || student === void 0 ? void 0 : student.otherPayment,
                         {
@@ -712,8 +703,8 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
                             paymentMode: "online",
                             confirm: false,
                             paymentDetails: paymentName,
-                            paymentAmount: parseFloat((_j = (_h = data === null || data === void 0 ? void 0 : data.data) === null || _h === void 0 ? void 0 : _h.data) === null || _j === void 0 ? void 0 : _j.amount) / 100,
-                            reference: (_l = (_k = data === null || data === void 0 ? void 0 : data.data) === null || _k === void 0 ? void 0 : _k.data) === null || _l === void 0 ? void 0 : _l.reference,
+                            paymentAmount: parseFloat((_g = (_f = data === null || data === void 0 ? void 0 : data.data) === null || _f === void 0 ? void 0 : _f.data) === null || _g === void 0 ? void 0 : _g.amount) / 100,
+                            reference: (_j = (_h = data === null || data === void 0 ? void 0 : data.data) === null || _h === void 0 ? void 0 : _h.data) === null || _j === void 0 ? void 0 : _j.reference,
                             studentID,
                             schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
                             termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
@@ -736,7 +727,7 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
                     data: data.data,
                 });
             }
-        }));
+        });
     }
     catch (error) {
         console.log("Error: ", error);
@@ -745,24 +736,24 @@ const verifySchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, 
             data: error.message,
         });
     }
-});
+};
 exports.verifySchoolTransaction = verifySchoolTransaction;
-const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _m, _o, _p;
+const verifyOtherSchoolTransaction = async (req, res) => {
+    var _a, _b, _c;
     try {
         const { studentID } = req.params;
         const { paymentName, paymentAmount } = req.body;
-        const student = yield studentModel_1.default.findById(studentID);
-        const school = yield schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
+        const student = await studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
             path: "session",
         });
-        const readSession = (_m = school === null || school === void 0 ? void 0 : school.session) === null || _m === void 0 ? void 0 : _m.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
-        const termly = yield sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
+        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
+        const termly = await sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
             path: "term",
         });
-        const readTerm = (_o = termly === null || termly === void 0 ? void 0 : termly.term) === null || _o === void 0 ? void 0 : _o.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
+        const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
             el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
-        const mainTerm = yield termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
+        const mainTerm = await termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
         let id = crypto_1.default.randomBytes(4).toString("hex");
         let reff = crypto_1.default.randomBytes(4).toString("hex");
         const check = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions.some((el) => (el === null || el === void 0 ? void 0 : el.paymentDetails) === paymentName &&
@@ -771,7 +762,7 @@ const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, voi
             (el === null || el === void 0 ? void 0 : el.studentName) ===
                 `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`);
         if (!check) {
-            let newData = yield termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+            let newData = await termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
                 paymentOptions: [
                     ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
                     {
@@ -792,7 +783,7 @@ const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, voi
                     },
                 ],
             }, { new: true });
-            yield studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
+            await studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
                 otherPayment: [
                     ...student === null || student === void 0 ? void 0 : student.otherPayment,
                     {
@@ -816,7 +807,7 @@ const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, voi
             return res.status(200).json({
                 message: "payment verified",
                 status: 200,
-                data: newData === null || newData === void 0 ? void 0 : newData.paymentOptions[((_p = newData === null || newData === void 0 ? void 0 : newData.paymentOptions) === null || _p === void 0 ? void 0 : _p.length) - 1],
+                data: newData === null || newData === void 0 ? void 0 : newData.paymentOptions[((_c = newData === null || newData === void 0 ? void 0 : newData.paymentOptions) === null || _c === void 0 ? void 0 : _c.length) - 1],
             });
         }
         else {
@@ -832,5 +823,5 @@ const verifyOtherSchoolTransaction = (req, res) => __awaiter(void 0, void 0, voi
             data: error.message,
         });
     }
-});
+};
 exports.verifyOtherSchoolTransaction = verifyOtherSchoolTransaction;

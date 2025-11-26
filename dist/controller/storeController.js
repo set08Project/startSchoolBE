@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -17,14 +8,14 @@ const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const mongoose_1 = require("mongoose");
 const storeModel_1 = __importDefault(require("../model/storeModel"));
 const streamifier_1 = require("../utils/streamifier");
-const createStore = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createStore = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { title, description, cost } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
         if (school) {
-            const store = yield storeModel_1.default.create({
+            const store = await storeModel_1.default.create({
                 title,
                 description,
                 cost: parseInt(cost),
@@ -51,12 +42,12 @@ const createStore = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             data: error.message,
         });
     }
-});
+};
 exports.createStore = createStore;
-const viewSchoolStore = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolStore = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const student = yield schoolModel_1.default.findById(schoolID).populate({
+        const student = await schoolModel_1.default.findById(schoolID).populate({
             path: "store",
             options: {
                 sort: {
@@ -74,5 +65,5 @@ const viewSchoolStore = (req, res) => __awaiter(void 0, void 0, void 0, function
             message: "Error viewing school session",
         });
     }
-});
+};
 exports.viewSchoolStore = viewSchoolStore;

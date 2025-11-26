@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -17,19 +8,19 @@ const teachSubjectModel_1 = __importDefault(require("../model/teachSubjectModel"
 const teachSubjectTopics_1 = __importDefault(require("../model/teachSubjectTopics"));
 const teachTopicQuizesModel_1 = __importDefault(require("../model/teachTopicQuizesModel"));
 const mongoose_1 = require("mongoose");
-const createTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createTeachSubjectTopicQuiz = async (req, res) => {
     try {
         const { question, explanation, correctAnswer, options } = req.body;
         const { topicID } = req.params;
-        const getSubject = yield teachSubjectTopics_1.default.findById(topicID);
-        const teachSubject = yield teachTopicQuizesModel_1.default.create({
+        const getSubject = await teachSubjectTopics_1.default.findById(topicID);
+        const teachSubject = await teachTopicQuizesModel_1.default.create({
             question,
             explanation,
             correctAnswer,
             options,
         });
         getSubject === null || getSubject === void 0 ? void 0 : getSubject.quizQuestions.push(new mongoose_1.Types.ObjectId(teachSubject._id));
-        yield (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
+        await (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
         return res.status(201).json({
             message: "teach subject created successfully",
             data: { teachSubject, getSubject },
@@ -42,13 +33,13 @@ const createTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void
             data: error,
         });
     }
-});
+};
 exports.createTeachSubjectTopicQuiz = createTeachSubjectTopicQuiz;
-const updateTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateTeachSubjectTopicQuiz = async (req, res) => {
     try {
         const { teachSubjectTopicQuizID } = req.params;
         const { question, explanation, correctAnswer, options } = req.body;
-        const teachSubject = yield teachTopicQuizesModel_1.default.findByIdAndUpdate(teachSubjectTopicQuizID, {
+        const teachSubject = await teachTopicQuizesModel_1.default.findByIdAndUpdate(teachSubjectTopicQuizID, {
             question,
             explanation,
             correctAnswer,
@@ -65,12 +56,12 @@ const updateTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void
             message: "Error creating teach subject ",
         });
     }
-});
+};
 exports.updateTeachSubjectTopicQuiz = updateTeachSubjectTopicQuiz;
-const getOneTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getOneTeachSubjectTopicQuiz = async (req, res) => {
     try {
         const { teachSubjectTopicID } = req.params;
-        const teachSubject = yield teachSubjectTopics_1.default
+        const teachSubject = await teachSubjectTopics_1.default
             .findById(teachSubjectTopicID).populate({ path: "quizQuestions" });
         return res.status(201).json({
             message: "teach subject created successfully",
@@ -84,17 +75,17 @@ const getOneTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void
             message: "Error creating teach subject ",
         });
     }
-});
+};
 exports.getOneTeachSubjectTopicQuiz = getOneTeachSubjectTopicQuiz;
-const deleteOneTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteOneTeachSubjectTopicQuiz = async (req, res) => {
     var _a;
     try {
         const { teachSubjectTopicQuizID, subjectTopicID } = req.params;
-        const getSubject = yield teachSubjectTopics_1.default.findById(subjectTopicID);
+        const getSubject = await teachSubjectTopics_1.default.findById(subjectTopicID);
         // await subjectTopicsModel.findByIdAndDelete(teachSubjectTopicQuizID);
-        const teachSubject = yield teachTopicQuizesModel_1.default.findByIdAndDelete(teachSubjectTopicQuizID);
+        const teachSubject = await teachTopicQuizesModel_1.default.findByIdAndDelete(teachSubjectTopicQuizID);
         (_a = getSubject === null || getSubject === void 0 ? void 0 : getSubject.quizQuestions) === null || _a === void 0 ? void 0 : _a.pull(teachSubjectTopicQuizID);
-        yield (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
+        await (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
         return res.status(201).json({
             message: "teach subject deleted successfully",
             data: teachSubject,
@@ -106,11 +97,11 @@ const deleteOneTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, v
             message: "Error deleting teach subject ",
         });
     }
-});
+};
 exports.deleteOneTeachSubjectTopicQuiz = deleteOneTeachSubjectTopicQuiz;
-const getAllTeachSubjectTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllTeachSubjectTopic = async (req, res) => {
     try {
-        const teachSubject = yield teachSubjectModel_1.default.find();
+        const teachSubject = await teachSubjectModel_1.default.find();
         return res.status(201).json({
             message: "teach subject created successfully",
             data: teachSubject,
@@ -122,14 +113,14 @@ const getAllTeachSubjectTopic = (req, res) => __awaiter(void 0, void 0, void 0, 
             message: "Error creating teach subject ",
         });
     }
-});
+};
 exports.getAllTeachSubjectTopic = getAllTeachSubjectTopic;
-const createBulkTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createBulkTeachSubjectTopicQuiz = async (req, res) => {
     try {
         const { questions } = req.body;
         const { topicID } = req.params;
         // Find the subject topic
-        const getSubject = yield teachSubjectTopics_1.default.findById(topicID);
+        const getSubject = await teachSubjectTopics_1.default.findById(topicID);
         if (!getSubject) {
             return res.status(404).json({
                 message: "Topic not found",
@@ -138,7 +129,7 @@ const createBulkTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, 
         }
         // Create all quiz questions in bulk
         console.log(questions);
-        const createdQuizzes = yield teachTopicQuizesModel_1.default.create(questions);
+        const createdQuizzes = await teachTopicQuizesModel_1.default.create(questions);
         // If createdQuizzes is a single document, convert it to an array
         const quizArray = Array.isArray(createdQuizzes)
             ? createdQuizzes
@@ -146,7 +137,7 @@ const createBulkTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, 
         // Add all quiz IDs to the topic's quizQuestions array
         const quizIds = quizArray.map((quiz) => new mongoose_1.Types.ObjectId(quiz._id));
         getSubject.quizQuestions.push(...quizIds);
-        yield getSubject.save();
+        await getSubject.save();
         return res.status(201).json({
             message: "Bulk quiz questions created successfully",
             data: {
@@ -164,5 +155,5 @@ const createBulkTeachSubjectTopicQuiz = (req, res) => __awaiter(void 0, void 0, 
             status: 500,
         });
     }
-});
+};
 exports.createBulkTeachSubjectTopicQuiz = createBulkTeachSubjectTopicQuiz;

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -21,14 +12,14 @@ const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
-const createSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolSubject = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { designated, subjectTeacherName, subjectTitle } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "classRooms",
         });
-        const schoolSubj = yield schoolModel_1.default.findById(schoolID).populate({
+        const schoolSubj = await schoolModel_1.default.findById(schoolID).populate({
             path: "subjects",
         });
         const getClassRooms = school === null || school === void 0 ? void 0 : school.classRooms.find((el) => {
@@ -37,11 +28,11 @@ const createSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
         const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
             return el.subjectTitle === subjectTitle && el.designated === designated;
         });
-        const getClassRM = yield classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
+        const getClassRM = await classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
         if (getClassRooms) {
             if (school && school.schoolName && school.status === "school-admin") {
                 if (!getClassRoomsSubj) {
-                    const subjects = yield subjectModel_1.default.create({
+                    const subjects = await subjectModel_1.default.create({
                         schoolName: school.schoolName,
                         subjectTeacherName,
                         subjectTitle,
@@ -87,9 +78,9 @@ const createSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
             status: 404,
         });
     }
-});
+};
 exports.createSchoolSubject = createSchoolSubject;
-const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createBulkClassSubjects = async (req, res) => {
     try {
         const { schoolID } = req.params;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
@@ -106,15 +97,15 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
                 console.log(`The folder '${folderPath}' does not exist.`);
             }
         };
-        const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        const data = await (0, csvtojson_1.default)().fromFile(req.file.path);
         let createdCount = 0;
         let duplicateCount = 0;
         const errors = [];
         for (let i of data) {
-            const school = yield schoolModel_1.default.findById(schoolID).populate({
+            const school = await schoolModel_1.default.findById(schoolID).populate({
                 path: "classRooms",
             });
-            const schoolSubj = yield schoolModel_1.default.findById(schoolID).populate({
+            const schoolSubj = await schoolModel_1.default.findById(schoolID).populate({
                 path: "subjects",
             });
             const getClassRooms = school === null || school === void 0 ? void 0 : school.classRooms.find((el) => {
@@ -124,7 +115,7 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
             const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
                 return (el.subjectTitle === (i === null || i === void 0 ? void 0 : i.subjectTitle) && el.designated === (i === null || i === void 0 ? void 0 : i.designated));
             });
-            const getClassRM = yield classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
+            const getClassRM = await classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
             if (!getClassRooms) {
                 errors.push(`Error finding classroom for designated='${i === null || i === void 0 ? void 0 : i.designated}'`);
                 continue;
@@ -139,7 +130,7 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
                 continue;
             }
             try {
-                const subjects = yield subjectModel_1.default.create({
+                const subjects = await subjectModel_1.default.create({
                     schoolName: school.schoolName,
                     subjectTeacherName: i === null || i === void 0 ? void 0 : i.subjectTeacherName,
                     subjectTitle: i === null || i === void 0 ? void 0 : i.subjectTitle,
@@ -150,10 +141,10 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
                 });
                 // await saves to ensure DB state is consistent
                 school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
-                yield school.save();
+                await school.save();
                 getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
                 if (getClassRM)
-                    yield getClassRM.save();
+                    await getClassRM.save();
                 createdCount++;
             }
             catch (err) {
@@ -175,15 +166,15 @@ const createBulkClassSubjects = (req, res) => __awaiter(void 0, void 0, void 0, 
             status: 404,
         });
     }
-});
+};
 exports.createBulkClassSubjects = createBulkClassSubjects;
-const updateSchoolSubjectTitle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolSubjectTitle = async (req, res) => {
     try {
         const { schoolID, subjectID } = req.params;
         const { subjectTitle } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const subjects = yield subjectModel_1.default.findByIdAndUpdate(subjectID, {
+            const subjects = await subjectModel_1.default.findByIdAndUpdate(subjectID, {
                 subjectTitle,
             }, { new: true });
             return res.status(201).json({
@@ -205,19 +196,19 @@ const updateSchoolSubjectTitle = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.updateSchoolSubjectTitle = updateSchoolSubjectTitle;
-const updateSchoolSubjectTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSchoolSubjectTeacher = async (req, res) => {
     try {
         const { schoolID, subjectID } = req.params;
         const { subjectTeacherName } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const getTeacher = yield staffModel_1.default.findOne({
+        const school = await schoolModel_1.default.findById(schoolID);
+        const getTeacher = await staffModel_1.default.findOne({
             staffName: subjectTeacherName,
         });
         if (school && school.schoolName && school.status === "school-admin") {
             if (getTeacher) {
-                const subjects = yield subjectModel_1.default.findByIdAndUpdate(subjectID, {
+                const subjects = await subjectModel_1.default.findByIdAndUpdate(subjectID, {
                     subjectTeacherName,
                     teacherID: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher._id,
                 }, { new: true });
@@ -230,7 +221,7 @@ const updateSchoolSubjectTeacher = (req, res) => __awaiter(void 0, void 0, void 
                         classID: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.presentClassID,
                     },
                 ];
-                yield staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
+                await staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
                     subjectAssigned: addedData,
                 }, { new: true });
                 return res.status(201).json({
@@ -259,12 +250,12 @@ const updateSchoolSubjectTeacher = (req, res) => __awaiter(void 0, void 0, void 
             status: 404,
         });
     }
-});
+};
 exports.updateSchoolSubjectTeacher = updateSchoolSubjectTeacher;
-const viewSchoolSubjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolSubjects = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const schoolSubject = yield schoolModel_1.default.findById(schoolID).populate({
+        const schoolSubject = await schoolModel_1.default.findById(schoolID).populate({
             path: "subjects",
             options: {
                 sort: {
@@ -284,17 +275,17 @@ const viewSchoolSubjects = (req, res) => __awaiter(void 0, void 0, void 0, funct
             status: 404,
         });
     }
-});
+};
 exports.viewSchoolSubjects = viewSchoolSubjects;
-const deleteSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteSchoolSubject = async (req, res) => {
     var _a, _b;
     try {
         const { schoolID, subjectID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const subjects = yield subjectModel_1.default.findById(subjectID);
+            const subjects = await subjectModel_1.default.findById(subjectID);
             // const subjects = await subjectModel.findByIdAndDelete(subjectID);
-            const classRM = yield classroomModel_1.default.findById(subjects === null || subjects === void 0 ? void 0 : subjects.classDetails);
+            const classRM = await classroomModel_1.default.findById(subjects === null || subjects === void 0 ? void 0 : subjects.classDetails);
             (_a = school === null || school === void 0 ? void 0 : school.subjects) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
             school.save();
             (_b = classRM === null || classRM === void 0 ? void 0 : classRM.classSubjects) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
@@ -318,12 +309,12 @@ const deleteSchoolSubject = (req, res) => __awaiter(void 0, void 0, void 0, func
             status: 404,
         });
     }
-});
+};
 exports.deleteSchoolSubject = deleteSchoolSubject;
-const viewSubjectDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSubjectDetail = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID);
+        const subject = await subjectModel_1.default.findById(subjectID);
         return res.status(200).json({
             message: "Subject found",
             status: 200,
@@ -336,10 +327,10 @@ const viewSubjectDetail = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.viewSubjectDetail = viewSubjectDetail;
-const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+const removeSubjectFromTeacher = async (req, res) => {
+    var _a;
     try {
         const { schoolID, teacherID, subjectID } = req.params;
         // Validate required params
@@ -350,7 +341,7 @@ const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Find school and verify admin status
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (!school || !school.schoolName || school.status !== "school-admin") {
             return res.status(404).json({
                 message: "School not found or not authorized",
@@ -358,7 +349,7 @@ const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Find teacher
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = await staffModel_1.default.findById(teacherID);
         if (!teacher) {
             return res.status(404).json({
                 message: "Teacher not found",
@@ -366,7 +357,7 @@ const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Find subject
-        const subject = yield subjectModel_1.default.findById(subjectID);
+        const subject = await subjectModel_1.default.findById(subjectID);
         if (!subject) {
             return res.status(404).json({
                 message: "Subject not found",
@@ -374,7 +365,7 @@ const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Verify the subject is actually assigned to this teacher
-        const hasSubject = (_c = teacher.subjectAssigned) === null || _c === void 0 ? void 0 : _c.some((el) => el.id.toString() === subjectID);
+        const hasSubject = (_a = teacher.subjectAssigned) === null || _a === void 0 ? void 0 : _a.some((el) => el.id.toString() === subjectID);
         if (!hasSubject) {
             return res.status(400).json({
                 message: "Subject is not assigned to this teacher",
@@ -384,7 +375,7 @@ const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
         // Remove subject from teacher's assignments
         const updatedAssignments = (teacher.subjectAssigned || []).filter((el) => el.id.toString() !== subjectID);
         // Update both teacher and subject atomically
-        const [updatedTeacher, updatedSubject] = yield Promise.all([
+        const [updatedTeacher, updatedSubject] = await Promise.all([
             staffModel_1.default.findByIdAndUpdate(teacherID, {
                 subjectAssigned: updatedAssignments,
             }, { new: true }),
@@ -416,5 +407,5 @@ const removeSubjectFromTeacher = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 500,
         });
     }
-});
+};
 exports.removeSubjectFromTeacher = removeSubjectFromTeacher;

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -19,15 +10,15 @@ const articleModel_1 = __importDefault(require("../model/articleModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const streamifier_1 = require("../utils/streamifier");
 const staffModel_1 = __importDefault(require("../model/staffModel"));
-const createArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createArticle = async (req, res) => {
     try {
         const { schoolID, studentID } = req.params;
         const { title, content, desc } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const student = yield studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const student = await studentModel_1.default.findById(studentID);
         if (school && student) {
-            const { secure_url } = yield (0, streamifier_1.streamUpload)(req);
-            const article = yield articleModel_1.default.create({
+            const { secure_url } = await (0, streamifier_1.streamUpload)(req);
+            const article = await articleModel_1.default.create({
                 coverImage: secure_url,
                 schoolID,
                 studentID,
@@ -60,17 +51,17 @@ const createArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             status: 404,
         });
     }
-});
+};
 exports.createArticle = createArticle;
-const createTeacherArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createTeacherArticle = async (req, res) => {
     try {
         const { schoolID, teacherID } = req.params;
         const { title, content, desc } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const student = yield staffModel_1.default.findById(teacherID);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const student = await staffModel_1.default.findById(teacherID);
         if (school && student) {
-            const { secure_url } = yield (0, streamifier_1.streamUpload)(req);
-            const article = yield articleModel_1.default.create({
+            const { secure_url } = await (0, streamifier_1.streamUpload)(req);
+            const article = await articleModel_1.default.create({
                 coverImage: secure_url,
                 schoolID,
                 studentID: teacherID,
@@ -103,12 +94,12 @@ const createTeacherArticle = (req, res) => __awaiter(void 0, void 0, void 0, fun
             status: 404,
         });
     }
-});
+};
 exports.createTeacherArticle = createTeacherArticle;
-const readAllArticles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readAllArticles = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const school = yield schoolModel_1.default
+        const school = await schoolModel_1.default
             .findById(schoolID)
             .populate({ path: "articles", options: { sort: { createdAt: -1 } } });
         if (school) {
@@ -131,12 +122,12 @@ const readAllArticles = (req, res) => __awaiter(void 0, void 0, void 0, function
             status: 404,
         });
     }
-});
+};
 exports.readAllArticles = readAllArticles;
-const readOneArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readOneArticle = async (req, res) => {
     try {
         const { articleID } = req.params;
-        const article = yield articleModel_1.default.findById(articleID);
+        const article = await articleModel_1.default.findById(articleID);
         return res.status(200).json({
             message: "Reading one article",
             data: article,
@@ -149,18 +140,18 @@ const readOneArticle = (req, res) => __awaiter(void 0, void 0, void 0, function*
             status: 404,
         });
     }
-});
+};
 exports.readOneArticle = readOneArticle;
-const likeArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const likeArticle = async (req, res) => {
     var _a;
     try {
         const { articleID, readerID } = req.params;
-        const article = yield articleModel_1.default.findById(articleID);
+        const article = await articleModel_1.default.findById(articleID);
         const check = (_a = article === null || article === void 0 ? void 0 : article.like) === null || _a === void 0 ? void 0 : _a.some((el) => {
             return el === readerID;
         });
         if (!check) {
-            yield articleModel_1.default.findByIdAndUpdate(articleID, {
+            await articleModel_1.default.findByIdAndUpdate(articleID, {
                 like: [...article === null || article === void 0 ? void 0 : article.like, readerID],
             }, { new: true });
             return res.status(200).json({
@@ -182,18 +173,18 @@ const likeArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: 404,
         });
     }
-});
+};
 exports.likeArticle = likeArticle;
-const viewArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+const viewArticle = async (req, res) => {
+    var _a;
     try {
         const { articleID, readerID } = req.params;
-        const article = yield articleModel_1.default.findById(articleID);
-        const check = (_b = article === null || article === void 0 ? void 0 : article.view) === null || _b === void 0 ? void 0 : _b.some((el) => {
+        const article = await articleModel_1.default.findById(articleID);
+        const check = (_a = article === null || article === void 0 ? void 0 : article.view) === null || _a === void 0 ? void 0 : _a.some((el) => {
             return el === readerID;
         });
         if (!check) {
-            yield articleModel_1.default.findByIdAndUpdate(articleID, {
+            await articleModel_1.default.findByIdAndUpdate(articleID, {
                 view: [...article === null || article === void 0 ? void 0 : article.view, readerID],
             }, { new: true });
             return res.status(200).json({
@@ -215,17 +206,17 @@ const viewArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: 404,
         });
     }
-});
+};
 exports.viewArticle = viewArticle;
-const deleteOneArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteOneArticle = async (req, res) => {
     try {
         const { schoolID, articleID, studentName } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const student = yield studentModel_1.default.findOne({
+        const school = await schoolModel_1.default.findById(schoolID);
+        const student = await studentModel_1.default.findOne({
             studentFirstName: `${studentName.split(" ")[0]}`,
         });
         if (school && student) {
-            const article = yield articleModel_1.default.findByIdAndDelete(articleID);
+            const article = await articleModel_1.default.findByIdAndDelete(articleID);
             school.articles.pull(new mongoose_1.Types.ObjectId(articleID));
             school === null || school === void 0 ? void 0 : school.save();
             student.articles.pull(new mongoose_1.Types.ObjectId(articleID));
@@ -249,5 +240,5 @@ const deleteOneArticle = (req, res) => __awaiter(void 0, void 0, void 0, functio
             status: 404,
         });
     }
-});
+};
 exports.deleteOneArticle = deleteOneArticle;

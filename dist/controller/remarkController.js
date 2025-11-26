@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -21,19 +12,19 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const studentRemark_1 = __importDefault(require("../model/studentRemark"));
 const moment_1 = __importDefault(require("moment"));
 const email_1 = require("../utils/email");
-const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createRemark = async (req, res) => {
     try {
         const { teacherID, studentID } = req.params;
         const { remark, weekPerformanceRatio, attendanceRatio, best, worst, classParticipation, sportParticipation, topicFocus, payment, announcement, generalPerformace, } = req.body;
-        const teacher = yield staffModel_1.default.findById(teacherID);
+        const teacher = await staffModel_1.default.findById(teacherID);
         console.log(teacher);
-        const student = yield studentModel_1.default.findById(studentID);
-        const school = yield schoolModel_1.default.findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs);
+        const student = await studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default.findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs);
         if (teacher && student) {
             const fridayDate = Date.now();
             const readDate = (0, moment_1.default)(fridayDate).days();
             if (readDate === 5 || readDate === 6 || readDate === 4) {
-                const remarkData = yield studentRemark_1.default.create({
+                const remarkData = await studentRemark_1.default.create({
                     remark,
                     weekPerformanceRatio,
                     attendanceRatio,
@@ -75,12 +66,12 @@ const createRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             data: error.message,
         });
     }
-});
+};
 exports.createRemark = createRemark;
-const viewStudentRemark = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewStudentRemark = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const student = yield studentModel_1.default.findById(studentID).populate({
+        const student = await studentModel_1.default.findById(studentID).populate({
             path: "remark",
             options: {
                 sort: {
@@ -99,15 +90,15 @@ const viewStudentRemark = (req, res) => __awaiter(void 0, void 0, void 0, functi
             data: error.message,
         });
     }
-});
+};
 exports.viewStudentRemark = viewStudentRemark;
-const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const studentsPerSession = async (req, res) => {
     try {
         const { sessionID } = req.params;
         const { totalStudents } = req.body;
-        const session = yield sessionModel_1.default.findById(sessionID);
+        const session = await sessionModel_1.default.findById(sessionID);
         if (session) {
-            const students = yield sessionModel_1.default.findByIdAndUpdate(sessionID, { totalStudents }, { new: true });
+            const students = await sessionModel_1.default.findByIdAndUpdate(sessionID, { totalStudents }, { new: true });
             return res.status(200).json({
                 message: "viewing session session",
                 data: students,
@@ -124,15 +115,15 @@ const studentsPerSession = (req, res) => __awaiter(void 0, void 0, void 0, funct
             message: "Error viewing school session",
         });
     }
-});
+};
 exports.studentsPerSession = studentsPerSession;
-const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const termPerSession = async (req, res) => {
     try {
         const { sessionID } = req.params;
         const { term } = req.body;
-        const session = yield sessionModel_1.default.findById(sessionID);
+        const session = await sessionModel_1.default.findById(sessionID);
         if (session) {
-            const students = yield sessionModel_1.default.findByIdAndUpdate(sessionID, { term }, { new: true });
+            const students = await sessionModel_1.default.findByIdAndUpdate(sessionID, { term }, { new: true });
             return res.status(200).json({
                 message: "viewing session session",
                 data: students,
@@ -149,5 +140,5 @@ const termPerSession = (req, res) => __awaiter(void 0, void 0, void 0, function*
             message: "Error viewing school session",
         });
     }
-});
+};
 exports.termPerSession = termPerSession;

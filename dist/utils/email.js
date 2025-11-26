@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -54,7 +45,7 @@ const url = process.env.APP_URL_DEPLOY;
 //     throw error;
 //   }
 // };
-const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
+const verifiedEmail = async (user) => {
     try {
         // const transporter = await createEmailTransporter();
         const transporter = nodemailer_1.default.createTransport({
@@ -70,17 +61,17 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
         }, "secretCode", {
             expiresIn: "5m",
         });
-        const timer = setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-            const getSchool = yield schoolModel_1.default.findById(user._id);
+        const timer = setTimeout(async () => {
+            const getSchool = await schoolModel_1.default.findById(user._id);
             if (!getSchool.verify) {
-                yield schoolModel_1.default.findByIdAndDelete(getSchool._id);
+                await schoolModel_1.default.findByIdAndDelete(getSchool._id);
             }
             clearTimeout(timer);
-        }), 5 * 60 * 1000);
+        }, 5 * 60 * 1000);
         let frontEndURL = `${url}/${token}/sign-in`;
         let devURL = `${url}/auth/api/verify-user/${token}`;
         const myPath = path_1.default.join(__dirname, "../views/index.ejs");
-        const html = yield ejs_1.default.renderFile(myPath, {
+        const html = await ejs_1.default.renderFile(myPath, {
             link: devURL,
             tokenCode: user === null || user === void 0 ? void 0 : user.enrollmentID,
             userName: user === null || user === void 0 ? void 0 : user.userName,
@@ -91,14 +82,14 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
             subject: "Account Verification",
             html,
         };
-        yield transporter.sendMail(mailerOption);
+        await transporter.sendMail(mailerOption);
     }
     catch (error) {
         console.error();
     }
-});
+};
 exports.verifiedEmail = verifiedEmail;
-const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, function* () {
+const addMemberEmail = async (member, getUser) => {
     try {
         // const accessToken: any = (await oAuth.getAccessToken()).token;
         // const transporter = nodemail.createTransport({
@@ -121,7 +112,7 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
         const myPath = path_1.default.join(__dirname, "../views/memberAdded.ejs");
-        const html = yield ejs_1.default.renderFile(myPath, {
+        const html = await ejs_1.default.renderFile(myPath, {
             relationship: member.relationship,
             firstName: member.firstName,
         });
@@ -131,14 +122,14 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
             subject: "Family Member added Notification",
             html,
         };
-        yield transporter.sendMail(mailerOption);
+        await transporter.sendMail(mailerOption);
     }
     catch (error) {
         console.error();
     }
-});
+};
 exports.addMemberEmail = addMemberEmail;
-const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function* () {
+const changeTokenEmail = async (getUser) => {
     try {
         // const accessToken: any = (await oAuth.getAccessToken()).token;
         // const transporter = nodemail.createTransport({
@@ -161,7 +152,7 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
         });
         let devURL = `${url}/api/verify-user/${getUser._id}`;
         const myPath = path_1.default.join(__dirname, "../views/resetToken.ejs");
-        const html = yield ejs_1.default.renderFile(myPath, {
+        const html = await ejs_1.default.renderFile(myPath, {
             token: getUser.firstName,
             link: devURL,
         });
@@ -171,14 +162,14 @@ const changeTokenEmail = (getUser) => __awaiter(void 0, void 0, void 0, function
             subject: "Token reset Notification",
             html,
         };
-        yield transporter.sendMail(mailerOption);
+        await transporter.sendMail(mailerOption);
     }
     catch (error) {
         console.error();
     }
-});
+};
 exports.changeTokenEmail = changeTokenEmail;
-const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, function* () {
+const verifySchoolFees = async (user, term) => {
     try {
         // const accessToken: any = (await oAuth.getAccessToken()).token;
         // const transporter = nodemail.createTransport({
@@ -206,7 +197,7 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
         let frontEndURL = `${url}/${token}/sign-in`;
         let devURL = `${url}/api/update-student-fees-1st/${user._id}`;
         const myPath = path_1.default.join(__dirname, "../views/feesMail.ejs");
-        const html = yield ejs_1.default.renderFile(myPath, {
+        const html = await ejs_1.default.renderFile(myPath, {
             link: devURL,
             token: user.token,
             studentName: user.studentFirstName,
@@ -219,14 +210,14 @@ const verifySchoolFees = (user, term) => __awaiter(void 0, void 0, void 0, funct
             subject: `${term} Term School Fees Payment`,
             html,
         };
-        yield transporter.sendMail(mailerOption);
+        await transporter.sendMail(mailerOption);
     }
     catch (error) {
         console.error();
     }
-});
+};
 exports.verifySchoolFees = verifySchoolFees;
-const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, function* () {
+const clockingInEmail = async (user, school) => {
     try {
         // const accessToken: any = (await oAuth.getAccessToken()).token;
         // const transporter = nodemail.createTransport({
@@ -250,7 +241,7 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
         const myPath = path_1.default.join(__dirname, "../views/clockinMail.ejs");
         const x = user === null || user === void 0 ? void 0 : user.clockInTime.split(",");
         const y = x[2].trim();
-        const html = yield ejs_1.default.renderFile(myPath, {
+        const html = await ejs_1.default.renderFile(myPath, {
             clockin: user.clockInTime,
             parent: user.studentLastName,
             child: user.studentFirstName,
@@ -267,16 +258,16 @@ const clockingInEmail = (user, school) => __awaiter(void 0, void 0, void 0, func
             html,
         };
         console.log("awesome: ", user.parentEmail);
-        yield transporter.sendMail(mailerOption).then((res) => {
+        await transporter.sendMail(mailerOption).then((res) => {
             console.log("sent", user.parentEmail, res);
         });
     }
     catch (error) {
         console.error();
     }
-});
+};
 exports.clockingInEmail = clockingInEmail;
-const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, function* () {
+const clockingOutEmail = async (user, school) => {
     try {
         // const accessToken: any = (await oAuth.getAccessToken()).token;
         // const transporter = nodemail.createTransport({
@@ -300,7 +291,7 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
         const myPath = path_1.default.join(__dirname, "../views/clockoutMail.ejs");
         const x = user === null || user === void 0 ? void 0 : user.clockOutTime.split(",");
         const y = x[2].trim();
-        const html = yield ejs_1.default.renderFile(myPath, {
+        const html = await ejs_1.default.renderFile(myPath, {
             clockin: user.clockInTime,
             parent: user.studentLastName,
             child: user.studentFirstName,
@@ -316,14 +307,14 @@ const clockingOutEmail = (user, school) => __awaiter(void 0, void 0, void 0, fun
             subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked Out`,
             html,
         };
-        yield transporter.sendMail(mailerOption);
+        await transporter.sendMail(mailerOption);
     }
     catch (error) {
         console.error();
     }
-});
+};
 exports.clockingOutEmail = clockingOutEmail;
-const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, void 0, function* () {
+const sendWeeklyReport = async (user, school, remark) => {
     try {
         // const accessToken: any = (await oAuth.getAccessToken()).token;
         // const transporter = nodemail.createTransport({
@@ -348,7 +339,7 @@ const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, voi
         // const x = user?.clockInTime.split(",");
         // const y = x[2].trim();
         let link = `${url}/report`;
-        const html = yield ejs_1.default.renderFile(myPath, {
+        const html = await ejs_1.default.renderFile(myPath, {
             parent: user.studentLastName,
             studentName: user.studentFirstName,
             address: school === null || school === void 0 ? void 0 : school.address,
@@ -368,12 +359,12 @@ const sendWeeklyReport = (user, school, remark) => __awaiter(void 0, void 0, voi
             subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} Weekly Academic Performance Report`,
             html,
         };
-        yield transporter.sendMail(mailerOption).then(() => {
+        await transporter.sendMail(mailerOption).then(() => {
             console.log("sent");
         });
     }
     catch (error) {
         console.error();
     }
-});
+};
 exports.sendWeeklyReport = sendWeeklyReport;

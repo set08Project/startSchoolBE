@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,22 +9,22 @@ const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const timetableModel_1 = __importDefault(require("../model/timetableModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
-const createClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createClassTimeTable = async (req, res) => {
     try {
         const { schoolID, classID } = req.params;
         const { subject, day, time } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (!school || school.status !== "school-admin") {
             return res.status(404).json({ message: "School not found", status: 404 });
         }
-        const classRoom = yield classroomModel_1.default.findById(classID).populate("classSubjects");
+        const classRoom = await classroomModel_1.default.findById(classID).populate("classSubjects");
         if (!classRoom) {
             return res.status(404).json({ message: "Classroom not found", status: 404 });
         }
         const isSubjectValid = classRoom.classSubjects.some((el) => el.subjectTitle === subject);
-        const findTeacher = yield staffModel_1.default.findById(classRoom.teacherID);
+        const findTeacher = await staffModel_1.default.findById(classRoom.teacherID);
         if (isSubjectValid || ["Assembly", "Short Break", "Long Break"].includes(subject)) {
-            const newTimeTable = yield timetableModel_1.default.create({
+            const newTimeTable = await timetableModel_1.default.create({
                 subject,
                 day,
                 time,
@@ -41,10 +32,10 @@ const createClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 subjectTeacherID: isSubjectValid ? findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher._id : undefined,
             });
             classRoom.timeTable.push(new mongoose_1.Types.ObjectId(newTimeTable._id));
-            yield classRoom.save();
+            await classRoom.save();
             if (isSubjectValid && findTeacher) {
                 findTeacher.schedule.push(new mongoose_1.Types.ObjectId(newTimeTable._id));
-                yield findTeacher.save();
+                await findTeacher.save();
             }
             return res.status(201).json({
                 message: "Timetable entry created successfully",
@@ -64,12 +55,12 @@ const createClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, fun
             error: error.message,
         });
     }
-});
+};
 exports.createClassTimeTable = createClassTimeTable;
-const readClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readClassTimeTable = async (req, res) => {
     try {
         const { classID } = req.params;
-        const timeTable = yield classroomModel_1.default.findById(classID).populate({
+        const timeTable = await classroomModel_1.default.findById(classID).populate({
             path: "timeTable",
             options: { sort: { time: 1 } },
         });
@@ -89,12 +80,12 @@ const readClassTimeTable = (req, res) => __awaiter(void 0, void 0, void 0, funct
             error: error.message,
         });
     }
-});
+};
 exports.readClassTimeTable = readClassTimeTable;
-const readTeacherSchedule = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTeacherSchedule = async (req, res) => {
     try {
         const { teacherID } = req.params;
-        const teacher = yield staffModel_1.default.findById(teacherID).populate("schedule");
+        const teacher = await staffModel_1.default.findById(teacherID).populate("schedule");
         if (!teacher) {
             return res.status(404).json({ message: "Teacher not found", status: 404 });
         }
@@ -111,14 +102,14 @@ const readTeacherSchedule = (req, res) => __awaiter(void 0, void 0, void 0, func
             error: error.message,
         });
     }
-});
+};
 exports.readTeacherSchedule = readTeacherSchedule;
-const readTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTeacherAndTimeTableSubject = async (req, res) => {
     var _a;
     try {
         const { tableID, schoolID, classID } = req.params;
         const { subject } = req.body;
-        const [time, school, classRoom] = yield Promise.all([
+        const [time, school, classRoom] = await Promise.all([
             timetableModel_1.default.findById(tableID),
             schoolModel_1.default.findById(schoolID),
             classroomModel_1.default.findById(classID).populate("classSubjects"),
@@ -136,16 +127,16 @@ const readTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0, v
                 status: 404,
             });
         }
-        const oldTeacher = yield staffModel_1.default.findById(time === null || time === void 0 ? void 0 : time.subjectTeacherID);
-        const newTeacher = yield staffModel_1.default.findById(classRoom.teacherID);
-        const updateSubject = yield timetableModel_1.default.findByIdAndUpdate(tableID, { subject, subjectTeacherID: newTeacher === null || newTeacher === void 0 ? void 0 : newTeacher._id }, { new: true });
+        const oldTeacher = await staffModel_1.default.findById(time === null || time === void 0 ? void 0 : time.subjectTeacherID);
+        const newTeacher = await staffModel_1.default.findById(classRoom.teacherID);
+        const updateSubject = await timetableModel_1.default.findByIdAndUpdate(tableID, { subject, subjectTeacherID: newTeacher === null || newTeacher === void 0 ? void 0 : newTeacher._id }, { new: true });
         if (oldTeacher) {
             (_a = oldTeacher === null || oldTeacher === void 0 ? void 0 : oldTeacher.schedule) === null || _a === void 0 ? void 0 : _a.pull(tableID);
-            yield oldTeacher.save();
+            await oldTeacher.save();
         }
         if (newTeacher) {
             newTeacher.schedule.push(new mongoose_1.Types.ObjectId(updateSubject === null || updateSubject === void 0 ? void 0 : updateSubject._id));
-            yield newTeacher.save();
+            await newTeacher.save();
         }
         return res.status(200).json({
             message: "Timetable subject entry updated successfully",
@@ -160,12 +151,12 @@ const readTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0, v
             error: error.message,
         });
     }
-});
+};
 exports.readTeacherAndTimeTableSubject = readTeacherAndTimeTableSubject;
-const deleteTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteTeacherAndTimeTableSubject = async (req, res) => {
     try {
         const { tableID, schoolID } = req.params;
-        const [time, school] = yield Promise.all([
+        const [time, school] = await Promise.all([
             timetableModel_1.default.findById(tableID),
             schoolModel_1.default.findById(schoolID),
         ]);
@@ -175,12 +166,12 @@ const deleteTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0,
         if (!time) {
             return res.status(404).json({ message: "Timetable entry not found", status: 404 });
         }
-        const teacher = yield staffModel_1.default.findById(time.subjectTeacherID);
+        const teacher = await staffModel_1.default.findById(time.subjectTeacherID);
         if (teacher) {
             teacher.schedule.pull(tableID);
-            yield teacher.save();
+            await teacher.save();
         }
-        const deletedEntry = yield timetableModel_1.default.findByIdAndDelete(tableID);
+        const deletedEntry = await timetableModel_1.default.findByIdAndDelete(tableID);
         return res.status(200).json({
             message: "Timetable subject entry deleted successfully",
             data: deletedEntry,
@@ -194,5 +185,5 @@ const deleteTeacherAndTimeTableSubject = (req, res) => __awaiter(void 0, void 0,
             error: error.message,
         });
     }
-});
+};
 exports.deleteTeacherAndTimeTableSubject = deleteTeacherAndTimeTableSubject;

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,15 +9,15 @@ const announcementModel_1 = __importDefault(require("../model/announcementModel"
 const mongoose_1 = require("mongoose");
 const eventModel_1 = __importDefault(require("../model/eventModel"));
 const moment_1 = __importDefault(require("moment"));
-const createSchoolAnnouncement = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolAnnouncement = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { title, details, date } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "announcements",
         });
         if (school && school.schoolName && school.status === "school-admin") {
-            const classes = yield announcementModel_1.default.create({
+            const classes = await announcementModel_1.default.create({
                 title,
                 details,
                 date,
@@ -53,12 +44,12 @@ const createSchoolAnnouncement = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.createSchoolAnnouncement = createSchoolAnnouncement;
-const readSchoolAnnouncement = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSchoolAnnouncement = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const announcement = yield schoolModel_1.default.findById(schoolID).populate({
+        const announcement = await schoolModel_1.default.findById(schoolID).populate({
             path: "announcements",
             options: {
                 sort: {
@@ -78,17 +69,17 @@ const readSchoolAnnouncement = (req, res) => __awaiter(void 0, void 0, void 0, f
             status: 404,
         });
     }
-});
+};
 exports.readSchoolAnnouncement = readSchoolAnnouncement;
-const createSchoolEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolEvent = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { title, details, date } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "events",
         });
         if (school && school.schoolName && school.status === "school-admin") {
-            const event = yield eventModel_1.default.create({
+            const event = await eventModel_1.default.create({
                 title,
                 details,
                 date,
@@ -115,12 +106,12 @@ const createSchoolEvent = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.createSchoolEvent = createSchoolEvent;
-const readSchoolEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSchoolEvent = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const announcement = yield schoolModel_1.default.findById(schoolID).populate({
+        const announcement = await schoolModel_1.default.findById(schoolID).populate({
             path: "events",
             options: {
                 sort: {
@@ -140,14 +131,14 @@ const readSchoolEvent = (req, res) => __awaiter(void 0, void 0, void 0, function
             status: 404,
         });
     }
-});
+};
 exports.readSchoolEvent = readSchoolEvent;
-const createSchoolPaynemtReceipt = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolPaynemtReceipt = async (req, res) => {
     var _a, _b;
     try {
         const { schoolID } = req.params;
         const { costPaid, paymentRef } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         const confirm = (_a = school === null || school === void 0 ? void 0 : school.receipt) === null || _a === void 0 ? void 0 : _a.some((el) => {
             return el.paymentRef === paymentRef;
         });
@@ -162,7 +153,7 @@ const createSchoolPaynemtReceipt = (req, res) => __awaiter(void 0, void 0, void 
                 });
             }
             else {
-                yield schoolModel_1.default.findByIdAndUpdate(school._id, {
+                await schoolModel_1.default.findByIdAndUpdate(school._id, {
                     receipt: [
                         ...school === null || school === void 0 ? void 0 : school.receipt,
                         { costPaid, paymentRef, date: (0, moment_1.default)(Date.now()).format("lll") },
@@ -189,12 +180,12 @@ const createSchoolPaynemtReceipt = (req, res) => __awaiter(void 0, void 0, void 
             data: error.message,
         });
     }
-});
+};
 exports.createSchoolPaynemtReceipt = createSchoolPaynemtReceipt;
-const readSchoolPaynemtReceipt = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSchoolPaynemtReceipt = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const announcement = yield schoolModel_1.default.findById(schoolID).populate({
+        const announcement = await schoolModel_1.default.findById(schoolID).populate({
             path: "events",
             options: {
                 sort: {
@@ -214,5 +205,5 @@ const readSchoolPaynemtReceipt = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.readSchoolPaynemtReceipt = readSchoolPaynemtReceipt;

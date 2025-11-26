@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -17,19 +8,19 @@ const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const recordPaymentModel_1 = __importDefault(require("../model/recordPaymentModel"));
 const mongoose_1 = require("mongoose");
-const recordFeesPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const recordFeesPayment = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { studentID } = req.params;
         const { feePaid, feePaidDate, paidByWho, paymentMode } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const student = yield studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const student = await studentModel_1.default.findById(studentID);
         if (school) {
             const getTerm = school === null || school === void 0 ? void 0 : school.presentTerm;
             if (getTerm) {
                 const getStudentClassFee = student === null || student === void 0 ? void 0 : student.classTermFee;
                 const currentBalance = getStudentClassFee - feePaid;
-                const recordSchoolFeesPayment = yield recordPaymentModel_1.default.create({
+                const recordSchoolFeesPayment = await recordPaymentModel_1.default.create({
                     feePaid,
                     feePaidDate,
                     paidByWho,
@@ -78,14 +69,14 @@ const recordFeesPayment = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.recordFeesPayment = recordFeesPayment;
-const recordSecondFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const recordSecondFeePayment = async (req, res) => {
     var _a;
     try {
         const { feePaid } = req.body;
         const { recordID } = req.params;
-        const record = yield recordPaymentModel_1.default.findById(recordID);
+        const record = await recordPaymentModel_1.default.findById(recordID);
         if (record) {
             const pushRecord = (_a = record === null || record === void 0 ? void 0 : record.feePaid) === null || _a === void 0 ? void 0 : _a.push(feePaid);
             if (pushRecord) {
@@ -96,8 +87,8 @@ const recordSecondFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                 const lastFeePaid = getRecord[(getRecord === null || getRecord === void 0 ? void 0 : getRecord.length) - 1];
                 const getClassFees = record === null || record === void 0 ? void 0 : record.classFees;
                 if (totalFees === getClassFees) {
-                    const update = yield recordPaymentModel_1.default.findByIdAndUpdate(record._id, { feePaymentComplete: true, feeBalance: totalFees }, { new: true });
-                    yield record.save();
+                    const update = await recordPaymentModel_1.default.findByIdAndUpdate(record._id, { feePaymentComplete: true, feeBalance: totalFees }, { new: true });
+                    await record.save();
                     return res.status(201).json({
                         message: "Successfully Recorded New Payment. Payment Now Complete",
                         data: {
@@ -110,7 +101,7 @@ const recordSecondFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
                 else {
                     const convertNum = Number(totalFees);
                     const balance = getClassFees - convertNum;
-                    yield record.save();
+                    await record.save();
                     return res.status(201).json({
                         message: "Successfully Recorded New Payment.",
                         data: {
@@ -146,12 +137,12 @@ const recordSecondFeePayment = (req, res) => __awaiter(void 0, void 0, void 0, f
             status: 404,
         });
     }
-});
+};
 exports.recordSecondFeePayment = recordSecondFeePayment;
-const getAllFeeRecords = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllFeeRecords = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const getAll = yield schoolModel_1.default.findById(schoolID).populate({
+        const getAll = await schoolModel_1.default.findById(schoolID).populate({
             path: "recordPayments",
             options: {
                 sort: {
@@ -175,12 +166,12 @@ const getAllFeeRecords = (req, res) => __awaiter(void 0, void 0, void 0, functio
             status: 404,
         });
     }
-});
+};
 exports.getAllFeeRecords = getAllFeeRecords;
-const getOneFeeRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getOneFeeRecord = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const getAll = yield studentModel_1.default.findById(studentID).populate({
+        const getAll = await studentModel_1.default.findById(studentID).populate({
             path: "recordPayments",
             options: {
                 sort: {
@@ -204,22 +195,22 @@ const getOneFeeRecord = (req, res) => __awaiter(void 0, void 0, void 0, function
             status: 404,
         });
     }
-});
+};
 exports.getOneFeeRecord = getOneFeeRecord;
-const deleteFeesRecord = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+const deleteFeesRecord = async (req, res) => {
+    var _a, _b;
     try {
         const { schoolID } = req.params;
         const { studentID } = req.params;
         const { recordID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const student = yield studentModel_1.default.findById(studentID);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const student = await studentModel_1.default.findById(studentID);
         if (school) {
-            const findRecord = yield recordPaymentModel_1.default.findByIdAndDelete(recordID);
-            (_b = school === null || school === void 0 ? void 0 : school.recordPayments) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(recordID));
-            (_c = student === null || student === void 0 ? void 0 : student.recordPayments) === null || _c === void 0 ? void 0 : _c.pull(new mongoose_1.Types.ObjectId(recordID));
-            yield school.save();
-            yield student.save();
+            const findRecord = await recordPaymentModel_1.default.findByIdAndDelete(recordID);
+            (_a = school === null || school === void 0 ? void 0 : school.recordPayments) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(recordID));
+            (_b = student === null || student === void 0 ? void 0 : student.recordPayments) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(recordID));
+            await school.save();
+            await student.save();
             return res.status(200).json({
                 message: "Successfully Deleted Fees Record",
                 data: findRecord,
@@ -243,5 +234,5 @@ const deleteFeesRecord = (req, res) => __awaiter(void 0, void 0, void 0, functio
             status: 404,
         });
     }
-});
+};
 exports.deleteFeesRecord = deleteFeesRecord;

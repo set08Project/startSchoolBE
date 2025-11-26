@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,14 +9,14 @@ const mongoose_1 = require("mongoose");
 const streamifier_1 = require("../utils/streamifier");
 const cloudinary_1 = __importDefault(require("../utils/cloudinary"));
 const gallaryModel_1 = __importDefault(require("../model/gallaryModel"));
-const createSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolGallary = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { title, description } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
-        const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
+        const school = await schoolModel_1.default.findById(schoolID);
+        const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
         if (school) {
-            const store = yield gallaryModel_1.default.create({
+            const store = await gallaryModel_1.default.create({
                 title,
                 description,
                 avatar: secure_url,
@@ -51,14 +42,14 @@ const createSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, func
             data: error.message,
         });
     }
-});
+};
 exports.createSchoolGallary = createSchoolGallary;
-const createRestrictedSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createRestrictedSchoolGallary = async (req, res) => {
     var _a;
     try {
         const { schoolID } = req.params;
         const { title, description } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "gallaries",
             options: {
                 sort: {
@@ -74,8 +65,8 @@ const createRestrictedSchoolGallary = (req, res) => __awaiter(void 0, void 0, vo
                 });
             }
             else {
-                const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
-                const gallary = yield gallaryModel_1.default.create({
+                const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
+                const gallary = await gallaryModel_1.default.create({
                     title,
                     description,
                     avatar: secure_url,
@@ -102,12 +93,12 @@ const createRestrictedSchoolGallary = (req, res) => __awaiter(void 0, void 0, vo
             data: error.message,
         });
     }
-});
+};
 exports.createRestrictedSchoolGallary = createRestrictedSchoolGallary;
-const viewSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const viewSchoolGallary = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const gallary = yield schoolModel_1.default.findById(schoolID).populate({
+        const gallary = await schoolModel_1.default.findById(schoolID).populate({
             path: "gallaries",
         });
         return res.status(200).json({
@@ -120,9 +111,9 @@ const viewSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Error viewing school session",
         });
     }
-});
+};
 exports.viewSchoolGallary = viewSchoolGallary;
-const deleteSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteSchoolGallary = async (req, res) => {
     try {
         const { schoolID, galleryID } = req.params;
         if (!schoolID || !galleryID) {
@@ -131,13 +122,13 @@ const deleteSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, func
                 status: 400,
             });
         }
-        const school = yield schoolModel_1.default
+        const school = await schoolModel_1.default
             .findById(schoolID)
             .populate({ path: "gallaries" });
         if (!school) {
             return res.status(404).json({ message: "School not found", status: 404 });
         }
-        const gallery = yield gallaryModel_1.default.findById(galleryID);
+        const gallery = await gallaryModel_1.default.findById(galleryID);
         if (!gallery) {
             return res
                 .status(404)
@@ -161,7 +152,7 @@ const deleteSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, func
             gallery.imageID;
         if (publicId) {
             try {
-                yield cloudinary_1.default.uploader.destroy(publicId);
+                await cloudinary_1.default.uploader.destroy(publicId);
             }
             catch (err) {
                 console.error("Failed to destroy cloud asset", publicId, (err === null || err === void 0 ? void 0 : err.message) || err);
@@ -169,9 +160,9 @@ const deleteSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, func
             }
         }
         // delete the gallery document and remove reference from school.gallaries
-        const deleted = yield gallaryModel_1.default.findByIdAndDelete(galleryID).lean();
+        const deleted = await gallaryModel_1.default.findByIdAndDelete(galleryID).lean();
         // remove reference safely using $pull (works even if school's gallaries contains null)
-        yield schoolModel_1.default.findByIdAndUpdate(schoolID, {
+        await schoolModel_1.default.findByIdAndUpdate(schoolID, {
             $pull: { gallaries: galleryID },
         });
         return res.status(200).json({
@@ -188,5 +179,5 @@ const deleteSchoolGallary = (req, res) => __awaiter(void 0, void 0, void 0, func
             status: 500,
         });
     }
-});
+};
 exports.deleteSchoolGallary = deleteSchoolGallary;

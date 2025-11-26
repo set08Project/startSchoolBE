@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -26,11 +17,11 @@ const cron_1 = require("cron");
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
-const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const loginTeacher = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const getTeacher = yield staffModel_1.default.findOne({ email });
-        const school = yield schoolModel_1.default.findOne({
+        const getTeacher = await staffModel_1.default.findOne({ email });
+        const school = await schoolModel_1.default.findOne({
             schoolName: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName,
         });
         if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName)) {
@@ -38,7 +29,7 @@ const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 const token = jsonwebtoken_1.default.sign({ status: school.status }, "teacher", {
                     expiresIn: "1d",
                 });
-                const passed = yield bcrypt_1.default.compare(password, getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.password);
+                const passed = await bcrypt_1.default.compare(password, getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.password);
                 if (passed) {
                     req.session.isAuth = true;
                     req.session.isSchoolID = getTeacher._id;
@@ -77,15 +68,15 @@ const loginTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: "Error creating school",
         });
     }
-});
+};
 exports.loginTeacher = loginTeacher;
-const loginStaffWithToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const loginStaffWithToken = async (req, res) => {
     try {
         const { token } = req.body;
-        const getTeacher = yield staffModel_1.default.findOne({
+        const getTeacher = await staffModel_1.default.findOne({
             enrollmentID: token,
         });
-        const school = yield schoolModel_1.default.findOne({
+        const school = await schoolModel_1.default.findOne({
             schoolName: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName,
         });
         if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName)) {
@@ -124,9 +115,9 @@ const loginStaffWithToken = (req, res) => __awaiter(void 0, void 0, void 0, func
             message: "Error logging you in",
         });
     }
-});
+};
 exports.loginStaffWithToken = loginStaffWithToken;
-const readTeacherCookie = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTeacherCookie = async (req, res) => {
     try {
         const readSchool = req.session.isSchoolID;
         return res.status(200).json({
@@ -140,21 +131,21 @@ const readTeacherCookie = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Error verifying school",
         });
     }
-});
+};
 exports.readTeacherCookie = readTeacherCookie;
-const createSchoolPrincipal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolPrincipal = async (req, res) => {
     var _a;
     try {
         const { schoolID } = req.params;
         const { staffName, staffAddress, assignedSubject } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "subjects",
         });
         const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
-        const salt = yield bcrypt_1.default.genSalt(10);
-        const hashed = yield bcrypt_1.default.hash(`${staffName.replace(/ /gi, "")}`, salt);
+        const salt = await bcrypt_1.default.genSalt(10);
+        const hashed = await bcrypt_1.default.hash(`${staffName.replace(/ /gi, "")}`, salt);
         if (school && school.schoolName && school.status === "school-admin") {
-            const staff = yield staffModel_1.default.create({
+            const staff = await staffModel_1.default.create({
                 staffName,
                 schoolName: school.schoolName,
                 staffRole: enums_1.staffDuty.PRINCIPAL,
@@ -185,15 +176,15 @@ const createSchoolPrincipal = (req, res) => __awaiter(void 0, void 0, void 0, fu
             message: "Error creating school session",
         });
     }
-});
+};
 exports.createSchoolPrincipal = createSchoolPrincipal;
-const createSchoolVicePrincipal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolVicePrincipal = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffName } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const staff = yield staffModel_1.default.create({
+            const staff = await staffModel_1.default.create({
                 staffName,
                 schoolName: school.schoolName,
                 staffRole: enums_1.staffDuty.VICE_PRINCIPAL,
@@ -216,16 +207,16 @@ const createSchoolVicePrincipal = (req, res) => __awaiter(void 0, void 0, void 0
             message: "Error creating school session",
         });
     }
-});
+};
 exports.createSchoolVicePrincipal = createSchoolVicePrincipal;
-const createSchoolTeacherByPrincipal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolTeacherByPrincipal = async (req, res) => {
     try {
         const { staffID } = req.params;
         const { staffName } = req.body;
-        const staff = yield staffModel_1.default.findById(staffID);
-        const school = yield schoolModel_1.default.findOne({ schoolName: staff === null || staff === void 0 ? void 0 : staff.schoolName });
+        const staff = await staffModel_1.default.findById(staffID);
+        const school = await schoolModel_1.default.findOne({ schoolName: staff === null || staff === void 0 ? void 0 : staff.schoolName });
         if (staff && staff.schoolName && staff.staffRole === "principal") {
-            const newStaff = yield staffModel_1.default.create({
+            const newStaff = await staffModel_1.default.create({
                 staffName,
                 staffRole: enums_1.staffDuty.TEACHER,
             });
@@ -247,16 +238,16 @@ const createSchoolTeacherByPrincipal = (req, res) => __awaiter(void 0, void 0, v
             message: "Error creating school session",
         });
     }
-});
+};
 exports.createSchoolTeacherByPrincipal = createSchoolTeacherByPrincipal;
-const createSchoolTeacherByVicePrincipal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolTeacherByVicePrincipal = async (req, res) => {
     try {
         const { staffID } = req.params;
         const { staffName } = req.body;
-        const staff = yield staffModel_1.default.findById(staffID);
-        const school = yield schoolModel_1.default.findOne({ schoolName: staff === null || staff === void 0 ? void 0 : staff.schoolName });
+        const staff = await staffModel_1.default.findById(staffID);
+        const school = await schoolModel_1.default.findOne({ schoolName: staff === null || staff === void 0 ? void 0 : staff.schoolName });
         if (staff && staff.schoolName && staff.staffRole === "vice principal") {
-            const newStaff = yield staffModel_1.default.create({
+            const newStaff = await staffModel_1.default.create({
                 staffName,
                 staffRole: enums_1.staffDuty.TEACHER,
             });
@@ -278,15 +269,15 @@ const createSchoolTeacherByVicePrincipal = (req, res) => __awaiter(void 0, void 
             message: "Error creating school session",
         });
     }
-});
+};
 exports.createSchoolTeacherByVicePrincipal = createSchoolTeacherByVicePrincipal;
-const createSchoolTeacherByAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createSchoolTeacherByAdmin = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffName } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
-            const staff = yield staffModel_1.default.create({
+            const staff = await staffModel_1.default.create({
                 staffName,
                 schoolName: school.schoolName,
                 staffRole: enums_1.staffDuty.TEACHER,
@@ -309,17 +300,17 @@ const createSchoolTeacherByAdmin = (req, res) => __awaiter(void 0, void 0, void 
             message: "Error creating school session",
         });
     }
-});
+};
 exports.createSchoolTeacherByAdmin = createSchoolTeacherByAdmin;
-const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+const createSchoolTeacher = async (req, res) => {
+    var _a;
     try {
         const { schoolID } = req.params;
         const { staffName, gender, salary, staffAddress, role, subjectTitle } = req.body;
         const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
-        const salt = yield bcrypt_1.default.genSalt(10);
-        const hashed = yield bcrypt_1.default.hash(`${staffName.replace(/ /gi, "")}`, salt);
-        const school = yield schoolModel_1.default.findById(schoolID).populate({
+        const salt = await bcrypt_1.default.genSalt(10);
+        const hashed = await bcrypt_1.default.hash(`${staffName.replace(/ /gi, "")}`, salt);
+        const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "subjects",
         });
         const getSubject = school === null || school === void 0 ? void 0 : school.subjects.find((el) => {
@@ -327,7 +318,7 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         if (school && school.schoolName && school.status === "school-admin") {
             // if (getSubject) {
-            const staff = yield staffModel_1.default.create({
+            const staff = await staffModel_1.default.create({
                 schoolIDs: schoolID,
                 staffName,
                 schoolName: school.schoolName,
@@ -339,7 +330,7 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
                 gender,
                 email: `${staffName
                     .replace(/ /gi, "")
-                    .toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
+                    .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
                 enrollmentID,
                 password: hashed,
                 staffAddress,
@@ -372,10 +363,10 @@ const createSchoolTeacher = (req, res) => __awaiter(void 0, void 0, void 0, func
             message: "Error creating teacher",
         });
     }
-});
+};
 exports.createSchoolTeacher = createSchoolTeacher;
-const createBulkTeachers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+const createBulkTeachers = async (req, res) => {
+    var _a;
     try {
         const { schoolID } = req.params;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
@@ -392,19 +383,19 @@ const createBulkTeachers = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 console.log(`The folder '${folderPath}' does not exist.`);
             }
         };
-        const data = yield (0, csvtojson_1.default)().fromFile(req.file.path);
+        const data = await (0, csvtojson_1.default)().fromFile(req.file.path);
         for (let i of data) {
             const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
             console.log("staff: ", i);
             console.log("staff: ", i === null || i === void 0 ? void 0 : i.staffName);
-            const salt = yield bcrypt_1.default.genSalt(10);
-            const hashed = yield bcrypt_1.default.hash(`${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "")}`, salt);
-            const school = yield schoolModel_1.default.findById(schoolID).populate({
+            const salt = await bcrypt_1.default.genSalt(10);
+            const hashed = await bcrypt_1.default.hash(`${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "")}`, salt);
+            const school = await schoolModel_1.default.findById(schoolID).populate({
                 path: "subjects",
             });
             if (school && school.schoolName && school.status === "school-admin") {
                 // if (getSubject) {
-                const staff = yield staffModel_1.default.create({
+                const staff = await staffModel_1.default.create({
                     schoolIDs: schoolID,
                     staffName: i === null || i === void 0 ? void 0 : i.staffName,
                     schoolName: school.schoolName,
@@ -414,7 +405,7 @@ const createBulkTeachers = (req, res) => __awaiter(void 0, void 0, void 0, funct
                     status: "school-teacher",
                     salary: i === null || i === void 0 ? void 0 : i.salary,
                     gender: i === null || i === void 0 ? void 0 : i.gender,
-                    email: `${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "").toLowerCase()}@${(_c = school === null || school === void 0 ? void 0 : school.schoolName) === null || _c === void 0 ? void 0 : _c.replace(/ /gi, "").toLowerCase()}.com`,
+                    email: `${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "").toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
                     enrollmentID,
                     password: hashed,
                     staffAddress: i === null || i === void 0 ? void 0 : i.staffAddress,
@@ -442,23 +433,23 @@ const createBulkTeachers = (req, res) => __awaiter(void 0, void 0, void 0, funct
             status: 404,
         });
     }
-});
+};
 exports.createBulkTeachers = createBulkTeachers;
-const updateStaffName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+const updateStaffName = async (req, res) => {
+    var _a;
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { staffName } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findById(staffID);
+            const staff = await staffModel_1.default.findById(staffID);
             if (staff) {
-                const updatedStaffName = yield staffModel_1.default.findByIdAndUpdate(staff._id, {
+                const updatedStaffName = await staffModel_1.default.findByIdAndUpdate(staff._id, {
                     staffName: staffName,
                     email: `${staffName
                         .replace(/ /gi, "")
-                        .toLowerCase()}@${(_d = school === null || school === void 0 ? void 0 : school.schoolName) === null || _d === void 0 ? void 0 : _d.replace(/ /gi, "").toLowerCase()}.com`,
+                        .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
                 }, { new: true });
                 return res.status(201).json({
                     message: "Staff Name Updated Successfully",
@@ -490,18 +481,18 @@ const updateStaffName = (req, res) => __awaiter(void 0, void 0, void 0, function
             status: 404,
         });
     }
-});
+};
 exports.updateStaffName = updateStaffName;
-const updatePhoneNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updatePhoneNumber = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { phone } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findById(staffID);
+            const staff = await staffModel_1.default.findById(staffID);
             if (staff) {
-                const updatedPhoneNumber = yield staffModel_1.default.findByIdAndUpdate(staff._id, {
+                const updatedPhoneNumber = await staffModel_1.default.findByIdAndUpdate(staff._id, {
                     phone: phone,
                 }, { new: true });
                 return res.status(201).json({
@@ -534,18 +525,18 @@ const updatePhoneNumber = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.updatePhoneNumber = updatePhoneNumber;
-const updateStaffGender = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffGender = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { gender } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findById(staffID);
+            const staff = await staffModel_1.default.findById(staffID);
             if (staff) {
-                const updateStaffGender = yield staffModel_1.default.findByIdAndUpdate(staff._id, {
+                const updateStaffGender = await staffModel_1.default.findByIdAndUpdate(staff._id, {
                     gender: gender,
                 }, { new: true });
                 return res.status(201).json({
@@ -578,18 +569,18 @@ const updateStaffGender = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.updateStaffGender = updateStaffGender;
-const updateStaffAdress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffAdress = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { staffAddress } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findByIdAndUpdate(staffID);
+            const staff = await staffModel_1.default.findByIdAndUpdate(staffID);
             if (staff) {
-                const updateStaffDetails = yield staffModel_1.default.findByIdAndUpdate(staff._id, { staffAddress: staffAddress }, { new: true });
+                const updateStaffDetails = await staffModel_1.default.findByIdAndUpdate(staff._id, { staffAddress: staffAddress }, { new: true });
                 return res.status(201).json({
                     message: "StaffAddress Updated Successfully",
                     data: updateStaffDetails,
@@ -619,19 +610,19 @@ const updateStaffAdress = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
         });
     }
-});
+};
 exports.updateStaffAdress = updateStaffAdress;
 //Update Socials
-const updateFacebookAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateFacebookAccount = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { facebookAcct } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findById(staffID);
+            const staff = await staffModel_1.default.findById(staffID);
             if (staff) {
-                const updateStaffFacebookAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { facebookAcct: facebookAcct }, { new: true });
+                const updateStaffFacebookAcct = await staffModel_1.default.findByIdAndUpdate(staff._id, { facebookAcct: facebookAcct }, { new: true });
                 return res.status(201).json({
                     message: "Staff Facebook Account Updated Successfully",
                     data: updateStaffFacebookAcct,
@@ -661,18 +652,18 @@ const updateFacebookAccount = (req, res) => __awaiter(void 0, void 0, void 0, fu
             },
         });
     }
-});
+};
 exports.updateFacebookAccount = updateFacebookAccount;
-const updateStaffXAcct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffXAcct = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { xAcct } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findById(staffID);
+            const staff = await staffModel_1.default.findById(staffID);
             if (staff) {
-                const updateStaffXAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { xAcct: xAcct }, { new: true });
+                const updateStaffXAcct = await staffModel_1.default.findByIdAndUpdate(staff._id, { xAcct: xAcct }, { new: true });
                 return res.status(201).json({
                     message: "Staff X Acctount Updated Succesfully",
                     data: updateStaffXAcct,
@@ -701,18 +692,18 @@ const updateStaffXAcct = (req, res) => __awaiter(void 0, void 0, void 0, functio
             },
         });
     }
-});
+};
 exports.updateStaffXAcct = updateStaffXAcct;
-const updateStaffInstagramAcct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffInstagramAcct = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { instagramAcct } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findById(staffID);
+            const staff = await staffModel_1.default.findById(staffID);
             if (staff) {
-                const updateStaffInstagramAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { instagramAcct: instagramAcct }, { new: true });
+                const updateStaffInstagramAcct = await staffModel_1.default.findByIdAndUpdate(staff._id, { instagramAcct: instagramAcct }, { new: true });
                 return res.status(201).json({
                     message: "Staff IG Acct Updated Succesfully",
                     data: updateStaffInstagramAcct,
@@ -742,18 +733,18 @@ const updateStaffInstagramAcct = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.updateStaffInstagramAcct = updateStaffInstagramAcct;
-const updateStaffLinkedinAcct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffLinkedinAcct = async (req, res) => {
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
         const { linkedinAcct } = req.body;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findById(staffID);
+            const staff = await staffModel_1.default.findById(staffID);
             if (staff) {
-                const updateStaffLinkedinAcct = yield staffModel_1.default.findByIdAndUpdate(staff._id, { linkedinAcct: linkedinAcct }, { new: true });
+                const updateStaffLinkedinAcct = await staffModel_1.default.findByIdAndUpdate(staff._id, { linkedinAcct: linkedinAcct }, { new: true });
                 return res.status(210).json({
                     message: "Staff Linkedin Updated Successfully",
                     data: updateStaffLinkedinAcct,
@@ -783,13 +774,13 @@ const updateStaffLinkedinAcct = (req, res) => __awaiter(void 0, void 0, void 0, 
             },
         });
     }
-});
+};
 exports.updateStaffLinkedinAcct = updateStaffLinkedinAcct;
 //Update Socials Ends Here
-const readSchooTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSchooTeacher = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        const students = yield schoolModel_1.default.findById(schoolID).populate({
+        const students = await schoolModel_1.default.findById(schoolID).populate({
             path: "staff",
             options: {
                 sort: {
@@ -809,12 +800,12 @@ const readSchooTeacher = (req, res) => __awaiter(void 0, void 0, void 0, functio
             status: 404,
         });
     }
-});
+};
 exports.readSchooTeacher = readSchooTeacher;
-const readTeacherDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readTeacherDetail = async (req, res) => {
     try {
         const { staffID } = req.params;
-        const staff = yield staffModel_1.default.findById(staffID);
+        const staff = await staffModel_1.default.findById(staffID);
         return res.status(200).json({
             message: "satff read successfully",
             data: staff,
@@ -827,13 +818,13 @@ const readTeacherDetail = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.readTeacherDetail = readTeacherDetail;
-const updateTeacherSalary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateTeacherSalary = async (req, res) => {
     try {
         const { staffID } = req.params;
         const { salary } = req.body;
-        const staff = yield staffModel_1.default.findByIdAndUpdate(staffID, {
+        const staff = await staffModel_1.default.findByIdAndUpdate(staffID, {
             salary,
         }, { new: true });
         return res.status(201).json({
@@ -848,9 +839,9 @@ const updateTeacherSalary = (req, res) => __awaiter(void 0, void 0, void 0, func
             status: 404,
         });
     }
-});
+};
 exports.updateTeacherSalary = updateTeacherSalary;
-const logoutTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const logoutTeacher = async (req, res) => {
     try {
         req.session.destroy();
         return res.status(200).json({
@@ -862,15 +853,15 @@ const logoutTeacher = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             message: "Error logging out teacher",
         });
     }
-});
+};
 exports.logoutTeacher = logoutTeacher;
-const updateStaffSignature = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffSignature = async (req, res) => {
     try {
         const { staffID } = req.params;
-        const school = yield staffModel_1.default.findById(staffID);
+        const school = await staffModel_1.default.findById(staffID);
         if (school) {
-            const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
-            const updatedSchool = yield staffModel_1.default.findByIdAndUpdate(staffID, {
+            const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
+            const updatedSchool = await staffModel_1.default.findByIdAndUpdate(staffID, {
                 signature: secure_url,
                 signatureID: public_id,
             }, { new: true });
@@ -891,15 +882,15 @@ const updateStaffSignature = (req, res) => __awaiter(void 0, void 0, void 0, fun
             message: "Error creating user",
         });
     }
-});
+};
 exports.updateStaffSignature = updateStaffSignature;
-const updateStaffAvatar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffAvatar = async (req, res) => {
     try {
         const { staffID } = req.params;
-        const school = yield staffModel_1.default.findById(staffID);
+        const school = await staffModel_1.default.findById(staffID);
         if (school) {
-            const { secure_url, public_id } = yield (0, streamifier_1.streamUpload)(req);
-            const updatedSchool = yield staffModel_1.default.findByIdAndUpdate(staffID, {
+            const { secure_url, public_id } = await (0, streamifier_1.streamUpload)(req);
+            const updatedSchool = await staffModel_1.default.findByIdAndUpdate(staffID, {
                 avatar: secure_url,
                 avatarID: public_id,
             }, { new: true });
@@ -920,25 +911,25 @@ const updateStaffAvatar = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Error creating user",
         });
     }
-});
+};
 exports.updateStaffAvatar = updateStaffAvatar;
-const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStaffActiveness = async (req, res) => {
     try {
         const { studentID } = req.params;
         const { teacherName } = req.body;
-        const student = yield studentModel_1.default.findById(studentID);
-        const teacher = yield staffModel_1.default.findOne({ staffName: teacherName });
+        const student = await studentModel_1.default.findById(studentID);
+        const teacher = await staffModel_1.default.findOne({ staffName: teacherName });
         if (teacher && student) {
-            const updatedSchool = yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
+            const updatedSchool = await staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
                 activeStatus: true,
             }, { new: true });
             const timing = 40 * 60 * 1000;
-            const job = new cron_1.CronJob("*/2 * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
-                yield staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
+            const job = new cron_1.CronJob("*/2 * * * *", async () => {
+                await staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
                     activeStatus: false,
                 }, { new: true });
                 job.stop();
-            }), null, true);
+            }, null, true);
             // const taskId = setTimeout(async () => {
             //   await staffModel.findByIdAndUpdate(
             //     teacher?._id,
@@ -966,16 +957,16 @@ const updateStaffActiveness = (req, res) => __awaiter(void 0, void 0, void 0, fu
             message: "Error creating user",
         });
     }
-});
+};
 exports.updateStaffActiveness = updateStaffActiveness;
-const deleteStaff = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+const deleteStaff = async (req, res) => {
+    var _a;
     try {
         const { schoolID, staffID } = req.params;
-        const school = yield schoolModel_1.default.findById(schoolID);
+        const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const staff = yield staffModel_1.default.findByIdAndDelete(staffID);
-            (_e = school === null || school === void 0 ? void 0 : school.staff) === null || _e === void 0 ? void 0 : _e.pull(new mongoose_1.Types.ObjectId(staffID));
+            const staff = await staffModel_1.default.findByIdAndDelete(staffID);
+            (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(staffID));
             school.save();
             return res.status(200).json({
                 message: "Successfully Deleted Staff",
@@ -997,5 +988,5 @@ const deleteStaff = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             data: error.message,
         });
     }
-});
+};
 exports.deleteStaff = deleteStaff;

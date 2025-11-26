@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -20,7 +11,7 @@ const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const performanceModel_1 = __importDefault(require("../model/performanceModel"));
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
 const midTestModel_1 = __importDefault(require("../model/midTestModel"));
-const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createQuizPerformance = async (req, res) => {
     var _a;
     try {
         const { studentID, quizID, subjectID } = req.params;
@@ -31,17 +22,17 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 status: 400,
             });
         }
-        const studentInfo = yield studentModel_1.default.findById(studentID);
+        const studentInfo = await studentModel_1.default.findById(studentID);
         if (!studentInfo) {
             return res
                 .status(404)
                 .json({ message: "Student not found", status: 404 });
         }
-        const quizData = yield quizModel_1.default.findById(quizID);
+        const quizData = await quizModel_1.default.findById(quizID);
         if (!quizData) {
             return res.status(404).json({ message: "Exam not found", status: 404 });
         }
-        const subject = yield subjectModel_1.default.findById(subjectID);
+        const subject = await subjectModel_1.default.findById(subjectID);
         if (!subject) {
             return res
                 .status(404)
@@ -57,13 +48,13 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             ? Number(((studentScore / questionCount) * 100).toFixed(2))
             : 0;
         // count existing attempts for this student and this quiz
-        const existingAttempts = yield performanceModel_1.default.countDocuments({
+        const existingAttempts = await performanceModel_1.default.countDocuments({
             student: studentID,
             quizID,
         });
         const attemptNumber = existingAttempts + 1;
         // create performance document
-        const performanceDoc = yield performanceModel_1.default.create({
+        const performanceDoc = await performanceModel_1.default.create({
             remark,
             subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
             studentScore,
@@ -83,8 +74,8 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
         // push performance id to examination, student and subject safely
         const perfId = new mongoose_1.Types.ObjectId(performanceDoc._id);
-        const ensureAndPush = (Model, id) => __awaiter(void 0, void 0, void 0, function* () {
-            const doc = yield Model.findById(id).select("performance");
+        const ensureAndPush = async (Model, id) => {
+            const doc = await Model.findById(id).select("performance");
             if (!doc)
                 return;
             if (!Array.isArray(doc.performance)) {
@@ -92,15 +83,15 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 doc.performance = [];
             }
             doc.performance.push(perfId);
-            yield doc.save();
-        });
-        yield Promise.all([
+            await doc.save();
+        };
+        await Promise.all([
             ensureAndPush(examinationModel_1.default, quizID),
             ensureAndPush(studentModel_1.default, studentID),
             ensureAndPush(subjectModel_1.default, subjectID),
         ]);
         // Recalculate student's totalPerformance from performanceModel (source of truth)
-        const performances = yield performanceModel_1.default
+        const performances = await performanceModel_1.default
             .find({ student: studentID })
             .select("performanceRating")
             .lean();
@@ -112,7 +103,7 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const totalSum = ratings.reduce((a, b) => a + b, 0);
         const count = ratings.length;
         const avg = count > 0 ? totalSum / count : 0;
-        yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg });
+        await studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg });
         return res.status(201).json({
             message: "exam performance created successfully",
             data: performanceDoc,
@@ -126,12 +117,12 @@ const createQuizPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             data: error === null || error === void 0 ? void 0 : error.message,
         });
     }
-});
+};
 exports.createQuizPerformance = createQuizPerformance;
-const readSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectQuizResult = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -151,12 +142,12 @@ const readSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 404,
         });
     }
-});
+};
 exports.readSubjectQuizResult = readSubjectQuizResult;
-const updateSubjectQuizResultRecorded = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateSubjectQuizResultRecorded = async (req, res) => {
     try {
         const { performanceID } = req.params;
-        const subject = yield performanceModel_1.default.findByIdAndUpdate(performanceID, {
+        const subject = await performanceModel_1.default.findByIdAndUpdate(performanceID, {
             quizRecorded: true,
         }, { new: true });
         return res.status(201).json({
@@ -171,12 +162,12 @@ const updateSubjectQuizResultRecorded = (req, res) => __awaiter(void 0, void 0, 
             status: 404,
         });
     }
-});
+};
 exports.updateSubjectQuizResultRecorded = updateSubjectQuizResultRecorded;
-const updateQuitSubjectQuizResultRecorded = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateQuitSubjectQuizResultRecorded = async (req, res) => {
     try {
         const { performanceID } = req.params;
-        const subject = yield performanceModel_1.default.findByIdAndUpdate(performanceID, {
+        const subject = await performanceModel_1.default.findByIdAndUpdate(performanceID, {
             quizRecorded: false,
         }, { new: true });
         return res.status(201).json({
@@ -191,14 +182,14 @@ const updateQuitSubjectQuizResultRecorded = (req, res) => __awaiter(void 0, void
             status: 404,
         });
     }
-});
+};
 exports.updateQuitSubjectQuizResultRecorded = updateQuitSubjectQuizResultRecorded;
-const readOneSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+const readOneSubjectQuizResult = async (req, res) => {
+    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
-        const quiz = yield quizModel_1.default.findById(quizID);
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const quiz = await quizModel_1.default.findById(quizID);
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "performance",
             options: { sort: { time: 1 } },
         });
@@ -208,9 +199,9 @@ const readOneSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0,
                 status: 404,
             });
         }
-        const idCompare = (_b = subject === null || subject === void 0 ? void 0 : subject.quiz) === null || _b === void 0 ? void 0 : _b.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.quiz) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_c = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _c === void 0 ? void 0 : _c.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -230,12 +221,12 @@ const readOneSubjectQuizResult = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 500,
         });
     }
-});
+};
 exports.readOneSubjectQuizResult = readOneSubjectQuizResult;
-const readStudentQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readStudentQuizResult = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const subject = yield studentModel_1.default.findById(studentID).populate({
+        const subject = await studentModel_1.default.findById(studentID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -255,12 +246,12 @@ const readStudentQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 404,
         });
     }
-});
+};
 exports.readStudentQuizResult = readStudentQuizResult;
-const readQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readQuizResult = async (req, res) => {
     try {
         const { quizID } = req.params;
-        const subject = yield quizModel_1.default.findById(quizID).populate({
+        const subject = await quizModel_1.default.findById(quizID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -280,26 +271,26 @@ const readQuizResult = (req, res) => __awaiter(void 0, void 0, void 0, function*
             status: 404,
         });
     }
-});
+};
 exports.readQuizResult = readQuizResult;
 // Examination
-const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g;
+const createExamPerformance = async (req, res) => {
+    var _a, _b, _c, _d;
     try {
         const { studentID, quizID, subjectID } = req.params;
         const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, status, } = req.body;
-        const studentInfo = yield studentModel_1.default
+        const studentInfo = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "performance" });
-        const quizData = yield examinationModel_1.default.findById(quizID);
-        const subject = yield subjectModel_1.default.findById(subjectID);
+        const quizData = await examinationModel_1.default.findById(quizID);
+        const subject = await subjectModel_1.default.findById(subjectID);
         if (quizData) {
-            const existingAttempts = yield performanceModel_1.default.countDocuments({
+            const existingAttempts = await performanceModel_1.default.countDocuments({
                 student: studentID,
                 quizID,
             });
             const attemptNumber = existingAttempts + 1;
-            const quizes = yield performanceModel_1.default.create({
+            const quizes = await performanceModel_1.default.create({
                 remark,
                 subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
                 studentScore,
@@ -308,7 +299,7 @@ const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 markPerQuestion,
                 quizDone: true,
                 status,
-                performanceRating: parseInt(((studentScore / ((_d = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _d === void 0 ? void 0 : _d.question.length)) * 100).toFixed(2)),
+                performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
                 attemptNumber,
                 className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
                 quizID: quizID,
@@ -317,18 +308,18 @@ const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
                 student: studentID,
             });
-            (_e = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _e === void 0 ? void 0 : _e.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (quizData === null || quizData === void 0 ? void 0 : quizData.save());
-            (_f = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _f === void 0 ? void 0 : _f.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save());
-            (_g = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _g === void 0 ? void 0 : _g.push(new mongoose_1.Types.ObjectId(quizes._id));
-            yield (subject === null || subject === void 0 ? void 0 : subject.save());
-            const getStudent = yield studentModel_1.default.findByIdAndUpdate(studentID, { $push: { performance: new mongoose_1.Types.ObjectId(quizes._id) } }, { new: true });
+            (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await (quizData === null || quizData === void 0 ? void 0 : quizData.save());
+            (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await (studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save());
+            (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await (subject === null || subject === void 0 ? void 0 : subject.save());
+            const getStudent = await studentModel_1.default.findByIdAndUpdate(studentID, { $push: { performance: new mongoose_1.Types.ObjectId(quizes._id) } }, { new: true });
             const ratings = [];
             const totalSum = ratings.reduce((a, b) => a + b, 0);
             const count = ratings.length;
             const avg = count > 0 ? totalSum / count : 0;
-            yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
+            await studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
             return res.status(201).json({
                 message: "quiz entry created successfully",
                 data: quizes,
@@ -349,7 +340,7 @@ const createExamPerformance = (req, res) => __awaiter(void 0, void 0, void 0, fu
             data: error.message,
         });
     }
-});
+};
 exports.createExamPerformance = createExamPerformance;
 // Mid Test
 // export const createMidTestPerformance = async (
@@ -449,8 +440,8 @@ exports.createExamPerformance = createExamPerformance;
 //     });
 //   }
 // };
-const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h;
+const createMidTestPerformance = async (req, res) => {
+    var _a;
     try {
         const { studentID, quizID, subjectID } = req.params;
         const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, status, } = req.body;
@@ -468,7 +459,7 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Find required documents
-        const studentInfo = yield studentModel_1.default
+        const studentInfo = await studentModel_1.default
             .findById(studentID)
             .populate({ path: "performance" });
         if (!studentInfo) {
@@ -477,14 +468,14 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
                 status: 404,
             });
         }
-        const quizData = yield midTestModel_1.default.findById(quizID);
+        const quizData = await midTestModel_1.default.findById(quizID);
         if (!quizData) {
             return res.status(404).json({
                 message: "Mid test not found",
                 status: 404,
             });
         }
-        const subject = yield subjectModel_1.default.findById(subjectID);
+        const subject = await subjectModel_1.default.findById(subjectID);
         if (!subject) {
             return res.status(404).json({
                 message: "Subject not found",
@@ -492,7 +483,7 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Calculate performance rating safely
-        const questionCount = Array.isArray((_h = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _h === void 0 ? void 0 : _h.question)
+        const questionCount = Array.isArray((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question)
             ? quizData.quiz.question.length
             : typeof (quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === "number"
                 ? quizData.quiz
@@ -511,12 +502,12 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Count existing attempts
-        const existingAttempts = yield performanceModel_1.default.countDocuments({
+        const existingAttempts = await performanceModel_1.default.countDocuments({
             student: studentID,
             quizID,
         });
         // Create performance document
-        const quizes = yield performanceModel_1.default.create({
+        const quizes = await performanceModel_1.default.create({
             remark,
             subjectTitle: quizData.subjectTitle || "",
             studentScore,
@@ -536,13 +527,13 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
             student: studentID,
         });
         // Update references atomically
-        yield Promise.all([
+        await Promise.all([
             midTestModel_1.default.findByIdAndUpdate(quizID, { $push: { performance: new mongoose_1.Types.ObjectId(quizes._id) } }, { new: true }),
             studentModel_1.default.findByIdAndUpdate(studentID, { $push: { performance: new mongoose_1.Types.ObjectId(quizes._id) } }, { new: true }),
             subjectModel_1.default.findByIdAndUpdate(subjectID, { $push: { performance: new mongoose_1.Types.ObjectId(quizes._id) } }, { new: true }),
         ]);
         // Recalculate student's performance
-        const performances = yield performanceModel_1.default
+        const performances = await performanceModel_1.default
             .find({ student: studentID })
             .select("performanceRating");
         const ratings = performances
@@ -553,7 +544,7 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
         const avg = ratings.length > 0
             ? ratings.reduce((a, b) => a + b, 0) / ratings.length
             : 0;
-        yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
+        await studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
         return res.status(201).json({
             message: "Mid test performance created successfully",
             data: quizes,
@@ -568,12 +559,12 @@ const createMidTestPerformance = (req, res) => __awaiter(void 0, void 0, void 0,
             data: error.message,
         });
     }
-});
+};
 exports.createMidTestPerformance = createMidTestPerformance;
-const readSubjectMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectMidTestResult = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -593,12 +584,12 @@ const readSubjectMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.readSubjectMidTestResult = readSubjectMidTestResult;
-const readSubjectExamResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readSubjectExamResult = async (req, res) => {
     try {
         const { subjectID } = req.params;
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -618,14 +609,14 @@ const readSubjectExamResult = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 404,
         });
     }
-});
+};
 exports.readSubjectExamResult = readSubjectExamResult;
-const readOneSubjectExamResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j, _k;
+const readOneSubjectExamResult = async (req, res) => {
+    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
-        const quiz = yield examinationModel_1.default.findById(quizID);
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const quiz = await examinationModel_1.default.findById(quizID);
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "performance",
             options: { sort: { time: 1 } },
         });
@@ -635,9 +626,9 @@ const readOneSubjectExamResult = (req, res) => __awaiter(void 0, void 0, void 0,
                 status: 404,
             });
         }
-        const idCompare = (_j = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _j === void 0 ? void 0 : _j.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_k = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _k === void 0 ? void 0 : _k.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -657,12 +648,12 @@ const readOneSubjectExamResult = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 500,
         });
     }
-});
+};
 exports.readOneSubjectExamResult = readOneSubjectExamResult;
-const readStudentExamResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readStudentExamResult = async (req, res) => {
     try {
         const { studentID } = req.params;
-        const subject = yield studentModel_1.default.findById(studentID).populate({
+        const subject = await studentModel_1.default.findById(studentID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -682,12 +673,12 @@ const readStudentExamResult = (req, res) => __awaiter(void 0, void 0, void 0, fu
             status: 404,
         });
     }
-});
+};
 exports.readStudentExamResult = readStudentExamResult;
-const readExamResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readExamResult = async (req, res) => {
     try {
         const { quizID } = req.params;
-        const subject = yield examinationModel_1.default.findById(quizID).populate({
+        const subject = await examinationModel_1.default.findById(quizID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -707,14 +698,14 @@ const readExamResult = (req, res) => __awaiter(void 0, void 0, void 0, function*
             status: 404,
         });
     }
-});
+};
 exports.readExamResult = readExamResult;
-const readOneSubjectMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l, _m;
+const readOneSubjectMidTestResult = async (req, res) => {
+    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
-        const quiz = yield midTestModel_1.default.findById(quizID);
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const quiz = await midTestModel_1.default.findById(quizID);
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "performance",
             options: { sort: { time: 1 } },
         });
@@ -724,9 +715,9 @@ const readOneSubjectMidTestResult = (req, res) => __awaiter(void 0, void 0, void
                 status: 404,
             });
         }
-        const idCompare = (_l = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _l === void 0 ? void 0 : _l.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_m = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _m === void 0 ? void 0 : _m.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -746,13 +737,13 @@ const readOneSubjectMidTestResult = (req, res) => __awaiter(void 0, void 0, void
             status: 500,
         });
     }
-});
+};
 exports.readOneSubjectMidTestResult = readOneSubjectMidTestResult;
-const readStudentMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _o;
+const readStudentMidTestResult = async (req, res) => {
+    var _a;
     try {
         const { studentID } = req.params;
-        const subject = yield studentModel_1.default.findById(studentID).populate({
+        const subject = await studentModel_1.default.findById(studentID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -760,7 +751,7 @@ const readStudentMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0,
                 },
             },
         });
-        const x = (_o = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _o === void 0 ? void 0 : _o.filter((el) => el.status === "midTest");
+        const x = (_a = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _a === void 0 ? void 0 : _a.filter((el) => el.status === "midTest");
         return res.status(201).json({
             message: "subject quiz performance read successfully",
             data: x,
@@ -773,12 +764,12 @@ const readStudentMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0,
             status: 404,
         });
     }
-});
+};
 exports.readStudentMidTestResult = readStudentMidTestResult;
-const readMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const readMidTestResult = async (req, res) => {
     try {
         const { quizID } = req.params;
-        const subject = yield midTestModel_1.default.findById(quizID).populate({
+        const subject = await midTestModel_1.default.findById(quizID).populate({
             path: "performance",
             options: {
                 sort: {
@@ -798,14 +789,14 @@ const readMidTestResult = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 404,
         });
     }
-});
+};
 exports.readMidTestResult = readMidTestResult;
-const readOneSubjectMidTestResultPreformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _p, _q;
+const readOneSubjectMidTestResultPreformance = async (req, res) => {
+    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
-        const quiz = yield midTestModel_1.default.findById(quizID);
-        const subject = yield subjectModel_1.default.findById(subjectID).populate({
+        const quiz = await midTestModel_1.default.findById(quizID);
+        const subject = await subjectModel_1.default.findById(subjectID).populate({
             path: "performance",
             options: { sort: { time: 1 } },
         });
@@ -815,9 +806,9 @@ const readOneSubjectMidTestResultPreformance = (req, res) => __awaiter(void 0, v
                 status: 404,
             });
         }
-        const idCompare = (_p = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _p === void 0 ? void 0 : _p.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_q = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _q === void 0 ? void 0 : _q.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -837,10 +828,10 @@ const readOneSubjectMidTestResultPreformance = (req, res) => __awaiter(void 0, v
             status: 500,
         });
     }
-});
+};
 exports.readOneSubjectMidTestResultPreformance = readOneSubjectMidTestResultPreformance;
-const deletePerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _r;
+const deletePerformance = async (req, res) => {
+    var _a;
     try {
         const { performanceID } = req.params;
         if (!performanceID) {
@@ -848,7 +839,7 @@ const deletePerformance = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 .status(400)
                 .json({ message: "performanceID is required", status: 400 });
         }
-        const perf = yield performanceModel_1.default.findById(performanceID);
+        const perf = await performanceModel_1.default.findById(performanceID);
         if (!perf) {
             return res
                 .status(404)
@@ -857,22 +848,22 @@ const deletePerformance = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const studentID = perf.student;
         const quizID = perf.quizID;
         // Delete the performance document
-        yield performanceModel_1.default.findByIdAndDelete(performanceID);
+        await performanceModel_1.default.findByIdAndDelete(performanceID);
         // Remove references from possible quiz/exam/midTest entries
-        yield quizModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
-        yield examinationModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
-        yield midTestModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        await quizModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        await examinationModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        await midTestModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
         // Remove from subject and student
-        yield subjectModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
-        yield studentModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        await subjectModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
+        await studentModel_1.default.updateMany({ performance: performanceID }, { $pull: { performance: performanceID } });
         // Recalculate student's totalPerformance
         if (studentID) {
-            const student = yield studentModel_1.default
+            const student = await studentModel_1.default
                 .findById(studentID)
                 .populate({ path: "performance" });
             if (student) {
                 const ratings = [];
-                (_r = student.performance) === null || _r === void 0 ? void 0 : _r.forEach((el) => {
+                (_a = student.performance) === null || _a === void 0 ? void 0 : _a.forEach((el) => {
                     if (typeof el.performanceRating === "number" &&
                         !isNaN(el.performanceRating)) {
                         ratings.push(el.performanceRating);
@@ -881,7 +872,7 @@ const deletePerformance = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 const totalSum = ratings.reduce((a, b) => a + b, 0);
                 const count = ratings.length;
                 const avg = count > 0 ? totalSum / count : 0;
-                yield studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
+                await studentModel_1.default.findByIdAndUpdate(studentID, { totalPerformance: avg }, { new: true });
             }
         }
         return res
@@ -897,5 +888,5 @@ const deletePerformance = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: 500,
         });
     }
-});
+};
 exports.deletePerformance = deletePerformance;
