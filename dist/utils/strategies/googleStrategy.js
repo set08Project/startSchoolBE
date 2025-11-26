@@ -22,14 +22,14 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
     //   "https://startschoolbe.onrender.com/api/auth/google/callback",
 }, async (accessToken, refreshToken, profile, done) => {
     const user = await schoolModel_1.default.findOne({
-        email: profile === null || profile === void 0 ? void 0 : profile.emails[0].value,
+        email: profile?.emails[0].value,
     });
     if (user) {
         return done(null, user);
     }
     else {
         await schoolModel_1.default.create({
-            email: profile === null || profile === void 0 ? void 0 : profile.emails[0].value,
+            email: profile?.emails[0].value,
             verify: true,
         });
         return done(null, user);

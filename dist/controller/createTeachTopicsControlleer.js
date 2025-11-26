@@ -23,8 +23,8 @@ const createTeachSubjectTopic = async (req, res) => {
             topicImage,
             keyPoints,
         });
-        getSubject === null || getSubject === void 0 ? void 0 : getSubject.topics.push(new mongoose_1.Types.ObjectId(teachSubject._id));
-        await (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
+        getSubject?.topics.push(new mongoose_1.Types.ObjectId(teachSubject._id));
+        await getSubject?.save();
         return res.status(201).json({
             message: "teach subject created successfully",
             data: teachSubject,
@@ -104,14 +104,13 @@ const getOneTeachSubjectTopicNow = async (req, res) => {
 };
 exports.getOneTeachSubjectTopicNow = getOneTeachSubjectTopicNow;
 const deleteOneTeachSubjectTopic = async (req, res) => {
-    var _a;
     try {
         const { teachSubjectTopicID, subjectID } = req.params;
         const getSubject = await teachSubjectModel_1.default.findById(subjectID);
         await teachSubjectTopics_1.default.findByIdAndDelete(teachSubjectTopicID);
         const teachSubject = await teachSubjectTopics_1.default.findByIdAndDelete(teachSubjectTopicID);
-        (_a = getSubject === null || getSubject === void 0 ? void 0 : getSubject.topics) === null || _a === void 0 ? void 0 : _a.pull(subjectID);
-        await (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
+        getSubject?.topics?.pull(subjectID);
+        await getSubject?.save();
         return res.status(201).json({
             message: "teach subject deleted successfully",
             data: teachSubject,

@@ -29,7 +29,7 @@ const createClassTimeTable = async (req, res) => {
                 day,
                 time,
                 CR: classRoom.className,
-                subjectTeacherID: isSubjectValid ? findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher._id : undefined,
+                subjectTeacherID: isSubjectValid ? findTeacher?._id : undefined,
             });
             classRoom.timeTable.push(new mongoose_1.Types.ObjectId(newTimeTable._id));
             await classRoom.save();
@@ -105,7 +105,6 @@ const readTeacherSchedule = async (req, res) => {
 };
 exports.readTeacherSchedule = readTeacherSchedule;
 const readTeacherAndTimeTableSubject = async (req, res) => {
-    var _a;
     try {
         const { tableID, schoolID, classID } = req.params;
         const { subject } = req.body;
@@ -127,15 +126,15 @@ const readTeacherAndTimeTableSubject = async (req, res) => {
                 status: 404,
             });
         }
-        const oldTeacher = await staffModel_1.default.findById(time === null || time === void 0 ? void 0 : time.subjectTeacherID);
+        const oldTeacher = await staffModel_1.default.findById(time?.subjectTeacherID);
         const newTeacher = await staffModel_1.default.findById(classRoom.teacherID);
-        const updateSubject = await timetableModel_1.default.findByIdAndUpdate(tableID, { subject, subjectTeacherID: newTeacher === null || newTeacher === void 0 ? void 0 : newTeacher._id }, { new: true });
+        const updateSubject = await timetableModel_1.default.findByIdAndUpdate(tableID, { subject, subjectTeacherID: newTeacher?._id }, { new: true });
         if (oldTeacher) {
-            (_a = oldTeacher === null || oldTeacher === void 0 ? void 0 : oldTeacher.schedule) === null || _a === void 0 ? void 0 : _a.pull(tableID);
+            oldTeacher?.schedule?.pull(tableID);
             await oldTeacher.save();
         }
         if (newTeacher) {
-            newTeacher.schedule.push(new mongoose_1.Types.ObjectId(updateSubject === null || updateSubject === void 0 ? void 0 : updateSubject._id));
+            newTeacher.schedule.push(new mongoose_1.Types.ObjectId(updateSubject?._id));
             await newTeacher.save();
         }
         return res.status(200).json({

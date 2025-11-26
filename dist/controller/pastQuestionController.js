@@ -21,8 +21,8 @@ const createPastQuestionHistory = async (req, res) => {
                 score,
                 chosenAnswers,
             });
-            student.pastQuestionHistory.push(new mongoose_1.Types.ObjectId(history === null || history === void 0 ? void 0 : history._id));
-            student === null || student === void 0 ? void 0 : student.save();
+            student.pastQuestionHistory.push(new mongoose_1.Types.ObjectId(history?._id));
+            student?.save();
             return res.status(201).json({
                 message: "lesson note created",
                 data: history,
@@ -53,7 +53,7 @@ const getOneStudentHistory = async (req, res) => {
             .populate({ path: "pastQuestionHistory" });
         return res.status(201).json({
             message: "lesson note created",
-            data: student === null || student === void 0 ? void 0 : student.pastQuestionHistory,
+            data: student?.pastQuestionHistory,
             status: 201,
         });
     }

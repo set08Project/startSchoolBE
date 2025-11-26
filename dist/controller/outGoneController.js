@@ -21,14 +21,14 @@ const createSchoolOutGoneStudent = async (req, res) => {
             });
         }
         if (school && school.schoolName && school.status === "school-admin") {
-            const checkFirst = (school === null || school === void 0 ? void 0 : school.students).some((el) => el.toString() === `${studentID}`);
+            const checkFirst = (school?.students).some((el) => el.toString() === `${studentID}`);
             if (checkFirst) {
                 // Create outgone student record
                 const outGoneRecord = await outGoneStudentModel_1.default.create({
-                    studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                    studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
                     student: studentID,
                     schoolInfo: schoolID,
-                    classAssigned: student === null || student === void 0 ? void 0 : student.classAssigned,
+                    classAssigned: student?.classAssigned,
                 });
                 // Remove from current class if they're in one
                 if (student.presentClassID) {

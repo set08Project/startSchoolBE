@@ -22,20 +22,20 @@ const loginTeacher = async (req, res) => {
         const { email, password } = req.body;
         const getTeacher = await staffModel_1.default.findOne({ email });
         const school = await schoolModel_1.default.findOne({
-            schoolName: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName,
+            schoolName: getTeacher?.schoolName,
         });
-        if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName)) {
+        if (school?.schoolName && getTeacher?.schoolName) {
             if (school.verify) {
                 const token = jsonwebtoken_1.default.sign({ status: school.status }, "teacher", {
                     expiresIn: "1d",
                 });
-                const passed = await bcrypt_1.default.compare(password, getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.password);
+                const passed = await bcrypt_1.default.compare(password, getTeacher?.password);
                 if (passed) {
                     req.session.isAuth = true;
                     req.session.isSchoolID = getTeacher._id;
                     return res.status(201).json({
                         message: "welcome back",
-                        user: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.status,
+                        user: getTeacher?.status,
                         data: token,
                         id: req.session.isSchoolID,
                         status: 201,
@@ -77,9 +77,9 @@ const loginStaffWithToken = async (req, res) => {
             enrollmentID: token,
         });
         const school = await schoolModel_1.default.findOne({
-            schoolName: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName,
+            schoolName: getTeacher?.schoolName,
         });
-        if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName)) {
+        if (school?.schoolName && getTeacher?.schoolName) {
             if (school.verify) {
                 const token = jsonwebtoken_1.default.sign({ status: school.status }, "student", {
                     expiresIn: "1d",
@@ -88,7 +88,7 @@ const loginStaffWithToken = async (req, res) => {
                 req.session.isSchoolID = getTeacher._id;
                 return res.status(201).json({
                     message: "welcome back",
-                    user: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.status,
+                    user: getTeacher?.status,
                     data: token,
                     id: req.session.isSchoolID,
                     status: 201,
@@ -134,7 +134,6 @@ const readTeacherCookie = async (req, res) => {
 };
 exports.readTeacherCookie = readTeacherCookie;
 const createSchoolPrincipal = async (req, res) => {
-    var _a;
     try {
         const { schoolID } = req.params;
         const { staffName, staffAddress, assignedSubject } = req.body;
@@ -152,7 +151,9 @@ const createSchoolPrincipal = async (req, res) => {
                 status: "school-teacher",
                 email: `${staffName
                     .replace(/ /gi, "")
-                    .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                    .toLowerCase()}@${school?.schoolName
+                    ?.replace(/ /gi, "")
+                    .toLowerCase()}.com`,
                 enrollmentID,
                 password: hashed,
                 staffAddress,
@@ -214,7 +215,7 @@ const createSchoolTeacherByPrincipal = async (req, res) => {
         const { staffID } = req.params;
         const { staffName } = req.body;
         const staff = await staffModel_1.default.findById(staffID);
-        const school = await schoolModel_1.default.findOne({ schoolName: staff === null || staff === void 0 ? void 0 : staff.schoolName });
+        const school = await schoolModel_1.default.findOne({ schoolName: staff?.schoolName });
         if (staff && staff.schoolName && staff.staffRole === "principal") {
             const newStaff = await staffModel_1.default.create({
                 staffName,
@@ -245,7 +246,7 @@ const createSchoolTeacherByVicePrincipal = async (req, res) => {
         const { staffID } = req.params;
         const { staffName } = req.body;
         const staff = await staffModel_1.default.findById(staffID);
-        const school = await schoolModel_1.default.findOne({ schoolName: staff === null || staff === void 0 ? void 0 : staff.schoolName });
+        const school = await schoolModel_1.default.findOne({ schoolName: staff?.schoolName });
         if (staff && staff.schoolName && staff.staffRole === "vice principal") {
             const newStaff = await staffModel_1.default.create({
                 staffName,
@@ -303,7 +304,6 @@ const createSchoolTeacherByAdmin = async (req, res) => {
 };
 exports.createSchoolTeacherByAdmin = createSchoolTeacherByAdmin;
 const createSchoolTeacher = async (req, res) => {
-    var _a;
     try {
         const { schoolID } = req.params;
         const { staffName, gender, salary, staffAddress, role, subjectTitle } = req.body;
@@ -313,7 +313,7 @@ const createSchoolTeacher = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "subjects",
         });
-        const getSubject = school === null || school === void 0 ? void 0 : school.subjects.find((el) => {
+        const getSubject = school?.subjects.find((el) => {
             return el.subjectTitle === subjectTitle;
         });
         if (school && school.schoolName && school.status === "school-admin") {
@@ -330,7 +330,9 @@ const createSchoolTeacher = async (req, res) => {
                 gender,
                 email: `${staffName
                     .replace(/ /gi, "")
-                    .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                    .toLowerCase()}@${school?.schoolName
+                    ?.replace(/ /gi, "")
+                    .toLowerCase()}.com`,
                 enrollmentID,
                 password: hashed,
                 staffAddress,
@@ -366,7 +368,6 @@ const createSchoolTeacher = async (req, res) => {
 };
 exports.createSchoolTeacher = createSchoolTeacher;
 const createBulkTeachers = async (req, res) => {
-    var _a;
     try {
         const { schoolID } = req.params;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
@@ -387,9 +388,9 @@ const createBulkTeachers = async (req, res) => {
         for (let i of data) {
             const enrollmentID = crypto_1.default.randomBytes(3).toString("hex");
             console.log("staff: ", i);
-            console.log("staff: ", i === null || i === void 0 ? void 0 : i.staffName);
+            console.log("staff: ", i?.staffName);
             const salt = await bcrypt_1.default.genSalt(10);
-            const hashed = await bcrypt_1.default.hash(`${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "")}`, salt);
+            const hashed = await bcrypt_1.default.hash(`${i?.staffName.replace(/ /gi, "")}`, salt);
             const school = await schoolModel_1.default.findById(schoolID).populate({
                 path: "subjects",
             });
@@ -397,18 +398,22 @@ const createBulkTeachers = async (req, res) => {
                 // if (getSubject) {
                 const staff = await staffModel_1.default.create({
                     schoolIDs: schoolID,
-                    staffName: i === null || i === void 0 ? void 0 : i.staffName,
+                    staffName: i?.staffName,
                     schoolName: school.schoolName,
                     staffRole: enums_1.staffDuty.TEACHER,
                     // subjectAssigned: [{ title: subjectTitle, id: getSubject._id }],
-                    role: i === null || i === void 0 ? void 0 : i.role,
+                    role: i?.role,
                     status: "school-teacher",
-                    salary: i === null || i === void 0 ? void 0 : i.salary,
-                    gender: i === null || i === void 0 ? void 0 : i.gender,
-                    email: `${i === null || i === void 0 ? void 0 : i.staffName.replace(/ /gi, "").toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                    salary: i?.salary,
+                    gender: i?.gender,
+                    email: `${i?.staffName
+                        .replace(/ /gi, "")
+                        .toLowerCase()}@${school?.schoolName
+                        ?.replace(/ /gi, "")
+                        .toLowerCase()}.com`,
                     enrollmentID,
                     password: hashed,
-                    staffAddress: i === null || i === void 0 ? void 0 : i.staffAddress,
+                    staffAddress: i?.staffAddress,
                 });
                 school.staff.push(new mongoose_1.Types.ObjectId(staff._id));
                 school.save();
@@ -436,7 +441,6 @@ const createBulkTeachers = async (req, res) => {
 };
 exports.createBulkTeachers = createBulkTeachers;
 const updateStaffName = async (req, res) => {
-    var _a;
     try {
         const { schoolID } = req.params;
         const { staffID } = req.params;
@@ -449,7 +453,9 @@ const updateStaffName = async (req, res) => {
                     staffName: staffName,
                     email: `${staffName
                         .replace(/ /gi, "")
-                        .toLowerCase()}@${(_a = school === null || school === void 0 ? void 0 : school.schoolName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}.com`,
+                        .toLowerCase()}@${school?.schoolName
+                        ?.replace(/ /gi, "")
+                        .toLowerCase()}.com`,
                 }, { new: true });
                 return res.status(201).json({
                     message: "Staff Name Updated Successfully",
@@ -920,12 +926,12 @@ const updateStaffActiveness = async (req, res) => {
         const student = await studentModel_1.default.findById(studentID);
         const teacher = await staffModel_1.default.findOne({ staffName: teacherName });
         if (teacher && student) {
-            const updatedSchool = await staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
+            const updatedSchool = await staffModel_1.default.findByIdAndUpdate(teacher?._id, {
                 activeStatus: true,
             }, { new: true });
             const timing = 40 * 60 * 1000;
             const job = new cron_1.CronJob("*/2 * * * *", async () => {
-                await staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
+                await staffModel_1.default.findByIdAndUpdate(teacher?._id, {
                     activeStatus: false,
                 }, { new: true });
                 job.stop();
@@ -960,13 +966,12 @@ const updateStaffActiveness = async (req, res) => {
 };
 exports.updateStaffActiveness = updateStaffActiveness;
 const deleteStaff = async (req, res) => {
-    var _a;
     try {
         const { schoolID, staffID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
             const staff = await staffModel_1.default.findByIdAndDelete(staffID);
-            (_a = school === null || school === void 0 ? void 0 : school.staff) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(staffID));
+            school?.staff?.pull(new mongoose_1.Types.ObjectId(staffID));
             school.save();
             return res.status(200).json({
                 message: "Successfully Deleted Staff",

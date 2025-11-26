@@ -18,20 +18,20 @@ const createSubjectAssignment = async (req, res) => {
         const { assignmentTopic, assignmentDetails, assignmentDeadline } = req.body;
         const classRoom = await classroomModel_1.default.findById(classID);
         const checkForSubject = await subjectModel_1.default.findById(subjectID);
-        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
         if (checkForSubject) {
             const quizes = await assignmentModel_1.default.create({
-                subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
+                subjectTitle: checkForSubject?.subjectTitle,
                 assignmentTopic,
                 assignmentDetails,
                 assignmentDeadline,
             });
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.assignment.push(new mongoose_1.Types.ObjectId(quizes._id));
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
-            classRoom === null || classRoom === void 0 ? void 0 : classRoom.assignment.push(new mongoose_1.Types.ObjectId(quizes._id));
-            classRoom === null || classRoom === void 0 ? void 0 : classRoom.save();
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.assignment.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
+            checkForSubject?.assignment.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject?.save();
+            classRoom?.assignment.push(new mongoose_1.Types.ObjectId(quizes._id));
+            classRoom?.save();
+            findTeacher?.assignment.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findTeacher?.save();
             return res.status(201).json({
                 message: "assignment resolve entry created successfully",
                 data: quizes,
@@ -172,7 +172,6 @@ const readAssignment = async (req, res) => {
 exports.readAssignment = readAssignment;
 // Assignment Resolve Session/EndPoints
 const createAssignmentPerformance = async (req, res) => {
-    var _a;
     try {
         const { studentID, assignmentID } = req.params;
         const { studentScore, studentGrade, remark, assignmentResult } = req.body;
@@ -181,28 +180,28 @@ const createAssignmentPerformance = async (req, res) => {
             .populate({ path: "assignment" });
         const quizData = await assignmentModel_1.default.findById(assignmentID);
         const findSubject = await subjectModel_1.default.findOne({
-            subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
+            subjectTitle: quizData?.subjectTitle,
         });
         if (quizData) {
             const quizes = await assignmentResolvedModel_1.default.create({
                 assignmentResult,
-                subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
+                subjectTitle: quizData?.subjectTitle,
                 // studentScore,
                 // studentGrade,
                 // subjectTeacher: findTeacher?.staffName,
                 // performanceRating: parseInt(
                 //   ((studentScore / quizData?.quiz[1]?.question.length) * 100).toFixed(2)
                 // ),
-                className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
+                className: studentInfo?.classAssigned,
                 assignmentID: assignmentID,
-                studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
+                studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
             });
-            quizData === null || quizData === void 0 ? void 0 : quizData.assignmentResult.push(new mongoose_1.Types.ObjectId(quizes._id));
-            quizData === null || quizData === void 0 ? void 0 : quizData.save();
-            studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
-            studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save();
-            findSubject === null || findSubject === void 0 ? void 0 : findSubject.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findSubject === null || findSubject === void 0 ? void 0 : findSubject.save();
+            quizData?.assignmentResult.push(new mongoose_1.Types.ObjectId(quizes._id));
+            quizData?.save();
+            studentInfo?.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
+            studentInfo?.save();
+            findSubject?.performance.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findSubject?.save();
             let view = [];
             let notView = [];
             const getStudent = await studentModel_1.default.findById(studentID).populate({
@@ -211,7 +210,7 @@ const createAssignmentPerformance = async (req, res) => {
             const record = await studentModel_1.default.findByIdAndUpdate(studentID, {
                 totalPerformance: view.reduce((a, b) => {
                     return a + b;
-                }, 0) / ((_a = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _a === void 0 ? void 0 : _a.length),
+                }, 0) / studentInfo?.performance?.length,
             }, { new: true });
             return res.status(201).json({
                 message: "quiz entry created successfully",

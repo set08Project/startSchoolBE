@@ -50,7 +50,7 @@ const clockinAccount = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = await studentModel_1.default.findById(studentID);
-            if ((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id.toString())) {
+            if (student?.schoolIDs === school?._id.toString()) {
                 const clockInfo = await studentModel_1.default.findByIdAndUpdate(student._id, {
                     clockIn: true,
                     clockInTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
@@ -139,8 +139,8 @@ const clockOutAccount = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
             const student = await studentModel_1.default.findById(studentID);
-            if ((student === null || student === void 0 ? void 0 : student.schoolIDs) === (school === null || school === void 0 ? void 0 : school._id.toString())) {
-                if (student === null || student === void 0 ? void 0 : student.clockIn) {
+            if (student?.schoolIDs === school?._id.toString()) {
+                if (student?.clockIn) {
                     const clockInfo = await studentModel_1.default.findByIdAndUpdate(student._id, {
                         clockIn: false,
                         clockOut: true,
@@ -193,7 +193,7 @@ const clockOutAccountWidthID = async (req, res) => {
         if (school) {
             const student = await studentModel_1.default.findOne({ enrollmentID });
             if (student) {
-                if (student === null || student === void 0 ? void 0 : student.clockIn) {
+                if (student?.clockIn) {
                     const clockInfo = await studentModel_1.default.findByIdAndUpdate(student._id, {
                         clockIn: false,
                         clockOut: true,
@@ -240,7 +240,6 @@ const clockOutAccountWidthID = async (req, res) => {
 exports.clockOutAccountWidthID = clockOutAccountWidthID;
 // Create Account
 const createSchoolStudent = async (req, res) => {
-    var _a, _b, _c;
     try {
         const { schoolID } = req.params;
         const { studentLastName, gender, studentFirstName, studentAddress, classAssigned, } = req.body;
@@ -252,7 +251,7 @@ const createSchoolStudent = async (req, res) => {
         const hashed = await bcrypt_1.default.hash(`${studentFirstName.replace(/ /gi, "").toLowerCase()}${studentLastName
             .replace(/ /gi, "")
             .toLowerCase()}`, salt);
-        const findClass = (_a = school === null || school === void 0 ? void 0 : school.classRooms) === null || _a === void 0 ? void 0 : _a.find((el) => {
+        const findClass = school?.classRooms?.find((el) => {
             console.log(el.className.trim());
             return el.className.trim() === classAssigned;
         });
@@ -260,34 +259,36 @@ const createSchoolStudent = async (req, res) => {
             if (findClass) {
                 const student = await studentModel_1.default.create({
                     schoolIDs: schoolID,
-                    presentClassID: findClass === null || findClass === void 0 ? void 0 : findClass._id,
-                    classTermFee: (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "1st Term"
-                        ? findClass === null || findClass === void 0 ? void 0 : findClass.class1stFee
-                        : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "2nd Term"
-                            ? findClass === null || findClass === void 0 ? void 0 : findClass.class2ndFee
-                            : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "3rd Term"
-                                ? findClass === null || findClass === void 0 ? void 0 : findClass.class3rdFee
+                    presentClassID: findClass?._id,
+                    classTermFee: findClass?.presentTerm === "1st Term"
+                        ? findClass?.class1stFee
+                        : findClass?.presentTerm === "2nd Term"
+                            ? findClass?.class2ndFee
+                            : findClass?.presentTerm === "3rd Term"
+                                ? findClass?.class3rdFee
                                 : null,
                     gender,
                     enrollmentID,
-                    schoolID: school === null || school === void 0 ? void 0 : school.enrollmentID,
+                    schoolID: school?.enrollmentID,
                     studentFirstName,
                     studentLastName,
-                    schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
+                    schoolName: school?.schoolName,
                     studentAddress,
                     classAssigned,
                     email: `${studentFirstName
                         .replace(/ /gi, "")
                         .toLowerCase()}${studentLastName
                         .replace(/ /gi, "")
-                        .toLowerCase()}@${(_b = school === null || school === void 0 ? void 0 : school.schoolName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}.com`,
+                        .toLowerCase()}@${school?.schoolName
+                        ?.replace(/ /gi, "")
+                        .toLowerCase()}.com`,
                     password: hashed,
                     status: "school-student",
                 });
-                school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
-                (_c = school === null || school === void 0 ? void 0 : school.historys) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(student._id));
+                school?.students.push(new mongoose_1.Types.ObjectId(student._id));
+                school?.historys?.push(new mongoose_1.Types.ObjectId(student._id));
                 await school.save();
-                findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
+                findClass?.students.push(new mongoose_1.Types.ObjectId(student._id));
                 await findClass.save();
                 return res.status(201).json({
                     message: "student created successfully",
@@ -319,7 +320,6 @@ const createSchoolStudent = async (req, res) => {
 };
 exports.createSchoolStudent = createSchoolStudent;
 const createBulkSchoolStudent = async (req, res) => {
-    var _a, _b, _c, _d, _e, _f, _g;
     try {
         const { schoolID } = req.params;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
@@ -346,26 +346,36 @@ const createBulkSchoolStudent = async (req, res) => {
             });
             const enrollmentID = crypto_1.default.randomBytes(4).toString("hex");
             const salt = await bcrypt_1.default.genSalt(10);
-            const hashed = await bcrypt_1.default.hash(`${(_a = i === null || i === void 0 ? void 0 : i.studentFirstName) === null || _a === void 0 ? void 0 : _a.replace(/ /gi, "").toLowerCase()}${(_b = i === null || i === void 0 ? void 0 : i.studentLastName) === null || _b === void 0 ? void 0 : _b.replace(/ /gi, "").toLowerCase()}`, salt);
-            const findClass = (_c = school === null || school === void 0 ? void 0 : school.classRooms) === null || _c === void 0 ? void 0 : _c.find((el) => {
-                return el.className.trim() === (i === null || i === void 0 ? void 0 : i.classAssigned);
+            const hashed = await bcrypt_1.default.hash(`${i?.studentFirstName
+                ?.replace(/ /gi, "")
+                .toLowerCase()}${i?.studentLastName
+                ?.replace(/ /gi, "")
+                .toLowerCase()}`, salt);
+            const findClass = school?.classRooms?.find((el) => {
+                return el.className.trim() === i?.classAssigned;
             });
             if (!(school && school.schoolName && school.status === "school-admin")) {
                 errors.push(`School not found or not admin for row ${JSON.stringify(i)}`);
                 continue;
             }
             if (!findClass) {
-                errors.push(`Class '${i === null || i === void 0 ? void 0 : i.classAssigned}' not found for row ${JSON.stringify(i)}`);
+                errors.push(`Class '${i?.classAssigned}' not found for row ${JSON.stringify(i)}`);
                 continue;
             }
             // check duplicate by email or exact name within the same school
-            const email = `${(_d = i === null || i === void 0 ? void 0 : i.studentFirstName) === null || _d === void 0 ? void 0 : _d.replace(/ /gi, "").toLowerCase()}${(_e = i === null || i === void 0 ? void 0 : i.studentLastName) === null || _e === void 0 ? void 0 : _e.replace(/ /gi, "").toLowerCase()}@${(_f = school === null || school === void 0 ? void 0 : school.schoolName) === null || _f === void 0 ? void 0 : _f.replace(/ /gi, "").toLowerCase()}.com`;
+            const email = `${i?.studentFirstName
+                ?.replace(/ /gi, "")
+                .toLowerCase()}${i?.studentLastName
+                ?.replace(/ /gi, "")
+                .toLowerCase()}@${school?.schoolName
+                ?.replace(/ /gi, "")
+                .toLowerCase()}.com`;
             const existing = await studentModel_1.default.findOne({
                 $or: [
                     { email },
                     {
-                        studentFirstName: i === null || i === void 0 ? void 0 : i.studentFirstName,
-                        studentLastName: i === null || i === void 0 ? void 0 : i.studentLastName,
+                        studentFirstName: i?.studentFirstName,
+                        studentLastName: i?.studentLastName,
                         schoolIDs: schoolID,
                     },
                 ],
@@ -377,35 +387,35 @@ const createBulkSchoolStudent = async (req, res) => {
             try {
                 const student = await studentModel_1.default.create({
                     schoolIDs: schoolID,
-                    presentClassID: findClass === null || findClass === void 0 ? void 0 : findClass._id,
-                    classTermFee: (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "1st Term"
-                        ? findClass === null || findClass === void 0 ? void 0 : findClass.class1stFee
-                        : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "2nd Term"
-                            ? findClass === null || findClass === void 0 ? void 0 : findClass.class2ndFee
-                            : (findClass === null || findClass === void 0 ? void 0 : findClass.presentTerm) === "3rd Term"
-                                ? findClass === null || findClass === void 0 ? void 0 : findClass.class3rdFee
+                    presentClassID: findClass?._id,
+                    classTermFee: findClass?.presentTerm === "1st Term"
+                        ? findClass?.class1stFee
+                        : findClass?.presentTerm === "2nd Term"
+                            ? findClass?.class2ndFee
+                            : findClass?.presentTerm === "3rd Term"
+                                ? findClass?.class3rdFee
                                 : null,
-                    gender: i === null || i === void 0 ? void 0 : i.gender,
+                    gender: i?.gender,
                     enrollmentID,
-                    schoolID: school === null || school === void 0 ? void 0 : school.enrollmentID,
-                    studentFirstName: i === null || i === void 0 ? void 0 : i.studentFirstName,
-                    studentLastName: i === null || i === void 0 ? void 0 : i.studentLastName,
-                    schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
-                    studentAddress: i === null || i === void 0 ? void 0 : i.studentAddress,
-                    classAssigned: i === null || i === void 0 ? void 0 : i.classAssigned,
+                    schoolID: school?.enrollmentID,
+                    studentFirstName: i?.studentFirstName,
+                    studentLastName: i?.studentLastName,
+                    schoolName: school?.schoolName,
+                    studentAddress: i?.studentAddress,
+                    classAssigned: i?.classAssigned,
                     email,
                     password: hashed,
                     status: "school-student",
                 });
-                school === null || school === void 0 ? void 0 : school.students.push(new mongoose_1.Types.ObjectId(student._id));
-                (_g = school === null || school === void 0 ? void 0 : school.historys) === null || _g === void 0 ? void 0 : _g.push(new mongoose_1.Types.ObjectId(student._id));
+                school?.students.push(new mongoose_1.Types.ObjectId(student._id));
+                school?.historys?.push(new mongoose_1.Types.ObjectId(student._id));
                 await school.save();
-                findClass === null || findClass === void 0 ? void 0 : findClass.students.push(new mongoose_1.Types.ObjectId(student._id));
+                findClass?.students.push(new mongoose_1.Types.ObjectId(student._id));
                 await findClass.save();
                 createdCount++;
             }
             catch (err) {
-                errors.push(`Error creating student for row ${JSON.stringify(i)}: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+                errors.push(`Error creating student for row ${JSON.stringify(i)}: ${err?.message || err}`);
             }
         }
         // delete uploaded files once after processing
@@ -491,20 +501,20 @@ const loginStudent = async (req, res) => {
         const { email, password } = req.body;
         const getTeacher = await studentModel_1.default.findOne({ email });
         const school = await schoolModel_1.default.findOne({
-            schoolName: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName,
+            schoolName: getTeacher?.schoolName,
         });
-        if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.schoolName)) {
+        if (school?.schoolName && getTeacher?.schoolName) {
             if (school.verify) {
                 const token = jsonwebtoken_1.default.sign({ status: school.status }, "student", {
                     expiresIn: "1d",
                 });
-                const pass = await bcrypt_1.default.compare(password, getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.password);
+                const pass = await bcrypt_1.default.compare(password, getTeacher?.password);
                 if (pass) {
                     req.session.isAuth = true;
                     req.session.isSchoolID = getTeacher._id;
                     return res.status(201).json({
                         message: "welcome back",
-                        user: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.status,
+                        user: getTeacher?.status,
                         data: token,
                         id: req.session.isSchoolID,
                         status: 201,
@@ -544,9 +554,9 @@ const loginStudentWithToken = async (req, res) => {
         const { token } = req.body;
         const getStudent = await studentModel_1.default.findOne({ enrollmentID: token });
         const school = await schoolModel_1.default.findOne({
-            schoolName: getStudent === null || getStudent === void 0 ? void 0 : getStudent.schoolName,
+            schoolName: getStudent?.schoolName,
         });
-        if ((school === null || school === void 0 ? void 0 : school.schoolName) && (getStudent === null || getStudent === void 0 ? void 0 : getStudent.schoolName)) {
+        if (school?.schoolName && getStudent?.schoolName) {
             if (school.verify) {
                 const token = jsonwebtoken_1.default.sign({ status: school.status }, "student", {
                     expiresIn: "1d",
@@ -555,7 +565,7 @@ const loginStudentWithToken = async (req, res) => {
                 req.session.isSchoolID = getStudent._id;
                 return res.status(201).json({
                     message: "welcome back",
-                    user: getStudent === null || getStudent === void 0 ? void 0 : getStudent.status,
+                    user: getStudent?.status,
                     data: token,
                     id: req.session.isSchoolID,
                     status: 201,
@@ -1103,22 +1113,22 @@ const updateStudent1stFees = async (req, res) => {
         const { schoolID, studentID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
         const getStudent = await studentModel_1.default.findById(studentID);
-        const presentClass = await classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
-        const findTerm = await termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
-        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
-            const students = await studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid1st: !(getStudent === null || getStudent === void 0 ? void 0 : getStudent.feesPaid1st) }, { new: true });
+        const presentClass = await classroomModel_1.default.findById(getStudent?.presentClassID);
+        const findTerm = await termModel_1.default.findById(school?.presentTermID);
+        if (school?.status === "school-admin" && school) {
+            const students = await studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid1st: !getStudent?.feesPaid1st }, { new: true });
             (0, email_1.verifySchoolFees)(students, 1);
-            await (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndUpdate(findTerm === null || findTerm === void 0 ? void 0 : findTerm._id, {
+            await termModel_1.default?.findByIdAndUpdate(findTerm?._id, {
                 schoolFeePayment: [
-                    ...findTerm === null || findTerm === void 0 ? void 0 : findTerm.schoolFeePayment,
+                    ...findTerm?.schoolFeePayment,
                     {
                         studentID: getStudent._id,
                         feesPaid1st: getStudent.feesPaid1st,
-                        cost: presentClass === null || presentClass === void 0 ? void 0 : presentClass.class1stFee,
+                        cost: presentClass?.class1stFee,
                         date: (0, moment_1.default)(new Date().getTime()).format("llll"),
                     },
                 ],
-            }, { new: true }));
+            }, { new: true });
             return res.status(201).json({
                 message: "student fees updated successfully",
                 data: students,
@@ -1309,24 +1319,24 @@ const updateStudent2ndFees = async (req, res) => {
         const { schoolID, studentID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
         const getStudent = await studentModel_1.default.findById(studentID);
-        const presentClass = await classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
-        const findTerm = await termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
-        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
+        const presentClass = await classroomModel_1.default.findById(getStudent?.presentClassID);
+        const findTerm = await termModel_1.default.findById(school?.presentTermID);
+        if (school?.status === "school-admin" && school) {
             let students = await studentModel_1.default.findById(studentID);
-            if ((students === null || students === void 0 ? void 0 : students.feesPaid1st) === true) {
-                let student = await studentModel_1.default.findByIdAndUpdate(students === null || students === void 0 ? void 0 : students._id, { feesPaid2nd: !(students === null || students === void 0 ? void 0 : students.feesPaid2nd) }, { new: true });
+            if (students?.feesPaid1st === true) {
+                let student = await studentModel_1.default.findByIdAndUpdate(students?._id, { feesPaid2nd: !students?.feesPaid2nd }, { new: true });
                 (0, email_1.verifySchoolFees)(student, 2);
-                await (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndUpdate(findTerm === null || findTerm === void 0 ? void 0 : findTerm._id, {
+                await termModel_1.default?.findByIdAndUpdate(findTerm?._id, {
                     schoolFeePayment: [
-                        ...findTerm === null || findTerm === void 0 ? void 0 : findTerm.schoolFeePayment,
+                        ...findTerm?.schoolFeePayment,
                         {
                             studentID: getStudent._id,
                             feesPaid2nd: getStudent.feesPaid2nd,
-                            cost: presentClass === null || presentClass === void 0 ? void 0 : presentClass.class2ndFee,
+                            cost: presentClass?.class2ndFee,
                             date: (0, moment_1.default)(new Date().getTime()).format("llll"),
                         },
                     ],
-                }, { new: true }));
+                }, { new: true });
                 return res.status(201).json({
                     message: "student fees updated successfully",
                     data: student,
@@ -1360,24 +1370,24 @@ const updateStudent3rdFees = async (req, res) => {
         const { schoolID, studentID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
         const getStudent = await studentModel_1.default.findById(studentID);
-        const presentClass = await classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
-        const findTerm = await termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
-        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
+        const presentClass = await classroomModel_1.default.findById(getStudent?.presentClassID);
+        const findTerm = await termModel_1.default.findById(school?.presentTermID);
+        if (school?.status === "school-admin" && school) {
             const student = await studentModel_1.default.findById(studentID);
-            if ((student === null || student === void 0 ? void 0 : student.feesPaid2nd) === true) {
-                await studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid3rd: !(student === null || student === void 0 ? void 0 : student.feesPaid3rd) }, { new: true });
+            if (student?.feesPaid2nd === true) {
+                await studentModel_1.default.findByIdAndUpdate(studentID, { feesPaid3rd: !student?.feesPaid3rd }, { new: true });
                 (0, email_1.verifySchoolFees)(student, 3);
-                await (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findByIdAndUpdate(findTerm === null || findTerm === void 0 ? void 0 : findTerm._id, {
+                await termModel_1.default?.findByIdAndUpdate(findTerm?._id, {
                     schoolFeePayment: [
-                        ...findTerm === null || findTerm === void 0 ? void 0 : findTerm.schoolFeePayment,
+                        ...findTerm?.schoolFeePayment,
                         {
                             studentID: getStudent._id,
                             feesPaid3rd: getStudent.feesPaid3rd,
-                            cost: presentClass === null || presentClass === void 0 ? void 0 : presentClass.class3rdFee,
+                            cost: presentClass?.class3rdFee,
                             date: (0, moment_1.default)(new Date().getTime()).format("llll"),
                         },
                     ],
-                }, { new: true }));
+                }, { new: true });
                 return res.status(201).json({
                     message: "student fees updated successfully",
                     data: student,
@@ -1407,15 +1417,14 @@ const updateStudent3rdFees = async (req, res) => {
 };
 exports.updateStudent3rdFees = updateStudent3rdFees;
 const updatePurchaseRecord = async (req, res) => {
-    var _a;
     try {
         const { studentID } = req.params;
         const { purchased } = req.body;
         const student = await studentModel_1.default.findById(studentID);
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
-        if ((school === null || school === void 0 ? void 0 : school.status) === "school-admin" && school) {
+        const school = await schoolModel_1.default.findById(student?.schoolIDs);
+        if (school?.status === "school-admin" && school) {
             await studentModel_1.default.findById(studentID, {
-                purchaseHistory: (_a = student === null || student === void 0 ? void 0 : student.purchaseHistory) === null || _a === void 0 ? void 0 : _a.push(purchased),
+                purchaseHistory: student?.purchaseHistory?.push(purchased),
             }, { new: true });
             return res.status(201).json({
                 message: "student purchase recorded successfully",
@@ -1445,10 +1454,10 @@ const createStorePurchased = async (req, res) => {
         const student = await studentModel_1.default.findById(studentID).populate({
             path: "purchaseHistory",
         });
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
-        const term = await (termModel_1.default === null || termModel_1.default === void 0 ? void 0 : termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID));
+        const school = await schoolModel_1.default.findById(student?.schoolIDs);
+        const term = await termModel_1.default?.findById(school?.presentTermID);
         if (school) {
-            const check = student === null || student === void 0 ? void 0 : student.purchaseHistory.some((el) => {
+            const check = student?.purchaseHistory.some((el) => {
                 return el.reference === reference;
             });
             if (!check) {
@@ -1459,27 +1468,27 @@ const createStorePurchased = async (req, res) => {
                     reference,
                     purchasedID,
                     delievered: false,
-                    studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
-                    studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
+                    studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                    studentClass: student?.classAssigned,
                 });
-                await termModel_1.default.findByIdAndUpdate(term === null || term === void 0 ? void 0 : term._id, {
+                await termModel_1.default.findByIdAndUpdate(term?._id, {
                     storePayment: [
-                        ...term === null || term === void 0 ? void 0 : term.storePayment,
+                        ...term?.storePayment,
                         {
                             date,
                             amount,
                             cart,
                             reference,
                             purchasedID,
-                            studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
-                            studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
+                            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                            studentClass: student?.classAssigned,
                         },
                     ],
                 }, { new: true });
-                student === null || student === void 0 ? void 0 : student.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
-                student === null || student === void 0 ? void 0 : student.save();
-                school === null || school === void 0 ? void 0 : school.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
-                school === null || school === void 0 ? void 0 : school.save();
+                student?.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                student?.save();
+                school?.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                school?.save();
                 return res.status(201).json({
                     message: "remark created successfully",
                     data: store,
@@ -1520,7 +1529,7 @@ const viewStorePurchased = async (req, res) => {
         });
         return res.status(201).json({
             message: "remark created successfully",
-            data: student === null || student === void 0 ? void 0 : student.purchaseHistory,
+            data: student?.purchaseHistory,
             status: 201,
         });
     }
@@ -1545,7 +1554,7 @@ const viewSchoolStorePurchased = async (req, res) => {
         });
         return res.status(201).json({
             message: "remark created successfully",
-            data: student === null || student === void 0 ? void 0 : student.purchaseHistory,
+            data: student?.purchaseHistory,
             status: 201,
         });
     }
@@ -1585,9 +1594,9 @@ const createStorePurchasedTeacher = async (req, res) => {
         const student = await staffModel_1.default.findById(staffID).populate({
             path: "purchaseHistory",
         });
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        const school = await schoolModel_1.default.findById(student?.schoolIDs);
         if (school) {
-            const check = student === null || student === void 0 ? void 0 : student.purchaseHistory.some((el) => {
+            const check = student?.purchaseHistory.some((el) => {
                 return el.reference === reference;
             });
             if (!check) {
@@ -1598,13 +1607,13 @@ const createStorePurchasedTeacher = async (req, res) => {
                     reference,
                     purchasedID,
                     delievered: false,
-                    studentName: student === null || student === void 0 ? void 0 : student.staffName,
-                    studentClass: student === null || student === void 0 ? void 0 : student.classesAssigned,
+                    studentName: student?.staffName,
+                    studentClass: student?.classesAssigned,
                 });
-                student === null || student === void 0 ? void 0 : student.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
-                student === null || student === void 0 ? void 0 : student.save();
-                school === null || school === void 0 ? void 0 : school.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
-                school === null || school === void 0 ? void 0 : school.save();
+                student?.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                student?.save();
+                school?.purchaseHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                school?.save();
                 return res.status(201).json({
                     message: "remark created successfully",
                     data: store,
@@ -1645,7 +1654,7 @@ const viewStorePurchasedTeacher = async (req, res) => {
         });
         return res.status(201).json({
             message: "remark created successfully",
-            data: student === null || student === void 0 ? void 0 : student.purchaseHistory,
+            data: student?.purchaseHistory,
             status: 201,
         });
     }
@@ -1658,111 +1667,119 @@ const viewStorePurchasedTeacher = async (req, res) => {
 };
 exports.viewStorePurchasedTeacher = viewStorePurchasedTeacher;
 const createSchoolFeePayment = async (req, res) => {
-    var _a, _b, _c;
     try {
         const { studentID } = req.params;
         const { date, amount, purchasedID, reference } = req.body;
         const student = await studentModel_1.default.findById(studentID).populate({
             path: "schoolFeesHistory",
         });
-        const classOne = await classroomModel_1.default.findById(student === null || student === void 0 ? void 0 : student.presentClassID);
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        const classOne = await classroomModel_1.default.findById(student?.presentClassID);
+        const school = await schoolModel_1.default.findById(student?.schoolIDs);
         if (school) {
-            const check = student === null || student === void 0 ? void 0 : student.schoolFeesHistory.some((el) => {
+            const check = student?.schoolFeesHistory.some((el) => {
                 return el.reference === reference;
             });
-            const payment = student === null || student === void 0 ? void 0 : student.schoolFeesHistory.some((el) => {
-                return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
-                    el.session === (school === null || school === void 0 ? void 0 : school.presentSession) &&
-                    el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
-                    el.term === (school === null || school === void 0 ? void 0 : school.presentTerm));
+            const payment = student?.schoolFeesHistory.some((el) => {
+                return (el.sessionID === school?.presentSessionID &&
+                    el.session === school?.presentSession &&
+                    el.termID === school?.presentTermID &&
+                    el.term === school?.presentTerm);
             });
             if (!payment) {
                 const store = await schoolFeeHistory_1.default.create({
                     studentID,
-                    session: school === null || school === void 0 ? void 0 : school.presentSession,
-                    sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
-                    termID: school === null || school === void 0 ? void 0 : school.presentTermID,
+                    session: school?.presentSession,
+                    sessionID: school?.presentSessionID,
+                    termID: school?.presentTermID,
                     confirm: false,
-                    term: classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm,
-                    studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
-                    studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
-                    image: student === null || student === void 0 ? void 0 : student.avatar,
+                    term: classOne?.presentTerm,
+                    studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
+                    studentClass: student?.classAssigned,
+                    image: student?.avatar,
                     date,
                     amount: amount,
                     purchasedID,
                     reference,
                 });
-                student === null || student === void 0 ? void 0 : student.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
-                student === null || student === void 0 ? void 0 : student.save();
-                school === null || school === void 0 ? void 0 : school.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
-                school === null || school === void 0 ? void 0 : school.save();
-                if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
-                    classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
-                    classOne === null || classOne === void 0 ? void 0 : classOne.save();
+                student?.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                student?.save();
+                school?.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                school?.save();
+                if (classOne?.presentTerm === "1st Term") {
+                    classOne?.schoolFeesHistory.push(new mongoose_1.Types.ObjectId(store._id));
+                    classOne?.save();
                 }
-                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "2nd Term") {
-                    classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory2.push(new mongoose_1.Types.ObjectId(store._id));
-                    classOne === null || classOne === void 0 ? void 0 : classOne.save();
+                else if (classOne?.presentTerm === "2nd Term") {
+                    classOne?.schoolFeesHistory2.push(new mongoose_1.Types.ObjectId(store._id));
+                    classOne?.save();
                 }
-                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "3rd Term") {
-                    classOne === null || classOne === void 0 ? void 0 : classOne.schoolFeesHistory3.push(new mongoose_1.Types.ObjectId(store._id));
-                    classOne === null || classOne === void 0 ? void 0 : classOne.save();
+                else if (classOne?.presentTerm === "3rd Term") {
+                    classOne?.schoolFeesHistory3.push(new mongoose_1.Types.ObjectId(store._id));
+                    classOne?.save();
                 }
-                if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "1st Term") {
+                if (classOne?.presentTerm === "1st Term") {
                     const classData = await classroomModel_1.default
-                        .findById(student === null || student === void 0 ? void 0 : student.presentClassID)
+                        .findById(student?.presentClassID)
                         .populate({
                         path: "schoolFeesHistory",
                     });
-                    const amount = (_a = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _a === void 0 ? void 0 : _a.filter((el) => {
-                        return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
-                            el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
+                    const amount = classData?.schoolFeesHistory
+                        ?.filter((el) => {
+                        return (el.sessionID === school?.presentSessionID &&
+                            el.termID === school?.presentTermID &&
                             el.term === "1st Term");
-                    }).map((el) => {
+                    })
+                        .map((el) => {
                         return el.amount;
-                    }).reduce((a, b) => {
+                    })
+                        .reduce((a, b) => {
                         return a + b;
                     }, 0);
-                    const real = await classroomModel_1.default.findByIdAndUpdate(classData === null || classData === void 0 ? void 0 : classData._id, {
+                    const real = await classroomModel_1.default.findByIdAndUpdate(classData?._id, {
                         class1stFee: amount,
                     }, { new: true });
                 }
-                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "2nd Term") {
+                else if (classOne?.presentTerm === "2nd Term") {
                     const classData = await classroomModel_1.default
-                        .findById(student === null || student === void 0 ? void 0 : student.presentClassID)
+                        .findById(student?.presentClassID)
                         .populate({
                         path: "schoolFeesHistory2",
                     });
-                    const amount = (_b = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _b === void 0 ? void 0 : _b.filter((el) => {
-                        return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
-                            el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
+                    const amount = classData?.schoolFeesHistory
+                        ?.filter((el) => {
+                        return (el.sessionID === school?.presentSessionID &&
+                            el.termID === school?.presentTermID &&
                             el.term === "2nd Term");
-                    }).map((el) => {
+                    })
+                        .map((el) => {
                         return el.amount;
-                    }).reduce((a, b) => {
+                    })
+                        .reduce((a, b) => {
                         return a + b;
                     }, 0);
-                    classroomModel_1.default.findByIdAndUpdate(classData === null || classData === void 0 ? void 0 : classData._id, {
+                    classroomModel_1.default.findByIdAndUpdate(classData?._id, {
                         class2ndFee: amount,
                     }, { new: true });
                 }
-                else if ((classOne === null || classOne === void 0 ? void 0 : classOne.presentTerm) === "3rd Term") {
+                else if (classOne?.presentTerm === "3rd Term") {
                     const classData = await classroomModel_1.default
-                        .findById(student === null || student === void 0 ? void 0 : student.presentClassID)
+                        .findById(student?.presentClassID)
                         .populate({
                         path: "schoolFeesHistory3",
                     });
-                    const amount = (_c = classData === null || classData === void 0 ? void 0 : classData.schoolFeesHistory) === null || _c === void 0 ? void 0 : _c.filter((el) => {
-                        return (el.sessionID === (school === null || school === void 0 ? void 0 : school.presentSessionID) &&
-                            el.termID === (school === null || school === void 0 ? void 0 : school.presentTermID) &&
+                    const amount = classData?.schoolFeesHistory
+                        ?.filter((el) => {
+                        return (el.sessionID === school?.presentSessionID &&
+                            el.termID === school?.presentTermID &&
                             el.term === "3rd Term");
-                    }).map((el) => {
+                    })
+                        .map((el) => {
                         return el.amount;
-                    }).reduce((a, b) => {
+                    })
+                        .reduce((a, b) => {
                         return a + b;
                     }, 0);
-                    classroomModel_1.default.findByIdAndUpdate(classData === null || classData === void 0 ? void 0 : classData._id, {
+                    classroomModel_1.default.findByIdAndUpdate(classData?._id, {
                         class3rdFee: amount,
                     }, { new: true });
                 }
@@ -1806,7 +1823,7 @@ const viewSchoolFeeRecord = async (req, res) => {
         });
         return res.status(201).json({
             message: "remark created successfully",
-            data: student === null || student === void 0 ? void 0 : student.schoolFeesHistory,
+            data: student?.schoolFeesHistory,
             status: 201,
         });
     }
@@ -1831,7 +1848,7 @@ const viewSchoolSchoolFeeRecord = async (req, res) => {
         });
         return res.status(201).json({
             message: "remark created successfully",
-            data: student === null || student === void 0 ? void 0 : student.schoolFeesHistory,
+            data: student?.schoolFeesHistory,
             status: 201,
         });
     }
@@ -1851,28 +1868,28 @@ const updateSchoolSchoolFee = async (req, res) => {
             confirm,
         }, { new: true });
         let studentRecord = await studentModel_1.default.findById(item.studentID);
-        let studetClass = await classroomModel_1.default.findById(studentRecord === null || studentRecord === void 0 ? void 0 : studentRecord.presentClassID);
-        const school = await schoolModel_1.default.findById(studentRecord === null || studentRecord === void 0 ? void 0 : studentRecord.schoolIDs);
-        const term = await termModel_1.default.findById(school === null || school === void 0 ? void 0 : school.presentTermID);
-        if ((studetClass === null || studetClass === void 0 ? void 0 : studetClass.presentTerm) === "1st Term") {
-            await studentModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.studentID, {
+        let studetClass = await classroomModel_1.default.findById(studentRecord?.presentClassID);
+        const school = await schoolModel_1.default.findById(studentRecord?.schoolIDs);
+        const term = await termModel_1.default.findById(school?.presentTermID);
+        if (studetClass?.presentTerm === "1st Term") {
+            await studentModel_1.default.findByIdAndUpdate(item?.studentID, {
                 feesPaid1st: true,
             }, { new: true });
         }
-        else if ((studetClass === null || studetClass === void 0 ? void 0 : studetClass.presentTerm) === "2nd Term") {
-            await studentModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.studentID, {
+        else if (studetClass?.presentTerm === "2nd Term") {
+            await studentModel_1.default.findByIdAndUpdate(item?.studentID, {
                 feesPaid2nd: true,
             }, { new: true });
         }
-        else if ((studetClass === null || studetClass === void 0 ? void 0 : studetClass.presentTerm) === "3rd Term") {
-            await studentModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.studentID, {
+        else if (studetClass?.presentTerm === "3rd Term") {
+            await studentModel_1.default.findByIdAndUpdate(item?.studentID, {
                 feesPaid3rd: true,
             }, { new: true });
         }
-        const check = term === null || term === void 0 ? void 0 : term.schoolFeePayment.some((el) => (el === null || el === void 0 ? void 0 : el.purchasedID) !== (item === null || item === void 0 ? void 0 : item.purchasedID));
+        const check = term?.schoolFeePayment.some((el) => el?.purchasedID !== item?.purchasedID);
         if (true) {
-            let x = await termModel_1.default.findByIdAndUpdate(item === null || item === void 0 ? void 0 : item.termID, {
-                schoolFeePayment: [...term === null || term === void 0 ? void 0 : term.schoolFeePayment, item],
+            let x = await termModel_1.default.findByIdAndUpdate(item?.termID, {
+                schoolFeePayment: [...term?.schoolFeePayment, item],
             }, { new: true });
             console.log("loading: ", x);
             return res.status(201).json({
@@ -1898,26 +1915,25 @@ const updateSchoolSchoolFee = async (req, res) => {
 };
 exports.updateSchoolSchoolFee = updateSchoolSchoolFee;
 const assignClassMonitor = async (req, res) => {
-    var _a;
     try {
         const { teacherID, studentID } = req.params;
         const teacher = await staffModel_1.default.findById(teacherID);
         const getClass = await classroomModel_1.default
-            .findById(teacher === null || teacher === void 0 ? void 0 : teacher.presentClassID)
+            .findById(teacher?.presentClassID)
             .populate({
             path: "students",
         });
-        let readStudent = (_a = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _a === void 0 ? void 0 : _a.find((el) => {
-            return (el === null || el === void 0 ? void 0 : el.monitor) === true;
+        let readStudent = getClass?.students?.find((el) => {
+            return el?.monitor === true;
         });
-        await studentModel_1.default.findByIdAndUpdate(readStudent === null || readStudent === void 0 ? void 0 : readStudent._id, {
+        await studentModel_1.default.findByIdAndUpdate(readStudent?._id, {
             monitor: false,
         }, { new: true });
         const student = await studentModel_1.default.findByIdAndUpdate(studentID, {
             monitor: true,
         }, { new: true });
         return res.status(201).json({
-            message: `class monitor assigned to ${student === null || student === void 0 ? void 0 : student.studentFirstName} `,
+            message: `class monitor assigned to ${student?.studentFirstName} `,
             status: 201,
         });
     }
@@ -1930,7 +1946,6 @@ const assignClassMonitor = async (req, res) => {
 };
 exports.assignClassMonitor = assignClassMonitor;
 const changeStudentClass = async (req, res) => {
-    var _a, _b;
     try {
         const { studentID } = req.params;
         const { classID } = req.body;
@@ -1938,24 +1953,24 @@ const changeStudentClass = async (req, res) => {
             path: "students",
         });
         const studentData = await studentModel_1.default.findById(studentID);
-        const getStudentClass = await classroomModel_1.default.findById(studentData === null || studentData === void 0 ? void 0 : studentData.presentClassID);
-        (_a = getStudentClass === null || getStudentClass === void 0 ? void 0 : getStudentClass.students) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(studentID));
-        getStudentClass === null || getStudentClass === void 0 ? void 0 : getStudentClass.save();
+        const getStudentClass = await classroomModel_1.default.findById(studentData?.presentClassID);
+        getStudentClass?.students?.pull(new mongoose_1.Types.ObjectId(studentID));
+        getStudentClass?.save();
         const student = await studentModel_1.default.findByIdAndUpdate(studentID, {
-            classAssigned: getClass === null || getClass === void 0 ? void 0 : getClass.className,
-            presentClassID: getClass === null || getClass === void 0 ? void 0 : getClass._id,
-            classTermFee: (getClass === null || getClass === void 0 ? void 0 : getClass.presentTerm) === "1st Term"
-                ? getClass === null || getClass === void 0 ? void 0 : getClass.class1stFee
-                : (getClass === null || getClass === void 0 ? void 0 : getClass.presentTerm) === "2nd Term"
-                    ? getClass === null || getClass === void 0 ? void 0 : getClass.class2ndFee
-                    : (getClass === null || getClass === void 0 ? void 0 : getClass.presentTerm) === "3rd Term"
-                        ? getClass === null || getClass === void 0 ? void 0 : getClass.class3rdFee
+            classAssigned: getClass?.className,
+            presentClassID: getClass?._id,
+            classTermFee: getClass?.presentTerm === "1st Term"
+                ? getClass?.class1stFee
+                : getClass?.presentTerm === "2nd Term"
+                    ? getClass?.class2ndFee
+                    : getClass?.presentTerm === "3rd Term"
+                        ? getClass?.class3rdFee
                         : null,
         }, { new: true });
-        (_b = getClass === null || getClass === void 0 ? void 0 : getClass.students) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(student === null || student === void 0 ? void 0 : student._id));
-        getClass === null || getClass === void 0 ? void 0 : getClass.save();
+        getClass?.students?.push(new mongoose_1.Types.ObjectId(student?._id));
+        getClass?.save();
         return res.status(201).json({
-            message: `class monitor assigned to ${student === null || student === void 0 ? void 0 : student.studentFirstName} `,
+            message: `class monitor assigned to ${student?.studentFirstName} `,
             data: student,
             status: 201,
         });
@@ -2021,7 +2036,7 @@ const deleteAllStudents = async (req, res) => {
         const { schoolID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
-            const allStudentIDs = school === null || school === void 0 ? void 0 : school.students;
+            const allStudentIDs = school?.students;
             for (const studentID of allStudentIDs) {
                 const student = await studentModel_1.default.findByIdAndDelete(studentID);
                 if (student) {

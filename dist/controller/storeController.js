@@ -22,7 +22,7 @@ const createStore = async (req, res) => {
                 avatar: secure_url,
                 avatarID: public_id,
             });
-            school === null || school === void 0 ? void 0 : school.store.push(new mongoose_1.Types.ObjectId(store._id));
+            school?.store.push(new mongoose_1.Types.ObjectId(store._id));
             school.save();
             return res.status(201).json({
                 message: "remark created successfully",
@@ -57,7 +57,7 @@ const viewSchoolStore = async (req, res) => {
         });
         return res.status(200).json({
             message: "viewing school store",
-            data: student === null || student === void 0 ? void 0 : student.store,
+            data: student?.store,
         });
     }
     catch (error) {

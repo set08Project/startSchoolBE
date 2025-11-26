@@ -20,15 +20,15 @@ const createStudentreportCard = async (req, res) => {
         const student = await studentModel_1.default.findById(studentID);
         // const hold = ;
         const classData = await classroomModel_1.default.findOne({
-            className: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
+            className: staff?.classesAssigned,
         });
         console.log("started here!");
         if (school && school.schoolName && staff && classData) {
             const report = await reportCardModel_1.default.create({
-                teacherName: staff === null || staff === void 0 ? void 0 : staff.staffName,
-                classes: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
+                teacherName: staff?.staffName,
+                classes: staff?.classesAssigned,
                 // name: ,
-                image: student === null || student === void 0 ? void 0 : student.avatar,
+                image: student?.avatar,
                 classAVG,
                 newTermDate,
                 date,
@@ -45,19 +45,19 @@ const createStudentreportCard = async (req, res) => {
                 continuousAssesment,
                 color,
                 clubSociety: "JET",
-                wt: student === null || student === void 0 ? void 0 : student.weight,
-                ht: student === null || student === void 0 ? void 0 : student.height,
-                age: student === null || student === void 0 ? void 0 : student.age,
-                DOB: student === null || student === void 0 ? void 0 : student.DoB,
-                session: school === null || school === void 0 ? void 0 : school.session,
+                wt: student?.weight,
+                ht: student?.height,
+                age: student?.age,
+                DOB: student?.DoB,
+                session: school?.session,
                 toataTage,
             });
-            school === null || school === void 0 ? void 0 : school.reportCard.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
-            school === null || school === void 0 ? void 0 : school.save();
-            staff === null || staff === void 0 ? void 0 : staff.reportCard.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
-            staff === null || staff === void 0 ? void 0 : staff.save();
-            student === null || student === void 0 ? void 0 : student.reportCard.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
-            student === null || student === void 0 ? void 0 : student.save();
+            school?.reportCard.push(new mongoose_1.Types.ObjectId(report?._id));
+            school?.save();
+            staff?.reportCard.push(new mongoose_1.Types.ObjectId(report?._id));
+            staff?.save();
+            student?.reportCard.push(new mongoose_1.Types.ObjectId(report?._id));
+            student?.save();
             return res.status(201).json({
                 message: "lesson report created",
                 data: report,
@@ -89,14 +89,14 @@ const createStudentMidReportCard = async (req, res) => {
         const student = await studentModel_1.default.findById(studentID);
         // const hold = ;
         const classData = await classroomModel_1.default.findOne({
-            className: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
+            className: staff?.classesAssigned,
         });
         if (school && school.schoolName && staff && classData) {
             const report = await midReportCardModel_1.default.create({
-                teacherName: staff === null || staff === void 0 ? void 0 : staff.staffName,
-                classes: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
+                teacherName: staff?.staffName,
+                classes: staff?.classesAssigned,
                 // name: ,
-                image: student === null || student === void 0 ? void 0 : student.avatar,
+                image: student?.avatar,
                 classAVG,
                 newTermDate,
                 date,
@@ -113,19 +113,19 @@ const createStudentMidReportCard = async (req, res) => {
                 continuousAssesment,
                 color,
                 clubSociety: "JET",
-                wt: student === null || student === void 0 ? void 0 : student.weight,
-                ht: student === null || student === void 0 ? void 0 : student.height,
-                age: student === null || student === void 0 ? void 0 : student.age,
-                DOB: student === null || student === void 0 ? void 0 : student.DoB,
-                session: school === null || school === void 0 ? void 0 : school.session,
+                wt: student?.weight,
+                ht: student?.height,
+                age: student?.age,
+                DOB: student?.DoB,
+                session: school?.session,
                 toataTage,
             });
-            school === null || school === void 0 ? void 0 : school.reportCard.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
-            school === null || school === void 0 ? void 0 : school.save();
-            staff === null || staff === void 0 ? void 0 : staff.reportCard.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
-            staff === null || staff === void 0 ? void 0 : staff.save();
-            student === null || student === void 0 ? void 0 : student.reportCard.push(new mongoose_1.Types.ObjectId(report === null || report === void 0 ? void 0 : report._id));
-            student === null || student === void 0 ? void 0 : student.save();
+            school?.reportCard.push(new mongoose_1.Types.ObjectId(report?._id));
+            school?.save();
+            staff?.reportCard.push(new mongoose_1.Types.ObjectId(report?._id));
+            staff?.save();
+            student?.reportCard.push(new mongoose_1.Types.ObjectId(report?._id));
+            student?.save();
             return res.status(201).json({
                 message: "mid report created",
                 data: report,

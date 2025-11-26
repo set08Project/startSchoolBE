@@ -16,23 +16,22 @@ const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const mongoose_1 = require("mongoose");
 const createSubjectMidTest = async (req, res) => {
-    var _a, _b, _c;
     try {
         const { classID, subjectID } = req.params;
         const { instruction, duration, mark, theory } = req.body;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
         const classRoom = await classroomModel_1.default.findById(classID);
         const checkForSubject = await subjectModel_1.default.findById(subjectID);
-        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = await subjectModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
-        const uploadedPath = (_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path;
+        const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
+        const findSubjectTeacher = await subjectModel_1.default.findById(checkForSubject?.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher?.schoolIDs);
+        const uploadedPath = req?.file?.path;
         if (!uploadedPath) {
             return res
                 .status(400)
                 .json({ message: "No upload file provided", status: 400 });
         }
-        const originalName = ((_b = req === null || req === void 0 ? void 0 : req.file) === null || _b === void 0 ? void 0 : _b.originalname) || uploadedPath;
+        const originalName = req?.file?.originalname || uploadedPath;
         const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
         if (ext === ".doc" || ext === ".docx") {
@@ -110,8 +109,8 @@ const createSubjectMidTest = async (req, res) => {
                 value.push(read);
             }
         }
-        let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
-        let session = lodash_1.default.find(value, { session: school === null || school === void 0 ? void 0 : school.presentSession });
+        let term = lodash_1.default.find(value, { term: school?.presentTerm });
+        let session = lodash_1.default.find(value, { session: school?.presentSession });
         const deleteFilesInFolder = (folderPath) => {
             if (node_fs_1.default.existsSync(folderPath)) {
                 const files = node_fs_1.default.readdirSync(folderPath);
@@ -127,26 +126,26 @@ const createSubjectMidTest = async (req, res) => {
         };
         if (checkForSubject) {
             const quizes = await midTestModel_1.default.create({
-                subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
-                subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
-                session: school === null || school === void 0 ? void 0 : school.presentSession,
-                term: school === null || school === void 0 ? void 0 : school.presentTerm,
+                subjectTitle: checkForSubject?.subjectTitle,
+                subjectID: checkForSubject?._id,
+                session: school?.presentSession,
+                term: school?.presentTerm,
                 quiz: {
                     instruction: { duration, mark, instruction },
                     question: value,
                     theory,
                 },
-                totalQuestions: value === null || value === void 0 ? void 0 : value.length,
+                totalQuestions: value?.length,
                 status: "midTest",
                 startExam: false,
             });
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
-            (_c = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
+            checkForSubject?.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject?.save();
+            findTeacher?.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findTeacher?.save();
+            findSubjectTeacher?.midTest.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findSubjectTeacher?.save();
             const x = setTimeout(async () => {
                 await deleteFilesInFolder(filePath);
                 clearTimeout(x);
@@ -154,7 +153,7 @@ const createSubjectMidTest = async (req, res) => {
             return res.status(201).json({
                 message: "midTest entry successfully",
                 data: quizes,
-                exam: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.examination,
+                exam: checkForSubject?.examination,
                 status: 201,
             });
         }
@@ -170,7 +169,7 @@ const createSubjectMidTest = async (req, res) => {
             message: "Error creating class subject quiz",
             status: 404,
             error: error,
-            data: error === null || error === void 0 ? void 0 : error.message,
+            data: error?.message,
         });
     }
 };
@@ -186,7 +185,7 @@ const readSubjectMidTest = async (req, res) => {
                 },
             },
         });
-        let midTest = lodash_1.default.filter(subject === null || subject === void 0 ? void 0 : subject.midTest, {
+        let midTest = lodash_1.default.filter(subject?.midTest, {
             status: "midTest",
         })[0];
         return res.status(201).json({
@@ -246,7 +245,6 @@ const randomizeSubjectMidTest = async (req, res) => {
 };
 exports.randomizeSubjectMidTest = randomizeSubjectMidTest;
 const updateSubjectMidTest = async (req, res) => {
-    var _a, _b;
     try {
         const { midTestID } = req.params;
         const { mark, duration } = req.body;
@@ -254,8 +252,8 @@ const updateSubjectMidTest = async (req, res) => {
         const subject = await midTestModel_1.default.findByIdAndUpdate(midTestID, {
             quiz: {
                 instruction: { duration, mark },
-                question: (_a = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _a === void 0 ? void 0 : _a.question,
-                theory: (_b = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _b === void 0 ? void 0 : _b.theory,
+                question: midTest?.quiz?.question,
+                theory: midTest?.quiz?.theory,
             },
         }, { new: true });
         return res.status(201).json({
@@ -295,7 +293,7 @@ const deleteMidTest = async (req, res) => {
     try {
         const { midTestID, subjectID } = req.params;
         const quizSubject = await subjectModel_1.default.findById(subjectID);
-        const quizTeacher = await staffModel_1.default.findById(quizSubject === null || quizSubject === void 0 ? void 0 : quizSubject.teacherID);
+        const quizTeacher = await staffModel_1.default.findById(quizSubject?.teacherID);
         console.log("quizTeacher", quizTeacher);
         await midTestModel_1.default.findByIdAndDelete(midTestID);
         if (quizSubject && Array.isArray(quizSubject.midTest)) {

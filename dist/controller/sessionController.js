@@ -264,7 +264,6 @@ exports.createSchoolSession = createSchoolSession;
 //   }
 // };
 const createNewSchoolSession = async (req, res) => {
-    var _a, _b;
     try {
         const { schoolID } = req.params;
         const { year } = req.body;
@@ -287,7 +286,7 @@ const createNewSchoolSession = async (req, res) => {
             });
         }
         // Check for duplicate session
-        const existingSession = (_a = school.session) === null || _a === void 0 ? void 0 : _a.find((s) => s.year === year);
+        const existingSession = school.session?.find((s) => s.year === year);
         if (existingSession) {
             return res.status(400).json({
                 message: `Session for year ${year} already exists`,
@@ -314,7 +313,7 @@ const createNewSchoolSession = async (req, res) => {
             year,
             totalStudents: students.length,
             numberOfTeachers: staff.length,
-            numberOfSubjects: ((_b = school.subjects) === null || _b === void 0 ? void 0 : _b.length) || 0,
+            numberOfSubjects: school.subjects?.length || 0,
             studentFeesNotPaid: notPaidStudents,
             studentFeesPaid: paidStudents,
         });
@@ -329,7 +328,6 @@ const createNewSchoolSession = async (req, res) => {
         }, { new: true });
         // Helper function to promote class name
         const promoteClassName = (className) => {
-            var _a, _b;
             if (!className)
                 return null;
             const match = className.match(/\d+/);
@@ -337,8 +335,8 @@ const createNewSchoolSession = async (req, res) => {
                 return null;
             const num = parseInt(match[0]);
             const parts = className.split(`${num}`);
-            const prefix = (_a = parts[0]) === null || _a === void 0 ? void 0 : _a.trim();
-            const suffix = ((_b = parts[1]) === null || _b === void 0 ? void 0 : _b.trim()) || "";
+            const prefix = parts[0]?.trim();
+            const suffix = parts[1]?.trim() || "";
             if (prefix === "JSS") {
                 if (num < 3) {
                     return `JSS ${num + 1}${suffix}`;
@@ -446,7 +444,7 @@ const createNewSchoolSession = async (req, res) => {
                     return { ...classAssignment };
                 });
                 // Detect if any className changed (compare by index)
-                const hasChanged = teacher.classesAssigned.some((orig, idx) => { var _a; return (orig === null || orig === void 0 ? void 0 : orig.className) !== ((_a = updatedClasses[idx]) === null || _a === void 0 ? void 0 : _a.className); });
+                const hasChanged = teacher.classesAssigned.some((orig, idx) => orig?.className !== updatedClasses[idx]?.className);
                 if (hasChanged) {
                     teacherUpdates.push(staffModel_1.default.findByIdAndUpdate(teacher._id, { classesAssigned: updatedClasses }, { new: true }));
                 }
@@ -486,7 +484,7 @@ const viewSchoolSession = async (req, res) => {
         });
         return res.status(200).json({
             message: "viewing school session",
-            data: school === null || school === void 0 ? void 0 : school.session,
+            data: school?.session,
         });
     }
     catch (error) {
@@ -559,7 +557,6 @@ const studentsPerSession = async (req, res) => {
 };
 exports.studentsPerSession = studentsPerSession;
 const termPerSession = async (req, res) => {
-    var _a, _b, _c, _d, _e, _f;
     try {
         const { sessionID } = req.params;
         let { term } = req.body;
@@ -567,7 +564,7 @@ const termPerSession = async (req, res) => {
             path: "term",
         });
         const schoolClass = await schoolModel_1.default
-            .findById(session === null || session === void 0 ? void 0 : session.schoolID)
+            .findById(session?.schoolID)
             .populate({ path: "classRooms" });
         if (session) {
             if (term === "1st Term" ||
@@ -594,17 +591,17 @@ const termPerSession = async (req, res) => {
                 }
                 else {
                     // presentTerm
-                    const viewDetail = await termModel_1.default.findById((_a = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 1]) === null || _a === void 0 ? void 0 : _a._id);
+                    const viewDetail = await termModel_1.default.findById(session?.term[session?.term.length - 1]?._id);
                     let resultHist = [];
-                    for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
+                    for (let i of schoolClass?.classRooms) {
                         resultHist.push({ ...i });
-                        await termModel_1.default.findByIdAndUpdate((_b = session === null || session === void 0 ? void 0 : session.term[(session === null || session === void 0 ? void 0 : session.term.length) - 1]) === null || _b === void 0 ? void 0 : _b._id, {
+                        await termModel_1.default.findByIdAndUpdate(session?.term[session?.term.length - 1]?._id, {
                             classResult: resultHist,
                         }, { new: true });
                     }
                     const sessionRecorde = await sessionModel_1.default.findByIdAndUpdate(sessionID, { presentTerm: capitalizedText(term) }, { new: true });
-                    for (let i of schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.classRooms) {
-                        await classroomModel_1.default.findByIdAndUpdate(i === null || i === void 0 ? void 0 : i._id, {
+                    for (let i of schoolClass?.classRooms) {
+                        await classroomModel_1.default.findByIdAndUpdate(i?._id, {
                             presentTerm: capitalizedText(term),
                             attendance: [],
                             timeTable: [],
@@ -617,19 +614,19 @@ const termPerSession = async (req, res) => {
                     }
                     const sessionTerm = await termModel_1.default.create({
                         term: capitalizedText(term),
-                        year: session === null || session === void 0 ? void 0 : session.year,
+                        year: session?.year,
                         presentTerm: term,
                     });
-                    await schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
-                        presentTermID: (_c = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _c === void 0 ? void 0 : _c.toString(),
+                    await schoolModel_1.default.findByIdAndUpdate(sessionRecorde?.schoolID, {
+                        presentTermID: sessionTerm?._id?.toString(),
                         presentSessionID: sessionID,
                         presentTerm: term,
                     }, { new: true });
-                    session === null || session === void 0 ? void 0 : session.term.push(new mongoose_1.Types.ObjectId(sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id));
-                    session === null || session === void 0 ? void 0 : session.save();
-                    if (((_d = schoolClass === null || schoolClass === void 0 ? void 0 : schoolClass.session) === null || _d === void 0 ? void 0 : _d.length) > 1 || ((_e = session === null || session === void 0 ? void 0 : session.term) === null || _e === void 0 ? void 0 : _e.length) > 1) {
-                        await schoolModel_1.default.findByIdAndUpdate(sessionRecorde === null || sessionRecorde === void 0 ? void 0 : sessionRecorde.schoolID, {
-                            presentTermID: (_f = sessionTerm === null || sessionTerm === void 0 ? void 0 : sessionTerm._id) === null || _f === void 0 ? void 0 : _f.toString(),
+                    session?.term.push(new mongoose_1.Types.ObjectId(sessionTerm?._id));
+                    session?.save();
+                    if (schoolClass?.session?.length > 1 || session?.term?.length > 1) {
+                        await schoolModel_1.default.findByIdAndUpdate(sessionRecorde?.schoolID, {
+                            presentTermID: sessionTerm?._id?.toString(),
                             freeMode: false,
                         }, { new: true });
                     }
@@ -721,12 +718,12 @@ const createSessionHistory = async (req, res) => {
         const { classID } = req.params;
         const { text } = req.body;
         const getClassRoom = await classroomModel_1.default.findById(classID);
-        const teacher = await staffModel_1.default.findById(getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.teacherID);
+        const teacher = await staffModel_1.default.findById(getClassRoom?.teacherID);
         const getSchool = await schoolModel_1.default
-            .findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs)
+            .findById(teacher?.schoolIDs)
             .populate({ path: "session" });
         let history = [];
-        for (let i of getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.students) {
+        for (let i of getClassRoom?.students) {
             let getStudentsData = await studentModel_1.default
                 .findById(i)
                 .populate({ path: "reportCard" });
@@ -736,14 +733,14 @@ const createSessionHistory = async (req, res) => {
             resultHistory: history,
             // session: getSchool?.session[0]?.year!,
             // term: getSchool?.session[0]?.presentTerm!,
-            session: getSchool === null || getSchool === void 0 ? void 0 : getSchool.presentSession,
-            term: getSchool === null || getSchool === void 0 ? void 0 : getSchool.presentTerm,
-            classTeacherName: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.classTeacherName,
-            className: getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.className,
+            session: getSchool?.presentSession,
+            term: getSchool?.presentTerm,
+            classTeacherName: getClassRoom?.classTeacherName,
+            className: getClassRoom?.className,
             principalsRemark: text,
         });
-        getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.classHistory.push(new mongoose_1.Types.ObjectId(getAll === null || getAll === void 0 ? void 0 : getAll._id));
-        getClassRoom === null || getClassRoom === void 0 ? void 0 : getClassRoom.save();
+        getClassRoom?.classHistory.push(new mongoose_1.Types.ObjectId(getAll?._id));
+        getClassRoom?.save();
         return res.status(200).json({
             message: "all session gotten",
             data: getAll,

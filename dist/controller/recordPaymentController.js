@@ -16,9 +16,9 @@ const recordFeesPayment = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID);
         const student = await studentModel_1.default.findById(studentID);
         if (school) {
-            const getTerm = school === null || school === void 0 ? void 0 : school.presentTerm;
+            const getTerm = school?.presentTerm;
             if (getTerm) {
-                const getStudentClassFee = student === null || student === void 0 ? void 0 : student.classTermFee;
+                const getStudentClassFee = student?.classTermFee;
                 const currentBalance = getStudentClassFee - feePaid;
                 const recordSchoolFeesPayment = await recordPaymentModel_1.default.create({
                     feePaid,
@@ -28,17 +28,17 @@ const recordFeesPayment = async (req, res) => {
                     feeBalance: currentBalance,
                     classFees: getStudentClassFee,
                     getTerm: getTerm,
-                    studentID: student === null || student === void 0 ? void 0 : student._id,
-                    studentFirstName: student === null || student === void 0 ? void 0 : student.studentFirstName,
-                    studentLastName: student === null || student === void 0 ? void 0 : student.studentLastName,
-                    studentClass: student === null || student === void 0 ? void 0 : student.classAssigned,
-                    studentAvatar: student === null || student === void 0 ? void 0 : student.avatar,
-                    parentMail: student === null || student === void 0 ? void 0 : student.parentEmail,
+                    studentID: student?._id,
+                    studentFirstName: student?.studentFirstName,
+                    studentLastName: student?.studentLastName,
+                    studentClass: student?.classAssigned,
+                    studentAvatar: student?.avatar,
+                    parentMail: student?.parentEmail,
                 });
-                school === null || school === void 0 ? void 0 : school.recordPayments.push(new mongoose_1.Types.ObjectId(recordSchoolFeesPayment._id));
-                student === null || student === void 0 ? void 0 : student.recordPayments.push(new mongoose_1.Types.ObjectId(recordSchoolFeesPayment._id));
-                school === null || school === void 0 ? void 0 : school.save();
-                student === null || student === void 0 ? void 0 : student.save();
+                school?.recordPayments.push(new mongoose_1.Types.ObjectId(recordSchoolFeesPayment._id));
+                student?.recordPayments.push(new mongoose_1.Types.ObjectId(recordSchoolFeesPayment._id));
+                school?.save();
+                student?.save();
                 return res.status(201).json({
                     message: "Sucessfully Recorded School fees Payment",
                     data: recordSchoolFeesPayment,
@@ -72,20 +72,19 @@ const recordFeesPayment = async (req, res) => {
 };
 exports.recordFeesPayment = recordFeesPayment;
 const recordSecondFeePayment = async (req, res) => {
-    var _a;
     try {
         const { feePaid } = req.body;
         const { recordID } = req.params;
         const record = await recordPaymentModel_1.default.findById(recordID);
         if (record) {
-            const pushRecord = (_a = record === null || record === void 0 ? void 0 : record.feePaid) === null || _a === void 0 ? void 0 : _a.push(feePaid);
+            const pushRecord = record?.feePaid?.push(feePaid);
             if (pushRecord) {
-                const getRecord = record === null || record === void 0 ? void 0 : record.feePaid;
-                const totalFees = getRecord === null || getRecord === void 0 ? void 0 : getRecord.reduce((accumulator, currentVal) => {
+                const getRecord = record?.feePaid;
+                const totalFees = getRecord?.reduce((accumulator, currentVal) => {
                     return accumulator + currentVal;
                 });
-                const lastFeePaid = getRecord[(getRecord === null || getRecord === void 0 ? void 0 : getRecord.length) - 1];
-                const getClassFees = record === null || record === void 0 ? void 0 : record.classFees;
+                const lastFeePaid = getRecord[getRecord?.length - 1];
+                const getClassFees = record?.classFees;
                 if (totalFees === getClassFees) {
                     const update = await recordPaymentModel_1.default.findByIdAndUpdate(record._id, { feePaymentComplete: true, feeBalance: totalFees }, { new: true });
                     await record.save();
@@ -198,7 +197,6 @@ const getOneFeeRecord = async (req, res) => {
 };
 exports.getOneFeeRecord = getOneFeeRecord;
 const deleteFeesRecord = async (req, res) => {
-    var _a, _b;
     try {
         const { schoolID } = req.params;
         const { studentID } = req.params;
@@ -207,8 +205,8 @@ const deleteFeesRecord = async (req, res) => {
         const student = await studentModel_1.default.findById(studentID);
         if (school) {
             const findRecord = await recordPaymentModel_1.default.findByIdAndDelete(recordID);
-            (_a = school === null || school === void 0 ? void 0 : school.recordPayments) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(recordID));
-            (_b = student === null || student === void 0 ? void 0 : student.recordPayments) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(recordID));
+            school?.recordPayments?.pull(new mongoose_1.Types.ObjectId(recordID));
+            student?.recordPayments?.pull(new mongoose_1.Types.ObjectId(recordID));
             await school.save();
             await student.save();
             return res.status(200).json({

@@ -22,7 +22,7 @@ const createSchoolGallary = async (req, res) => {
                 avatar: secure_url,
                 avatarID: public_id,
             });
-            school === null || school === void 0 ? void 0 : school.gallaries.push(new mongoose_1.Types.ObjectId(store._id));
+            school?.gallaries.push(new mongoose_1.Types.ObjectId(store._id));
             school.save();
             return res.status(201).json({
                 message: "image uploaded gallary successfully",
@@ -45,7 +45,6 @@ const createSchoolGallary = async (req, res) => {
 };
 exports.createSchoolGallary = createSchoolGallary;
 const createRestrictedSchoolGallary = async (req, res) => {
-    var _a;
     try {
         const { schoolID } = req.params;
         const { title, description } = req.body;
@@ -58,7 +57,7 @@ const createRestrictedSchoolGallary = async (req, res) => {
             },
         });
         if (school) {
-            if (((_a = school === null || school === void 0 ? void 0 : school.gallaries) === null || _a === void 0 ? void 0 : _a.length) > 10) {
+            if (school?.gallaries?.length > 10) {
                 return res.status(404).json({
                     message: "Please upgrade your account to upload more images",
                     status: 404,
@@ -72,7 +71,7 @@ const createRestrictedSchoolGallary = async (req, res) => {
                     avatar: secure_url,
                     avatarID: public_id,
                 });
-                school === null || school === void 0 ? void 0 : school.gallaries.push(new mongoose_1.Types.ObjectId(gallary._id));
+                school?.gallaries.push(new mongoose_1.Types.ObjectId(gallary._id));
                 school.save();
                 return res.status(201).json({
                     message: "image uploaded gallary successfully",
@@ -103,7 +102,7 @@ const viewSchoolGallary = async (req, res) => {
         });
         return res.status(200).json({
             message: "viewing school gallaries",
-            data: gallary === null || gallary === void 0 ? void 0 : gallary.gallaries,
+            data: gallary?.gallaries,
         });
     }
     catch (error) {
@@ -155,7 +154,7 @@ const deleteSchoolGallary = async (req, res) => {
                 await cloudinary_1.default.uploader.destroy(publicId);
             }
             catch (err) {
-                console.error("Failed to destroy cloud asset", publicId, (err === null || err === void 0 ? void 0 : err.message) || err);
+                console.error("Failed to destroy cloud asset", publicId, err?.message || err);
                 // continue — asset deletion failure shouldn't block DB cleanup
             }
         }
@@ -175,7 +174,7 @@ const deleteSchoolGallary = async (req, res) => {
         console.error("Error deleting school gallery:", error);
         return res.status(500).json({
             message: "Error deleting school gallery",
-            error: error === null || error === void 0 ? void 0 : error.message,
+            error: error?.message,
             status: 500,
         });
     }

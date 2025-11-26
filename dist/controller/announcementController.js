@@ -23,7 +23,7 @@ const createSchoolAnnouncement = async (req, res) => {
                 date,
                 status: "announcement",
             });
-            school === null || school === void 0 ? void 0 : school.announcements.push(new mongoose_1.Types.ObjectId(classes._id));
+            school?.announcements.push(new mongoose_1.Types.ObjectId(classes._id));
             school.save();
             return res.status(201).json({
                 message: "announcement created successfully",
@@ -85,7 +85,7 @@ const createSchoolEvent = async (req, res) => {
                 date,
                 status: "event",
             });
-            school === null || school === void 0 ? void 0 : school.events.push(new mongoose_1.Types.ObjectId(event._id));
+            school?.events.push(new mongoose_1.Types.ObjectId(event._id));
             school.save();
             return res.status(201).json({
                 message: "event created successfully",
@@ -134,18 +134,17 @@ const readSchoolEvent = async (req, res) => {
 };
 exports.readSchoolEvent = readSchoolEvent;
 const createSchoolPaynemtReceipt = async (req, res) => {
-    var _a, _b;
     try {
         const { schoolID } = req.params;
         const { costPaid, paymentRef } = req.body;
         const school = await schoolModel_1.default.findById(schoolID);
-        const confirm = (_a = school === null || school === void 0 ? void 0 : school.receipt) === null || _a === void 0 ? void 0 : _a.some((el) => {
+        const confirm = school?.receipt?.some((el) => {
             return el.paymentRef === paymentRef;
         });
         let arr = [];
         if (school && school.schoolName && school.status === "school-admin") {
             if (confirm) {
-                const confirmData = (_b = school === null || school === void 0 ? void 0 : school.receipt) === null || _b === void 0 ? void 0 : _b.find((el) => el.paymentRef === paymentRef);
+                const confirmData = school?.receipt?.find((el) => el.paymentRef === paymentRef);
                 return res.status(404).json({
                     message: "payment ref already used before",
                     data: confirmData,
@@ -155,7 +154,7 @@ const createSchoolPaynemtReceipt = async (req, res) => {
             else {
                 await schoolModel_1.default.findByIdAndUpdate(school._id, {
                     receipt: [
-                        ...school === null || school === void 0 ? void 0 : school.receipt,
+                        ...school?.receipt,
                         { costPaid, paymentRef, date: (0, moment_1.default)(Date.now()).format("lll") },
                     ],
                 }, { new: true });

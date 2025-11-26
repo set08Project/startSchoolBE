@@ -22,7 +22,7 @@ const createSchoolClasses = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID).populate({
             path: "classRooms",
         });
-        const checkClass = school === null || school === void 0 ? void 0 : school.classRooms.some((el) => {
+        const checkClass = school?.classRooms.some((el) => {
             return el.className === className;
         });
         if (school && school.status === "school-admin") {
@@ -34,7 +34,7 @@ const createSchoolClasses = async (req, res) => {
                     class2ndFee,
                     class3rdFee,
                     class1stFee,
-                    presentTerm: school === null || school === void 0 ? void 0 : school.presentTerm,
+                    presentTerm: school?.presentTerm,
                 });
                 school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
                 school.classRooms.push(new mongoose_1.Types.ObjectId(classes._id));
@@ -69,7 +69,6 @@ const createSchoolClasses = async (req, res) => {
 };
 exports.createSchoolClasses = createSchoolClasses;
 const createBulkSchoolClassroom = async (req, res) => {
-    var _a;
     try {
         const { schoolID } = req.params;
         let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
@@ -93,22 +92,22 @@ const createBulkSchoolClassroom = async (req, res) => {
             const school = await schoolModel_1.default.findById(schoolID).populate({
                 path: "classRooms",
             });
-            const checkClass = school === null || school === void 0 ? void 0 : school.classRooms.some((el) => {
-                return el.className === (i === null || i === void 0 ? void 0 : i.className);
+            const checkClass = school?.classRooms.some((el) => {
+                return el.className === i?.className;
             });
-            const findClass = (_a = school === null || school === void 0 ? void 0 : school.classRooms) === null || _a === void 0 ? void 0 : _a.find((el) => {
-                return el.className === (i === null || i === void 0 ? void 0 : i.classAssigned);
+            const findClass = school?.classRooms?.find((el) => {
+                return el.className === i?.classAssigned;
             });
             if (school && school.status === "school-admin") {
                 if (!checkClass) {
                     const classes = await classroomModel_1.default.create({
                         schoolName: school.schoolName,
-                        classTeacherName: i === null || i === void 0 ? void 0 : i.classTeacherName,
-                        className: i === null || i === void 0 ? void 0 : i.className,
-                        class2ndFee: parseInt(i === null || i === void 0 ? void 0 : i.class2ndFee.replace(/,/g, "")),
-                        class3rdFee: parseInt(i === null || i === void 0 ? void 0 : i.class3rdFee.replace(/,/g, "")),
-                        class1stFee: parseInt(i === null || i === void 0 ? void 0 : i.class1stFee.replace(/,/g, "")),
-                        presentTerm: school === null || school === void 0 ? void 0 : school.presentTerm,
+                        classTeacherName: i?.classTeacherName,
+                        className: i?.className,
+                        class2ndFee: parseInt(i?.class2ndFee.replace(/,/g, "")),
+                        class3rdFee: parseInt(i?.class3rdFee.replace(/,/g, "")),
+                        class1stFee: parseInt(i?.class1stFee.replace(/,/g, "")),
+                        presentTerm: school?.presentTerm,
                     });
                     school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
                     school.classRooms.push(new mongoose_1.Types.ObjectId(classes._id));
@@ -354,31 +353,31 @@ const updateSchoolClassName = async (req, res) => {
             }, { new: true });
             for (let i of school.students) {
                 let student = await studentModel_1.default.findById(i);
-                if ((student === null || student === void 0 ? void 0 : student.presentClassID) === classID) {
+                if (student?.presentClassID === classID) {
                     await studentModel_1.default.findByIdAndUpdate(i, { classAssigned: className }, { new: true });
                 }
             }
             for (let i of school.staff) {
                 let staff = await staffModel_1.default.findById(i);
-                if ((staff === null || staff === void 0 ? void 0 : staff.presentClassID) === classID) {
-                    let myClass = staff === null || staff === void 0 ? void 0 : staff.classesAssigned.find((el) => {
+                if (staff?.presentClassID === classID) {
+                    let myClass = staff?.classesAssigned.find((el) => {
                         return el.classID === classID;
                     });
                     myClass = { className, classID };
-                    let xx = staff === null || staff === void 0 ? void 0 : staff.classesAssigned.filter((el) => {
+                    let xx = staff?.classesAssigned.filter((el) => {
                         return el.classID !== classID;
                     });
-                    let subj = staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.find((el) => {
+                    let subj = staff?.subjectAssigned.find((el) => {
                         return el.classID === classID;
                     });
                     subj = { ...subj, classMeant: className };
-                    let yy = staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.filter((el) => {
+                    let yy = staff?.subjectAssigned.filter((el) => {
                         return el.classID !== classID;
                     });
                     await staffModel_1.default.findByIdAndUpdate(i, {
                         classesAssigned: [...xx, myClass],
                         subjectAssigned: [
-                            ...staff === null || staff === void 0 ? void 0 : staff.subjectAssigned.filter((el) => {
+                            ...staff?.subjectAssigned.filter((el) => {
                                 return el.classID !== classID;
                             }),
                             subj,
@@ -388,7 +387,7 @@ const updateSchoolClassName = async (req, res) => {
             }
             for (let i of school.subjects) {
                 let subject = await subjectModel_1.default.findById(i);
-                if ((subject === null || subject === void 0 ? void 0 : subject.subjectClassID) === classID) {
+                if (subject?.subjectClassID === classID) {
                     await subjectModel_1.default.findByIdAndUpdate(i, { designated: className }, { new: true });
                 }
             }
@@ -429,8 +428,8 @@ const updateSchoolClassTeacher = async (req, res) => {
                 }, { new: true });
                 await staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
                     classesAssigned: [
-                        ...getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.classesAssigned,
-                        { className: subjects === null || subjects === void 0 ? void 0 : subjects.className, classID },
+                        ...getTeacher?.classesAssigned,
+                        { className: subjects?.className, classID },
                     ],
                     presentClassID: classID,
                 }, { new: true });
@@ -478,13 +477,13 @@ const updateSchoolClass1stFee = async (req, res) => {
                 // After updating class fees, reflect the change on students in this class.
                 // Determine which term is active on the class and set students' classTermFee accordingly.
                 try {
-                    const term = update === null || update === void 0 ? void 0 : update.presentTerm;
+                    const term = update?.presentTerm;
                     const feeForTerm = term === "1st Term"
-                        ? update === null || update === void 0 ? void 0 : update.class1stFee
+                        ? update?.class1stFee
                         : term === "2nd Term"
-                            ? update === null || update === void 0 ? void 0 : update.class2ndFee
+                            ? update?.class2ndFee
                             : term === "3rd Term"
-                                ? update === null || update === void 0 ? void 0 : update.class3rdFee
+                                ? update?.class3rdFee
                                 : null;
                     if (feeForTerm !== null && feeForTerm !== undefined) {
                         await studentModel_1.default.updateMany({ presentClassID: classID }, { $set: { classTermFee: feeForTerm } });
@@ -492,7 +491,7 @@ const updateSchoolClass1stFee = async (req, res) => {
                 }
                 catch (err) {
                     // Log but don't fail the entire request — the class fees were updated.
-                    console.error("Failed to update students' classTermFee:", (err === null || err === void 0 ? void 0 : err.message) || err);
+                    console.error("Failed to update students' classTermFee:", err?.message || err);
                 }
                 return res.status(201).json({
                     message: "class term fee updated successfully",
@@ -529,7 +528,7 @@ const deleteSchoolClass = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
             const subjects = await classroomModel_1.default.findByIdAndDelete(classID);
-            school.classRooms.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
+            school.classRooms.pull(new mongoose_1.Types.ObjectId(subjects?._id));
             school.save();
             return res.status(201).json({
                 message: "class deleted successfully",
@@ -563,7 +562,7 @@ const viewClassTopStudent = async (req, res) => {
                 },
             },
         });
-        const rate = lodash_1.default.orderBy(schoolClasses === null || schoolClasses === void 0 ? void 0 : schoolClasses.students, ["totalPerformance"], ["desc"]);
+        const rate = lodash_1.default.orderBy(schoolClasses?.students, ["totalPerformance"], ["desc"]);
         return res.status(200).json({
             message: "finding class students top performance!",
             status: 200,
@@ -585,17 +584,17 @@ const studentOfWeek = async (req, res) => {
         const { studentName, remark } = req.body;
         const teacher = await staffModel_1.default.findById(teacherID);
         const classRM = await classroomModel_1.default
-            .findById(teacher === null || teacher === void 0 ? void 0 : teacher.presentClassID)
+            .findById(teacher?.presentClassID)
             .populate({
             path: "students",
         });
-        const getStudent = classRM === null || classRM === void 0 ? void 0 : classRM.students.find((el) => {
+        const getStudent = classRM?.students.find((el) => {
             return (`${el.studentFirstName}` === studentName.trim().split(" ")[0] &&
                 `${el.studentLastName}` === studentName.trim().split(" ")[1]);
         });
-        const studentData = await studentModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent._id);
-        if ((teacher === null || teacher === void 0 ? void 0 : teacher.status) === "school-teacher" && classRM && studentData) {
-            const week = await classroomModel_1.default.findByIdAndUpdate(classRM === null || classRM === void 0 ? void 0 : classRM._id, {
+        const studentData = await studentModel_1.default.findById(getStudent?._id);
+        if (teacher?.status === "school-teacher" && classRM && studentData) {
+            const week = await classroomModel_1.default.findByIdAndUpdate(classRM?._id, {
                 weekStudent: {
                     student: studentData,
                     remark,
@@ -645,7 +644,7 @@ const viewClassPositions = async (req, res) => {
         const getScoreForStudent = async (student) => {
             try {
                 // Prefer using populated student.reportCard if available
-                const reports = Array.isArray(student === null || student === void 0 ? void 0 : student.reportCard)
+                const reports = Array.isArray(student?.reportCard)
                     ? student.reportCard
                     : [];
                 // filter candidate reports by class, term (classInfo), and session when provided
@@ -667,8 +666,8 @@ const viewClassPositions = async (req, res) => {
                 let chosen = null;
                 if (candidates.length > 0) {
                     chosen = candidates.sort((a, b) => {
-                        const ta = (a === null || a === void 0 ? void 0 : a.createdAt) ? new Date(a.createdAt).getTime() : 0;
-                        const tb = (b === null || b === void 0 ? void 0 : b.createdAt) ? new Date(b.createdAt).getTime() : 0;
+                        const ta = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
+                        const tb = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
                         return tb - ta;
                     })[0];
                 }

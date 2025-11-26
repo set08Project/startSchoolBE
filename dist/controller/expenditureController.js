@@ -25,8 +25,8 @@ const createExpenditure = async (req, res) => {
                     paymentCategory,
                     paymentMode,
                 });
-                getTerm === null || getTerm === void 0 ? void 0 : getTerm.expense.push(new mongoose_1.Types.ObjectId(createExpense === null || createExpense === void 0 ? void 0 : createExpense._id));
-                getTerm === null || getTerm === void 0 ? void 0 : getTerm.save();
+                getTerm?.expense.push(new mongoose_1.Types.ObjectId(createExpense?._id));
+                getTerm?.save();
                 return res.status(201).json({
                     message: "expense added successfully",
                     data: createExpense,
@@ -101,7 +101,7 @@ const readTermBudget = async (req, res) => {
             });
             return res.status(201).json({
                 message: "retriving term budget successfully",
-                data: getTerm === null || getTerm === void 0 ? void 0 : getTerm.budget,
+                data: getTerm?.budget,
                 status: 200,
             });
         }
@@ -214,12 +214,12 @@ const readTermDailyExpenses = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID);
         if (school) {
             const getTerm = await termModel_1.default.findById(school.presentTermID);
-            let filterByMonth = lodash_1.default.groupBy(getTerm === null || getTerm === void 0 ? void 0 : getTerm.expensePayOut, "month");
-            let filterByWeek = lodash_1.default.groupBy(getTerm === null || getTerm === void 0 ? void 0 : getTerm.expensePayOut, "weekValue");
+            let filterByMonth = lodash_1.default.groupBy(getTerm?.expensePayOut, "month");
+            let filterByWeek = lodash_1.default.groupBy(getTerm?.expensePayOut, "weekValue");
             return res.status(201).json({
                 message: "retriving daily expenses successfully",
                 data: {
-                    allData: getTerm === null || getTerm === void 0 ? void 0 : getTerm.expensePayOut,
+                    allData: getTerm?.expensePayOut,
                     week: filterByWeek,
                     month: filterByMonth,
                 },

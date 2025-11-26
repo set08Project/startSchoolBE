@@ -18,7 +18,6 @@ const node_fs_1 = __importDefault(require("node:fs"));
 const streamifier_1 = require("../utils/streamifier");
 const mongoose_1 = require("mongoose");
 const createSubjectExam = async (req, res) => {
-    var _a, _b, _c;
     try {
         const { classID, subjectID } = req.params;
         const { theory, instruction, duration, mark, randomize } = req.body;
@@ -26,19 +25,19 @@ const createSubjectExam = async (req, res) => {
         const classRoom = await classroomModel_1.default.findById(classID);
         const checkForSubject = await subjectModel_1.default.findById(subjectID);
         // teacher assigned to the class
-        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
+        const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
         // teacher assigned specifically to the subject (teacherID stored on subject)
-        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject?.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher?.schoolIDs);
         // const { secure_url, public_id }: any = await streamUpload(req);
-        const uploadedPath = (_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path;
+        const uploadedPath = req?.file?.path;
         if (!uploadedPath) {
             return res.status(400).json({
                 message: "No upload file provided",
                 status: 400,
             });
         }
-        const originalName = ((_b = req === null || req === void 0 ? void 0 : req.file) === null || _b === void 0 ? void 0 : _b.originalname) || uploadedPath;
+        const originalName = req?.file?.originalname || uploadedPath;
         const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
         if (ext === ".doc" || ext === ".docx") {
@@ -173,8 +172,8 @@ const createSubjectExam = async (req, res) => {
                 value.push(read);
             }
         }
-        let term = lodash_1.default.find(value, { term: school === null || school === void 0 ? void 0 : school.presentTerm });
-        let session = lodash_1.default.find(value, { session: school === null || school === void 0 ? void 0 : school.presentSession });
+        let term = lodash_1.default.find(value, { term: school?.presentTerm });
+        let session = lodash_1.default.find(value, { session: school?.presentSession });
         const deleteFilesInFolder = (folderPath) => {
             if (node_fs_1.default.existsSync(folderPath)) {
                 const files = node_fs_1.default.readdirSync(folderPath);
@@ -268,10 +267,10 @@ const createSubjectExam = async (req, res) => {
             // }
             // await examinationModel.deleteMany();
             const quizes = await examinationModel_1.default.create({
-                subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
-                subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
-                session: school === null || school === void 0 ? void 0 : school.presentSession,
-                term: school === null || school === void 0 ? void 0 : school.presentTerm,
+                subjectTitle: checkForSubject?.subjectTitle,
+                subjectID: checkForSubject?._id,
+                session: school?.presentSession,
+                term: school?.presentTerm,
                 // quiz: {
                 //   instruction: { duration, mark, instruction },
                 //   question: value,
@@ -281,17 +280,17 @@ const createSubjectExam = async (req, res) => {
                     question: value,
                     theory,
                 },
-                totalQuestions: value === null || value === void 0 ? void 0 : value.length,
+                totalQuestions: value?.length,
                 status: "examination",
                 startExam: false,
             });
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            (_c = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
+            checkForSubject?.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject?.save();
+            findTeacher?.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findTeacher?.save();
+            findSubjectTeacher?.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findSubjectTeacher?.save();
             const x = setTimeout(async () => {
                 await deleteFilesInFolder(filePath);
                 clearTimeout(x);
@@ -299,7 +298,7 @@ const createSubjectExam = async (req, res) => {
             return res.status(201).json({
                 message: "exam entry successfully",
                 data: quizes,
-                exam: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.examination,
+                exam: checkForSubject?.examination,
                 status: 201,
             });
         }
@@ -315,7 +314,7 @@ const createSubjectExam = async (req, res) => {
             message: "Error creating class subject quiz",
             status: 404,
             error: error,
-            data: error === null || error === void 0 ? void 0 : error.message,
+            data: error?.message,
         });
     }
 };
@@ -331,7 +330,7 @@ const readSubjectExamination = async (req, res) => {
                 },
             },
         });
-        let exam = lodash_1.default.filter(subject === null || subject === void 0 ? void 0 : subject.examination, {
+        let exam = lodash_1.default.filter(subject?.examination, {
             status: "examination",
         })[0];
         return res.status(201).json({
@@ -413,7 +412,7 @@ const deleteExamination = async (req, res) => {
     try {
         const { examID, subjectID } = req.params;
         const quizSubject = await subjectModel_1.default.findById(subjectID);
-        const quizTeacher = await staffModel_1.default.findById(quizSubject === null || quizSubject === void 0 ? void 0 : quizSubject.teacherID);
+        const quizTeacher = await staffModel_1.default.findById(quizSubject?.teacherID);
         const quiz = await examinationModel_1.default.findByIdAndDelete(examID);
         quizSubject.pull(new mongoose_1.Types.ObjectId(examID));
         quizSubject.save();
@@ -435,16 +434,15 @@ const deleteExamination = async (req, res) => {
 };
 exports.deleteExamination = deleteExamination;
 const updateSubjectExam = async (req, res) => {
-    var _a, _b;
     try {
         const { examID } = req.params;
-        const { mark, duration } = req.body;
+        const { mark, duration, dept } = req.body;
         const midTest = await examinationModel_1.default.findByIdAndUpdate(examID);
         const subject = await examinationModel_1.default.findByIdAndUpdate(examID, {
             quiz: {
-                instruction: { duration, mark },
-                question: (_a = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _a === void 0 ? void 0 : _a.question,
-                theory: (_b = midTest === null || midTest === void 0 ? void 0 : midTest.quiz) === null || _b === void 0 ? void 0 : _b.theory,
+                instruction: { duration, mark, dept },
+                question: midTest?.quiz?.question,
+                theory: midTest?.quiz?.theory,
             },
         }, { new: true });
         return res.status(201).json({

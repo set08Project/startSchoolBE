@@ -22,8 +22,8 @@ const removeSubjectFromResult = async (req, res) => {
             });
         }
         // Get the current session's report card
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
-        const currentClassInfo = `${student === null || student === void 0 ? void 0 : student.classAssigned} session: ${school === null || school === void 0 ? void 0 : school.presentSession}(${school === null || school === void 0 ? void 0 : school.presentTerm})`;
+        const school = await schoolModel_1.default.findById(student?.schoolIDs);
+        const currentClassInfo = `${student?.classAssigned} session: ${school?.presentSession}(${school?.presentTerm})`;
         const reportCard = student.reportCard.find((card) => card.classInfo === currentClassInfo);
         if (!reportCard) {
             return res.status(404).json({

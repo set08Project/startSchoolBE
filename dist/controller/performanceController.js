@@ -12,7 +12,6 @@ const performanceModel_1 = __importDefault(require("../model/performanceModel"))
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
 const midTestModel_1 = __importDefault(require("../model/midTestModel"));
 const createQuizPerformance = async (req, res) => {
-    var _a;
     try {
         const { studentID, quizID, subjectID } = req.params;
         const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, status, } = req.body;
@@ -39,9 +38,9 @@ const createQuizPerformance = async (req, res) => {
                 .json({ message: "Subject not found", status: 404 });
         }
         // compute performanceRating safely
-        const questionCount = Array.isArray((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question)
+        const questionCount = Array.isArray(quizData?.quiz?.question)
             ? quizData.quiz.question.length
-            : typeof (quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === "number"
+            : typeof quizData?.quiz === "number"
                 ? quizData.quiz
                 : 0;
         const perfRating = questionCount > 0 && typeof studentScore === "number"
@@ -56,7 +55,7 @@ const createQuizPerformance = async (req, res) => {
         // create performance document
         const performanceDoc = await performanceModel_1.default.create({
             remark,
-            subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
+            subjectTitle: quizData?.subjectTitle,
             studentScore,
             studentGrade,
             totalQuestions,
@@ -65,10 +64,10 @@ const createQuizPerformance = async (req, res) => {
             status,
             performanceRating: perfRating,
             attemptNumber,
-            className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
+            className: studentInfo?.classAssigned,
             quizID: quizID,
-            studentName: `${(studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName) || ""} ${(studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName) || ""}`.trim(),
-            studentAvatar: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.avatar,
+            studentName: `${studentInfo?.studentFirstName || ""} ${studentInfo?.studentLastName || ""}`.trim(),
+            studentAvatar: studentInfo?.avatar,
             subjectID: subject._id,
             student: studentID,
         });
@@ -114,7 +113,7 @@ const createQuizPerformance = async (req, res) => {
         return res.status(500).json({
             message: "Error creating exam performance",
             status: 500,
-            data: error === null || error === void 0 ? void 0 : error.message,
+            data: error?.message,
         });
     }
 };
@@ -185,7 +184,6 @@ const updateQuitSubjectQuizResultRecorded = async (req, res) => {
 };
 exports.updateQuitSubjectQuizResultRecorded = updateQuitSubjectQuizResultRecorded;
 const readOneSubjectQuizResult = async (req, res) => {
-    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
         const quiz = await quizModel_1.default.findById(quizID);
@@ -199,9 +197,9 @@ const readOneSubjectQuizResult = async (req, res) => {
                 status: 404,
             });
         }
-        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.quiz) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = subject?.quiz?.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = subject?.performance?.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -275,7 +273,6 @@ const readQuizResult = async (req, res) => {
 exports.readQuizResult = readQuizResult;
 // Examination
 const createExamPerformance = async (req, res) => {
-    var _a, _b, _c, _d;
     try {
         const { studentID, quizID, subjectID } = req.params;
         const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, status, } = req.body;
@@ -292,28 +289,28 @@ const createExamPerformance = async (req, res) => {
             const attemptNumber = existingAttempts + 1;
             const quizes = await performanceModel_1.default.create({
                 remark,
-                subjectTitle: quizData === null || quizData === void 0 ? void 0 : quizData.subjectTitle,
+                subjectTitle: quizData?.subjectTitle,
                 studentScore,
                 studentGrade,
                 totalQuestions,
                 markPerQuestion,
                 quizDone: true,
                 status,
-                performanceRating: parseInt(((studentScore / ((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question.length)) * 100).toFixed(2)),
+                performanceRating: parseInt(((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)),
                 attemptNumber,
-                className: studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.classAssigned,
+                className: studentInfo?.classAssigned,
                 quizID: quizID,
-                studentName: `${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentFirstName} ${studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.studentLastName}`,
+                studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
                 studentAvatar: studentInfo.avatar,
-                subjectID: subject === null || subject === void 0 ? void 0 : subject._id,
+                subjectID: subject?._id,
                 student: studentID,
             });
-            (_b = quizData === null || quizData === void 0 ? void 0 : quizData.performance) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (quizData === null || quizData === void 0 ? void 0 : quizData.save());
-            (_c = studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (studentInfo === null || studentInfo === void 0 ? void 0 : studentInfo.save());
-            (_d = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (subject === null || subject === void 0 ? void 0 : subject.save());
+            quizData?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await quizData?.save();
+            studentInfo?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await studentInfo?.save();
+            subject?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await subject?.save();
             const getStudent = await studentModel_1.default.findByIdAndUpdate(studentID, { $push: { performance: new mongoose_1.Types.ObjectId(quizes._id) } }, { new: true });
             const ratings = [];
             const totalSum = ratings.reduce((a, b) => a + b, 0);
@@ -441,7 +438,6 @@ exports.createExamPerformance = createExamPerformance;
 //   }
 // };
 const createMidTestPerformance = async (req, res) => {
-    var _a;
     try {
         const { studentID, quizID, subjectID } = req.params;
         const { studentScore, studentGrade, remark, totalQuestions, markPerQuestion, status, } = req.body;
@@ -483,9 +479,9 @@ const createMidTestPerformance = async (req, res) => {
             });
         }
         // Calculate performance rating safely
-        const questionCount = Array.isArray((_a = quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === null || _a === void 0 ? void 0 : _a.question)
+        const questionCount = Array.isArray(quizData?.quiz?.question)
             ? quizData.quiz.question.length
-            : typeof (quizData === null || quizData === void 0 ? void 0 : quizData.quiz) === "number"
+            : typeof quizData?.quiz === "number"
                 ? quizData.quiz
                 : 0;
         if (questionCount === 0) {
@@ -612,7 +608,6 @@ const readSubjectExamResult = async (req, res) => {
 };
 exports.readSubjectExamResult = readSubjectExamResult;
 const readOneSubjectExamResult = async (req, res) => {
-    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
         const quiz = await examinationModel_1.default.findById(quizID);
@@ -626,9 +621,9 @@ const readOneSubjectExamResult = async (req, res) => {
                 status: 404,
             });
         }
-        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = subject?.examination?.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = subject?.performance?.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -701,7 +696,6 @@ const readExamResult = async (req, res) => {
 };
 exports.readExamResult = readExamResult;
 const readOneSubjectMidTestResult = async (req, res) => {
-    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
         const quiz = await midTestModel_1.default.findById(quizID);
@@ -715,9 +709,9 @@ const readOneSubjectMidTestResult = async (req, res) => {
                 status: 404,
             });
         }
-        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = subject?.examination?.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = subject?.performance?.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -740,7 +734,6 @@ const readOneSubjectMidTestResult = async (req, res) => {
 };
 exports.readOneSubjectMidTestResult = readOneSubjectMidTestResult;
 const readStudentMidTestResult = async (req, res) => {
-    var _a;
     try {
         const { studentID } = req.params;
         const subject = await studentModel_1.default.findById(studentID).populate({
@@ -751,7 +744,7 @@ const readStudentMidTestResult = async (req, res) => {
                 },
             },
         });
-        const x = (_a = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _a === void 0 ? void 0 : _a.filter((el) => el.status === "midTest");
+        const x = subject?.performance?.filter((el) => el.status === "midTest");
         return res.status(201).json({
             message: "subject quiz performance read successfully",
             data: x,
@@ -792,7 +785,6 @@ const readMidTestResult = async (req, res) => {
 };
 exports.readMidTestResult = readMidTestResult;
 const readOneSubjectMidTestResultPreformance = async (req, res) => {
-    var _a, _b;
     try {
         const { subjectID, quizID } = req.params;
         const quiz = await midTestModel_1.default.findById(quizID);
@@ -806,9 +798,9 @@ const readOneSubjectMidTestResultPreformance = async (req, res) => {
                 status: 404,
             });
         }
-        const idCompare = (_a = subject === null || subject === void 0 ? void 0 : subject.examination) === null || _a === void 0 ? void 0 : _a.some((id) => id.toString() === quiz._id.toString());
+        const idCompare = subject?.examination?.some((id) => id.toString() === quiz._id.toString());
         if (idCompare) {
-            const filteredPerformance = (_b = subject === null || subject === void 0 ? void 0 : subject.performance) === null || _b === void 0 ? void 0 : _b.filter((el) => el.quizID.toString() === quiz._id.toString());
+            const filteredPerformance = subject?.performance?.filter((el) => el.quizID.toString() === quiz._id.toString());
             return res.status(201).json({
                 message: "Filtered quiz performance read successfully",
                 data: filteredPerformance,
@@ -831,7 +823,6 @@ const readOneSubjectMidTestResultPreformance = async (req, res) => {
 };
 exports.readOneSubjectMidTestResultPreformance = readOneSubjectMidTestResultPreformance;
 const deletePerformance = async (req, res) => {
-    var _a;
     try {
         const { performanceID } = req.params;
         if (!performanceID) {
@@ -863,7 +854,7 @@ const deletePerformance = async (req, res) => {
                 .populate({ path: "performance" });
             if (student) {
                 const ratings = [];
-                (_a = student.performance) === null || _a === void 0 ? void 0 : _a.forEach((el) => {
+                student.performance?.forEach((el) => {
                     if (typeof el.performanceRating === "number" &&
                         !isNaN(el.performanceRating)) {
                         ratings.push(el.performanceRating);

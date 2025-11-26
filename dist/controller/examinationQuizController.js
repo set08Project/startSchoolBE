@@ -477,7 +477,6 @@ const validateQuestion = (question, index) => {
  * Main controller function to create subject examination/quiz from uploaded file
  */
 const createSubjectExamination = async (req, res) => {
-    var _a;
     let uploadedPath;
     try {
         const { classID, subjectID } = req.params;
@@ -537,9 +536,9 @@ const createSubjectExamination = async (req, res) => {
             });
         }
         // Get related records
-        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject?.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher?.schoolIDs);
         const originalName = req.file.originalname || uploadedPath;
         const ext = path.extname(originalName).toLowerCase();
         let value = [];
@@ -781,30 +780,30 @@ const createSubjectExamination = async (req, res) => {
         //   startExam: false,
         // });
         const quizes = await examinationModel_1.default.create({
-            subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
-            subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
-            session: school === null || school === void 0 ? void 0 : school.presentSession,
-            term: school === null || school === void 0 ? void 0 : school.presentTerm,
+            subjectTitle: checkForSubject?.subjectTitle,
+            subjectID: checkForSubject?._id,
+            session: school?.presentSession,
+            term: school?.presentTerm,
             quiz: {
                 instruction: { duration, mark, instruction },
                 question: value,
                 theory: "",
             },
-            totalQuestions: value === null || value === void 0 ? void 0 : value.length,
+            totalQuestions: value?.length,
             status: "examination",
             startExam: false,
         });
         // ============ UPDATE RELATIONSHIPS ============
-        checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-        (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
-        await (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
+        checkForSubject?.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
+        checkForSubject?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+        await checkForSubject?.save();
         if (findTeacher) {
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
+            findTeacher?.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await findTeacher?.save();
         }
         if (findSubjectTeacher) {
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
+            findSubjectTeacher?.examination.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await findSubjectTeacher?.save();
         }
         // ============ CLEAN UP UPLOADED FILE ============
         const cleanupFile = () => {

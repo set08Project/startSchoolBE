@@ -32,7 +32,7 @@ const makePaymentWithCron = async (req, res) => {
             const paymentID = crypto_1.default.randomBytes(3).toString("hex");
             const payments = await paymentModel_1.default.create({
                 cost: 200000,
-                schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
+                schoolName: school?.schoolName,
                 expiryDate: (0, moment_1.default)(dataPeriod).format("LLLL"),
                 datePaid: (0, moment_1.default)(startedDate).format("LLLL"),
                 paymentID,
@@ -271,8 +271,8 @@ const createPayment = async (req, res) => {
             const dataPeriod = startDate.setMinutes(startDate.getMinutes() + 1);
             const paymentID = crypto_1.default.randomBytes(3).toString("hex");
             const payments = await paymentModel_1.default.create({
-                cost: (school === null || school === void 0 ? void 0 : school.students.length) * 1000,
-                schoolName: school === null || school === void 0 ? void 0 : school.schoolName,
+                cost: school?.students.length * 1000,
+                schoolName: school?.schoolName,
                 expiryDate: (0, moment_1.default)(dataPeriod).format("LLLL"),
                 datePaid: (0, moment_1.default)(startedDate).format("LLLL"),
                 paymentID,
@@ -316,8 +316,8 @@ const makePayment = async (req, res) => {
         const { email } = req.body;
         const { schoolID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
-        let amount = (school === null || school === void 0 ? void 0 : school.students.length) * 1000;
-        let termID = school === null || school === void 0 ? void 0 : school.presentTermID;
+        let amount = school?.students.length * 1000;
+        let termID = school?.presentTermID;
         let token = jsonwebtoken_1.default.sign({ termID }, process.env.API_SECRET_KEY, {
             expiresIn: "3d",
         });
@@ -644,21 +644,20 @@ const makeOtherSchoolPayment = async (req, res) => {
 };
 exports.makeOtherSchoolPayment = makeOtherSchoolPayment;
 const verifySchoolTransaction = async (req, res) => {
-    var _a, _b;
     try {
         const { ref, studentID } = req.params;
         const { paymentName } = req.body;
         const student = await studentModel_1.default.findById(studentID);
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
+        const school = await schoolModel_1.default.findById(student?.schoolIDs).populate({
             path: "session",
         });
-        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
-        const termly = await sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
+        const readSession = school?.session?.find((el) => el?._id.toString() === school?.presentSessionID);
+        const termly = await sessionModel_1.default.findById(readSession?._id).populate({
             path: "term",
         });
-        const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
-            el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
-        const mainTerm = await termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
+        const readTerm = termly?.term?.find((el) => el?.presentTerm === school?.presentTerm &&
+            el._id.toString() === school?.presentTermID);
+        const mainTerm = await termModel_1.default.findById(readTerm?._id);
         const url = `https://api.paystack.co/transaction/verify/${ref}`;
         console.log("ref: ", ref);
         return await axios_1.default
@@ -668,49 +667,48 @@ const verifySchoolTransaction = async (req, res) => {
             },
         })
             .then(async (data) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-            const check = (_a = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions) === null || _a === void 0 ? void 0 : _a.some((el) => el.reference === ref);
+            const check = mainTerm?.paymentOptions?.some((el) => el.reference === ref);
             if (!check) {
                 let id = crypto_1.default.randomBytes(4).toString("hex");
-                let newData = await termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+                let newData = await termModel_1.default.findByIdAndUpdate(mainTerm?._id, {
                     paymentOptions: [
-                        ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
+                        ...mainTerm?.paymentOptions,
                         {
                             id,
-                            studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
                             createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
                             paymentMode: "online",
                             confirm: false,
                             paymentDetails: paymentName,
-                            paymentAmount: parseFloat((_c = (_b = data === null || data === void 0 ? void 0 : data.data) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.amount) / 100,
-                            reference: (_e = (_d = data === null || data === void 0 ? void 0 : data.data) === null || _d === void 0 ? void 0 : _d.data) === null || _e === void 0 ? void 0 : _e.reference,
+                            paymentAmount: parseFloat(data?.data?.data?.amount) / 100,
+                            reference: data?.data?.data?.reference,
                             studentID,
-                            schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
-                            termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
-                            sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
-                            session: termly === null || termly === void 0 ? void 0 : termly.year,
+                            schoolID: student?.schoolIDs,
+                            termID: mainTerm?._id,
+                            sessionID: school?.presentSessionID,
+                            session: termly?.year,
                             term: mainTerm.presentTerm,
                         },
                     ],
                 }, { new: true });
-                await studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
+                await studentModel_1.default.findByIdAndUpdate(student?._id, {
                     otherPayment: [
-                        ...student === null || student === void 0 ? void 0 : student.otherPayment,
+                        ...student?.otherPayment,
                         {
                             id,
-                            studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                            studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
                             createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
                             paymentMode: "online",
                             confirm: false,
                             paymentDetails: paymentName,
-                            paymentAmount: parseFloat((_g = (_f = data === null || data === void 0 ? void 0 : data.data) === null || _f === void 0 ? void 0 : _f.data) === null || _g === void 0 ? void 0 : _g.amount) / 100,
-                            reference: (_j = (_h = data === null || data === void 0 ? void 0 : data.data) === null || _h === void 0 ? void 0 : _h.data) === null || _j === void 0 ? void 0 : _j.reference,
+                            paymentAmount: parseFloat(data?.data?.data?.amount) / 100,
+                            reference: data?.data?.data?.reference,
                             studentID,
-                            schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
-                            termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
-                            sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                            schoolID: student?.schoolIDs,
+                            termID: mainTerm?._id,
+                            sessionID: school?.presentSessionID,
                             term: mainTerm.presentTerm,
-                            session: termly === null || termly === void 0 ? void 0 : termly.year,
+                            session: termly?.year,
                         },
                     ],
                 }, { new: true });
@@ -739,35 +737,34 @@ const verifySchoolTransaction = async (req, res) => {
 };
 exports.verifySchoolTransaction = verifySchoolTransaction;
 const verifyOtherSchoolTransaction = async (req, res) => {
-    var _a, _b, _c;
     try {
         const { studentID } = req.params;
         const { paymentName, paymentAmount } = req.body;
         const student = await studentModel_1.default.findById(studentID);
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs).populate({
+        const school = await schoolModel_1.default.findById(student?.schoolIDs).populate({
             path: "session",
         });
-        const readSession = (_a = school === null || school === void 0 ? void 0 : school.session) === null || _a === void 0 ? void 0 : _a.find((el) => (el === null || el === void 0 ? void 0 : el._id.toString()) === (school === null || school === void 0 ? void 0 : school.presentSessionID));
-        const termly = await sessionModel_1.default.findById(readSession === null || readSession === void 0 ? void 0 : readSession._id).populate({
+        const readSession = school?.session?.find((el) => el?._id.toString() === school?.presentSessionID);
+        const termly = await sessionModel_1.default.findById(readSession?._id).populate({
             path: "term",
         });
-        const readTerm = (_b = termly === null || termly === void 0 ? void 0 : termly.term) === null || _b === void 0 ? void 0 : _b.find((el) => (el === null || el === void 0 ? void 0 : el.presentTerm) === (school === null || school === void 0 ? void 0 : school.presentTerm) &&
-            el._id.toString() === (school === null || school === void 0 ? void 0 : school.presentTermID));
-        const mainTerm = await termModel_1.default.findById(readTerm === null || readTerm === void 0 ? void 0 : readTerm._id);
+        const readTerm = termly?.term?.find((el) => el?.presentTerm === school?.presentTerm &&
+            el._id.toString() === school?.presentTermID);
+        const mainTerm = await termModel_1.default.findById(readTerm?._id);
         let id = crypto_1.default.randomBytes(4).toString("hex");
         let reff = crypto_1.default.randomBytes(4).toString("hex");
-        const check = mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions.some((el) => (el === null || el === void 0 ? void 0 : el.paymentDetails) === paymentName &&
-            (el === null || el === void 0 ? void 0 : el.term) === mainTerm.presentTerm &&
-            (el === null || el === void 0 ? void 0 : el.session) === (termly === null || termly === void 0 ? void 0 : termly.year) &&
-            (el === null || el === void 0 ? void 0 : el.studentName) ===
-                `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`);
+        const check = mainTerm?.paymentOptions.some((el) => el?.paymentDetails === paymentName &&
+            el?.term === mainTerm.presentTerm &&
+            el?.session === termly?.year &&
+            el?.studentName ===
+                `${student?.studentFirstName} ${student?.studentLastName}`);
         if (!check) {
-            let newData = await termModel_1.default.findByIdAndUpdate(mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id, {
+            let newData = await termModel_1.default.findByIdAndUpdate(mainTerm?._id, {
                 paymentOptions: [
-                    ...mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm.paymentOptions,
+                    ...mainTerm?.paymentOptions,
                     {
                         id,
-                        studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                        studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
                         createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
                         paymentMode: "cash",
                         confirm: false,
@@ -775,20 +772,20 @@ const verifyOtherSchoolTransaction = async (req, res) => {
                         paymentAmount: paymentAmount,
                         reference: reff,
                         studentID,
-                        schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
-                        termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
-                        sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
-                        session: termly === null || termly === void 0 ? void 0 : termly.year,
+                        schoolID: student?.schoolIDs,
+                        termID: mainTerm?._id,
+                        sessionID: school?.presentSessionID,
+                        session: termly?.year,
                         term: mainTerm.presentTerm,
                     },
                 ],
             }, { new: true });
-            await studentModel_1.default.findByIdAndUpdate(student === null || student === void 0 ? void 0 : student._id, {
+            await studentModel_1.default.findByIdAndUpdate(student?._id, {
                 otherPayment: [
-                    ...student === null || student === void 0 ? void 0 : student.otherPayment,
+                    ...student?.otherPayment,
                     {
                         id,
-                        studentName: `${student === null || student === void 0 ? void 0 : student.studentFirstName} ${student === null || student === void 0 ? void 0 : student.studentLastName}`,
+                        studentName: `${student?.studentFirstName} ${student?.studentLastName}`,
                         createdAt: (0, moment_1.default)(new Date().getTime()).format("lll"),
                         paymentMode: "cash",
                         confirm: false,
@@ -796,18 +793,18 @@ const verifyOtherSchoolTransaction = async (req, res) => {
                         paymentAmount: paymentAmount,
                         reference: reff,
                         studentID,
-                        schoolID: student === null || student === void 0 ? void 0 : student.schoolIDs,
-                        termID: mainTerm === null || mainTerm === void 0 ? void 0 : mainTerm._id,
-                        sessionID: school === null || school === void 0 ? void 0 : school.presentSessionID,
+                        schoolID: student?.schoolIDs,
+                        termID: mainTerm?._id,
+                        sessionID: school?.presentSessionID,
                         term: mainTerm.presentTerm,
-                        session: termly === null || termly === void 0 ? void 0 : termly.year,
+                        session: termly?.year,
                     },
                 ],
             }, { new: true });
             return res.status(200).json({
                 message: "payment verified",
                 status: 200,
-                data: newData === null || newData === void 0 ? void 0 : newData.paymentOptions[((_c = newData === null || newData === void 0 ? void 0 : newData.paymentOptions) === null || _c === void 0 ? void 0 : _c.length) - 1],
+                data: newData?.paymentOptions[newData?.paymentOptions?.length - 1],
             });
         }
         else {

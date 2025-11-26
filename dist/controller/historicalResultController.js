@@ -10,7 +10,6 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const studentHistoricalResultModel_1 = __importDefault(require("../model/studentHistoricalResultModel"));
 const mongoose_1 = require("mongoose");
 const createResultHistory = async (req, res) => {
-    var _a;
     try {
         const { studentID, schoolID, teacherID } = req.params;
         const {} = req.body;
@@ -25,8 +24,8 @@ const createResultHistory = async (req, res) => {
                 school,
                 student,
             });
-            (_a = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(result._id));
-            student === null || student === void 0 ? void 0 : student.save();
+            student?.historicalResult?.push(new mongoose_1.Types.ObjectId(result._id));
+            student?.save();
             return res.status(201).json({
                 message: "done",
             });
@@ -58,7 +57,7 @@ const viewResultHistory = async (req, res) => {
             },
         });
         const teacher = await staffModel_1.default.findById(teacherID);
-        console.log("student", student === null || student === void 0 ? void 0 : student.historicalResult);
+        console.log("student", student?.historicalResult);
         return res.status(201).json({
             message: "done",
             data: student,
@@ -72,7 +71,6 @@ const viewResultHistory = async (req, res) => {
 };
 exports.viewResultHistory = viewResultHistory;
 const deleteResultHistory = async (req, res) => {
-    var _a;
     try {
         const { studentID, schoolID, teacherID, resultID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
@@ -84,8 +82,8 @@ const deleteResultHistory = async (req, res) => {
                 },
             },
         });
-        await (studentHistoricalResultModel_1.default === null || studentHistoricalResultModel_1.default === void 0 ? void 0 : studentHistoricalResultModel_1.default.findByIdAndDelete(resultID));
-        await ((_a = student === null || student === void 0 ? void 0 : student.historicalResult) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(resultID)));
+        await studentHistoricalResultModel_1.default?.findByIdAndDelete(resultID);
+        await student?.historicalResult?.pull(new mongoose_1.Types.ObjectId(resultID));
         student.save();
         return res.status(201).json({
             message: "done",

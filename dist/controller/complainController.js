@@ -14,17 +14,17 @@ const createTeacherComplain = async (req, res) => {
         const { teacherID } = req.params;
         const { title, importance } = req.body;
         const teacher = await staffModel_1.default.findById(teacherID);
-        const school = await schoolModel_1.default.findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs);
+        const school = await schoolModel_1.default.findById(teacher?.schoolIDs);
         if (teacher) {
             const complain = await complainModel_1.default.create({
                 reporterID: teacherID,
                 title,
                 importance,
             });
-            teacher === null || teacher === void 0 ? void 0 : teacher.complain.push(new mongoose_1.Types.ObjectId(complain._id));
+            teacher?.complain.push(new mongoose_1.Types.ObjectId(complain._id));
             teacher.save();
-            school === null || school === void 0 ? void 0 : school.complain.push(new mongoose_1.Types.ObjectId(complain._id));
-            school === null || school === void 0 ? void 0 : school.save();
+            school?.complain.push(new mongoose_1.Types.ObjectId(complain._id));
+            school?.save();
             return res.status(201).json({
                 message: "teacher complain [posted] successfully",
                 data: complain,
@@ -52,17 +52,17 @@ const createStudentComplain = async (req, res) => {
         const { studentID } = req.params;
         const { title, importance } = req.body;
         const student = await studentModel_1.default.findById(studentID);
-        const school = await schoolModel_1.default.findById(student === null || student === void 0 ? void 0 : student.schoolIDs);
+        const school = await schoolModel_1.default.findById(student?.schoolIDs);
         if (student) {
             const complain = await complainModel_1.default.create({
                 reporterID: studentID,
                 title,
                 importance,
             });
-            student === null || student === void 0 ? void 0 : student.complain.push(new mongoose_1.Types.ObjectId(complain._id));
+            student?.complain.push(new mongoose_1.Types.ObjectId(complain._id));
             student.save();
-            school === null || school === void 0 ? void 0 : school.complain.push(new mongoose_1.Types.ObjectId(complain._id));
-            school === null || school === void 0 ? void 0 : school.save();
+            school?.complain.push(new mongoose_1.Types.ObjectId(complain._id));
+            school?.save();
             return res.status(201).json({
                 message: "student complain posted successfully",
                 data: complain,

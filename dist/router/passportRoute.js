@@ -38,11 +38,10 @@ router
     });
 });
 router.get("/auth/google-data", (req, res) => {
-    var _a;
     try {
         return res.status(200).json({
             message: "data gotten",
-            data: (_a = req.session.passport) === null || _a === void 0 ? void 0 : _a.user.toString(),
+            data: req.session.passport?.user.toString(),
         });
     }
     catch (error) {

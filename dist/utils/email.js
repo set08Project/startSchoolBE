@@ -73,8 +73,8 @@ const verifiedEmail = async (user) => {
         const myPath = path_1.default.join(__dirname, "../views/index.ejs");
         const html = await ejs_1.default.renderFile(myPath, {
             link: devURL,
-            tokenCode: user === null || user === void 0 ? void 0 : user.enrollmentID,
-            userName: user === null || user === void 0 ? void 0 : user.userName,
+            tokenCode: user?.enrollmentID,
+            userName: user?.userName,
         });
         const mailerOption = {
             from: "NEXT🟦🟦🟦 <justtnext@gmail.com>",
@@ -239,22 +239,22 @@ const clockingInEmail = async (user, school) => {
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockinMail.ejs");
-        const x = user === null || user === void 0 ? void 0 : user.clockInTime.split(",");
+        const x = user?.clockInTime.split(",");
         const y = x[2].trim();
         const html = await ejs_1.default.renderFile(myPath, {
             clockin: user.clockInTime,
             parent: user.studentLastName,
             child: user.studentFirstName,
-            address: school === null || school === void 0 ? void 0 : school.address,
-            school: school === null || school === void 0 ? void 0 : school.schoolName,
-            phone: school === null || school === void 0 ? void 0 : school.phone,
+            address: school?.address,
+            school: school?.schoolName,
+            phone: school?.phone,
             date: `${x[0]} ${x[1]} ${y.split(" ")[0]}`,
             time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
         });
         const mailerOption = {
             from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
             to: user.parentEmail,
-            subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked in`,
+            subject: `${user?.studentFirstName} just Clocked in`,
             html,
         };
         console.log("awesome: ", user.parentEmail);
@@ -289,22 +289,22 @@ const clockingOutEmail = async (user, school) => {
             },
         });
         const myPath = path_1.default.join(__dirname, "../views/clockoutMail.ejs");
-        const x = user === null || user === void 0 ? void 0 : user.clockOutTime.split(",");
+        const x = user?.clockOutTime.split(",");
         const y = x[2].trim();
         const html = await ejs_1.default.renderFile(myPath, {
             clockin: user.clockInTime,
             parent: user.studentLastName,
             child: user.studentFirstName,
-            address: school === null || school === void 0 ? void 0 : school.address,
-            school: school === null || school === void 0 ? void 0 : school.schoolName,
-            phone: school === null || school === void 0 ? void 0 : school.phone,
+            address: school?.address,
+            school: school?.schoolName,
+            phone: school?.phone,
             date: `${x[0]} ${x[1]} ${y.split(" ")[0]}`,
             time: `${y.split(" ")[1]} ${y.split(" ")[2]}`,
         });
         const mailerOption = {
             from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
             to: user.parentEmail,
-            subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} just Clocked Out`,
+            subject: `${user?.studentFirstName} just Clocked Out`,
             html,
         };
         await transporter.sendMail(mailerOption);
@@ -342,21 +342,21 @@ const sendWeeklyReport = async (user, school, remark) => {
         const html = await ejs_1.default.renderFile(myPath, {
             parent: user.studentLastName,
             studentName: user.studentFirstName,
-            address: school === null || school === void 0 ? void 0 : school.address,
-            school: school === null || school === void 0 ? void 0 : school.schoolName,
-            phone: school === null || school === void 0 ? void 0 : school.phone,
-            date: (0, moment_1.default)(remark === null || remark === void 0 ? void 0 : remark.createdAt).format("LL"),
-            attendance: parseInt(remark === null || remark === void 0 ? void 0 : remark.attendanceRatio) * 20,
-            best: remark === null || remark === void 0 ? void 0 : remark.best,
-            worst: remark === null || remark === void 0 ? void 0 : remark.worst,
+            address: school?.address,
+            school: school?.schoolName,
+            phone: school?.phone,
+            date: (0, moment_1.default)(remark?.createdAt).format("LL"),
+            attendance: parseInt(remark?.attendanceRatio) * 20,
+            best: remark?.best,
+            worst: remark?.worst,
             link,
-            classParticipation: remark === null || remark === void 0 ? void 0 : remark.classParticipation,
-            sportParticipation: remark === null || remark === void 0 ? void 0 : remark.sportParticipation,
+            classParticipation: remark?.classParticipation,
+            sportParticipation: remark?.sportParticipation,
         });
         const mailerOption = {
             from: `${user.schoolName} 📘📘📘 <justtnext@gmail.com>`,
             to: user.parentEmail,
-            subject: `${user === null || user === void 0 ? void 0 : user.studentFirstName} Weekly Academic Performance Report`,
+            subject: `${user?.studentFirstName} Weekly Academic Performance Report`,
             html,
         };
         await transporter.sendMail(mailerOption).then(() => {

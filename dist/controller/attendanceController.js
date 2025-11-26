@@ -15,7 +15,7 @@ const createAttendancePresent = async (req, res) => {
     try {
         const getTeacher = await staffModel_1.default.findById(req.params.teacherID);
         const getStudent = await studentModel_1.default.findById(req.params.studentID);
-        const getClass = await classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
+        const getClass = await classroomModel_1.default.findById(getStudent?.presentClassID);
         if (getTeacher && getStudent) {
             const code = crypto_1.default.randomBytes(2).toString("hex");
             const dater = Date.now();
@@ -27,14 +27,14 @@ const createAttendancePresent = async (req, res) => {
                     el.studentLastName === getStudent.studentLastName);
             });
             if (checkDate) {
-                if (!(checkDate === null || checkDate === void 0 ? void 0 : checkDate.present)) {
-                    await attendanceModel_1.default.findByIdAndUpdate(checkDate === null || checkDate === void 0 ? void 0 : checkDate._id, {
+                if (!checkDate?.present) {
+                    await attendanceModel_1.default.findByIdAndUpdate(checkDate?._id, {
                         present: true,
                         absent: false,
                     }, { new: true });
                 }
                 else {
-                    await attendanceModel_1.default.findByIdAndUpdate(checkDate === null || checkDate === void 0 ? void 0 : checkDate._id, {
+                    await attendanceModel_1.default.findByIdAndUpdate(checkDate?._id, {
                         present: false,
                         absent: true,
                     }, { new: true });
@@ -57,11 +57,11 @@ const createAttendancePresent = async (req, res) => {
                     date: `${(0, moment_1.default)(dater).format("dddd")}`,
                 });
                 getTeacher.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-                getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.save();
+                getTeacher?.save();
                 getClass.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-                getClass === null || getClass === void 0 ? void 0 : getClass.save();
+                getClass?.save();
                 getStudent.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-                getStudent === null || getStudent === void 0 ? void 0 : getStudent.save();
+                getStudent?.save();
                 return res.status(201).json({
                     message: "student attendance has been marked for today",
                     data: attendance,
@@ -81,7 +81,7 @@ const createAttendanceAbsent = async (req, res) => {
     try {
         const getTeacher = await staffModel_1.default.findById(req.params.teacherID);
         const getStudent = await studentModel_1.default.findById(req.params.studentID);
-        const getClass = await classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
+        const getClass = await classroomModel_1.default.findById(getStudent?.presentClassID);
         if (getTeacher && getStudent) {
             const code = crypto_1.default.randomBytes(2).toString("hex");
             const dater = Date.now();
@@ -93,14 +93,14 @@ const createAttendanceAbsent = async (req, res) => {
                     el.studentLastName === getStudent.studentLastName);
             });
             if (checkDate) {
-                if (!(checkDate === null || checkDate === void 0 ? void 0 : checkDate.present)) {
-                    await attendanceModel_1.default.findByIdAndUpdate(checkDate === null || checkDate === void 0 ? void 0 : checkDate._id, {
+                if (!checkDate?.present) {
+                    await attendanceModel_1.default.findByIdAndUpdate(checkDate?._id, {
                         present: true,
                         absent: false,
                     }, { new: true });
                 }
                 else {
-                    await attendanceModel_1.default.findByIdAndUpdate(checkDate === null || checkDate === void 0 ? void 0 : checkDate._id, {
+                    await attendanceModel_1.default.findByIdAndUpdate(checkDate?._id, {
                         present: false,
                         absent: true,
                     }, { new: true });
@@ -123,11 +123,11 @@ const createAttendanceAbsent = async (req, res) => {
                     date: `${(0, moment_1.default)(dater).format("dddd")}`,
                 });
                 getTeacher.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-                getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.save();
+                getTeacher?.save();
                 getClass.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-                getClass === null || getClass === void 0 ? void 0 : getClass.save();
+                getClass?.save();
                 getStudent.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-                getStudent === null || getStudent === void 0 ? void 0 : getStudent.save();
+                getStudent?.save();
                 return res.status(201).json({
                     message: "student attendance has been marked Absent for today",
                     data: attendance,
@@ -147,7 +147,7 @@ const createAttendanceAbsentMark = async (req, res) => {
     try {
         const getTeacher = await staffModel_1.default.findById(req.params.teacherID);
         const getStudent = await studentModel_1.default.findById(req.params.studentID);
-        const getClass = await classroomModel_1.default.findById(getStudent === null || getStudent === void 0 ? void 0 : getStudent.presentClassID);
+        const getClass = await classroomModel_1.default.findById(getStudent?.presentClassID);
         if (getTeacher && getStudent) {
             const code = crypto_1.default.randomBytes(2).toString("hex");
             const dater = Date.now();
@@ -163,11 +163,11 @@ const createAttendanceAbsentMark = async (req, res) => {
                 date: `${(0, moment_1.default)(dater).format("dddd")}`,
             });
             getTeacher.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-            getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.save();
+            getTeacher?.save();
             getClass.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-            getClass === null || getClass === void 0 ? void 0 : getClass.save();
+            getClass?.save();
             getStudent.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
-            getStudent === null || getStudent === void 0 ? void 0 : getStudent.save();
+            getStudent?.save();
             return res.status(201).json({
                 message: "student has been marked Present for today",
                 data: attendance,

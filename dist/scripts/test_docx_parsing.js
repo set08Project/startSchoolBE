@@ -59,9 +59,8 @@ const parseHtml = (html) => {
     let options = [];
     const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
     elems.each((i, el) => {
-        var _a;
         const text = $(el).text().trim();
-        const htmlContent = ((_a = $(el).html()) === null || _a === void 0 ? void 0 : _a.trim()) || "";
+        const htmlContent = $(el).html()?.trim() || "";
         if (!text)
             return;
         if (/^\d+\./.test(text)) {

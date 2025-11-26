@@ -63,7 +63,7 @@ const viewSchoolTopStudent = async (req, res) => {
                 },
             },
         });
-        const rate = lodash_1.default.orderBy(schoolClasses === null || schoolClasses === void 0 ? void 0 : schoolClasses.students, ["totalPerformance"], ["desc"]);
+        const rate = lodash_1.default.orderBy(schoolClasses?.students, ["totalPerformance"], ["desc"]);
         return res.status(200).json({
             message: "finding class students top performance!",
             status: 200,
@@ -96,7 +96,7 @@ const loginSchool = async (req, res) => {
                     return res.status(201).json({
                         message: "welcome back",
                         data: token,
-                        user: school === null || school === void 0 ? void 0 : school.status,
+                        user: school?.status,
                         id: req.session.isSchoolID,
                         status: 201,
                     });
@@ -141,14 +141,13 @@ const createSchool = async (req, res) => {
         // verifiedEmail(school);
         const job = new cron_1.CronJob(" * * * * 7", // cronTime
         async () => {
-            var _a, _b, _c, _d;
             const viewSchool = await schoolModel_1.default.findById(school._id);
-            if (((_a = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.staff) === null || _a === void 0 ? void 0 : _a.length) === 0 &&
-                ((_b = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.students) === null || _b === void 0 ? void 0 : _b.length) === 0 &&
-                ((_c = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.classRooms) === null || _c === void 0 ? void 0 : _c.length) === 0 &&
-                ((_d = viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.subjects) === null || _d === void 0 ? void 0 : _d.length) === 0 &&
-                !(viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.started) &&
-                !(viewSchool === null || viewSchool === void 0 ? void 0 : viewSchool.verify)) {
+            if (viewSchool?.staff?.length === 0 &&
+                viewSchool?.students?.length === 0 &&
+                viewSchool?.classRooms?.length === 0 &&
+                viewSchool?.subjects?.length === 0 &&
+                !viewSchool?.started &&
+                !viewSchool?.verify) {
                 await schoolModel_1.default.findByIdAndDelete(school._id);
             }
             job.stop();
@@ -277,7 +276,6 @@ const viewAllSchools = async (req, res) => {
 };
 exports.viewAllSchools = viewAllSchools;
 const deleteSchool = async (req, res) => {
-    var _a, _b, _c;
     try {
         const { schoolID } = req.params;
         let id = "678d4e5060a0cbcd2e27dc51";
@@ -297,7 +295,7 @@ const deleteSchool = async (req, res) => {
                 // don't fail entire operation on cloud delete errors
                 summary.errors.push({
                     publicId,
-                    error: (err === null || err === void 0 ? void 0 : err.message) || String(err),
+                    error: err?.message || String(err),
                 });
             }
         };
@@ -306,7 +304,7 @@ const deleteSchool = async (req, res) => {
             const sessionIds = (getSchool.session || []).map((s) => s.toString());
             for (const sid of sessionIds) {
                 const sess = await sessionModel_1.default.findById(sid).lean();
-                if ((sess === null || sess === void 0 ? void 0 : sess.term) && sess.term.length) {
+                if (sess?.term && sess.term.length) {
                     await termModel_1.default.deleteMany({ _id: { $in: sess.term } });
                     summary.deleted.terms =
                         (summary.deleted.terms || 0) + sess.term.length;
@@ -354,8 +352,8 @@ const deleteSchool = async (req, res) => {
         for (const m of schoolLinkedModels) {
             try {
                 const del = await m.deleteMany({ school: getSchool._id });
-                summary.deleted[m.modelName || ((_a = m.collection) === null || _a === void 0 ? void 0 : _a.name) || m.name] =
-                    (del === null || del === void 0 ? void 0 : del.deletedCount) || (del === null || del === void 0 ? void 0 : del.n) || 0;
+                summary.deleted[m.modelName || m.collection?.name || m.name] =
+                    del?.deletedCount || del?.n || 0;
             }
             catch (err) {
                 // some models may use 'schoolInfo' field
@@ -363,14 +361,14 @@ const deleteSchool = async (req, res) => {
                     const del2 = await m.deleteMany({
                         schoolInfo: getSchool._id,
                     });
-                    summary.deleted[m.modelName || ((_b = m.collection) === null || _b === void 0 ? void 0 : _b.name) || m.name] =
-                        (summary.deleted[m.modelName || ((_c = m.collection) === null || _c === void 0 ? void 0 : _c.name) || m.name] ||
-                            0) + ((del2 === null || del2 === void 0 ? void 0 : del2.deletedCount) || (del2 === null || del2 === void 0 ? void 0 : del2.n) || 0);
+                    summary.deleted[m.modelName || m.collection?.name || m.name] =
+                        (summary.deleted[m.modelName || m.collection?.name || m.name] ||
+                            0) + (del2?.deletedCount || del2?.n || 0);
                 }
                 catch (err2) {
                     summary.errors.push({
                         model: m.modelName || m.name,
-                        error: (err2 === null || err2 === void 0 ? void 0 : err2.message) || String(err2),
+                        error: err2?.message || String(err2),
                     });
                 }
             }
@@ -399,7 +397,7 @@ const deleteSchool = async (req, res) => {
                             .find({ _id: { $in: ids } })
                             .lean();
                         for (const it of items) {
-                            await tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.public_id) || (it === null || it === void 0 ? void 0 : it.imageID));
+                            await tryDestroy(it?.avatarID || it?.public_id || it?.imageID);
                         }
                     }
                     if (ref.model === staffModel_1.default) {
@@ -407,7 +405,7 @@ const deleteSchool = async (req, res) => {
                             .find({ _id: { $in: ids } })
                             .lean();
                         for (const it of items) {
-                            await tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.staffAvatarID) || (it === null || it === void 0 ? void 0 : it.signatureID));
+                            await tryDestroy(it?.avatarID || it?.staffAvatarID || it?.signatureID);
                         }
                     }
                     if (ref.model === studentModel_1.default) {
@@ -415,7 +413,7 @@ const deleteSchool = async (req, res) => {
                             .find({ _id: { $in: ids } })
                             .lean();
                         for (const it of items) {
-                            await tryDestroy((it === null || it === void 0 ? void 0 : it.avatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID) || (it === null || it === void 0 ? void 0 : it.studentAvatarID));
+                            await tryDestroy(it?.avatarID || it?.studentAvatarID || it?.studentAvatarID);
                         }
                     }
                     await ref.model.deleteMany({ _id: { $in: ids } });
@@ -446,13 +444,13 @@ const deleteSchool = async (req, res) => {
                 const del = await m.deleteMany({ school: getSchool._id });
                 summary.deleted[m.modelName || m.name] =
                     (summary.deleted[m.modelName || m.name] || 0) +
-                        ((del === null || del === void 0 ? void 0 : del.deletedCount) || (del === null || del === void 0 ? void 0 : del.n) || 0);
+                        (del?.deletedCount || del?.n || 0);
             }
         }
         catch (err) {
             summary.errors.push({
                 area: "fallback",
-                error: (err === null || err === void 0 ? void 0 : err.message) || String(err),
+                error: err?.message || String(err),
             });
         }
         // Finally remove the school document itself
@@ -521,11 +519,10 @@ const exportSchoolData = async (req, res) => {
 };
 exports.exportSchoolData = exportSchoolData;
 const exportSchoolDataFile = async (req, res) => {
-    var _a;
     try {
         const { schoolID } = req.params;
         // Admin-only: simple guard - user must be logged in and match school admin session or school.status
-        const sessionSchoolID = (_a = req.session) === null || _a === void 0 ? void 0 : _a.isSchoolID;
+        const sessionSchoolID = req.session?.isSchoolID;
         // if (
         //   !sessionSchoolID ||
         //   sessionSchoolID.toString() !== schoolID.toString()
@@ -599,9 +596,8 @@ const exportSchoolDataFile = async (req, res) => {
 };
 exports.exportSchoolDataFile = exportSchoolDataFile;
 const importSchoolData = async (req, res) => {
-    var _a, _b, _c;
     try {
-        const payload = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.data) || req.body;
+        const payload = req.body?.data || req.body;
         if (!payload || !payload.school) {
             return res.status(400).json({ message: "Invalid import payload" });
         }
@@ -646,7 +642,7 @@ const importSchoolData = async (req, res) => {
         // First pass: create documents without reference arrays
         for (const col of collections) {
             for (const item of col.items) {
-                const oldId = (_b = item._id) === null || _b === void 0 ? void 0 : _b.toString();
+                const oldId = item._id?.toString();
                 const doc = { ...item };
                 delete doc._id;
                 // replace school references with new school id
@@ -675,7 +671,7 @@ const importSchoolData = async (req, res) => {
         // Second pass: update created docs with remapped references
         for (const col of collections) {
             for (const item of col.items) {
-                const oldId = (_c = item._id) === null || _c === void 0 ? void 0 : _c.toString();
+                const oldId = item._id?.toString();
                 const newId = idMap[oldId];
                 if (!newId)
                     continue;
@@ -973,7 +969,7 @@ const updateSchoolPaymentOptions = async (req, res) => {
         if (school.schoolName) {
             const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
                 paymentOptions: [
-                    ...school === null || school === void 0 ? void 0 : school.paymentOptions,
+                    ...school?.paymentOptions,
                     { id, paymentDetails, paymentAmount },
                 ],
             }, { new: true });
@@ -1002,8 +998,8 @@ const RemoveSchoolPaymentOptions = async (req, res) => {
         const { paymentDetails, paymentAmount } = req.body;
         let id = crypto_1.default.randomBytes(4).toString("hex");
         const school = await schoolModel_1.default.findById(schoolID);
-        const mainOption = school === null || school === void 0 ? void 0 : school.paymentOptions.filter((el) => {
-            return (el === null || el === void 0 ? void 0 : el.id) !== refID;
+        const mainOption = school?.paymentOptions.filter((el) => {
+            return el?.id !== refID;
         });
         if (school.schoolName) {
             const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
@@ -1090,7 +1086,7 @@ const updateRegisterationStatus = async (req, res) => {
         // const id = crypto.randomBytes(4).toString("hex");
         // const adminCode = crypto.randomBytes(6).toString("hex");
         // if (school) {
-        const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(school === null || school === void 0 ? void 0 : school._id, {
+        const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(school?._id, {
             // adminCode,
             // enrollmentID: id,
             status: "school-admin",

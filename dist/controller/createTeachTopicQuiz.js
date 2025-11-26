@@ -19,8 +19,8 @@ const createTeachSubjectTopicQuiz = async (req, res) => {
             correctAnswer,
             options,
         });
-        getSubject === null || getSubject === void 0 ? void 0 : getSubject.quizQuestions.push(new mongoose_1.Types.ObjectId(teachSubject._id));
-        await (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
+        getSubject?.quizQuestions.push(new mongoose_1.Types.ObjectId(teachSubject._id));
+        await getSubject?.save();
         return res.status(201).json({
             message: "teach subject created successfully",
             data: { teachSubject, getSubject },
@@ -78,14 +78,13 @@ const getOneTeachSubjectTopicQuiz = async (req, res) => {
 };
 exports.getOneTeachSubjectTopicQuiz = getOneTeachSubjectTopicQuiz;
 const deleteOneTeachSubjectTopicQuiz = async (req, res) => {
-    var _a;
     try {
         const { teachSubjectTopicQuizID, subjectTopicID } = req.params;
         const getSubject = await teachSubjectTopics_1.default.findById(subjectTopicID);
         // await subjectTopicsModel.findByIdAndDelete(teachSubjectTopicQuizID);
         const teachSubject = await teachTopicQuizesModel_1.default.findByIdAndDelete(teachSubjectTopicQuizID);
-        (_a = getSubject === null || getSubject === void 0 ? void 0 : getSubject.quizQuestions) === null || _a === void 0 ? void 0 : _a.pull(teachSubjectTopicQuizID);
-        await (getSubject === null || getSubject === void 0 ? void 0 : getSubject.save());
+        getSubject?.quizQuestions?.pull(teachSubjectTopicQuizID);
+        await getSubject?.save();
         return res.status(201).json({
             message: "teach subject deleted successfully",
             data: teachSubject,

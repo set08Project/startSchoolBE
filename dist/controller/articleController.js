@@ -28,10 +28,10 @@ const createArticle = async (req, res) => {
                 student: `${student.studentFirstName} ${student.studentLastName}`,
                 avatar: student.avatar,
             });
-            school.articles.push(new mongoose_1.Types.ObjectId(article === null || article === void 0 ? void 0 : article._id));
-            school === null || school === void 0 ? void 0 : school.save();
-            student.articles.push(new mongoose_1.Types.ObjectId(article === null || article === void 0 ? void 0 : article._id));
-            student === null || student === void 0 ? void 0 : student.save();
+            school.articles.push(new mongoose_1.Types.ObjectId(article?._id));
+            school?.save();
+            student.articles.push(new mongoose_1.Types.ObjectId(article?._id));
+            student?.save();
             return res.status(201).json({
                 message: "Article created successfully",
                 data: article,
@@ -71,10 +71,10 @@ const createTeacherArticle = async (req, res) => {
                 student: `${student.staffName} `,
                 avatar: student.avatar,
             });
-            school.articles.push(new mongoose_1.Types.ObjectId(article === null || article === void 0 ? void 0 : article._id));
-            school === null || school === void 0 ? void 0 : school.save();
-            student.articles.push(new mongoose_1.Types.ObjectId(article === null || article === void 0 ? void 0 : article._id));
-            student === null || student === void 0 ? void 0 : student.save();
+            school.articles.push(new mongoose_1.Types.ObjectId(article?._id));
+            school?.save();
+            student.articles.push(new mongoose_1.Types.ObjectId(article?._id));
+            student?.save();
             return res.status(201).json({
                 message: "Article created successfully",
                 data: article,
@@ -143,16 +143,15 @@ const readOneArticle = async (req, res) => {
 };
 exports.readOneArticle = readOneArticle;
 const likeArticle = async (req, res) => {
-    var _a;
     try {
         const { articleID, readerID } = req.params;
         const article = await articleModel_1.default.findById(articleID);
-        const check = (_a = article === null || article === void 0 ? void 0 : article.like) === null || _a === void 0 ? void 0 : _a.some((el) => {
+        const check = article?.like?.some((el) => {
             return el === readerID;
         });
         if (!check) {
             await articleModel_1.default.findByIdAndUpdate(articleID, {
-                like: [...article === null || article === void 0 ? void 0 : article.like, readerID],
+                like: [...article?.like, readerID],
             }, { new: true });
             return res.status(200).json({
                 message: "Reading one article",
@@ -176,16 +175,15 @@ const likeArticle = async (req, res) => {
 };
 exports.likeArticle = likeArticle;
 const viewArticle = async (req, res) => {
-    var _a;
     try {
         const { articleID, readerID } = req.params;
         const article = await articleModel_1.default.findById(articleID);
-        const check = (_a = article === null || article === void 0 ? void 0 : article.view) === null || _a === void 0 ? void 0 : _a.some((el) => {
+        const check = article?.view?.some((el) => {
             return el === readerID;
         });
         if (!check) {
             await articleModel_1.default.findByIdAndUpdate(articleID, {
-                view: [...article === null || article === void 0 ? void 0 : article.view, readerID],
+                view: [...article?.view, readerID],
             }, { new: true });
             return res.status(200).json({
                 message: "Reading one article",
@@ -218,9 +216,9 @@ const deleteOneArticle = async (req, res) => {
         if (school && student) {
             const article = await articleModel_1.default.findByIdAndDelete(articleID);
             school.articles.pull(new mongoose_1.Types.ObjectId(articleID));
-            school === null || school === void 0 ? void 0 : school.save();
+            school?.save();
             student.articles.pull(new mongoose_1.Types.ObjectId(articleID));
-            student === null || student === void 0 ? void 0 : student.save();
+            student?.save();
             return res.status(200).json({
                 message: "Reading one article",
                 data: article,

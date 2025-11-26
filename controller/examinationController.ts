@@ -513,7 +513,7 @@ export const updateSubjectExam = async (
 ): Promise<Response> => {
   try {
     const { examID } = req.params;
-    const { mark, duration } = req.body;
+    const { mark, duration, dept } = req.body;
 
     const midTest: any = await examinationModel.findByIdAndUpdate(examID);
 
@@ -521,7 +521,7 @@ export const updateSubjectExam = async (
       examID,
       {
         quiz: {
-          instruction: { duration, mark },
+          instruction: { duration, mark, dept },
           question: midTest?.quiz?.question,
           theory: midTest?.quiz?.theory,
         },

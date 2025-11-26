@@ -122,10 +122,9 @@ async function testDocxParsing(filePath) {
         let options = [];
         console.log("=== PARSING ELEMENTS ===\n");
         elems.each((i, el) => {
-            var _a;
             const rawText = $(el).text().trim();
             const normalizedText = normalizeText(rawText);
-            const htmlContent = ((_a = $(el).html()) === null || _a === void 0 ? void 0 : _a.trim()) || "";
+            const htmlContent = $(el).html()?.trim() || "";
             console.log(`[${i}] Element Type: ${el.tagName}`);
             console.log(`    Raw Text: "${rawText}"`);
             console.log(`    Normalized: "${normalizedText}"`);
@@ -187,10 +186,9 @@ async function testDocxParsing(filePath) {
         // Validation
         console.log("\n📋 Validation Results:\n");
         value.forEach((q, i) => {
-            var _a;
             console.log(`Question ${i + 1}:`);
             console.log(`  - Has question text: ${!!q.question && q.question !== ""}`);
-            console.log(`  - Options count: ${((_a = q.options) === null || _a === void 0 ? void 0 : _a.length) || 0}`);
+            console.log(`  - Options count: ${q.options?.length || 0}`);
             console.log(`  - Has answer: ${!!q.answer && q.answer !== ""}`);
             console.log(`  - Has explanation: ${!!q.explanation && q.explanation !== ""}`);
         });
@@ -246,7 +244,6 @@ const isValidUrl = (url) => {
     }
 };
 const createSubjectQuizFromFile = async (req, res) => {
-    var _a, _b, _c;
     let uploadedPath;
     try {
         const { classID, subjectID } = req.params;
@@ -279,17 +276,17 @@ const createSubjectQuizFromFile = async (req, res) => {
                 status: 404,
             });
         }
-        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
-        uploadedPath = (_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.path;
+        const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject?.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher?.schoolIDs);
+        uploadedPath = req?.file?.path;
         if (!uploadedPath) {
             return res.status(400).json({
                 message: "No upload file provided",
                 status: 400,
             });
         }
-        const originalName = ((_b = req === null || req === void 0 ? void 0 : req.file) === null || _b === void 0 ? void 0 : _b.originalname) || uploadedPath;
+        const originalName = req?.file?.originalname || uploadedPath;
         const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
         const parsingErrors = [];
@@ -319,10 +316,9 @@ const createSubjectQuizFromFile = async (req, res) => {
                 const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
                 console.log("=== PARSING ELEMENTS ===");
                 elems.each((i, el) => {
-                    var _a;
                     const rawText = $(el).text().trim();
                     const normalizedText = normalizeText(rawText);
-                    const htmlContent = ((_a = $(el).html()) === null || _a === void 0 ? void 0 : _a.trim()) || "";
+                    const htmlContent = $(el).html()?.trim() || "";
                     console.log(`Element ${i}: "${normalizedText}"`);
                     if (!normalizedText)
                         return;
@@ -482,29 +478,29 @@ const createSubjectQuizFromFile = async (req, res) => {
         }
         // Create quiz
         const quizes = await quizModel_1.default.create({
-            subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
-            subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
-            session: school === null || school === void 0 ? void 0 : school.presentSession,
-            term: school === null || school === void 0 ? void 0 : school.presentTerm,
+            subjectTitle: checkForSubject?.subjectTitle,
+            subjectID: checkForSubject?._id,
+            session: school?.presentSession,
+            term: school?.presentTerm,
             quiz: {
                 instruction: { duration, mark, instruction },
                 question: value,
             },
-            totalQuestions: value === null || value === void 0 ? void 0 : value.length,
+            totalQuestions: value?.length,
             status: "quiz",
             startExam: false,
         });
         // Update relationships
-        checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-        (_c = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.Types.ObjectId(quizes._id));
-        await (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
+        checkForSubject?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+        checkForSubject?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+        await checkForSubject?.save();
         if (findTeacher) {
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
+            findTeacher?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await findTeacher?.save();
         }
         if (findSubjectTeacher) {
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
+            findSubjectTeacher?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await findSubjectTeacher?.save();
         }
         // Clean up uploaded file after successful processing
         const cleanupFile = () => {
@@ -560,7 +556,6 @@ async function extractRawTextFromDocx(filePath) {
     }
 }
 const createSubjectExam = async (req, res) => {
-    var _a;
     let uploadedPath;
     try {
         const { classID, subjectID } = req.params;
@@ -616,9 +611,9 @@ const createSubjectExam = async (req, res) => {
                 status: 404,
             });
         }
-        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
-        const school = await schoolModel_1.default.findById(findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.schoolIDs);
+        const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject?.teacherID);
+        const school = await schoolModel_1.default.findById(findTeacher?.schoolIDs);
         const originalName = req.file.originalname || uploadedPath;
         const ext = node_path_1.default.extname(originalName).toLowerCase();
         let value = [];
@@ -815,29 +810,29 @@ const createSubjectExam = async (req, res) => {
         console.log("=== VALIDATION PASSED ===\n");
         // Create quiz
         const quizes = await quizModel_1.default.create({
-            subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
-            subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
-            session: school === null || school === void 0 ? void 0 : school.presentSession,
-            term: school === null || school === void 0 ? void 0 : school.presentTerm,
+            subjectTitle: checkForSubject?.subjectTitle,
+            subjectID: checkForSubject?._id,
+            session: school?.presentSession,
+            term: school?.presentTerm,
             quiz: {
                 instruction: { duration, mark, instruction },
                 question: value,
             },
-            totalQuestions: value === null || value === void 0 ? void 0 : value.length,
+            totalQuestions: value?.length,
             status: "quiz",
             startExam: false,
         });
         // Update relationships
-        checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-        (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
-        await (checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save());
+        checkForSubject?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+        checkForSubject?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+        await checkForSubject?.save();
         if (findTeacher) {
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save());
+            findTeacher?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await findTeacher?.save();
         }
         if (findSubjectTeacher) {
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            await (findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save());
+            findSubjectTeacher?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            await findSubjectTeacher?.save();
         }
         // Clean up uploaded file
         const cleanupFile = () => {
@@ -1696,7 +1691,7 @@ const readSubjectExamination = async (req, res) => {
                 },
             },
         });
-        let exam = lodash_1.default.filter(subject === null || subject === void 0 ? void 0 : subject.quiz, { status: "examination" })[0];
+        let exam = lodash_1.default.filter(subject?.quiz, { status: "examination" })[0];
         return res.status(201).json({
             message: "subject exam read successfully",
             // data: subject?.quiz,
@@ -1883,29 +1878,28 @@ exports.startSubjectExamination = startSubjectExamination;
 //   }
 // };
 const createSubjectQuiz = async (req, res) => {
-    var _a;
     try {
         const { classID, subjectID } = req.params;
         const { quiz, totalQuestions } = req.body;
         const classRoom = await classroomModel_1.default.findById(classID);
         const checkForSubject = await subjectModel_1.default.findById(subjectID);
-        const findTeacher = await staffModel_1.default.findById(classRoom === null || classRoom === void 0 ? void 0 : classRoom.teacherID);
-        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.teacherID);
+        const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
+        const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject?.teacherID);
         if (checkForSubject) {
             const quizes = await quizModel_1.default.create({
-                subjectTitle: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.subjectTitle,
-                subjectID: checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject._id,
+                subjectTitle: checkForSubject?.subjectTitle,
+                subjectID: checkForSubject?._id,
                 quiz,
                 totalQuestions,
                 status: "quiz",
             });
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            (_a = checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.performance) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.Types.ObjectId(quizes._id));
-            checkForSubject === null || checkForSubject === void 0 ? void 0 : checkForSubject.save();
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findTeacher === null || findTeacher === void 0 ? void 0 : findTeacher.save();
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
-            findSubjectTeacher === null || findSubjectTeacher === void 0 ? void 0 : findSubjectTeacher.save();
+            checkForSubject?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject?.performance?.push(new mongoose_1.Types.ObjectId(quizes._id));
+            checkForSubject?.save();
+            findTeacher?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findTeacher?.save();
+            findSubjectTeacher?.quiz.push(new mongoose_1.Types.ObjectId(quizes._id));
+            findSubjectTeacher?.save();
             return res.status(201).json({
                 message: "quiz entry created successfully",
                 data: quizes,

@@ -16,13 +16,13 @@ const createClasslessonNote = async (req, res) => {
         const { week, endingAt, createDate, classes, subTopic, period, duration, instructionalMaterial, referenceMaterial, previousKnowledge, specificObjectives, content, evaluation, summary, presentation, assignment, topic, subject, } = req.body;
         const school = await schoolModel_1.default.findById(schoolID);
         const staff = await staffModel_1.default.findById(staffID);
-        const classData = await classroomModel_1.default.findById(staff === null || staff === void 0 ? void 0 : staff.presentClassID);
+        const classData = await classroomModel_1.default.findById(staff?.presentClassID);
         if (school && school.schoolName && staff) {
             const note = await lessonNoteModel_1.default.create({
-                teacher: staff === null || staff === void 0 ? void 0 : staff.staffName,
+                teacher: staff?.staffName,
                 // teacherClass: staff?.classesAssigned,
-                profilePic: staff === null || staff === void 0 ? void 0 : staff.avatar,
-                teacherID: staff === null || staff === void 0 ? void 0 : staff._id,
+                profilePic: staff?.avatar,
+                teacherID: staff?._id,
                 week,
                 endingAt,
                 createDate,
@@ -43,12 +43,12 @@ const createClasslessonNote = async (req, res) => {
                 subject,
                 adminSignation: false,
             });
-            school === null || school === void 0 ? void 0 : school.lessonNotes.push(new mongoose_1.Types.ObjectId(note === null || note === void 0 ? void 0 : note._id));
-            school === null || school === void 0 ? void 0 : school.save();
-            staff === null || staff === void 0 ? void 0 : staff.lessonNotes.push(new mongoose_1.Types.ObjectId(note === null || note === void 0 ? void 0 : note._id));
-            staff === null || staff === void 0 ? void 0 : staff.save();
-            classData === null || classData === void 0 ? void 0 : classData.lessonNotes.push(new mongoose_1.Types.ObjectId(note === null || note === void 0 ? void 0 : note._id));
-            classData === null || classData === void 0 ? void 0 : classData.save();
+            school?.lessonNotes.push(new mongoose_1.Types.ObjectId(note?._id));
+            school?.save();
+            staff?.lessonNotes.push(new mongoose_1.Types.ObjectId(note?._id));
+            staff?.save();
+            classData?.lessonNotes.push(new mongoose_1.Types.ObjectId(note?._id));
+            classData?.save();
             return res.status(201).json({
                 message: "lesson note created",
                 data: note,
@@ -78,9 +78,9 @@ const editClasslessonNote = async (req, res) => {
         const staff = await staffModel_1.default.findById(staffID);
         if (staff) {
             const note = await lessonNoteModel_1.default.findByIdAndUpdate(lessonNodeID, {
-                teacher: staff === null || staff === void 0 ? void 0 : staff.staffName,
-                teacherClass: staff === null || staff === void 0 ? void 0 : staff.classesAssigned,
-                teacherID: staff === null || staff === void 0 ? void 0 : staff._id,
+                teacher: staff?.staffName,
+                teacherClass: staff?.classesAssigned,
+                teacherID: staff?._id,
                 subject,
                 topic,
                 week,
@@ -187,14 +187,14 @@ const readAdminLessonNote = async (req, res) => {
 };
 exports.readAdminLessonNote = readAdminLessonNote;
 const readTeacherLessonNote = async (req, res) => {
-    var _a;
     try {
         const { schoolID, staffID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
         const staff = await staffModel_1.default.findById(staffID);
         if (school && school.schoolName && staff.status === "school-teacher") {
-            const note = await ((_a = staffModel_1.default
-                .findById(staffID)) === null || _a === void 0 ? void 0 : _a.populate({ path: "lessonNotes" }));
+            const note = await staffModel_1.default
+                .findById(staffID)
+                ?.populate({ path: "lessonNotes" });
             return res.status(200).json({
                 message: "Reading teacher's lesson note",
                 data: note,
@@ -217,11 +217,11 @@ const readTeacherLessonNote = async (req, res) => {
 };
 exports.readTeacherLessonNote = readTeacherLessonNote;
 const readTeacherClassLessonNote = async (req, res) => {
-    var _a;
     try {
         const { classID } = req.params;
-        const note = await ((_a = classroomModel_1.default
-            .findById(classID)) === null || _a === void 0 ? void 0 : _a.populate({ path: "lessonNotes" }));
+        const note = await classroomModel_1.default
+            .findById(classID)
+            ?.populate({ path: "lessonNotes" });
         return res.status(200).json({
             message: "Reading teacher's lesson note",
             data: note,
@@ -245,7 +245,7 @@ const approveTeacherLessonNote = async (req, res) => {
             school.schoolName &&
             school.status === "school-admin" &&
             lessonNote) {
-            const note = await lessonNoteModel_1.default.findByIdAndUpdate(lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote._id, { adminSignation: true }, { new: true });
+            const note = await lessonNoteModel_1.default.findByIdAndUpdate(lessonNote?._id, { adminSignation: true }, { new: true });
             return res.status(200).json({
                 message: "lesson note approved",
                 data: note,
@@ -314,16 +314,16 @@ const rateLessonNote = async (req, res) => {
         const teacher = await staffModel_1.default
             .findById(lessonNote.teacherID)
             .populate({ path: "lessonNotes" });
-        const check = lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote.rateData.some((el) => {
+        const check = lessonNote?.rateData.some((el) => {
             return el.id === studentID;
         });
         if (student && lessonNote) {
             // if (!check) {
             // let dataNote = [...lessonNote?.rateData, { id: studentID, rate }];
-            const lessonNoteData = await lessonNoteModel_1.default.findByIdAndUpdate(lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote._id, {
-                rateData: [...lessonNote === null || lessonNote === void 0 ? void 0 : lessonNote.rateData, { id: studentID, rate }],
+            const lessonNoteData = await lessonNoteModel_1.default.findByIdAndUpdate(lessonNote?._id, {
+                rateData: [...lessonNote?.rateData, { id: studentID, rate }],
             }, { new: true });
-            const lessonNoteDate = await lessonNoteModel_1.default.findByIdAndUpdate(lessonNoteData === null || lessonNoteData === void 0 ? void 0 : lessonNoteData._id, {
+            const lessonNoteDate = await lessonNoteModel_1.default.findByIdAndUpdate(lessonNoteData?._id, {
                 rate: lessonNote.rateData
                     .map((el) => {
                     if (el.rate === undefined) {
@@ -336,18 +336,20 @@ const rateLessonNote = async (req, res) => {
                     .reduce((a, b) => a + b) /
                     lessonNote.rateData.length,
             }, { new: true });
-            const lesson = await lessonNoteModel_1.default.findById(lessonNoteDate === null || lessonNoteDate === void 0 ? void 0 : lessonNoteDate._id);
-            await staffModel_1.default.findByIdAndUpdate(teacher === null || teacher === void 0 ? void 0 : teacher._id, {
-                staffRating: (teacher === null || teacher === void 0 ? void 0 : teacher.lessonNotes.map((el) => {
+            const lesson = await lessonNoteModel_1.default.findById(lessonNoteDate?._id);
+            await staffModel_1.default.findByIdAndUpdate(teacher?._id, {
+                staffRating: teacher?.lessonNotes
+                    .map((el) => {
                     if (el.rate === undefined) {
                         return (el.rate = 0);
                     }
                     else {
                         return el.rate;
                     }
-                }).reduce((a, b) => {
+                })
+                    .reduce((a, b) => {
                     return a + b;
-                })) / (teacher === null || teacher === void 0 ? void 0 : teacher.lessonNotes.length),
+                }) / teacher?.lessonNotes.length,
             }, { new: true });
             return res.status(200).json({
                 message: "lesson note rated",

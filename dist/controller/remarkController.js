@@ -19,7 +19,7 @@ const createRemark = async (req, res) => {
         const teacher = await staffModel_1.default.findById(teacherID);
         console.log(teacher);
         const student = await studentModel_1.default.findById(studentID);
-        const school = await schoolModel_1.default.findById(teacher === null || teacher === void 0 ? void 0 : teacher.schoolIDs);
+        const school = await schoolModel_1.default.findById(teacher?.schoolIDs);
         if (teacher && student) {
             const fridayDate = Date.now();
             const readDate = (0, moment_1.default)(fridayDate).days();
@@ -39,7 +39,7 @@ const createRemark = async (req, res) => {
                 });
                 (0, email_1.sendWeeklyReport)(student, school, remarkData);
                 student.remark.push(new mongoose_1.Types.ObjectId(remarkData._id));
-                student === null || student === void 0 ? void 0 : student.save();
+                student?.save();
                 teacher.remark.push(new mongoose_1.Types.ObjectId(remarkData._id));
                 teacher.save();
                 return res.status(201).json({
@@ -81,7 +81,7 @@ const viewStudentRemark = async (req, res) => {
         });
         return res.status(200).json({
             message: "viewing student weekly remark",
-            data: student === null || student === void 0 ? void 0 : student.remark,
+            data: student?.remark,
         });
     }
     catch (error) {

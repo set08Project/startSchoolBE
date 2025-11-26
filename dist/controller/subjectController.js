@@ -22,13 +22,13 @@ const createSchoolSubject = async (req, res) => {
         const schoolSubj = await schoolModel_1.default.findById(schoolID).populate({
             path: "subjects",
         });
-        const getClassRooms = school === null || school === void 0 ? void 0 : school.classRooms.find((el) => {
+        const getClassRooms = school?.classRooms.find((el) => {
             return el.className === designated;
         });
-        const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
+        const getClassRoomsSubj = schoolSubj?.subjects.some((el) => {
             return el.subjectTitle === subjectTitle && el.designated === designated;
         });
-        const getClassRM = await classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
+        const getClassRM = await classroomModel_1.default.findById(getClassRooms?._id);
         if (getClassRooms) {
             if (school && school.schoolName && school.status === "school-admin") {
                 if (!getClassRoomsSubj) {
@@ -38,13 +38,13 @@ const createSchoolSubject = async (req, res) => {
                         subjectTitle,
                         designated,
                         classDetails: getClassRooms,
-                        subjectClassID: getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM._id,
-                        subjectClassIDs: getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id,
+                        subjectClassID: getClassRM?._id,
+                        subjectClassIDs: getClassRooms?._id,
                     });
                     school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
                     school.save();
-                    getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
-                    getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.save();
+                    getClassRM?.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
+                    getClassRM?.save();
                     return res.status(201).json({
                         message: "subjects created successfully",
                         data: subjects,
@@ -108,20 +108,19 @@ const createBulkClassSubjects = async (req, res) => {
             const schoolSubj = await schoolModel_1.default.findById(schoolID).populate({
                 path: "subjects",
             });
-            const getClassRooms = school === null || school === void 0 ? void 0 : school.classRooms.find((el) => {
-                var _a;
-                return ((_a = el.className) === null || _a === void 0 ? void 0 : _a.trim()) === (i === null || i === void 0 ? void 0 : i.designated);
+            const getClassRooms = school?.classRooms.find((el) => {
+                return el.className?.trim() === i?.designated;
             });
-            const getClassRoomsSubj = schoolSubj === null || schoolSubj === void 0 ? void 0 : schoolSubj.subjects.some((el) => {
-                return (el.subjectTitle === (i === null || i === void 0 ? void 0 : i.subjectTitle) && el.designated === (i === null || i === void 0 ? void 0 : i.designated));
+            const getClassRoomsSubj = schoolSubj?.subjects.some((el) => {
+                return (el.subjectTitle === i?.subjectTitle && el.designated === i?.designated);
             });
-            const getClassRM = await classroomModel_1.default.findById(getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id);
+            const getClassRM = await classroomModel_1.default.findById(getClassRooms?._id);
             if (!getClassRooms) {
-                errors.push(`Error finding classroom for designated='${i === null || i === void 0 ? void 0 : i.designated}'`);
+                errors.push(`Error finding classroom for designated='${i?.designated}'`);
                 continue;
             }
             if (!(school && school.schoolName && school.status === "school-admin")) {
-                errors.push(`Unable to read school for row with subjectTitle='${i === null || i === void 0 ? void 0 : i.subjectTitle}'`);
+                errors.push(`Unable to read school for row with subjectTitle='${i?.subjectTitle}'`);
                 continue;
             }
             if (getClassRoomsSubj) {
@@ -132,23 +131,23 @@ const createBulkClassSubjects = async (req, res) => {
             try {
                 const subjects = await subjectModel_1.default.create({
                     schoolName: school.schoolName,
-                    subjectTeacherName: i === null || i === void 0 ? void 0 : i.subjectTeacherName,
-                    subjectTitle: i === null || i === void 0 ? void 0 : i.subjectTitle,
-                    designated: i === null || i === void 0 ? void 0 : i.designated,
+                    subjectTeacherName: i?.subjectTeacherName,
+                    subjectTitle: i?.subjectTitle,
+                    designated: i?.designated,
                     classDetails: getClassRooms,
-                    subjectClassID: getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM._id,
-                    subjectClassIDs: getClassRooms === null || getClassRooms === void 0 ? void 0 : getClassRooms._id,
+                    subjectClassID: getClassRM?._id,
+                    subjectClassIDs: getClassRooms?._id,
                 });
                 // await saves to ensure DB state is consistent
                 school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
                 await school.save();
-                getClassRM === null || getClassRM === void 0 ? void 0 : getClassRM.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
+                getClassRM?.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
                 if (getClassRM)
                     await getClassRM.save();
                 createdCount++;
             }
             catch (err) {
-                errors.push(`Error creating subject '${i === null || i === void 0 ? void 0 : i.subjectTitle}': ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+                errors.push(`Error creating subject '${i?.subjectTitle}': ${err?.message || err}`);
             }
         }
         // delete uploaded files once after processing
@@ -210,15 +209,15 @@ const updateSchoolSubjectTeacher = async (req, res) => {
             if (getTeacher) {
                 const subjects = await subjectModel_1.default.findByIdAndUpdate(subjectID, {
                     subjectTeacherName,
-                    teacherID: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher._id,
+                    teacherID: getTeacher?._id,
                 }, { new: true });
                 const addedData = [
                     ...getTeacher.subjectAssigned,
                     {
-                        title: subjects === null || subjects === void 0 ? void 0 : subjects.subjectTitle,
-                        id: subjects === null || subjects === void 0 ? void 0 : subjects._id,
-                        classMeant: subjects === null || subjects === void 0 ? void 0 : subjects.designated,
-                        classID: getTeacher === null || getTeacher === void 0 ? void 0 : getTeacher.presentClassID,
+                        title: subjects?.subjectTitle,
+                        id: subjects?._id,
+                        classMeant: subjects?.designated,
+                        classID: getTeacher?.presentClassID,
                     },
                 ];
                 await staffModel_1.default.findByIdAndUpdate(getTeacher._id, {
@@ -278,18 +277,17 @@ const viewSchoolSubjects = async (req, res) => {
 };
 exports.viewSchoolSubjects = viewSchoolSubjects;
 const deleteSchoolSubject = async (req, res) => {
-    var _a, _b;
     try {
         const { schoolID, subjectID } = req.params;
         const school = await schoolModel_1.default.findById(schoolID);
         if (school && school.schoolName && school.status === "school-admin") {
             const subjects = await subjectModel_1.default.findById(subjectID);
             // const subjects = await subjectModel.findByIdAndDelete(subjectID);
-            const classRM = await classroomModel_1.default.findById(subjects === null || subjects === void 0 ? void 0 : subjects.classDetails);
-            (_a = school === null || school === void 0 ? void 0 : school.subjects) === null || _a === void 0 ? void 0 : _a.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
+            const classRM = await classroomModel_1.default.findById(subjects?.classDetails);
+            school?.subjects?.pull(new mongoose_1.Types.ObjectId(subjects?._id));
             school.save();
-            (_b = classRM === null || classRM === void 0 ? void 0 : classRM.classSubjects) === null || _b === void 0 ? void 0 : _b.pull(new mongoose_1.Types.ObjectId(subjects === null || subjects === void 0 ? void 0 : subjects._id));
-            classRM === null || classRM === void 0 ? void 0 : classRM.save();
+            classRM?.classSubjects?.pull(new mongoose_1.Types.ObjectId(subjects?._id));
+            classRM?.save();
             return res.status(201).json({
                 message: "subjects  deleted successfully",
                 data: subjects,
@@ -330,7 +328,6 @@ const viewSubjectDetail = async (req, res) => {
 };
 exports.viewSubjectDetail = viewSubjectDetail;
 const removeSubjectFromTeacher = async (req, res) => {
-    var _a;
     try {
         const { schoolID, teacherID, subjectID } = req.params;
         // Validate required params
@@ -365,7 +362,7 @@ const removeSubjectFromTeacher = async (req, res) => {
             });
         }
         // Verify the subject is actually assigned to this teacher
-        const hasSubject = (_a = teacher.subjectAssigned) === null || _a === void 0 ? void 0 : _a.some((el) => el.id.toString() === subjectID);
+        const hasSubject = teacher.subjectAssigned?.some((el) => el.id.toString() === subjectID);
         if (!hasSubject) {
             return res.status(400).json({
                 message: "Subject is not assigned to this teacher",
