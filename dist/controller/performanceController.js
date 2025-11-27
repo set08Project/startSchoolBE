@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePerformance = exports.readOneSubjectMidTestResultPreformance = exports.readMidTestResult = exports.readStudentMidTestResult = exports.readOneSubjectMidTestResult = exports.readExamResult = exports.readStudentExamResult = exports.readOneSubjectExamResult = exports.readSubjectExamResult = exports.readSubjectMidTestResult = exports.createMidTestPerformance = exports.createExamPerformance = exports.readQuizResult = exports.readStudentQuizResult = exports.readOneSubjectQuizResult = exports.updateQuitSubjectQuizResultRecorded = exports.updateSubjectQuizResultRecorded = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
+exports.deleteSelectedStudentsFromQuiz = exports.deleteAllPerformancesForQuiz = exports.deletePerformance = exports.readOneSubjectMidTestResultPreformance = exports.readMidTestResult = exports.readStudentMidTestResult = exports.readOneSubjectMidTestResult = exports.readExamResult = exports.readStudentExamResult = exports.readOneSubjectExamResult = exports.readSubjectExamResult = exports.readSubjectMidTestResult = exports.createMidTestPerformance = exports.createExamPerformance = exports.readQuizResult = exports.readStudentQuizResult = exports.readOneSubjectQuizResult = exports.updateQuitSubjectQuizResultRecorded = exports.updateSubjectQuizResultRecorded = exports.readSubjectQuizResult = exports.createQuizPerformance = void 0;
 const mongoose_1 = require("mongoose");
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
@@ -881,3 +881,138 @@ const deletePerformance = async (req, res) => {
     }
 };
 exports.deletePerformance = deletePerformance;
+const deleteAllPerformancesForQuiz = async (req, res) => {
+    try {
+        const { quizID } = req.params;
+        if (!quizID) {
+            return res
+                .status(400)
+                .json({ message: "quizID is required", status: 400 });
+        }
+        // Find all performances for this quizID
+        const performances = await performanceModel_1.default.find({ quizID }).lean();
+        if (!performances || performances.length === 0) {
+            return res
+                .status(404)
+                .json({ message: "No performances found for this quiz", status: 404 });
+        }
+        const perfIds = performances.map((p) => p._id);
+        const studentIds = Array.from(new Set(performances.map((p) => String(p.student)).filter(Boolean)));
+        // Remove references from quizzes, examinations, midTests, subjects and students
+        await Promise.all([
+            quizModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            examinationModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            midTestModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            subjectModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            studentModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+        ]);
+        // Delete the performance documents themselves
+        await performanceModel_1.default.deleteMany({ _id: { $in: perfIds } });
+        // Recalculate totalPerformance for affected students
+        await Promise.all(studentIds.map(async (sid) => {
+            if (!sid)
+                return;
+            const remaining = await performanceModel_1.default
+                .find({ student: sid })
+                .select("performanceRating")
+                .lean();
+            const ratings = (remaining || [])
+                .map((p) => typeof p.performanceRating === "number" &&
+                !isNaN(p.performanceRating)
+                ? p.performanceRating
+                : null)
+                .filter((r) => r !== null);
+            const avg = ratings.length > 0
+                ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+                : 0;
+            await studentModel_1.default.findByIdAndUpdate(sid, { totalPerformance: avg }, { new: true });
+        }));
+        return res.status(200).json({
+            message: "All performances for quiz deleted successfully",
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error deleting performances for quiz",
+            data: error?.message,
+            status: 500,
+        });
+    }
+};
+exports.deleteAllPerformancesForQuiz = deleteAllPerformancesForQuiz;
+const deleteSelectedStudentsFromQuiz = async (req, res) => {
+    try {
+        const { quizID } = req.params;
+        const { studentIDs } = req.body; // expect array of student IDs
+        if (!quizID) {
+            return res
+                .status(400)
+                .json({ message: "quizID is required", status: 400 });
+        }
+        if (!Array.isArray(studentIDs) || studentIDs.length === 0) {
+            return res
+                .status(400)
+                .json({ message: "studentIDs (array) is required", status: 400 });
+        }
+        // Find performances for this quiz and the selected students
+        const performances = await performanceModel_1.default
+            .find({ quizID, student: { $in: studentIDs } })
+            .lean();
+        if (!performances || performances.length === 0) {
+            return res
+                .status(404)
+                .json({
+                message: "No matching performances found for given students and quiz",
+                status: 404,
+            });
+        }
+        const perfIds = performances.map((p) => p._id);
+        const affectedStudents = Array.from(new Set(performances.map((p) => String(p.student)).filter(Boolean)));
+        // Remove references from quiz/exam/midTest/subject/student documents
+        await Promise.all([
+            quizModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            examinationModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            midTestModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            subjectModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+            studentModel_1.default.updateMany({ performance: { $in: perfIds } }, { $pull: { performance: { $in: perfIds } } }),
+        ]);
+        // Delete the performance documents
+        await performanceModel_1.default.deleteMany({ _id: { $in: perfIds } });
+        // Recalculate totalPerformance for each affected student
+        await Promise.all(affectedStudents.map(async (sid) => {
+            if (!sid)
+                return;
+            const remaining = await performanceModel_1.default
+                .find({ student: sid })
+                .select("performanceRating")
+                .lean();
+            const ratings = (remaining || [])
+                .map((p) => typeof p.performanceRating === "number" &&
+                !isNaN(p.performanceRating)
+                ? p.performanceRating
+                : null)
+                .filter((r) => r !== null);
+            const avg = ratings.length > 0
+                ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+                : 0;
+            await studentModel_1.default.findByIdAndUpdate(sid, { totalPerformance: avg }, { new: true });
+        }));
+        return res
+            .status(200)
+            .json({
+            message: "Selected students performances deleted successfully",
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res
+            .status(500)
+            .json({
+            message: "Error deleting selected students performances",
+            data: error?.message,
+            status: 500,
+        });
+    }
+};
+exports.deleteSelectedStudentsFromQuiz = deleteSelectedStudentsFromQuiz;

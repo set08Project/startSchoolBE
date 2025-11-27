@@ -55,4 +55,12 @@ router
 router.route("/view-mid-test-performance/:quizID").get(performanceController_1.readMidTestResult);
 // delete performance
 router.route("/delete-performance/:performanceID").delete(performanceController_1.deletePerformance);
+// delete all performances for a quiz
+router
+    .route("/delete-all-performances/:quizID")
+    .delete(performanceController_1.deleteAllPerformancesForQuiz);
+// delete selected students' performances for a quiz (expects `studentIDs` array in body)
+router
+    .route("/delete-selected-students/:quizID")
+    .delete(performanceController_1.deleteSelectedStudentsFromQuiz);
 exports.default = router;

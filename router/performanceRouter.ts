@@ -19,6 +19,8 @@ import {
   readSubjectQuizResult,
   updateQuitSubjectQuizResultRecorded,
   updateSubjectQuizResultRecorded,
+  deleteAllPerformancesForQuiz,
+  deleteSelectedStudentsFromQuiz,
 } from "../controller/performanceController";
 
 const router: Router = Router();
@@ -95,5 +97,15 @@ router.route("/view-mid-test-performance/:quizID").get(readMidTestResult);
 
 // delete performance
 router.route("/delete-performance/:performanceID").delete(deletePerformance);
+
+// delete all performances for a quiz
+router
+  .route("/delete-all-performances/:quizID")
+  .delete(deleteAllPerformancesForQuiz);
+
+// delete selected students' performances for a quiz (expects `studentIDs` array in body)
+router
+  .route("/delete-selected-students/:quizID")
+  .delete(deleteSelectedStudentsFromQuiz);
 
 export default router;
