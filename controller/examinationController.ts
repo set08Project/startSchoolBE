@@ -52,6 +52,25 @@ export const createSubjectExam = async (
 
     let value: any[] = [];
 
+    // helper to extract URLs from string
+    const extractUrlsFromText = (text: string): string[] => {
+      // Match both http(s) and data URIs
+      const urlRegex = /(https?:\/\/[^\s\)\]]+|data:[^\s\)\]]+)/g;
+      const matches = Array.from((text || "").matchAll(urlRegex));
+      return matches.map((m: any) => m[0]);
+    };
+
+    // Attempts to trim trailing garbage after common image extensions
+    const sanitizeUrl = (url: string): string => {
+      if (!url || typeof url !== "string") return url;
+      const extRegex =
+        /(\.(?:png|jpe?g|gif|webp|svg|bmp|pdf|txt))(?:[?#][^\s\)\]]*)?/i;
+      const match = url.match(extRegex);
+      if (!match || match.index === undefined) return url;
+      const endIndex = match.index + match[0].length;
+      return url.slice(0, endIndex);
+    };
+
     if (ext === ".doc" || ext === ".docx") {
       // Convert Word docx to HTML to preserve images and markup
       const result = await mammoth.convertToHtml(
@@ -97,15 +116,15 @@ export const createSubjectExam = async (
             if (typeof src === "string" && src.startsWith("data:")) {
               const uploadRes: any = await uploadDataUri(src, "exams");
               if (uploadRes && uploadRes.secure_url) {
-                uploadedUrls.push(uploadRes.secure_url);
+                uploadedUrls.push(sanitizeUrl(uploadRes.secure_url));
               }
             } else if (typeof src === "string") {
               // not a data URI (likely a valid src already) — keep as-is
-              uploadedUrls.push(src);
+              uploadedUrls.push(sanitizeUrl(src));
             }
           } catch (err) {
             // on failure, keep the original src so diagram isn't lost
-            uploadedUrls.push(src);
+            uploadedUrls.push(sanitizeUrl(src));
           }
         }
         imagesByIndex[Number(k)] = uploadedUrls;
@@ -121,20 +140,29 @@ export const createSubjectExam = async (
           // Save previous question
           if (Object.keys(questionData).length) {
             questionData.options = options;
-            // attach images if any
+            // attach images if any - sanitize recorded urls
             if (imagesByIndex[idx - 1])
-              questionData.images = imagesByIndex[idx - 1];
+              questionData.images = imagesByIndex[idx - 1].map((u: string) =>
+                sanitizeUrl(String(u))
+              );
             value.push(questionData);
             questionData = {};
             options = [];
           }
           // Extract bracketed image URL if present
           const match = line.match(BRACKET_URL_REGEX);
-          const url = match ? match[1].trim() : null;
+          let url = match ? match[1].trim() : null;
+          // fallback: extract any URL in the line
+          if (!url) {
+            const extracted = extractUrlsFromText(line);
+            if (extracted.length) url = sanitizeUrl(extracted[0]);
+          }
           line = line.replace(BRACKET_URL_REGEX, "").trim();
           questionData = { question: line };
           if (url) {
+            url = sanitizeUrl(url);
             questionData.images = [url];
+            questionData.url = url;
           }
         } else if (/^[A-D]\./.test(line)) {
           options.push(line.replace(/^[A-D]\./, ""));
@@ -147,12 +175,18 @@ export const createSubjectExam = async (
           if (questionData && !questionData.options) {
             // Also extract bracketed image URL from continuation lines
             const match = line.match(BRACKET_URL_REGEX);
-            const url = match ? match[1].trim() : null;
+            let url = match ? match[1].trim() : null;
+            if (!url) {
+              const extracted = extractUrlsFromText(line);
+              if (extracted.length) url = sanitizeUrl(extracted[0]);
+            }
             line = line.replace(BRACKET_URL_REGEX, "").trim();
             questionData.question = `${questionData.question} ${line}`.trim();
             if (url) {
+              url = sanitizeUrl(url);
               if (!questionData.images) questionData.images = [];
               questionData.images.push(url);
+              if (!questionData.url) questionData.url = url;
             }
           }
         }
@@ -162,7 +196,15 @@ export const createSubjectExam = async (
         questionData.options = options;
         const lastIdx = blocks.length - 1;
         if (imagesByIndex[lastIdx])
-          questionData.images = imagesByIndex[lastIdx];
+          questionData.images = imagesByIndex[lastIdx].map((u: string) =>
+            sanitizeUrl(String(u))
+          );
+        if (
+          !questionData.url &&
+          Array.isArray(questionData.images) &&
+          questionData.images.length
+        )
+          questionData.url = questionData.images[0];
         value.push(questionData);
       }
     } else {
@@ -170,6 +212,14 @@ export const createSubjectExam = async (
       const data = await csv().fromFile(uploadedPath);
       for (const i of data as any[]) {
         const opts = i.options ? i.options.split(";;") : [];
+        const possibleUrl =
+          i.url || i.image || i.imageUrl || i.Image || i.URL || i.Url;
+        let images = possibleUrl
+          ? typeof possibleUrl === "string"
+            ? [possibleUrl]
+            : possibleUrl
+          : [];
+        images = images.map((u: any) => sanitizeUrl(String(u)));
         const read = {
           question:
             i.Question ||
@@ -177,6 +227,8 @@ export const createSubjectExam = async (
             i.questionText ||
             i.questionTitle ||
             i.question,
+          images,
+          url: images && images.length ? images[0] : undefined,
           options: opts,
           answer: i.Answer || i.answer,
           explanation: i.Explanation || i.explanation,
