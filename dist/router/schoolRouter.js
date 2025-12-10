@@ -55,6 +55,7 @@ router.route("/change-school-name/:schoolID").patch(schoolController_1.updateSch
 router
     .route("/change-school-started/:schoolID")
     .patch(schoolController_1.updateSchoolStartPossition);
+router.route("/change-school-team-info/:schoolID").patch(schoolController_1.updateSchoolTeamData);
 router
     .route("/create-school-time-table/:schoolID")
     .patch(schoolController_1.createSchoolTimetableRecord);

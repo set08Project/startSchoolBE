@@ -1138,6 +1138,43 @@ export const updateSchoolAccountDetail = async (req: any, res: Response) => {
     });
   }
 };
+// school school Team/Resumption info
+
+export const updateSchoolTeamData = async (req: any, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+    const { SchoolTeamResumption, SchoolTeamCloses, NumberOfDays } = req.body;
+ 
+
+    const school: any = await schoolModel.findById(schoolID);
+
+    if (school.schoolName) {
+      const updatedSchool = await schoolModel.findByIdAndUpdate(
+        schoolID,
+        {
+          SchoolTeamResumption,
+          SchoolTeamCloses,
+          NumberOfDays,
+        },
+        { new: true }
+      );
+
+
+      return res.status(200).json({
+        message: "school account detail updated successfully",
+        data: updatedSchool,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Something went wrong",
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating account details",
+    });
+  }
+};
 
 export const updateSchoolPaymentOptions = async (req: any, res: Response) => {
   try {

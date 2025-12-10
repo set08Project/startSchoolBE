@@ -22,6 +22,15 @@ const schoolModel = new mongoose_2.Schema({
     presentSessionID: {
         type: String,
     },
+    SchoolTeamResumption: {
+        type: String,
+    },
+    SchoolTeamCloses: {
+        type: String,
+    },
+    NumberOfDays: {
+        type: String,
+    },
     categoryType: {
         type: String,
     },

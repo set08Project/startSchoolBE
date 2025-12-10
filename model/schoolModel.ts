@@ -10,6 +10,10 @@ interface iSchool {
   status: string;
   presentTerm: string;
 
+  NumberOfDays: string;
+  SchoolTeamResumption: string;
+  SchoolTeamCloses: string;
+
   presentSession: string;
   presentSessionID: string;
   presentTermID: string;
@@ -100,6 +104,18 @@ const schoolModel = new Schema<iSchoolData>(
     },
 
     presentSessionID: {
+      type: String,
+    },
+
+    SchoolTeamResumption: {
+      type: String,
+    },
+
+    SchoolTeamCloses: {
+      type: String,
+    },
+
+    NumberOfDays: {
       type: String,
     },
 

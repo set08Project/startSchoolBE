@@ -31,6 +31,7 @@ import {
   RemoveSchoolPaymentOptions,
   importSchoolData,
   updateSchoolStamp,
+  updateSchoolTeamData,
 } from "../controller/schoolController";
 import multer from "multer";
 
@@ -101,6 +102,8 @@ router.route("/change-school-name/:schoolID").patch(updateSchoolName);
 router
   .route("/change-school-started/:schoolID")
   .patch(updateSchoolStartPossition);
+
+router.route("/change-school-team-info/:schoolID").patch(updateSchoolTeamData);
 
 router
   .route("/create-school-time-table/:schoolID")
