@@ -484,7 +484,7 @@ const createReportCardEntry = async (req, res) => {
         const { 
         // teacherID,
         studentID, } = req.params;
-        const { subject, test1 = 0, test2 = 0, test3 = 0, test4 = 0, exam = 0, } = req.body;
+        const { subject, test1 = 0, test2 = 0, test3 = 0, test4 = 0, exam = 0, teacherComment, } = req.body;
         // Validate required fields
         if (!subject) {
             return res.status(400).json({
@@ -654,6 +654,7 @@ const createReportCardEntry = async (req, res) => {
                 score: maxScore,
                 points: totalMark,
                 grade: calculateGrade(totalMark),
+                teacherComment,
             };
         };
         if (existingReportCard) {

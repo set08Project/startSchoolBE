@@ -539,6 +539,7 @@ export const createReportCardEntry = async (
       test3 = 0,
       test4 = 0,
       exam = 0,
+      teacherComment,
     } = req.body;
 
     // Validate required fields
@@ -693,6 +694,7 @@ export const createReportCardEntry = async (
         score: maxScore,
         points: totalMark,
         grade: calculateGrade(totalMark),
+        teacherComment,
       };
     };
 
