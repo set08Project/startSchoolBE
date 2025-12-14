@@ -401,6 +401,7 @@ export const createNewSchoolSession = async (
     // Process students
     const studentUpdates: Promise<any>[] = [];
     const studentDeletions: string[] = [];
+    const jss3Students: string[] = []; // Collect all JSS 3 students (JSS 3A, JSS 3B, JSS 3C, etc.) for SSS 1Holders class
 
     for (const student of students) {
       const newClassName = promoteClassName(student.classAssigned);
@@ -423,6 +424,12 @@ export const createNewSchoolSession = async (
       } else {
         // Student has graduated
         studentDeletions.push(student._id.toString());
+      }
+
+      // Collect all JSS 3 students (JSS 3A, JSS 3B, JSS 3C, etc.) who are transitioning to SSS 1
+      const classAssignedTrimmed = student.classAssigned?.trim() || "";
+      if (classAssignedTrimmed.startsWith("JSS 3")) {
+        jss3Students.push(student._id.toString());
       }
     }
 
@@ -504,6 +511,53 @@ export const createNewSchoolSession = async (
     // Execute teacher updates
     await Promise.all(teacherUpdates);
 
+    // Check if SSS 1Holders classroom exists, otherwise create it and assign JSS 3 students
+    let sss1HoldersClassroom = null;
+    let classroomCreated = false;
+    if (jss3Students.length > 0) {
+      try {
+        // Check if SSS 1Holders classroom already exists for this school
+        sss1HoldersClassroom = await classroomModel.findOne({
+          className: "SSS 1Holders",
+          schoolIDs: schoolID,
+        });
+
+        if (!sss1HoldersClassroom) {
+          // Create new SSS 1Holders classroom if it doesn't exist
+          sss1HoldersClassroom = await classroomModel.create({
+            className: "SSS 1Holders",
+            schoolIDs: schoolID,
+            students: jss3Students,
+          });
+
+          // Add the new classroom to school
+          await schoolModel.findByIdAndUpdate(schoolID, {
+            $push: { classRooms: sss1HoldersClassroom._id },
+          });
+
+          classroomCreated = true;
+        } else {
+          // SSS 1Holders exists, add new students to it
+          await classroomModel.findByIdAndUpdate(
+            sss1HoldersClassroom._id,
+            {
+              $addToSet: { students: { $each: jss3Students } }, // $addToSet prevents duplicates
+            },
+            { new: true }
+          );
+        }
+
+        // Update each JSS 3 student to be assigned to this classroom
+        for (const studentId of jss3Students) {
+          await studentModel.findByIdAndUpdate(studentId, {
+            classAssigned: "SSS 1Holders",
+          });
+        }
+      } catch (err) {
+        console.error("Error handling SSS 1Holders classroom:", err);
+      }
+    }
+
     return res.status(201).json({
       message: "Session created and students promoted successfully",
       data: {
@@ -511,6 +565,8 @@ export const createNewSchoolSession = async (
         promotedStudents: studentUpdates.length,
         graduatedStudents: studentDeletions.length,
         deletedClassRooms: classRoomDeletions.length,
+        jss3HoldersCreated: classroomCreated,
+        jss3StudentsAssigned: jss3Students.length,
       },
     });
   } catch (error: any) {
