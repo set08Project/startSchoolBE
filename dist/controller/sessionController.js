@@ -382,8 +382,13 @@ const createNewSchoolSession = async (req, res) => {
         // Process students
         const studentUpdates = [];
         const studentDeletions = [];
-        const jss3Students = []; // Collect all JSS 3 students (JSS 3A, JSS 3B, JSS 3C, etc.) for SSS 1Holders class
+        const jss3Students = []; // Collect all JSS 3 students (JSS 3, JSS 3A, JSS 3B, JSS 3C, etc.) for SSS 1Holders class
         for (const student of students) {
+            // Collect all JSS 3 students (JSS 3, JSS 3A, JSS 3B, JSS 3C, etc.) BEFORE they are promoted
+            const classAssignedTrimmed = student.classAssigned?.trim() || "";
+            if (classAssignedTrimmed.startsWith("JSS 3")) {
+                jss3Students.push(student._id.toString());
+            }
             const newClassName = promoteClassName(student.classAssigned);
             if (newClassName) {
                 studentUpdates.push(studentModel_1.default.findByIdAndUpdate(student._id, {
@@ -398,11 +403,6 @@ const createNewSchoolSession = async (req, res) => {
             else {
                 // Student has graduated
                 studentDeletions.push(student._id.toString());
-            }
-            // Collect all JSS 3 students (JSS 3A, JSS 3B, JSS 3C, etc.) who are transitioning to SSS 1
-            const classAssignedTrimmed = student.classAssigned?.trim() || "";
-            if (classAssignedTrimmed.startsWith("JSS 3")) {
-                jss3Students.push(student._id.toString());
             }
         }
         // Execute student updates
