@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllClassSessionResults = exports.createSessionHistory = exports.updateTermPay = exports.getAllSession = exports.viewTerm = exports.termPerSession = exports.studentsPerSession = exports.viewSchoolPresentSessionTerm = exports.viewSchoolPresentSession = exports.viewSchoolSession = exports.createNewSchoolSession = exports.createSchoolSession = void 0;
+exports.migrateStudentsFromSSS1Holders = exports.getAllClassSessionResults = exports.createSessionHistory = exports.updateTermPay = exports.getAllSession = exports.viewTerm = exports.termPerSession = exports.studentsPerSession = exports.viewSchoolPresentSessionTerm = exports.viewSchoolPresentSession = exports.viewSchoolSession = exports.createNewSchoolSession = exports.createSchoolSession = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const sessionModel_1 = __importDefault(require("../model/sessionModel"));
 const mongoose_1 = require("mongoose");
@@ -821,3 +821,141 @@ const getAllClassSessionResults = async (req, res) => {
     }
 };
 exports.getAllClassSessionResults = getAllClassSessionResults;
+const migrateStudentsFromSSS1Holders = async (req, res) => {
+    try {
+        const { schoolID } = req.params;
+        const { studentMigrations } = req.body; // Array of { studentId, targetClassName }
+        // Validation
+        if (!Array.isArray(studentMigrations) || studentMigrations.length === 0) {
+            return res.status(400).json({
+                message: "Invalid studentMigrations format. Expected non-empty array.",
+                status: 400,
+            });
+        }
+        // Fetch SSS 1Holders classroom with multiple fallback strategies
+        let sss1HoldersClassroom = await classroomModel_1.default.findOne({
+            className: "SSS 1Holders",
+            schoolIDs: schoolID,
+        });
+        console.log("SSS 1Holders found (attempt 1):", !!sss1HoldersClassroom);
+        // If not found with schoolIDs, try searching by classroom name only
+        if (!sss1HoldersClassroom) {
+            sss1HoldersClassroom = await classroomModel_1.default.findOne({
+                className: "SSS 1Holders",
+            });
+            console.log("SSS 1Holders found (attempt 2 - no schoolID filter):", !!sss1HoldersClassroom);
+        }
+        // If still not found, try case-insensitive search
+        if (!sss1HoldersClassroom) {
+            sss1HoldersClassroom = await classroomModel_1.default.findOne({
+                className: { $regex: "SSS 1Holders", $options: "i" },
+            });
+            console.log("SSS 1Holders found (attempt 3 - case insensitive):", !!sss1HoldersClassroom);
+        }
+        if (!sss1HoldersClassroom) {
+            console.log("All classrooms in DB:", await classroomModel_1.default.find({}).select("className schoolIDs"));
+            return res.status(404).json({
+                message: "SSS 1Holders classroom not found. Please ensure the classroom exists before migrating students.",
+                status: 404,
+                hint: "Run createNewSchoolSession first to create SSS 1Holders classroom",
+            });
+        }
+        const migrationResults = {
+            successful: 0,
+            failed: 0,
+            errors: [],
+        };
+        // Process each student migration
+        for (const migration of studentMigrations) {
+            const { studentId, targetClassName } = migration;
+            try {
+                // Validate target classroom format
+                if (!targetClassName || typeof targetClassName !== "string") {
+                    migrationResults.failed++;
+                    migrationResults.errors.push({
+                        studentId,
+                        error: "Invalid target classroom name",
+                    });
+                    continue;
+                }
+                // Fetch the student
+                const student = await studentModel_1.default.findById(studentId);
+                if (!student) {
+                    migrationResults.failed++;
+                    migrationResults.errors.push({
+                        studentId,
+                        error: "Student not found",
+                    });
+                    continue;
+                }
+                // Verify student is in SSS 1Holders
+                if (student.classAssigned !== "SSS 1Holders") {
+                    migrationResults.failed++;
+                    migrationResults.errors.push({
+                        studentId,
+                        error: `Student is not in SSS 1Holders (currently in ${student.classAssigned})`,
+                    });
+                    continue;
+                }
+                // Find or create target classroom
+                let targetClassroom = await classroomModel_1.default.findOne({
+                    className: targetClassName,
+                    schoolIDs: schoolID,
+                });
+                if (!targetClassroom) {
+                    // Create new target classroom if it doesn't exist
+                    targetClassroom = await classroomModel_1.default.create({
+                        className: targetClassName,
+                        schoolIDs: schoolID,
+                        students: [studentId],
+                    });
+                    // Add the new classroom to school
+                    await schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                        $push: { classRooms: targetClassroom._id },
+                    });
+                }
+                else {
+                    // Add student to existing target classroom
+                    await classroomModel_1.default.findByIdAndUpdate(targetClassroom._id, {
+                        $addToSet: { students: studentId },
+                    });
+                }
+                // Remove student from SSS 1Holders
+                await classroomModel_1.default.findByIdAndUpdate(sss1HoldersClassroom._id, {
+                    $pull: { students: studentId },
+                });
+                // Update student's class assignment
+                await studentModel_1.default.findByIdAndUpdate(studentId, {
+                    classAssigned: targetClassName,
+                });
+                migrationResults.successful++;
+            }
+            catch (err) {
+                migrationResults.failed++;
+                migrationResults.errors.push({
+                    studentId,
+                    error: err.message,
+                });
+            }
+        }
+        // Check remaining students in SSS 1Holders
+        const updatedSSS1Holders = await classroomModel_1.default.findById(sss1HoldersClassroom._id);
+        return res.status(200).json({
+            message: "Student migration completed",
+            data: {
+                ...migrationResults,
+                sss1HoldersRemainingStudents: updatedSSS1Holders?.students?.length || 0,
+            },
+            status: 200,
+        });
+    }
+    catch (error) {
+        console.error("Error migrating students:", error);
+        return res.status(500).json({
+            message: "Error migrating students from SSS 1Holders",
+            error: error.message,
+            status: 500,
+        });
+    }
+};
+exports.migrateStudentsFromSSS1Holders = migrateStudentsFromSSS1Holders;

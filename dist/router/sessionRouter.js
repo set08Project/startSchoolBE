@@ -5,6 +5,9 @@ const sessionController_1 = require("../controller/sessionController");
 const announcementController_1 = require("../controller/announcementController");
 // viewSchoolPresentSessionTerm;
 const router = (0, express_1.Router)();
+router
+    .route("/migrate-sss1holders/:schoolID")
+    .patch(sessionController_1.migrateStudentsFromSSS1Holders);
 router.route("/create-school-session").post(sessionController_1.createSchoolSession);
 router
     .route("/create-new-school-session/:schoolID")

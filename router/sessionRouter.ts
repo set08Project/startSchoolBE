@@ -5,6 +5,7 @@ import {
   createSessionHistory,
   getAllClassSessionResults,
   getAllSession,
+  migrateStudentsFromSSS1Holders,
   studentsPerSession,
   termPerSession,
   updateTermPay,
@@ -17,6 +18,10 @@ import { createSchoolPaynemtReceipt } from "../controller/announcementController
 // viewSchoolPresentSessionTerm;
 
 const router: Router = Router();
+router
+  .route("/migrate-sss1holders/:schoolID")
+  .patch(migrateStudentsFromSSS1Holders);
+
 
 router.route("/create-school-session").post(createSchoolSession);
 router
