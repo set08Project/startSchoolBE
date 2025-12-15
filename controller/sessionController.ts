@@ -352,7 +352,8 @@ export const createNewSchoolSession = async (
         if (num < 3) {
           return `JSS ${num + 1}${suffix}`;
         } else if (num === 3) {
-          return `SSS 1${suffix}`;
+          // JSS 3 students go to SSS 1Holders, not promoted to individual classes
+          return null;
         } else {
           return null; // Graduate
         }
@@ -360,7 +361,7 @@ export const createNewSchoolSession = async (
         if (num < 3) {
           return `SSS ${num + 1}${suffix}`;
         } else {
-          return null; // Graduate
+          return null; // Graduate (SSS 3 and above graduate)
         }
       }
 
@@ -408,6 +409,8 @@ export const createNewSchoolSession = async (
       const classAssignedTrimmed = student.classAssigned?.trim() || "";
       if (classAssignedTrimmed.startsWith("JSS 3")) {
         jss3Students.push(student._id.toString());
+        // Don't promote them individually; they'll be assigned to SSS 1Holders
+        continue;
       }
 
       const newClassName = promoteClassName(student.classAssigned);
@@ -428,8 +431,10 @@ export const createNewSchoolSession = async (
           )
         );
       } else {
-        // Student has graduated
-        studentDeletions.push(student._id.toString());
+        // Student has graduated (or is JSS 3 which will be handled separately)
+        if (!classAssignedTrimmed.startsWith("JSS 3")) {
+          studentDeletions.push(student._id.toString());
+        }
       }
     }
 
