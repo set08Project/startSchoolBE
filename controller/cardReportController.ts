@@ -2010,7 +2010,6 @@ export const adminReportRemark = async (
         { new: true }
       );
 
-      console.log("This is the report: ", report);
 
       const result = await studentHistoricalResultModel.create({
         results: report?.result,

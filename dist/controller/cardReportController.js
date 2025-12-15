@@ -1778,7 +1778,6 @@ const adminReportRemark = async (req, res) => {
                 approve: true,
                 adminComment,
             }, { new: true });
-            console.log("This is the report: ", report);
             const result = await studentHistoricalResultModel_1.default.create({
                 results: report?.result,
                 totalPoints: report?.points,
