@@ -647,6 +647,7 @@ const createReportCardEntry = async (req, res) => {
                 maxScore += 40;
             if (examScore > 0)
                 maxScore += 60;
+            console.log("test4Score: ", test4Score, teacherComment);
             return {
                 test4: test4Score,
                 exam: examScore,
@@ -654,7 +655,7 @@ const createReportCardEntry = async (req, res) => {
                 score: maxScore,
                 points: totalMark,
                 grade: calculateGrade(totalMark),
-                teacherComment,
+                teacherComment: generateTeacherComment(totalMark),
             };
         };
         if (existingReportCard) {

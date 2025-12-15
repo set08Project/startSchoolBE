@@ -687,6 +687,8 @@ export const createReportCardEntry = async (
       if (test4Score > 0) maxScore += 40;
       if (examScore > 0) maxScore += 60;
 
+      console.log("test4Score: ", test4Score, teacherComment);
+
       return {
         test4: test4Score,
         exam: examScore,
@@ -694,7 +696,7 @@ export const createReportCardEntry = async (
         score: maxScore,
         points: totalMark,
         grade: calculateGrade(totalMark),
-        teacherComment,
+        teacherComment:teacherComment ||  generateTeacherComment(totalMark),
       };
     };
 
