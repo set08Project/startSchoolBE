@@ -38,6 +38,9 @@ const classesModel = new mongoose_1.Schema({
     class3rdFee: {
         type: Number,
     },
+    schoolIDs: {
+        type: String,
+    },
     presentTerm: {
         type: String,
     },

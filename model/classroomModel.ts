@@ -4,6 +4,7 @@ interface iClass {
   className: string;
   classTeacherName: string;
   teacherID: string;
+  schoolIDs: string;
 
   presentTerm: string;
 
@@ -78,6 +79,10 @@ const classesModel = new Schema<iClassData>(
 
     class3rdFee: {
       type: Number,
+    },
+
+    schoolIDs: {
+      type: String,
     },
 
     presentTerm: {

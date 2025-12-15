@@ -34,6 +34,7 @@ const createSchoolClasses = async (req, res) => {
                     class2ndFee,
                     class3rdFee,
                     class1stFee,
+                    schoolIDs: schoolID,
                     presentTerm: school?.presentTerm,
                 });
                 school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
@@ -107,6 +108,7 @@ const createBulkSchoolClassroom = async (req, res) => {
                         class2ndFee: parseInt(i?.class2ndFee.replace(/,/g, "")),
                         class3rdFee: parseInt(i?.class3rdFee.replace(/,/g, "")),
                         class1stFee: parseInt(i?.class1stFee.replace(/,/g, "")),
+                        schoolIDs: schoolID,
                         presentTerm: school?.presentTerm,
                     });
                     school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
