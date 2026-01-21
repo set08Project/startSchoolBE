@@ -70,6 +70,7 @@ const router: Router = Router();
 router.route("/find-student").post(findStudenWithEnrollmentID);
 router.route("/student-clock-in/:schoolID/:studentID").patch(clockinAccount);
 router.route("/student-clock-out/:schoolID/:studentID").patch(clockOutAccount);
+
 router.route("/student-clock-in-with-id/:schoolID").patch(clockinAccount);
 router.route("/student-clock-out-with-id/:schoolID").patch(clockOutAccount);
 

@@ -146,7 +146,7 @@ const clockOutAccount = async (req, res) => {
                         clockOut: true,
                         clockOutTime: (0, moment_1.default)(new Date().getTime()).format("llll"),
                     }, { new: true });
-                    (0, email_1.clockingOutEmail)(clockInfo, school);
+                    (0, email_1.clockingOutEmail)(clockInfo, school).then;
                     return res.status(201).json({
                         message: "student has clock-in",
                         data: clockInfo,

@@ -292,7 +292,7 @@ const clockingOutEmail = async (user, school) => {
         const x = user?.clockOutTime.split(",");
         const y = x[2].trim();
         const html = await ejs_1.default.renderFile(myPath, {
-            clockin: user.clockInTime,
+            clockin: user.clockOutTime,
             parent: user.studentLastName,
             child: user.studentFirstName,
             address: school?.address,

@@ -178,7 +178,7 @@ export const clockOutAccount = async (
             { new: true }
           );
 
-          clockingOutEmail(clockInfo, school);
+          clockingOutEmail(clockInfo, school).then
 
           return res.status(201).json({
             message: "student has clock-in",
