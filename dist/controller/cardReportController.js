@@ -655,7 +655,7 @@ const createReportCardEntry = async (req, res) => {
                 score: maxScore,
                 points: totalMark,
                 grade: calculateGrade(totalMark),
-                teacherComment: generateTeacherComment(totalMark),
+                teacherComment: teacherComment || generateTeacherComment(totalMark),
             };
         };
         if (existingReportCard) {

@@ -97,6 +97,7 @@ const startServer = async () => {
     }
 };
 const server = startServer();
+exports.default = app;
 process.on("uncaughtException", (error) => {
     console.log("uncaughtException: ", error);
     process.exit(1);

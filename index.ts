@@ -121,6 +121,8 @@ const startServer = async () => {
 
 const server = startServer();
 
+export default app;
+
 process.on("uncaughtException", (error: Error) => {
   console.log("uncaughtException: ", error);
 
