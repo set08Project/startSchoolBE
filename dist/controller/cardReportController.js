@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeSubjectFromResult = exports.studentPsychoReport = exports.studentMidReportRemark = exports.studentReportRemark = exports.adminMidReportRemark = exports.classTeacherMidReportRemark = exports.classTeacherReportRemark = exports.adminReportRemark = exports.classTeacherPhychoReportRemark = exports.updateReportScores = exports.createMidReportCardEntry = exports.createReportCardEntry = void 0;
+exports.deleteReportCardEntry = exports.removeSubjectFromResult = exports.studentPsychoReport = exports.studentMidReportRemark = exports.studentReportRemark = exports.adminMidReportRemark = exports.classTeacherMidReportRemark = exports.classTeacherReportRemark = exports.adminReportRemark = exports.classTeacherPhychoReportRemark = exports.updateReportScores = exports.createMidReportCardEntry = exports.createReportCardEntry = void 0;
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -2176,3 +2176,173 @@ const removeSubjectFromResult = async (req, res) => {
     }
 };
 exports.removeSubjectFromResult = removeSubjectFromResult;
+// Exporting delete entry function
+const deleteReportCardEntry = async (req, res) => {
+    try {
+        const { studentID } = req.params;
+        const { subject } = req.body;
+        // Find the student with their report card
+        const student = await studentModel_1.default.findById(studentID).populate({
+            path: "reportCard",
+        });
+        if (!student) {
+            return res.status(404).json({
+                message: "Student not found",
+                status: 404,
+            });
+        }
+        // Get the current session's report card
+        const school = await schoolModel_1.default.findById(student?.schoolIDs);
+        const currentClassInfo = `${student?.classAssigned} session: ${school?.presentSession}(${school?.presentTerm})`;
+        const reportCard = student.reportCard.find((card) => card.classInfo === currentClassInfo);
+        if (!reportCard) {
+            return res.status(404).json({
+                message: "Report card not found for current session",
+                status: 404,
+            });
+        }
+        // Filter out the subject from results
+        const updatedResults = reportCard.result.filter((result) => result.subject !== subject);
+        if (updatedResults.length === reportCard.result.length) {
+            return res.status(404).json({
+                message: "Subject not found in report card",
+                status: 404,
+            });
+        }
+        // Recalculate generic metrics
+        const validPoints = updatedResults
+            .map((el) => el.points)
+            .filter((points) => points != null && !isNaN(points));
+        const genPoint = validPoints.length > 0
+            ? parseFloat((validPoints.reduce((a, b) => a + b, 0) /
+                validPoints.length).toFixed(2))
+            : 0;
+        // Helper functions for comments (reusing logic from createReportCardEntry)
+        const generateAdminComment = (points) => {
+            if (points >= 96)
+                return "Outstanding achievement; impressive work!";
+            if (points >= 91)
+                return "Brilliant performance; you're a star!";
+            if (points >= 86)
+                return "Outstanding achievement; impressive work!";
+            if (points >= 81)
+                return "Exceptional result; keep up the great work!";
+            if (points >= 76)
+                return "Excellent performance; well done!";
+            if (points >= 71)
+                return "Very good; consistent effort is visible.";
+            if (points >= 66)
+                return "Commendable effort; very good.";
+            if (points >= 61)
+                return "Good work; keep striving for excellence.";
+            if (points >= 56)
+                return "Satisfactory; good progress.";
+            if (points >= 51)
+                return "Passable; satisfactory effort.";
+            if (points >= 46)
+                return "Decent work; shows potential.";
+            if (points >= 41)
+                return "Slightly above average; keep it up.";
+            if (points >= 36)
+                return "Average; showing gradual improvement.";
+            if (points >= 31)
+                return "Average; a steady effort is needed.";
+            if (points >= 26)
+                return "Fair performance; potential for improvement.";
+            if (points >= 21)
+                return "Fair but not satisfactory; strive harder.";
+            if (points >= 16)
+                return "Below average; more effort required.";
+            if (points >= 11)
+                return "Below average; needs significant improvement.";
+            if (points >= 6)
+                return "This result is poor; it's not satisfactory.";
+            return "This is a very poor result.";
+        };
+        const generateTeacherComment = (points) => {
+            if (points >= 96)
+                return "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulations!";
+            if (points >= 91)
+                return "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!";
+            if (points >= 86)
+                return "Excellent work! You've exceeded expectations. Keep up the fantastic effort!";
+            if (points >= 81)
+                return "Well done! You have a good grasp of the material. Aim for more critical analysis next time!";
+            if (points >= 76)
+                return "Strong work overall! A little more attention to detail could make it exceptional!";
+            if (points >= 71)
+                return "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth.";
+            if (points >= 66)
+                return "A solid understanding is evident, though there are areas to refine.";
+            if (points >= 61)
+                return "Good work; keep striving for excellence.";
+            if (points >= 56)
+                return "A decent attempt that meets some expectations but lacks polish and depth in certain areas.";
+            if (points >= 51)
+                return "You are making progress but need to develop your analysis further to meet the standard.";
+            if (points >= 46)
+                return "Some understanding is demonstrated, but key concepts are missing or incorrect.";
+            if (points >= 41)
+                return "An acceptable effort, but there is room for improvement in clarity and depth.";
+            if (points >= 36)
+                return "You are starting to grasp the material, but more depth and accuracy are needed.";
+            if (points >= 31)
+                return "A basic attempt is made, but it falls short of expectations. Review the feedback to improve.";
+            if (points >= 26)
+                return "The work shows minimal understanding of the topic. Focus on building your foundational knowledge.";
+            if (points >= 21)
+                return "Some attempt is evident, but significant gaps in understanding remain. More effort is required.";
+            if (points >= 16)
+                return "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions.";
+            if (points >= 11)
+                return "This effort does not meet the basic requirements. Please focus on the foundational concepts.";
+            if (points >= 6)
+                return "Very minimal effort is evident in the work. It's essential to review the material thoroughly.";
+            return "The submission demonstrates a lack of understanding of the topic. Please see me for guidance.";
+        };
+        const calculateGrade = (mark) => {
+            if (mark >= 74)
+                return "A1";
+            if (mark >= 69)
+                return "B2";
+            if (mark >= 64)
+                return "B3";
+            if (mark >= 59)
+                return "C4";
+            if (mark >= 54)
+                return "C5";
+            if (mark >= 49)
+                return "C6";
+            if (mark >= 44)
+                return "D7";
+            if (mark >= 39)
+                return "E8";
+            if (mark >= 0)
+                return "F9";
+            return null;
+        };
+        const grade = calculateGrade(genPoint);
+        // Update the report card with filtered results and new stats
+        const updatedReport = await cardReportModel_1.default.findByIdAndUpdate(reportCard._id, {
+            result: updatedResults,
+            points: genPoint,
+            grade: grade,
+            adminComment: generateAdminComment(genPoint),
+            classTeacherComment: generateTeacherComment(genPoint),
+        }, { new: true });
+        return res.status(200).json({
+            message: "Subject removed from report card successfully",
+            data: updatedReport,
+            status: 200,
+        });
+    }
+    catch (error) {
+        console.error("Error removing subject from report card:", error);
+        return res.status(500).json({
+            message: "Error removing subject from report card",
+            error: error.message,
+            status: 500,
+        });
+    }
+};
+exports.deleteReportCardEntry = deleteReportCardEntry;

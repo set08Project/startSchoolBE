@@ -30,6 +30,9 @@ router
     .route("/remove-mid-report-card/:studentID")
     .patch(cardReportController_1.removeSubjectFromResult);
 router
+    .route("/remove-report-card/:studentID")
+    .patch(cardReportController_1.deleteReportCardEntry);
+router
     .route("/teacher-mid-report-card/:teacherID/:studentID")
     .patch(cardReportController_1.classTeacherMidReportRemark);
 router.route("/student-report-card/:studentID").get(cardReportController_1.studentReportRemark);
