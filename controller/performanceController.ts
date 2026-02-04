@@ -351,83 +351,102 @@ export const createExamPerformance = async (
       status,
     } = req.body;
 
-    const studentInfo: any = await studentModel
-      .findById(studentID)
-      .populate({ path: "performance" });
-
-    const quizData: any = await examinationModel.findById(quizID);
-
-    const subject = await subjectModel.findById(subjectID);
-
-    if (quizData) {
-      const existingAttempts = await performanceModel.countDocuments({
-        student: studentID,
-        quizID,
-      });
-      const attemptNumber = existingAttempts + 1;
-
-      const quizes = await performanceModel.create({
-        remark,
-        subjectTitle: quizData?.subjectTitle,
-        studentScore,
-        studentGrade,
-        totalQuestions,
-        markPerQuestion,
-        quizDone: true,
-        status,
-        performanceRating: parseInt(
-          ((studentScore / quizData?.quiz?.question.length) * 100).toFixed(2)
-        ),
-        attemptNumber,
-        className: studentInfo?.classAssigned,
-        quizID: quizID,
-        studentName: `${studentInfo?.studentFirstName} ${studentInfo?.studentLastName}`,
-        studentAvatar: studentInfo.avatar,
-        subjectID: subject?._id,
-        student: studentID,
-      });
-
-      quizData?.performance?.push(new Types.ObjectId(quizes._id));
-      await quizData?.save();
-
-      studentInfo?.performance?.push(new Types.ObjectId(quizes._id));
-      await studentInfo?.save();
-
-      subject?.performance?.push(new Types.ObjectId(quizes._id));
-      await subject?.save();
-
-      const getStudent = await studentModel.findByIdAndUpdate(
-        studentID,
-        { $push: { performance: new Types.ObjectId(quizes._id) } },
-        { new: true }
-      );
-
-      const ratings: number[] = [];
-      const totalSum = ratings.reduce((a: number, b: number) => a + b, 0);
-      const count = ratings.length;
-      const avg = count > 0 ? totalSum / count : 0;
-
-      await studentModel.findByIdAndUpdate(
-        studentID,
-        { totalPerformance: avg },
-        { new: true }
-      );
-
-      return res.status(201).json({
-        message: "quiz entry created successfully",
-        data: quizes,
-        status: 201,
-      });
-    } else {
-      return res.status(404).json({
-        message: "Subject doesn't exist for this class",
-        status: 404,
+    if (!studentID || !quizID || !subjectID) {
+      return res.status(400).json({
+        message: "studentID, quizID and subjectID are required",
+        status: 400,
       });
     }
+
+    const studentInfo: any = await studentModel.findById(studentID);
+    if (!studentInfo) {
+      return res.status(404).json({ message: "Student not found", status: 404 });
+    }
+
+    const quizData: any = await examinationModel.findById(quizID);
+    if (!quizData) {
+      return res.status(404).json({ message: "Examination not found", status: 404 });
+    }
+
+    const subject = await subjectModel.findById(subjectID);
+    if (!subject) {
+      return res.status(404).json({ message: "Subject not found", status: 404 });
+    }
+
+    const existingAttempts = await performanceModel.countDocuments({
+      student: studentID,
+      quizID,
+    });
+    const attemptNumber = existingAttempts + 1;
+
+    const questionCount = quizData?.quiz?.question?.length || 1;
+    const performanceRating = Number(((studentScore / questionCount) * 100).toFixed(2));
+
+    const quizes = await performanceModel.create({
+      remark,
+      subjectTitle: quizData?.subjectTitle,
+      studentScore,
+      studentGrade,
+      totalQuestions,
+      markPerQuestion,
+      quizDone: true,
+      status,
+      performanceRating,
+      attemptNumber,
+      className: studentInfo?.classAssigned,
+      quizID: quizID,
+      studentName: `${studentInfo?.studentFirstName || ""} ${studentInfo?.studentLastName || ""}`.trim(),
+      studentAvatar: studentInfo?.avatar,
+      subjectID: subject._id,
+      student: studentID,
+    });
+
+    const perfId = new Types.ObjectId(quizes._id);
+
+    const ensureAndPush = async (Model: any, id: any) => {
+      const doc: any = await Model.findById(id).select("performance");
+      if (!doc) return;
+      if (!Array.isArray(doc.performance)) {
+        doc.performance = [];
+      }
+      doc.performance.push(perfId);
+      await doc.save();
+    };
+
+    await Promise.all([
+      ensureAndPush(examinationModel, quizID),
+      ensureAndPush(studentModel, studentID),
+      ensureAndPush(subjectModel, subjectID),
+    ]);
+
+    // Recalculate student's totalPerformance
+    const performances = await performanceModel
+      .find({ student: studentID })
+      .select("performanceRating")
+      .lean();
+
+    const ratings = (performances || [])
+      .map((p: any) =>
+        typeof p.performanceRating === "number" && !isNaN(p.performanceRating)
+          ? p.performanceRating
+          : null
+      )
+      .filter((r): r is number => r !== null);
+
+    const totalSum = ratings.reduce((a, b) => a + b, 0);
+    const avg = ratings.length > 0 ? totalSum / ratings.length : 0;
+
+    await studentModel.findByIdAndUpdate(studentID, { totalPerformance: avg });
+
+    return res.status(201).json({
+      message: "quiz entry created successfully",
+      data: quizes,
+      status: 201,
+    });
   } catch (error: any) {
-    return res.status(404).json({
+    return res.status(500).json({
       message: "Error creating class subject quiz",
-      status: 404,
+      status: 500,
       data: error.message,
     });
   }
@@ -562,7 +581,6 @@ export const createMidTestPerformance = async (
       status,
     } = req.body;
 
-    // Input validation
     if (!studentID || !quizID || !subjectID) {
       return res.status(400).json({
         message: "studentID, quizID and subjectID are required",
@@ -570,76 +588,33 @@ export const createMidTestPerformance = async (
       });
     }
 
-    if (typeof studentScore !== "number" || studentScore < 0) {
-      return res.status(400).json({
-        message: "Valid studentScore is required",
-        status: 400,
-      });
-    }
-
-    // Find required documents
-    const studentInfo = await studentModel
-      .findById(studentID)
-      .populate({ path: "performance" });
-
+    const studentInfo: any = await studentModel.findById(studentID);
     if (!studentInfo) {
-      return res.status(404).json({
-        message: "Student not found",
-        status: 404,
-      });
+      return res.status(404).json({ message: "Student not found", status: 404 });
     }
 
-    const quizData:any = await midTestModel.findById(quizID);
+    const quizData: any = await midTestModel.findById(quizID);
     if (!quizData) {
-      return res.status(404).json({
-        message: "Mid test not found",
-        status: 404,
-      });
+      return res.status(404).json({ message: "Mid test not found", status: 404 });
     }
 
     const subject = await subjectModel.findById(subjectID);
     if (!subject) {
-      return res.status(404).json({
-        message: "Subject not found",
-        status: 404,
-      });
+      return res.status(404).json({ message: "Subject not found", status: 404 });
     }
 
-    // Calculate performance rating safely
-    const questionCount = Array.isArray(quizData?.quiz?.question)
-      ? quizData.quiz.question.length
-      : typeof quizData?.quiz === "number"
-      ? quizData.quiz
-      : 0;
-
-    if (questionCount === 0) {
-      return res.status(400).json({
-        message: "Invalid quiz question count",
-        status: 400,
-      });
-    }
-
-    const performanceRating = Number(
-      ((studentScore / questionCount) * 100).toFixed(2)
-    );
-
-    if (isNaN(performanceRating)) {
-      return res.status(400).json({
-        message: "Invalid performance rating calculation",
-        status: 400,
-      });
-    }
-
-    // Count existing attempts
     const existingAttempts = await performanceModel.countDocuments({
       student: studentID,
       quizID,
     });
+    const attemptNumber = existingAttempts + 1;
 
-    // Create performance document
+    const questionCount = quizData?.quiz?.question?.length || 1;
+    const performanceRating = Number(((studentScore / questionCount) * 100).toFixed(2));
+
     const quizes = await performanceModel.create({
       remark,
-      subjectTitle: quizData.subjectTitle || "",
+      subjectTitle: quizData?.subjectTitle,
       studentScore,
       studentGrade,
       totalQuestions,
@@ -647,60 +622,51 @@ export const createMidTestPerformance = async (
       quizDone: true,
       status,
       performanceRating,
-      attemptNumber: existingAttempts + 1,
-      className: studentInfo.classAssigned || "",
+      attemptNumber,
+      className: studentInfo?.classAssigned,
       quizID: quizID,
-      studentID,
-      studentName: `${studentInfo.studentFirstName || ""} ${
-        studentInfo.studentLastName || ""
-      }`.trim(),
-      studentAvatar: studentInfo.avatar || "",
+      studentName: `${studentInfo?.studentFirstName || ""} ${studentInfo?.studentLastName || ""}`.trim(),
+      studentAvatar: studentInfo?.avatar,
       subjectID: subject._id,
       student: studentID,
     });
 
-    // Update references atomically
+    const perfId = new Types.ObjectId(quizes._id);
+
+    const ensureAndPush = async (Model: any, id: any) => {
+      const doc: any = await Model.findById(id).select("performance");
+      if (!doc) return;
+      if (!Array.isArray(doc.performance)) {
+        doc.performance = [];
+      }
+      doc.performance.push(perfId);
+      await doc.save();
+    };
+
     await Promise.all([
-      midTestModel.findByIdAndUpdate(
-        quizID,
-        { $push: { performance: new Types.ObjectId(quizes._id) } },
-        { new: true }
-      ),
-      studentModel.findByIdAndUpdate(
-        studentID,
-        { $push: { performance: new Types.ObjectId(quizes._id) } },
-        { new: true }
-      ),
-      subjectModel.findByIdAndUpdate(
-        subjectID,
-        { $push: { performance: new Types.ObjectId(quizes._id) } },
-        { new: true }
-      ),
+      ensureAndPush(midTestModel, quizID),
+      ensureAndPush(studentModel, studentID),
+      ensureAndPush(subjectModel, subjectID),
     ]);
 
-    // Recalculate student's performance
+    // Recalculate student's totalPerformance
     const performances = await performanceModel
       .find({ student: studentID })
-      .select("performanceRating");
+      .select("performanceRating")
+      .lean();
 
-    const ratings = performances
-      .map((p) =>
+    const ratings = (performances || [])
+      .map((p: any) =>
         typeof p.performanceRating === "number" && !isNaN(p.performanceRating)
           ? p.performanceRating
           : null
       )
       .filter((r): r is number => r !== null);
 
-    const avg =
-      ratings.length > 0
-        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
-        : 0;
+    const totalSum = ratings.reduce((a, b) => a + b, 0);
+    const avg = ratings.length > 0 ? totalSum / ratings.length : 0;
 
-    await studentModel.findByIdAndUpdate(
-      studentID,
-      { totalPerformance: avg },
-      { new: true }
-    );
+    await studentModel.findByIdAndUpdate(studentID, { totalPerformance: avg });
 
     return res.status(201).json({
       message: "Mid test performance created successfully",
@@ -708,7 +674,6 @@ export const createMidTestPerformance = async (
       status: 201,
     });
   } catch (error: any) {
-    console.error("Error creating mid test performance:", error);
     return res.status(500).json({
       message: "Error creating mid test performance",
       status: 500,

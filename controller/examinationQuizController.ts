@@ -154,39 +154,40 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
 }
 
 function processParagraph(paraXml: string): string {
-  let result = "";
-
-  // Handle Word's built-in subscript/superscript
-  paraXml = paraXml.replace(
-    /<w:r[^>]*><w:rPr[^>]*><w:vertAlign w:val="subscript"\/><\/w:rPr>.*?<w:t[^>]*>([^<]+?)<\/w:t>/g,
-    (_, text) => toUnicodeSubscript(text)
-  );
-  paraXml = paraXml.replace(
-    /<w:r[^>]*><w:rPr[^>]*><w:vertAlign w:val="superscript"\/><\/w:rPr>.*?<w:t[^>]*>([^<]+?)<\/w:t>/g,
-    (_, text) => toUnicodeSuperscript(text)
-  );
-
   const elements: { pos: number; content: string }[] = [];
 
-  // Text runs
+  // 1. Text runs (w:t)
   const textRunRegex = /<w:r[^>]*>.*?<w:t[^>]*>([^<]*)<\/w:t>.*?<\/w:r>/gs;
   let match;
   while ((match = textRunRegex.exec(paraXml)) !== null) {
-    if (!match[0].includes("<m:oMath")) {
+    // Only add if it's NOT part of a math element and doesn't have alignment
+    if (!match[0].includes("<m:oMath") && !match[0].includes("<w:vertAlign")) {
       elements.push({ pos: match.index, content: match[1] });
     }
   }
 
-  // Math runs
+  // 2. Subscript w:r elements
+  const subRegex =
+    /<w:r[^>]*><w:rPr[^>]*><w:vertAlign w:val="subscript"\/><\/w:rPr>.*?<w:t[^>]*>([^<]+?)<\/w:t><\/w:r>/g;
+  while ((match = subRegex.exec(paraXml)) !== null) {
+    elements.push({ pos: match.index, content: toUnicodeSubscript(match[1]) });
+  }
+
+  // 3. Superscript w:r elements
+  const supRegex =
+    /<w:r[^>]*><w:rPr[^>]*><w:vertAlign w:val="superscript"\/><\/w:rPr>.*?<w:t[^>]*>([^<]+?)<\/w:t><\/w:r>/g;
+  while ((match = supRegex.exec(paraXml)) !== null) {
+    elements.push({ pos: match.index, content: toUnicodeSuperscript(match[1]) });
+  }
+
+  // 4. Math runs (m:oMath)
   const mathRunRegex = /<m:oMath>(.*?)<\/m:oMath>/gs;
   while ((match = mathRunRegex.exec(paraXml)) !== null) {
     elements.push({ pos: match.index, content: processMathElement(match[1]) });
   }
 
   elements.sort((a, b) => a.pos - b.pos);
-  result = elements.map((e) => e.content).join("");
-
-  return result;
+  return elements.map((e) => e.content).join("");
 }
 
 // ──────────────────────────────────────────────────────────────
