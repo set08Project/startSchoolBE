@@ -3,14 +3,21 @@ import multer from "multer";
 import fs from "node:fs";
 import path from "node:path";
 
-let filePath = path.join(__dirname, "../uploads/examination");
+import os from "node:os";
+
+let filePath = path.join(os.tmpdir(), "examination");
 
 if (!fs.existsSync(filePath)) {
-  fs.mkdir(filePath, () => {
-    console.log("folder created");
-  });
+  try {
+    fs.mkdirSync(filePath, { recursive: true });
+    console.log("folder created in tmp");
+  } catch (err) {
+    console.error("Error creating tmp folder:", err);
+    // fallback to os.tmpdir() directly if subdirectory creation fails
+    filePath = os.tmpdir();
+  }
 } else {
-  console.log("folder exist...");
+  console.log("folder exist in tmp...");
 }
 
 const storage = multer.diskStorage({

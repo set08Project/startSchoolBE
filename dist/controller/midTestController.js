@@ -19,7 +19,7 @@ const createSubjectMidTest = async (req, res) => {
     try {
         const { classID, subjectID } = req.params;
         const { instruction, duration, mark, theory } = req.body;
-        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
+        let filePath = node_path_1.default.join(require("os").tmpdir(), "examination");
         const classRoom = await classroomModel_1.default.findById(classID);
         const checkForSubject = await subjectModel_1.default.findById(subjectID);
         const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);

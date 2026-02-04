@@ -7,14 +7,21 @@ exports.fileUploads = exports.fileUpload = void 0;
 const multer_1 = __importDefault(require("multer"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
-let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
+const node_os_1 = __importDefault(require("node:os"));
+let filePath = node_path_1.default.join(node_os_1.default.tmpdir(), "examination");
 if (!node_fs_1.default.existsSync(filePath)) {
-    node_fs_1.default.mkdir(filePath, () => {
-        console.log("folder created");
-    });
+    try {
+        node_fs_1.default.mkdirSync(filePath, { recursive: true });
+        console.log("folder created in tmp");
+    }
+    catch (err) {
+        console.error("Error creating tmp folder:", err);
+        // fallback to os.tmpdir() directly if subdirectory creation fails
+        filePath = node_os_1.default.tmpdir();
+    }
 }
 else {
-    console.log("folder exist...");
+    console.log("folder exist in tmp...");
 }
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {

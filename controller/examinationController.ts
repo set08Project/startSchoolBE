@@ -21,7 +21,7 @@ export const createSubjectExam = async (
   try {
     const { classID, subjectID } = req.params;
     const { theory, instruction, duration, mark, randomize } = req.body;
-    let filePath = path.join(__dirname, "../uploads/examination");
+    let filePath = path.join(require("os").tmpdir(), "examination");
 
     const classRoom = await classroomModel.findById(classID);
 

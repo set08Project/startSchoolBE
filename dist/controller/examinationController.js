@@ -21,7 +21,7 @@ const createSubjectExam = async (req, res) => {
     try {
         const { classID, subjectID } = req.params;
         const { theory, instruction, duration, mark, randomize } = req.body;
-        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
+        let filePath = node_path_1.default.join(require("os").tmpdir(), "examination");
         const classRoom = await classroomModel_1.default.findById(classID);
         const checkForSubject = await subjectModel_1.default.findById(subjectID);
         // teacher assigned to the class
