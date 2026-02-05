@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School API - Vercel Web Analytics Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            margin: 1.5rem 0 0.8rem 0;
+            font-size: 1.3rem;
+        }
+        
+        .section p, .section li {
+            margin-bottom: 0.8rem;
+            line-height: 1.8;
+        }
+        
+        .section ul {
+            margin-left: 2rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .code-block {
+            background: #f4f4f4;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .note strong {
+            color: #856404;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .api-info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 School Management API</h1>
+            <p>Vercel Web Analytics Integration Guide</p>
+            <span class="badge">Analytics Enabled</span>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📊 About This Demo</h2>
+                <p>
+                    This page demonstrates Vercel Web Analytics integration for the School Management API. 
+                    This backend API is built with Express.js and TypeScript, deployed on Vercel.
+                </p>
+                <div class="api-info">
+                    <strong>API Base URL:</strong> <code id="api-url"></code>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🚀 Analytics Implementation</h2>
+                
+                <h3>For Frontend Applications</h3>
+                <p>
+                    If you're building a frontend application that consumes this API, integrate Vercel Web Analytics 
+                    based on your framework:
+                </p>
+                
+                <ul>
+                    <li><strong>React/Create React App:</strong> Import and use the <code>&lt;Analytics /&gt;</code> component from <code>@vercel/analytics/react</code></li>
+                    <li><strong>Next.js:</strong> Import from <code>@vercel/analytics/next</code> and add to your layout</li>
+                    <li><strong>Vue:</strong> Import from <code>@vercel/analytics/vue</code> and add to your main component</li>
+                    <li><strong>Vanilla JS:</strong> Use the <code>inject()</code> function from <code>@vercel/analytics</code></li>
+                    <li><strong>HTML Sites:</strong> Add the analytics script directly to your HTML files</li>
+                </ul>
+                
+                <h3>Example: React Application</h3>
+                <div class="code-block">
+// Install the package<br>
+npm install @vercel/analytics<br><br>
+
+// In your App.jsx or App.tsx<br>
+import { Analytics } from '@vercel/analytics/react';<br><br>
+
+export default function App() {<br>
+&nbsp;&nbsp;return (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{/* Your app content */}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Analytics /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;<br>
+&nbsp;&nbsp;);<br>
+}
+                </div>
+                
+                <h3>Example: Vanilla JavaScript</h3>
+                <div class="code-block">
+// Install the package<br>
+npm install @vercel/analytics<br><br>
+
+// In your main JavaScript file<br>
+import { inject } from '@vercel/analytics';<br><br>
+
+inject();
+                </div>
+                
+                <h3>Example: Plain HTML</h3>
+                <div class="code-block">
+&lt;!-- Add this to your HTML files --&gt;<br>
+&lt;script&gt;<br>
+&nbsp;&nbsp;window.va = window.va || function () { <br>
+&nbsp;&nbsp;&nbsp;&nbsp;(window.vaq = window.vaq || []).push(arguments); <br>
+&nbsp;&nbsp;};<br>
+&lt;/script&gt;<br>
+&lt;script defer src="/_vercel/insights/script.js"&gt;&lt;/script&gt;
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📝 Important Notes</h2>
+                
+                <div class="note">
+                    <strong>💡 Note:</strong> This is a backend API server. Vercel Web Analytics is designed to track 
+                    page views and user interactions in browser contexts. Implement analytics on your frontend application 
+                    that consumes this API.
+                </div>
+                
+                <div class="note">
+                    <strong>⚙️ Configuration:</strong> Analytics are automatically enabled for this project on Vercel. 
+                    The <code>/_vercel/insights/*</code> routes are available after deployment.
+                </div>
+                
+                <div class="note">
+                    <strong>🔒 Privacy:</strong> Vercel Web Analytics is privacy-friendly, GDPR compliant, and doesn't 
+                    use cookies. Learn more about <a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank">
+                    privacy and compliance</a>.
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📚 API Endpoints</h2>
+                <p>This School Management API provides various endpoints for managing:</p>
+                <ul>
+                    <li>School information and settings</li>
+                    <li>Students and staff management</li>
+                    <li>Classes, subjects, and courses</li>
+                    <li>Attendance and performance tracking</li>
+                    <li>Payments and expenses</li>
+                    <li>Timetables and assignments</li>
+                    <li>Reports and analytics</li>
+                </ul>
+                
+                <p><strong>Base API endpoint:</strong> <code>/api</code></p>
+            </div>
+            
+            <div class="section">
+                <h2>🔗 Resources</h2>
+                <ul>
+                    <li><a href="https://vercel.com/docs/analytics" target="_blank">Vercel Analytics Documentation</a></li>
+                    <li><a href="https://vercel.com/docs/analytics/package" target="_blank">@vercel/analytics Package Guide</a></li>
+                    <li><a href="https://vercel.com/docs/analytics/custom-events" target="_blank">Custom Events</a></li>
+                    <li><a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank">Privacy Policy</a></li>
+                </ul>
+                
+                <a href="/" class="btn">← Back to API</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>School Management API - Built with Express.js & TypeScript</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                Deployed on <strong>Vercel</strong> with Web Analytics enabled
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Display the current URL as API base
+        document.getElementById('api-url').textContent = window.location.origin;
+        
+        // Vercel Web Analytics - Plain HTML implementation
+        window.va = window.va || function () { 
+            (window.vaq = window.vaq || []).push(arguments); 
+        };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

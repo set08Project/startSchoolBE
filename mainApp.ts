@@ -36,6 +36,7 @@ import teachSubjectQuiz from "./router/teachTopicQuiz";
 
 import cronParser from "cron-parser";
 import fs from "fs";
+import path from "path";
 
 import { HTTP } from "./utils/enums";
 import { mainError } from "./error/mianError";
@@ -88,10 +89,24 @@ export const mainApp = (app: Application) => {
       try {
         return res.status(200).json({
           message: "School API",
+          version: "1.0.0",
+          analytics: "Visit /analytics for Vercel Web Analytics integration guide",
         });
       } catch (error) {
         return res.status(404).json({
           message: "Error loading",
+        });
+      }
+    });
+
+    app.get("/analytics", (req: Request, res: Response) => {
+      try {
+        return res.sendFile(
+          path.join(__dirname, "views", "analytics-demo.html")
+        );
+      } catch (error) {
+        return res.status(404).json({
+          message: "Error loading analytics demo",
         });
       }
     });
