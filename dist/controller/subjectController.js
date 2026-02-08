@@ -11,7 +11,6 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const node_fs_1 = __importDefault(require("node:fs"));
-const node_path_1 = __importDefault(require("node:path"));
 const createSchoolSubject = async (req, res) => {
     try {
         const { schoolID } = req.params;
@@ -81,88 +80,118 @@ const createSchoolSubject = async (req, res) => {
 };
 exports.createSchoolSubject = createSchoolSubject;
 const createBulkClassSubjects = async (req, res) => {
+    console.log("POST /api/create-bulk-subject hit", { schoolID: req.params.schoolID });
     try {
         const { schoolID } = req.params;
-        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
-        const deleteFilesInFolder = (folderPath) => {
-            if (node_fs_1.default.existsSync(folderPath)) {
-                const files = node_fs_1.default.readdirSync(folderPath);
-                files.forEach((file) => {
-                    const filePath = node_path_1.default.join(folderPath, file);
-                    node_fs_1.default.unlinkSync(filePath);
-                });
-                console.log(`All files in the folder '${folderPath}' have been deleted.`);
-            }
-            else {
-                console.log(`The folder '${folderPath}' does not exist.`);
-            }
-        };
+        if (!req.file) {
+            return res.status(400).json({
+                message: "No file uploaded",
+                status: 400,
+            });
+        }
+        const school = await schoolModel_1.default.findById(schoolID).populate("subjects");
+        if (!school || school.status !== "school-admin") {
+            if (node_fs_1.default.existsSync(req.file.path))
+                node_fs_1.default.unlinkSync(req.file.path);
+            return res.status(404).json({
+                message: "Unable to read school or unauthorized",
+                status: 404,
+            });
+        }
+        const classrooms = await classroomModel_1.default.find({ schoolIDs: schoolID });
+        const classroomCache = new Map(classrooms.map((c) => [c.className?.trim(), c]));
         const data = await (0, csvtojson_1.default)().fromFile(req.file.path);
+        const existingSubjectKeys = new Set(school.subjects.map((s) => `${s.subjectTitle}-${s.designated}`));
         let createdCount = 0;
-        let duplicateCount = 0;
+        let skipCount = 0;
         const errors = [];
+        const newSubjectIds = [];
+        const classSubjectUpdates = new Map();
         for (let i of data) {
-            const school = await schoolModel_1.default.findById(schoolID).populate({
-                path: "classRooms",
-            });
-            const schoolSubj = await schoolModel_1.default.findById(schoolID).populate({
-                path: "subjects",
-            });
-            const getClassRooms = school?.classRooms.find((el) => {
-                return el.className?.trim() === i?.designated;
-            });
-            const getClassRoomsSubj = schoolSubj?.subjects.some((el) => {
-                return (el.subjectTitle === i?.subjectTitle && el.designated === i?.designated);
-            });
-            const getClassRM = await classroomModel_1.default.findById(getClassRooms?._id);
-            if (!getClassRooms) {
-                errors.push(`Error finding classroom for designated='${i?.designated}'`);
+            // Clean and normalize input
+            const subjectTitle = i?.subjectTitle?.trim();
+            let subjectTeacherName = i?.subjectTeacherName?.trim() || "";
+            let designated = i?.designated?.trim() || "";
+            // Skip completely empty rows
+            if (!subjectTitle && !subjectTeacherName && !designated) {
                 continue;
             }
-            if (!(school && school.schoolName && school.status === "school-admin")) {
-                errors.push(`Unable to read school for row with subjectTitle='${i?.subjectTitle}'`);
+            if (!subjectTitle) {
+                errors.push("Missing subjectTitle in row");
                 continue;
             }
-            if (getClassRoomsSubj) {
-                duplicateCount++;
-                // skip duplicates but continue processing remaining rows
+            // ROBUSTNESS: Handle case where user swapped columns B and C
+            // designated should be the class name (exists in classroomCache)
+            let targetClassroom = classroomCache.get(designated);
+            // If designated is NOT a class, but subjectTeacherName IS a class, they are likely swapped
+            if (!targetClassroom && classroomCache.has(subjectTeacherName)) {
+                const temp = designated;
+                designated = subjectTeacherName;
+                subjectTeacherName = temp;
+                targetClassroom = classroomCache.get(designated);
+            }
+            if (!targetClassroom) {
+                errors.push(`Classroom not found for '${designated || "N/A"}' (row Subject: ${subjectTitle})`);
+                continue;
+            }
+            const key = `${subjectTitle}-${designated}`;
+            if (existingSubjectKeys.has(key)) {
+                skipCount++;
                 continue;
             }
             try {
                 const subjects = await subjectModel_1.default.create({
                     schoolName: school.schoolName,
-                    subjectTeacherName: i?.subjectTeacherName,
-                    subjectTitle: i?.subjectTitle,
-                    designated: i?.designated,
-                    classDetails: getClassRooms,
-                    subjectClassID: getClassRM?._id,
-                    subjectClassIDs: getClassRooms?._id,
+                    subjectTeacherName: subjectTeacherName,
+                    subjectTitle: subjectTitle,
+                    designated: designated,
+                    classDetails: targetClassroom,
+                    subjectClassID: targetClassroom._id,
+                    subjectClassIDs: targetClassroom._id,
                 });
-                // await saves to ensure DB state is consistent
-                school.subjects.push(new mongoose_1.Types.ObjectId(subjects._id));
-                await school.save();
-                getClassRM?.classSubjects.push(new mongoose_1.Types.ObjectId(subjects._id));
-                if (getClassRM)
-                    await getClassRM.save();
+                const subId = new mongoose_1.Types.ObjectId(subjects._id);
+                newSubjectIds.push(subId);
+                const classIdStr = targetClassroom._id.toString();
+                if (!classSubjectUpdates.has(classIdStr)) {
+                    classSubjectUpdates.set(classIdStr, []);
+                }
+                classSubjectUpdates.get(classIdStr).push(subId);
+                existingSubjectKeys.add(key);
                 createdCount++;
             }
             catch (err) {
-                errors.push(`Error creating subject '${i?.subjectTitle}': ${err?.message || err}`);
+                errors.push(`Error creating subject '${subjectTitle}': ${err?.message || err}`);
             }
         }
-        // delete uploaded files once after processing
-        deleteFilesInFolder(filePath);
+        // Update school subjects
+        if (newSubjectIds.length > 0) {
+            await schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                $push: { subjects: { $each: newSubjectIds } },
+            });
+            // Update classrooms (batch by ID)
+            for (const [classId, subIds] of classSubjectUpdates.entries()) {
+                await classroomModel_1.default.findByIdAndUpdate(classId, {
+                    $push: { classSubjects: { $each: subIds } },
+                });
+            }
+        }
+        // Clean up file safely
+        if (node_fs_1.default.existsSync(req.file.path))
+            node_fs_1.default.unlinkSync(req.file.path);
+        const resultMessage = `Process complete. Created: ${createdCount}, Skipped: ${skipCount}${errors.length > 0 ? `, Errors: ${errors.length}` : ""}`;
         return res.status(201).json({
-            message: "done with class entry",
+            message: resultMessage,
             status: 201,
-            summary: { created: createdCount, duplicates: duplicateCount, errors },
+            summary: { created: createdCount, skipped: skipCount, errors },
         });
     }
     catch (error) {
-        return res.status(404).json({
-            message: "Error creating school session",
+        if (req.file && node_fs_1.default.existsSync(req.file.path))
+            node_fs_1.default.unlinkSync(req.file.path);
+        return res.status(500).json({
+            message: "Error processing bulk subject upload",
             data: error.message,
-            status: 404,
+            status: 500,
         });
     }
 };

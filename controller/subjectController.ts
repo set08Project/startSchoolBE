@@ -89,110 +89,138 @@ export const createBulkClassSubjects = async (
   req: Request | any,
   res: Response
 ): Promise<Response> => {
+  console.log("POST /api/create-bulk-subject hit", { schoolID: req.params.schoolID });
   try {
     const { schoolID } = req.params;
 
-    let filePath = path.join(__dirname, "../uploads/examination");
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No file uploaded",
+        status: 400,
+      });
+    }
 
-    const deleteFilesInFolder = (folderPath: any) => {
-      if (fs.existsSync(folderPath)) {
-        const files = fs.readdirSync(folderPath);
+    const school = await schoolModel.findById(schoolID).populate("subjects");
+    if (!school || school.status !== "school-admin") {
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      return res.status(404).json({
+        message: "Unable to read school or unauthorized",
+        status: 404,
+      });
+    }
 
-        files.forEach((file) => {
-          const filePath = path.join(folderPath, file);
-          fs.unlinkSync(filePath);
+    const classrooms = await classroomModel.find({ schoolIDs: schoolID });
+    const classroomCache = new Map(
+      classrooms.map((c) => [c.className?.trim(), c])
+    );
+
+    const data = await csv().fromFile(req.file.path);
+    const existingSubjectKeys = new Set(
+      school.subjects.map((s: any) => `${s.subjectTitle}-${s.designated}`)
+    );
+
+    let createdCount = 0;
+    let skipCount = 0;
+    const errors: string[] = [];
+    const newSubjectIds: Types.ObjectId[] = [];
+    const classSubjectUpdates = new Map<string, Types.ObjectId[]>();
+
+    for (let i of data) {
+      // Clean and normalize input
+      const subjectTitle = i?.subjectTitle?.trim();
+      let subjectTeacherName = i?.subjectTeacherName?.trim() || "";
+      let designated = i?.designated?.trim() || "";
+
+      // Skip completely empty rows
+      if (!subjectTitle && !subjectTeacherName && !designated) {
+        continue;
+      }
+
+      if (!subjectTitle) {
+        errors.push("Missing subjectTitle in row");
+        continue;
+      }
+
+      // ROBUSTNESS: Handle case where user swapped columns B and C
+      // designated should be the class name (exists in classroomCache)
+      let targetClassroom = classroomCache.get(designated);
+
+      // If designated is NOT a class, but subjectTeacherName IS a class, they are likely swapped
+      if (!targetClassroom && classroomCache.has(subjectTeacherName)) {
+        const temp = designated;
+        designated = subjectTeacherName;
+        subjectTeacherName = temp;
+        targetClassroom = classroomCache.get(designated);
+      }
+
+      if (!targetClassroom) {
+        errors.push(`Classroom not found for '${designated || "N/A"}' (row Subject: ${subjectTitle})`);
+        continue;
+      }
+
+      const key = `${subjectTitle}-${designated}`;
+      if (existingSubjectKeys.has(key)) {
+        skipCount++;
+        continue;
+      }
+
+      try {
+        const subjects = await subjectModel.create({
+          schoolName: school.schoolName,
+          subjectTeacherName: subjectTeacherName,
+          subjectTitle: subjectTitle,
+          designated: designated,
+          classDetails: targetClassroom,
+          subjectClassID: targetClassroom._id,
+          subjectClassIDs: targetClassroom._id,
         });
 
-        console.log(
-          `All files in the folder '${folderPath}' have been deleted.`
-        );
-      } else {
-        console.log(`The folder '${folderPath}' does not exist.`);
+        const subId = new Types.ObjectId(subjects._id);
+        newSubjectIds.push(subId);
+        
+        const classIdStr = targetClassroom._id.toString();
+        if (!classSubjectUpdates.has(classIdStr)) {
+          classSubjectUpdates.set(classIdStr, []);
+        }
+        classSubjectUpdates.get(classIdStr)!.push(subId);
+
+        existingSubjectKeys.add(key);
+        createdCount++;
+      } catch (err: any) {
+        errors.push(`Error creating subject '${subjectTitle}': ${err?.message || err}`);
       }
-    };
-
-  const data = await csv().fromFile(req.file.path);
-
-  let createdCount = 0;
-  let duplicateCount = 0;
-  const errors: string[] = [];
-
-  for (let i of data) {
-    const school = await schoolModel.findById(schoolID).populate({
-      path: "classRooms",
-    });
-
-    const schoolSubj = await schoolModel.findById(schoolID).populate({
-      path: "subjects",
-    });
-
-    const getClassRooms: any = school?.classRooms.find((el: any) => {
-      return el.className?.trim() === i?.designated;
-    });
-
-    const getClassRoomsSubj = schoolSubj?.subjects.some((el: any) => {
-      return (
-        el.subjectTitle === i?.subjectTitle && el.designated === i?.designated
-      );
-    });
-
-    const getClassRM = await classroomModel.findById(getClassRooms?._id);
-    if (!getClassRooms) {
-      errors.push(`Error finding classroom for designated='${i?.designated}'`);
-      continue;
     }
 
-    if (!(school && school.schoolName && school.status === "school-admin")) {
-      errors.push(
-        `Unable to read school for row with subjectTitle='${i?.subjectTitle}'`
-      );
-      continue;
-    }
-
-    if (getClassRoomsSubj) {
-      duplicateCount++;
-      // skip duplicates but continue processing remaining rows
-      continue;
-    }
-
-    try {
-      const subjects = await subjectModel.create({
-        schoolName: school.schoolName,
-        subjectTeacherName: i?.subjectTeacherName,
-        subjectTitle: i?.subjectTitle,
-        designated: i?.designated,
-        classDetails: getClassRooms,
-        subjectClassID: getClassRM?._id,
-        subjectClassIDs: getClassRooms?._id,
+    // Update school subjects
+    if (newSubjectIds.length > 0) {
+      await schoolModel.findByIdAndUpdate(schoolID, {
+        $push: { subjects: { $each: newSubjectIds } },
       });
 
-      // await saves to ensure DB state is consistent
-      school.subjects.push(new Types.ObjectId(subjects._id));
-      await school.save();
-
-      getClassRM?.classSubjects.push(new Types.ObjectId(subjects._id));
-      if (getClassRM) await getClassRM.save();
-
-      createdCount++;
-    } catch (err: any) {
-      errors.push(
-        `Error creating subject '${i?.subjectTitle}': ${err?.message || err}`
-      );
+      // Update classrooms (batch by ID)
+      for (const [classId, subIds] of classSubjectUpdates.entries()) {
+        await classroomModel.findByIdAndUpdate(classId, {
+          $push: { classSubjects: { $each: subIds } },
+        });
+      }
     }
-  }
-  // delete uploaded files once after processing
-  deleteFilesInFolder(filePath);
 
-  return res.status(201).json({
-    message: "done with class entry",
-    status: 201,
-    summary: { created: createdCount, duplicates: duplicateCount, errors },
-  });
+    // Clean up file safely
+    if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+
+    const resultMessage = `Process complete. Created: ${createdCount}, Skipped: ${skipCount}${errors.length > 0 ? `, Errors: ${errors.length}` : ""}`;
+
+    return res.status(201).json({
+      message: resultMessage,
+      status: 201,
+      summary: { created: createdCount, skipped: skipCount, errors },
+    });
   } catch (error: any) {
-    return res.status(404).json({
-      message: "Error creating school session",
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    return res.status(500).json({
+      message: "Error processing bulk subject upload",
       data: error.message,
-      status: 404,
+      status: 500,
     });
   }
 };

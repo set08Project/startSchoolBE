@@ -14,7 +14,6 @@ const studentModel_1 = __importDefault(require("../model/studentModel"));
 const cardReportModel_1 = __importDefault(require("../model/cardReportModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const node_fs_1 = __importDefault(require("node:fs"));
-const node_path_1 = __importDefault(require("node:path"));
 const createSchoolClasses = async (req, res) => {
     try {
         const { schoolID } = req.params;
@@ -72,79 +71,87 @@ exports.createSchoolClasses = createSchoolClasses;
 const createBulkSchoolClassroom = async (req, res) => {
     try {
         const { schoolID } = req.params;
-        let filePath = node_path_1.default.join(__dirname, "../uploads/examination");
-        const deleteFilesInFolder = (folderPath) => {
-            if (node_fs_1.default.existsSync(folderPath)) {
-                const files = node_fs_1.default.readdirSync(folderPath);
-                files.forEach((file) => {
-                    const filePath = node_path_1.default.join(folderPath, file);
-                    node_fs_1.default.unlinkSync(filePath);
-                });
-                console.log(`All files in the folder '${folderPath}' have been deleted.`);
-            }
-            else {
-                console.log(`The folder '${folderPath}' does not exist.`);
-            }
-        };
-        console.log("data: ", filePath, req.file.path);
-        const data = await (0, csvtojson_1.default)().fromFile(req.file.path);
-        console.log(data);
-        for (let i of data) {
-            const school = await schoolModel_1.default.findById(schoolID).populate({
-                path: "classRooms",
+        if (!req.file) {
+            return res.status(400).json({
+                message: "No file uploaded",
+                status: 400,
             });
-            const checkClass = school?.classRooms.some((el) => {
-                return el.className === i?.className;
+        }
+        const school = await schoolModel_1.default.findById(schoolID).populate({
+            path: "classRooms",
+        });
+        if (!school || school.status !== "school-admin") {
+            // clean up file if school not found or unauthorized
+            if (node_fs_1.default.existsSync(req.file.path))
+                node_fs_1.default.unlinkSync(req.file.path);
+            return res.status(404).json({
+                message: "Unable to read school or unauthorized",
+                status: 404,
             });
-            const findClass = school?.classRooms?.find((el) => {
-                return el.className === i?.classAssigned;
+        }
+        const csvData = await (0, csvtojson_1.default)().fromFile(req.file.path);
+        const existingClassNames = new Set(school.classRooms.map((cl) => cl.className));
+        const newClassroomIds = [];
+        const createdClasses = [];
+        let skipCount = 0;
+        for (let i of csvData) {
+            const className = i?.className?.trim();
+            if (!className)
+                continue;
+            if (existingClassNames.has(className)) {
+                skipCount++;
+                continue;
+            }
+            // Safe number parsing
+            const parseFee = (val) => {
+                if (!val)
+                    return 0;
+                const cleaned = String(val).replace(/,/g, "");
+                const parsed = parseInt(cleaned);
+                return isNaN(parsed) ? 0 : parsed;
+            };
+            const classes = await classroomModel_1.default.create({
+                schoolName: school.schoolName,
+                classTeacherName: i?.classTeacherName || "",
+                className: className,
+                class2ndFee: parseFee(i?.class2ndFee),
+                class3rdFee: parseFee(i?.class3rdFee),
+                class1stFee: parseFee(i?.class1stFee),
+                schoolIDs: schoolID,
+                presentTerm: school?.presentTerm,
             });
-            if (school && school.status === "school-admin") {
-                if (!checkClass) {
-                    const classes = await classroomModel_1.default.create({
-                        schoolName: school.schoolName,
-                        classTeacherName: i?.classTeacherName,
-                        className: i?.className,
-                        class2ndFee: parseInt(i?.class2ndFee.replace(/,/g, "")),
-                        class3rdFee: parseInt(i?.class3rdFee.replace(/,/g, "")),
-                        class1stFee: parseInt(i?.class1stFee.replace(/,/g, "")),
-                        schoolIDs: schoolID,
-                        presentTerm: school?.presentTerm,
-                    });
-                    school.historys.push(new mongoose_1.Types.ObjectId(classes._id));
-                    school.classRooms.push(new mongoose_1.Types.ObjectId(classes._id));
-                    school.save();
-                    deleteFilesInFolder(filePath);
-                    // return res.status(201).json({
-                    //   message: "classes created successfully",
-                    //   data: classes,
-                    //   status: 201,
-                    // });
-                }
-                else {
-                    return res.status(404).json({
-                        message: "duplicated class name",
-                        status: 404,
-                    });
-                }
-            }
-            else {
-                return res.status(404).json({
-                    message: "unable to read school",
-                    status: 404,
-                });
-            }
+            newClassroomIds.push(new mongoose_1.Types.ObjectId(classes._id));
+            createdClasses.push(classes);
+            existingClassNames.add(className); // Prevent duplicates within the same CSV
+        }
+        // Update school document once
+        if (newClassroomIds.length > 0) {
+            await schoolModel_1.default.findByIdAndUpdate(schoolID, {
+                $push: {
+                    classRooms: { $each: newClassroomIds },
+                    historys: { $each: newClassroomIds },
+                },
+            });
+        }
+        // Clean up the uploaded file safely
+        if (node_fs_1.default.existsSync(req.file.path)) {
+            node_fs_1.default.unlinkSync(req.file.path);
         }
         return res.status(201).json({
-            message: "done with class entry",
+            message: `Process complete. Created: ${createdClasses.length}, Skipped: ${skipCount}`,
+            data: createdClasses,
             status: 201,
         });
     }
     catch (error) {
-        return res.status(404).json({
-            message: "Error creating school session",
+        // Attempt clean up on error
+        if (req.file && node_fs_1.default.existsSync(req.file.path)) {
+            node_fs_1.default.unlinkSync(req.file.path);
+        }
+        return res.status(500).json({
+            message: "Error processing bulk classroom upload",
             data: error.message,
-            status: 404,
+            status: 500,
         });
     }
 };
