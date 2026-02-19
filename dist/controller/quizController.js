@@ -38,6 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStudentQuizRecords = exports.deleteQuiz = exports.getQuizRecords = exports.readQuizes = exports.readQuiz = exports.readTeacherSubjectQuiz = exports.readSubjectQuiz = exports.createSubjectQuiz = exports.startSubjectExamination = exports.readSubjectExamination = exports.createSubjectExam = exports.createSubjectQuizFromFile = void 0;
 exports.testDocxParsing = testDocxParsing;
+const adm_zip_1 = __importDefault(require("adm-zip"));
 const mongoose_1 = require("mongoose");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
@@ -45,13 +46,342 @@ const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const quizModel_1 = __importDefault(require("../model/quizModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
+const streamifier_1 = require("../utils/streamifier");
 const lodash_1 = __importDefault(require("lodash"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const mammoth_1 = __importDefault(require("mammoth"));
 const cheerio = __importStar(require("cheerio"));
-// import { uploadDataUri } from "../utils/streamifier";
+// ──────────────────────────────────────────────────────────────
+// Unicode helpers
+// ──────────────────────────────────────────────────────────────
+function toUnicodeSubscript(text) {
+    const map = {
+        // Digits
+        "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄",
+        "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉",
+        // Operators
+        "+": "₊",
+        "-": "₋",
+        "=": "₌",
+        "(": "₍",
+        ")": "₎",
+        // Alphabet (Partial common set)
+        a: "ₐ", e: "ₑ", h: "ₕ", i: "ᵢ", j: "ⱼ", k: "ₖ", l: "ₗ", m: "ₘ",
+        n: "ₙ", o: "ₒ", p: "ₚ", r: "ᵣ", s: "ₛ", t: "ₜ", u: "ᵤ", v: "ᵥ", x: "ₓ",
+    };
+    return text
+        .split("")
+        .map((c) => map[c.toLowerCase()] || c)
+        .join("");
+}
+// helper to extract URLs from string
+function extractUrlsFromText(text) {
+    // Match both http(s) and data URIs
+    const urlRegex = /(https?:\/\/[^\s\)\]]+|data:[^\s\)\]]+)/g;
+    const matches = Array.from((text || "").matchAll(urlRegex));
+    return matches.map((m) => m[0]);
+}
+// Attempts to trim trailing garbage after common image extensions
+function sanitizeUrl(url) {
+    if (!url || typeof url !== "string")
+        return url;
+    const extRegex = /(\.(?:png|jpe?g|gif|webp|svg|bmp|pdf|txt))(?:[?#][^\s\)\]]*)?/i;
+    const match = url.match(extRegex);
+    if (!match || match.index === undefined)
+        return url;
+    const endIndex = match.index + match[0].length;
+    return url.slice(0, endIndex);
+}
+function toUnicodeSuperscript(text) {
+    const map = {
+        // Digits
+        "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
+        "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹",
+        // Operators
+        "+": "⁺",
+        "-": "⁻",
+        "=": "⁼",
+        "(": "⁽",
+        ")": "⁾",
+        // Alphabet
+        a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ", k: "ᵏ", l: "ˡ", m: "ᵐ",
+        n: "ⁿ", o: "ᵒ", p: "ᵖ", r: "ʳ", s: "ˢ", t: "ᵗ", u: "ᵘ", v: "ᵛ", w: "ʷ", x: "ˣ", y: "ʸ", z: "ᶻ",
+    };
+    return text
+        .split("")
+        .map((c) => map[c.toLowerCase()] || c)
+        .join("");
+}
+// ──────────────────────────────────────────────────────────────
+// Extract DOCX → Text with perfect chemistry support
+// ──────────────────────────────────────────────────────────────
+async function extractRawTextFromDocx(filePath) {
+    try {
+        const zip = new adm_zip_1.default(filePath);
+        const documentXml = zip.readAsText("word/document.xml");
+        // Build a rels map rId -> target (e.g. media/image1.png)
+        let relsXml = "";
+        try {
+            relsXml = zip.readAsText("word/_rels/document.xml.rels");
+        }
+        catch (e) {
+            // No rels file, proceed without images
+            relsXml = "";
+        }
+        const rels = {};
+        if (relsXml) {
+            const relRegex = /<Relationship[^>]*Id="([^\"]+)"[^>]*Target="([^\"]+)"/g;
+            let rm;
+            while ((rm = relRegex.exec(relsXml)) !== null) {
+                let tgt = rm[2];
+                // Normalize possible '../' path prefixes
+                if (tgt.startsWith("../"))
+                    tgt = tgt.replace(/^\.\.\//, "");
+                rels[rm[1]] = tgt;
+            }
+        }
+        let fullText = "";
+        const paragraphs = documentXml.split(/<w:p[\s>]/);
+        for (const para of paragraphs) {
+            if (!para.trim())
+                continue;
+            let paraText = processParagraph(para);
+            // Find image references (r:embed or r:id) in the paragraph and upload
+            // them to cloudinary, then append URLs in-line so downstream parsing
+            // picks them up as images.
+            const embeds = [...para.matchAll(/\br:(?:embed|id)="([^"]+)"/g)].map((m) => m[1]);
+            const imageUrls = [];
+            for (const rId of embeds) {
+                try {
+                    const target = rels[rId];
+                    if (!target)
+                        continue;
+                    const mediaPath = `word/${target}`;
+                    const fileBuff = zip.readFile(mediaPath);
+                    if (!fileBuff)
+                        continue;
+                    const ext = node_path_1.default.extname(mediaPath).replace(".", "").toLowerCase();
+                    const mimeMap = {
+                        png: "image/png",
+                        jpg: "image/jpeg",
+                        jpeg: "image/jpeg",
+                        gif: "image/gif",
+                        svg: "image/svg+xml",
+                        webp: "image/webp",
+                        bmp: "image/bmp",
+                    };
+                    const mime = mimeMap[ext] || "application/octet-stream";
+                    const dataUri = `data:${mime};base64,${fileBuff.toString("base64")}`;
+                    // Upload to cloudinary (if configured) so clients can fetch by URL
+                    try {
+                        const uploadRes = await (0, streamifier_1.uploadDataUri)(dataUri, "exams");
+                        if (uploadRes && uploadRes.secure_url) {
+                            imageUrls.push(uploadRes.secure_url);
+                        }
+                        else {
+                            // Fallback: use data URI directly
+                            imageUrls.push(dataUri);
+                        }
+                    }
+                    catch (uploadErr) {
+                        // Upload failed – include data URI as fallback
+                        imageUrls.push(dataUri);
+                    }
+                }
+                catch (ex) {
+                    // ignore particular image failures – continue parsing text
+                    console.warn("Error handling embedded image for rId", rId, ex?.message || ex);
+                }
+            }
+            if (imageUrls.length > 0) {
+                // Append each URL as bracketed url to be picked up later
+                paraText += " " + imageUrls.map((u) => `[${u}]`).join(" ");
+            }
+            if (paraText.trim())
+                fullText += paraText.trim() + "\n";
+        }
+        return fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    }
+    catch (error) {
+        console.error("Error extracting DOCX:", error);
+        throw error;
+    }
+}
+function processParagraph(paraXml) {
+    const elements = [];
+    // Capture Runs, preserving their natural order
+    const runRegex = /<w:r[\s>](.*?)<\/w:r>/gs;
+    let match;
+    while ((match = runRegex.exec(paraXml)) !== null) {
+        const runXml = match[1];
+        // Extract ALL text elements within the run
+        const textRegex = /<w:t[^>]*>([^<]*)<\/w:t>/g;
+        let tMatch;
+        let runText = "";
+        while ((tMatch = textRegex.exec(runXml)) !== null) {
+            runText += tMatch[1];
+        }
+        if (runText) {
+            // Check for vertical alignment (subscript/superscript)
+            if (runXml.includes('w:val="subscript"')) {
+                elements.push({ pos: match.index, content: toUnicodeSubscript(runText) });
+            }
+            else if (runXml.includes('w:val="superscript"')) {
+                elements.push({ pos: match.index, content: toUnicodeSuperscript(runText) });
+            }
+            else {
+                elements.push({ pos: match.index, content: runText });
+            }
+        }
+    }
+    // Capture Math elements
+    const mathRunRegex = /<m:oMath>(.*?)<\/m:oMath>/gs;
+    while ((match = mathRunRegex.exec(paraXml)) !== null) {
+        elements.push({ pos: match.index, content: processMathElement(match[1]) });
+    }
+    elements.sort((a, b) => a.pos - b.pos);
+    return elements.map((e) => e.content).join("");
+}
+// ──────────────────────────────────────────────────────────────
+// PERFECT CHEMISTRY MATH PROCESSOR (FINAL VERSION)
+// ──────────────────────────────────────────────────────────────
+function processMathElement(mathXml) {
+    const SUPER = {
+        "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
+        "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹",
+        "+": "⁺", "-": "⁻", "=": "⁼", "(": "⁽", ")": "⁾",
+        a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ", k: "ᵏ", l: "ˡ", m: "ᵐ",
+        n: "ⁿ", o: "ᵒ", p: "ᵖ", r: "ʳ", s: "ˢ", t: "ᵗ", u: "ᵘ", v: "ᵛ", w: "ʷ", x: "ˣ", y: "ʸ", z: "ᶻ",
+    };
+    const SUB = {
+        "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄",
+        "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉",
+        "+": "₊", "-": "₋", "=": "₌", "(": "₍", ")": "₎",
+        a: "ₐ", e: "ₑ", h: "ₕ", i: "ᵢ", j: "ⱼ", k: "ₖ", l: "ₗ", m: "ₘ",
+        n: "ₙ", o: "ₒ", p: "ₚ", r: "ᵣ", s: "ₛ", t: "ₜ", u: "ᵤ", v: "ᵥ", x: "ₓ",
+    };
+    const toSup = (s) => s
+        .split("")
+        .map((c) => SUPER[c] || c)
+        .join("");
+    const toSub = (s) => s
+        .split("")
+        .map((c) => SUB[c] || c)
+        .join("");
+    const isElementSymbol = (base) => /^[A-Z][a-z]?$/.test(base.trim());
+    const nextRunStartsWithUpper = (index) => {
+        const tail = mathXml.slice(index);
+        const match = tail.match(/<m:r[^>]*>.*?<m:t[^>]*>([^<]*)<\/m:t>/s);
+        if (!match)
+            return false;
+        const txt = (match[1] || "").trim();
+        return /^[A-Z]/.test(txt);
+    };
+    const structures = [];
+    const add = (s) => {
+        if (structures.some((x) => !(s.end <= x.start || s.start >= x.end)))
+            return;
+        structures.push(s);
+    };
+    let m;
+    // 1. sSubSup → ²³⁵₉₂U (most important)
+    const subSupRegex = /<m:sSubSup>(.*?)<\/m:sSubSup>/gs;
+    while ((m = subSupRegex.exec(mathXml)) !== null) {
+        const xml = m[1];
+        const base = processMathElement(xml.match(/<m:e>(.*?)<\/m:e>/s)?.[1] || "").trim();
+        const sub = processMathElement(xml.match(/<m:sub>(.*?)<\/m:sub>/s)?.[1] || "").trim();
+        const sup = processMathElement(xml.match(/<m:sup>(.*?)<\/m:sup>/s)?.[1] || "").trim();
+        const content = isElementSymbol(base)
+            ? `${toSup(sup)}${toSub(sub)}${base}` // ²³⁵₉₂U → correct
+            : `${base}${toSub(sub)}${toSup(sup)}`;
+        add({ start: m.index, end: m.index + m[0].length, content });
+    }
+    // 2. Superscript only → ¹⁴C
+    const supRegex = /<m:sSup>(.*?)<\/m:sSup>/gs;
+    while ((m = supRegex.exec(mathXml)) !== null) {
+        const xml = m[1];
+        const base = processMathElement(xml.match(/<m:e>(.*?)<\/m:e>/s)?.[1] || "").trim();
+        const sup = processMathElement(xml.match(/<m:sup>(.*?)<\/m:sup>/s)?.[1] || "").trim();
+        const content = isElementSymbol(base) && /^\d+$/.test(sup.replace(/[^\d]/g, ""))
+            ? `${toSup(sup)}${base}`
+            : `${base}${toSup(sup)}`;
+        add({ start: m.index, end: m.index + m[0].length, content });
+    }
+    // 3. Subscript only → ₄Be, ₆C (atomic number) or H₂ (stoichiometry)
+    const subRegex = /<m:sSub>(.*?)<\/m:sSub>/gs;
+    while ((m = subRegex.exec(mathXml)) !== null) {
+        const xml = m[1];
+        const base = processMathElement(xml.match(/<m:e>(.*?)<\/m:e>/s)?.[1] || "").trim();
+        const sub = processMathElement(xml.match(/<m:sub>(.*?)<\/m:sub>/s)?.[1] || "").trim();
+        let content = "";
+        if (isElementSymbol(base) && /^\d+$/.test(sub)) {
+            // If the math token *after* this structure begins with an uppercase
+            // letter then it's likely stoichiometry (e.g., H₂O) — put the subscript
+            // after the element. Otherwise, treat it as atomic number prefix.
+            if (nextRunStartsWithUpper(m.index + m[0].length)) {
+                content = `${base}${toSub(sub)}`; // H₂ (stoichiometry)
+            }
+            else {
+                content = `${toSub(sub)}${base}`; // ₄Be (atomic number)
+            }
+        }
+        else {
+            content = `${base}${toSub(sub)}`;
+        }
+        add({ start: m.index, end: m.index + m[0].length, content });
+    }
+    // Fractions & radicals (unchanged)
+    const fracRegex = /<m:f>(.*?)<\/m:f>/gs;
+    while ((m = fracRegex.exec(mathXml)) !== null) {
+        const num = processMathElement(m[1].match(/<m:num>(.*?)<\/m:num>/s)?.[1] || "");
+        const den = processMathElement(m[1].match(/<m:den>(.*?)<\/m:den>/s)?.[1] || "");
+        add({
+            start: m.index,
+            end: m.index + m[0].length,
+            content: `(${num})/(${den})`,
+        });
+    }
+    const radRegex = /<m:rad>(.*?)<\/m:rad>/gs;
+    while ((m = radRegex.exec(mathXml)) !== null) {
+        const deg = processMathElement(m[1].match(/<m:deg>(.*?)<\/m:deg>/s)?.[1] || "").trim();
+        const base = processMathElement(m[1].match(/<m:e>(.*?)<\/m:e>/s)?.[1] || "");
+        const content = deg && deg !== "2" ? `${toSup(deg)}√(${base})` : `√(${base})`;
+        add({ start: m.index, end: m.index + m[0].length, content });
+    }
+    // Final assembly
+    structures.sort((a, b) => a.start - b.start);
+    let pos = 0;
+    let result = "";
+    const runs = [];
+    const runRegex = /<m:r>(.*?)<\/m:r>/gs;
+    while ((m = runRegex.exec(mathXml)) !== null) {
+        const text = (m[1].match(/<m:t[^>]*>([^<]*)<\/m:t>/g) || [])
+            .map((t) => t.replace(/<[^>]*>/g, ""))
+            .join("");
+        if (text)
+            runs.push({ start: m.index, content: text });
+    }
+    if (structures.length === 0) {
+        result = runs.map((r) => r.content).join("");
+    }
+    else {
+        for (const s of structures) {
+            result += runs
+                .filter((r) => r.start >= pos && r.start < s.start)
+                .map((r) => r.content)
+                .join("");
+            result += s.content;
+            pos = s.end;
+        }
+        result += runs
+            .filter((r) => r.start >= pos)
+            .map((r) => r.content)
+            .join("");
+    }
+    return result.trim();
+}
 // Helpers: normalize unicode and safely strip leading numbering/option prefixes
 const normalizeText = (s) => {
     try {
@@ -294,38 +624,27 @@ const createSubjectQuizFromFile = async (req, res) => {
         if (ext === ".doc" || ext === ".docx") {
             console.log("found docx");
             try {
-                // Convert DOCX to HTML with options to preserve more content
-                const result = await mammoth_1.default.convertToHtml({ path: uploadedPath }, {
-                    includeDefaultStyleMap: true,
-                    includeEmbeddedStyleMap: true
-                });
-                const html = result.value || "";
-                console.log("=== MAMMOTH HTML OUTPUT ===");
-                console.log(html);
-                console.log("=== END HTML ===");
-                if (!html || html.trim() === "") {
-                    return res.status(400).json({
-                        message: "The uploaded file appears to be empty",
-                        status: 400,
-                    });
-                }
-                const $ = cheerio.load(html);
-                const elems = $("body").children();
+                // Direct XML parsing for high-fidelity scientific/math support
+                const rawText = await extractRawTextFromDocx(uploadedPath);
+                // Virtual Splitting for merged lines
+                let splitText = rawText;
+                splitText = splitText.replace(/(\S)\s*([A-D][\.\)]\s+)/g, "$1\n$2");
+                splitText = splitText.replace(/(\S)\s*(\b\d+[\.\)]\s+)/g, "$1\n$2");
+                splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
+                splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
+                const lines = splitText
+                    .split("\n")
+                    .map((l) => l.trim())
+                    .filter(Boolean);
                 let questionData = {};
                 let options = [];
                 const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
-                console.log("=== PARSING ELEMENTS ===");
-                elems.each((i, el) => {
-                    const rawText = $(el).text().trim();
-                    const normalizedText = normalizeText(rawText);
-                    const htmlContent = $(el).html()?.trim() || "";
-                    console.log(`Element ${i}: "${normalizedText}"`);
-                    if (!normalizedText)
-                        return;
-                    // Detect new question (starts with number)
-                    if (/^\d+[\.\)]/u.test(normalizedText)) {
-                        console.log(`  -> Detected QUESTION`);
-                        // Save previous question if exists
+                console.log("=== PARSING LINES ===");
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i];
+                    console.log(`Line ${i}: "${line.substring(0, 80)}..."`);
+                    if (/^\d+[\.\)]/.test(line)) {
+                        // Save previous question
                         if (Object.keys(questionData).length > 0) {
                             questionData.options = options;
                             debugInfo.push({ ...questionData, optionsCount: options.length });
@@ -333,68 +652,51 @@ const createSubjectQuizFromFile = async (req, res) => {
                             questionData = {};
                             options = [];
                         }
-                        // Extract image URL if present
-                        const match = normalizedText.match(BRACKET_URL_REGEX);
-                        const url = match ? match[1].trim() : null;
-                        // Clean HTML and remove URL
-                        let cleanHtml = stripLeadingNumberFromHtml(htmlContent);
+                        const match = line.match(BRACKET_URL_REGEX);
+                        let url = match ? match[1].trim() : null;
+                        if (!url) {
+                            const extracted = extractUrlsFromText(line);
+                            if (extracted.length)
+                                url = sanitizeUrl(extracted[0]);
+                        }
+                        line = line.replace(BRACKET_URL_REGEX, "").trim();
+                        questionData = { question: line.replace(/^\d+[\.\)]\s*/, "") };
                         if (url) {
-                            cleanHtml = cleanHtml.replace(BRACKET_URL_REGEX, "").trim();
+                            url = sanitizeUrl(url);
+                            questionData.images = [url];
+                            questionData.url = url;
                         }
-                        console.log(`  -> Question HTML: "${cleanHtml}"`);
-                        questionData = { question: cleanHtml };
-                        // Validate and add image URL
+                    }
+                    else if (/^[A-D][\.\)]/.test(line)) {
+                        options.push(line.replace(/^[A-D][\.\)]\s*/, "").trim());
+                    }
+                    else if (/^Answer:/i.test(line)) {
+                        questionData.answer = line.replace(/^Answer:\s*/i, "").trim();
+                    }
+                    else if (/^Explanation:/i.test(line)) {
+                        questionData.explanation = line.replace(/^Explanation:\s*/i, "").trim();
+                    }
+                    else if (questionData && !questionData.options && Object.keys(questionData).length > 0) {
+                        // Continuation of question
+                        const match = line.match(BRACKET_URL_REGEX);
+                        let url = match ? match[1].trim() : null;
+                        if (!url) {
+                            const extracted = extractUrlsFromText(line);
+                            if (extracted.length)
+                                url = sanitizeUrl(extracted[0]);
+                        }
+                        line = line.replace(BRACKET_URL_REGEX, "").trim();
+                        questionData.question = `${questionData.question} ${line}`.trim();
                         if (url) {
-                            if (isValidUrl(url)) {
-                                questionData.images = [url];
-                            }
-                            else {
-                                parsingErrors.push(`Invalid image URL found: ${url}`);
-                            }
+                            url = sanitizeUrl(url);
+                            if (!questionData.images)
+                                questionData.images = [];
+                            questionData.images.push(url);
+                            if (!questionData.url)
+                                questionData.url = url;
                         }
                     }
-                    // Detect options (A. B. C. D.)
-                    else if (/^[A-D][\.\)]/u.test(normalizedText)) {
-                        const cleanOption = stripLeadingOptionLetter(htmlContent);
-                        console.log(`  -> Detected OPTION: "${cleanOption}"`);
-                        options.push(cleanOption);
-                    }
-                    // Detect answer
-                    else if (/^Answer:/i.test(normalizedText)) {
-                        const answerText = normalizedText.replace(/^Answer:\s*/i, "").trim();
-                        console.log(`  -> Detected ANSWER: "${answerText}"`);
-                        questionData.answer = answerText;
-                    }
-                    // Detect explanation
-                    else if (/^Explanation:/i.test(normalizedText)) {
-                        const explanationText = normalizedText.replace(/^Explanation:\s*/i, "").trim();
-                        console.log(`  -> Detected EXPLANATION: "${explanationText}"`);
-                        questionData.explanation = explanationText;
-                    }
-                    // Continuation of question text or additional images
-                    else {
-                        if (questionData && !questionData.options && Object.keys(questionData).length > 0) {
-                            console.log(`  -> Continuation of question`);
-                            const match = normalizedText.match(BRACKET_URL_REGEX);
-                            const url = match ? match[1].trim() : null;
-                            questionData.question = `${questionData.question}<br/>${htmlContent}`.trim();
-                            if (url) {
-                                if (isValidUrl(url)) {
-                                    if (!questionData.images)
-                                        questionData.images = [];
-                                    questionData.images.push(url);
-                                    questionData.question = questionData.question.replace(BRACKET_URL_REGEX, "");
-                                }
-                                else {
-                                    parsingErrors.push(`Invalid image URL found: ${url}`);
-                                }
-                            }
-                        }
-                        else {
-                            console.log(`  -> Ignored (no active question)`);
-                        }
-                    }
-                });
+                }
                 // Save last question
                 if (Object.keys(questionData).length > 0) {
                     questionData.options = options;
@@ -409,10 +711,6 @@ const createSubjectQuizFromFile = async (req, res) => {
                         message: "No valid questions found in the document. Please check the format.",
                         status: 400,
                         hint: "Expected format: '1. Question text', 'A. Option', 'B. Option', etc., 'Answer: ...'",
-                        debugInfo: {
-                            htmlPreview: html.substring(0, 500),
-                            elementsFound: elems.length
-                        }
                     });
                 }
             }
@@ -543,18 +841,6 @@ const createSubjectQuizFromFile = async (req, res) => {
 };
 exports.createSubjectQuizFromFile = createSubjectQuizFromFile;
 // Examination
-// CRITICAL FIX: Extract raw text from DOCX to preserve LaTeX
-async function extractRawTextFromDocx(filePath) {
-    try {
-        // Use mammoth to extract raw text (preserves special characters better)
-        const result = await mammoth_1.default.extractRawText({ path: filePath });
-        return result.value || "";
-    }
-    catch (error) {
-        console.error("Error extracting raw text:", error);
-        return "";
-    }
-}
 const createSubjectExam = async (req, res) => {
     let uploadedPath;
     try {
@@ -632,22 +918,28 @@ const createSubjectExam = async (req, res) => {
                         status: 400,
                     });
                 }
+                // Virtual Splitting for merged lines
+                let splitText = rawText;
+                splitText = splitText.replace(/(\S)\s*([A-D][\.\)]\s+)/g, "$1\n$2");
+                splitText = splitText.replace(/(\S)\s*(\b\d+[\.\)]\s+)/g, "$1\n$2");
+                splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
+                splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
                 // Split by lines and process
-                const lines = rawText.split('\n').map(line => line.trim()).filter(line => line);
+                const lines = splitText.split('\n').map(line => line.trim()).filter(line => line);
                 console.log(`\nFound ${lines.length} lines to parse\n`);
                 let questionData = {};
                 let options = [];
                 const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
                 console.log("=== PARSING LINES ===");
                 for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
+                    let line = lines[i];
                     console.log(`\nLine ${i}: "${line.substring(0, 80)}..."`);
                     if (!line) {
                         console.log("  -> Skipped (empty)");
                         continue;
                     }
                     // Detect new question (starts with number)
-                    if (/^\d+[\.\)]\s/.test(line)) {
+                    if (/^\d+[\.\)]/.test(line)) {
                         console.log("  -> Detected QUESTION");
                         // Save previous question if present
                         if (Object.keys(questionData).length > 0) {
@@ -657,60 +949,53 @@ const createSubjectExam = async (req, res) => {
                             questionData = {};
                             options = [];
                         }
-                        // Extract image URL if present
                         const match = line.match(BRACKET_URL_REGEX);
-                        const url = match ? match[1].trim() : null;
-                        // Remove number prefix and URL
-                        let cleanText = line.replace(/^\d+[\.\)]\s*/, "").trim();
+                        let url = match ? match[1].trim() : null;
+                        if (!url) {
+                            const extracted = extractUrlsFromText(line);
+                            if (extracted.length)
+                                url = sanitizeUrl(extracted[0]);
+                        }
+                        line = line.replace(BRACKET_URL_REGEX, "").trim();
+                        questionData = { question: line.replace(/^\d+[\.\)]\s*/, "") };
                         if (url) {
-                            cleanText = cleanText.replace(BRACKET_URL_REGEX, "").trim();
-                        }
-                        console.log(`  -> Question text: "${cleanText.substring(0, 100)}..."`);
-                        questionData = { question: cleanText };
-                        if (url && isValidUrl(url)) {
+                            url = sanitizeUrl(url);
                             questionData.images = [url];
-                            console.log(`  -> Added image: ${url}`);
+                            questionData.url = url;
                         }
                     }
-                    // Detect options (A. B. C. D.)
-                    else if (/^[A-D][\.\)]\s/.test(line)) {
-                        const cleanOption = line.replace(/^[A-D][\.\)]\s*/, "").trim();
-                        options.push(cleanOption);
-                        console.log(`  -> Detected OPTION: "${cleanOption}"`);
+                    else if (/^[A-D][\.\)]/.test(line)) {
+                        options.push(line.replace(/^[A-D][\.\)]\s*/, "").trim());
+                        console.log(`  -> Detected OPTION: "${line}"`);
                     }
-                    // Detect answer
-                    else if (/^Answer:\s*/i.test(line)) {
+                    else if (/^Answer:/i.test(line)) {
                         const answerText = line.replace(/^Answer:\s*/i, "").trim();
                         questionData.answer = answerText;
                         console.log(`  -> Detected ANSWER: "${answerText}"`);
                     }
-                    // Detect explanation
-                    else if (/^Explanation:\s*/i.test(line)) {
+                    else if (/^Explanation:/i.test(line)) {
                         const explanationText = line.replace(/^Explanation:\s*/i, "").trim();
                         questionData.explanation = explanationText;
                         console.log(`  -> Detected EXPLANATION: "${explanationText.substring(0, 50)}..."`);
                     }
-                    // Continuation line
-                    else {
-                        if (questionData.question && options.length === 0) {
-                            console.log("  -> Continuation of question");
-                            // Check for image URL
-                            const match = line.match(BRACKET_URL_REGEX);
-                            const url = match ? match[1].trim() : null;
-                            let cleanLine = line;
-                            if (url) {
-                                cleanLine = line.replace(BRACKET_URL_REGEX, "").trim();
-                            }
-                            questionData.question += " " + cleanLine;
-                            if (url && isValidUrl(url)) {
-                                if (!questionData.images)
-                                    questionData.images = [];
-                                questionData.images.push(url);
-                                console.log(`  -> Added continuation image: ${url}`);
-                            }
+                    else if (questionData && !questionData.options && Object.keys(questionData).length > 0) {
+                        // Continuation of question
+                        const match = line.match(BRACKET_URL_REGEX);
+                        let url = match ? match[1].trim() : null;
+                        if (!url) {
+                            const extracted = extractUrlsFromText(line);
+                            if (extracted.length)
+                                url = sanitizeUrl(extracted[0]);
                         }
-                        else {
-                            console.log("  -> Ignored (no active question)");
+                        line = line.replace(BRACKET_URL_REGEX, "").trim();
+                        questionData.question = `${questionData.question} ${line}`.trim();
+                        if (url) {
+                            url = sanitizeUrl(url);
+                            if (!questionData.images)
+                                questionData.images = [];
+                            questionData.images.push(url);
+                            if (!questionData.url)
+                                questionData.url = url;
                         }
                     }
                 }
@@ -721,17 +1006,11 @@ const createSubjectExam = async (req, res) => {
                     console.log(`\nSaved last question (${options.length} options)`);
                 }
                 console.log(`\n=== PARSING COMPLETE: ${value.length} questions found ===`);
-                // Debug: Print first question
-                if (value.length > 0) {
-                    console.log("\nFirst question preview:");
-                    console.log(JSON.stringify(value[0], null, 2));
-                }
                 if (value.length === 0) {
                     return res.status(400).json({
                         message: "No valid questions found in the document. Please check the format.",
                         status: 400,
                         hint: "Expected format: '1. Question text', 'A. Option', 'B. Option', etc., 'Answer: ...'",
-                        rawTextPreview: rawText.substring(0, 500),
                     });
                 }
             }
