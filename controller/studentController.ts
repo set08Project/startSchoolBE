@@ -276,6 +276,146 @@ export const clockOutAccountWidthID = async (
   }
 };
 
+// QR Scan Clock-In/Out (called when phone scans student QR code)
+export const qrScanClockInOut = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { schoolID, studentID } = req.params;
+
+    const school = await schoolModel.findById(schoolID);
+    const student = await studentModel.findById(studentID);
+
+    if (!school) {
+      return res.status(404).send(`
+        <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
+          <h2 style="color:#dc2626;">❌ School Not Found</h2>
+          <p>This QR code is invalid.</p>
+        </body></html>
+      `);
+    }
+
+    if (!student) {
+      return res.status(404).send(`
+        <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
+          <h2 style="color:#dc2626;">❌ Student Not Found</h2>
+          <p>This QR code is invalid.</p>
+        </body></html>
+      `);
+    }
+
+    const now = moment(new Date().getTime()).format("llll");
+    const name = `${student.studentFirstName} ${student.studentLastName}`;
+
+    let action: string;
+    let actionTime: string;
+
+    if (student.clockIn) {
+      // Currently clocked in → clock out
+      await studentModel.findByIdAndUpdate(
+        student._id,
+        { clockIn: false, clockOut: true, clockOutTime: now },
+        { new: true }
+      ).then((updated) => clockingOutEmail(updated, school));
+
+      action = "Clocked Out";
+      actionTime = now;
+    } else {
+      // Not clocked in → clock in
+      const updated = await studentModel.findByIdAndUpdate(
+        student._id,
+        { clockIn: true, clockInTime: now, clockOut: false },
+        { new: true }
+      );
+      await clockingInEmail(updated, school);
+
+      action = "Clocked In";
+      actionTime = now;
+    }
+
+    return res.status(200).send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Attendance Recorded</title>
+        <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+          }
+          .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 360px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+          }
+          .icon { font-size: 60px; margin-bottom: 16px; }
+          .action {
+            font-size: 26px;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+          }
+          .name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            text-transform: capitalize;
+            margin-bottom: 6px;
+          }
+          .time {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 20px;
+          }
+          .badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 999px;
+            padding: 6px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+          }
+          .school { font-size: 12px; color: #9ca3af; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="icon">${action === "Clocked In" ? "✅" : "👋"}</div>
+          <div class="action">${action}!</div>
+          <div class="name">${name}</div>
+          <div class="time">${actionTime}</div>
+          <div class="badge">${student.enrollmentID}</div>
+          <div class="school">${school.schoolName || ""}</div>
+        </div>
+      </body>
+      </html>
+    `);
+  } catch (error: any) {
+    return res.status(500).send(`
+      <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
+        <h2 style="color:#dc2626;">⚠️ Error</h2>
+        <p>${error.message}</p>
+      </body></html>
+    `);
+  }
+};
+
 // Create Account
 
 export const createSchoolStudent = async (

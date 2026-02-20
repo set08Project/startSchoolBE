@@ -84,10 +84,22 @@ export const createSubjectExam = async (
       const blocks: string[] = [];
       const elems: any[] = $("p, h1, h2, h3, li").toArray();
       for (const el of elems as any[]) {
-        const text = $(el as any)
-          .text()
-          .trim();
-        if (text) blocks.push(text);
+        const text = $(el as any).text().trim();
+        if (text) {
+          // Virtual Splitter for merged paragraphs
+          let splitText = text;
+          splitText = splitText.replace(/(\S)\s*([A-D][\.\)]\s+)/g, "$1\n$2");
+          // Split only if NOT preceded by symbols common in chemical formulas like (C=12, O=16)
+          splitText = splitText.replace(/([^,(=])\s*(\b\d+[\.\)]\s+)/g, "$1\n$2");
+          splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
+          splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
+
+          const subBlocks = splitText
+            .split("\n")
+            .map((b) => b.trim())
+            .filter(Boolean);
+          blocks.push(...subBlocks);
+        }
       }
 
       // collect images mapped by their surrounding block index
@@ -99,7 +111,8 @@ export const createSubjectExam = async (
         const parent = $(imgEl as any).closest("p, li, h1, h2, h3")[0] as any;
         let idx = -1;
         if (parent) {
-          idx = (elems as any[]).indexOf(parent);
+          const parentText = $(parent).text().trim();
+          idx = blocks.findIndex((b) => b.includes(parentText));
         }
         const key = idx >= 0 ? idx : blocks.length;
         imagesByIndex[key] = imagesByIndex[key] || [];
@@ -119,11 +132,9 @@ export const createSubjectExam = async (
                 uploadedUrls.push(sanitizeUrl(uploadRes.secure_url));
               }
             } else if (typeof src === "string") {
-              // not a data URI (likely a valid src already) — keep as-is
               uploadedUrls.push(sanitizeUrl(src));
             }
           } catch (err) {
-            // on failure, keep the original src so diagram isn't lost
             uploadedUrls.push(sanitizeUrl(src));
           }
         }
@@ -136,11 +147,10 @@ export const createSubjectExam = async (
       const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
       for (let idx = 0; idx < blocks.length; idx++) {
         let line = blocks[idx];
-        if (/^\d+\./.test(line)) {
+        if (/^\d+[\.\)]/.test(line)) {
           // Save previous question
           if (Object.keys(questionData).length) {
             questionData.options = options;
-            // attach images if any - sanitize recorded urls
             if (imagesByIndex[idx - 1])
               questionData.images = imagesByIndex[idx - 1].map((u: string) =>
                 sanitizeUrl(String(u))
@@ -149,10 +159,8 @@ export const createSubjectExam = async (
             questionData = {};
             options = [];
           }
-          // Extract bracketed image URL if present
           const match = line.match(BRACKET_URL_REGEX);
           let url = match ? match[1].trim() : null;
-          // fallback: extract any URL in the line
           if (!url) {
             const extracted = extractUrlsFromText(line);
             if (extracted.length) url = sanitizeUrl(extracted[0]);
@@ -164,8 +172,8 @@ export const createSubjectExam = async (
             questionData.images = [url];
             questionData.url = url;
           }
-        } else if (/^[A-D]\./.test(line)) {
-          options.push(line.replace(/^[A-D]\./, ""));
+        } else if (/^[A-D][\.\)]/.test(line)) {
+          options.push(line.replace(/^[A-D][\.\)]/, "").trim());
         } else if (line.startsWith("Answer:")) {
           questionData.answer = line.replace("Answer:", "").trim();
         } else if (line.startsWith("Explanation:")) {
@@ -173,7 +181,6 @@ export const createSubjectExam = async (
         } else {
           // append to question if no options yet
           if (questionData && !questionData.options) {
-            // Also extract bracketed image URL from continuation lines
             const match = line.match(BRACKET_URL_REGEX);
             let url = match ? match[1].trim() : null;
             if (!url) {
@@ -414,7 +421,7 @@ export const createSubjectExam = async (
 };
 
 export const readSubjectExamination = async (
-  req: Request,
+  req: any,
   res: Response
 ): Promise<Response> => {
   try {
@@ -447,7 +454,7 @@ export const readSubjectExamination = async (
 };
 
 export const randomizeSubjectExamination = async (
-  req: Request,
+  req: any,
   res: Response
 ): Promise<Response> => {
   try {
@@ -476,7 +483,7 @@ export const randomizeSubjectExamination = async (
 };
 
 export const startSubjectExamination = async (
-  req: Request,
+  req: any,
   res: Response
 ): Promise<Response> => {
   try {
@@ -505,7 +512,7 @@ export const startSubjectExamination = async (
 };
 
 export const readExamination = async (
-  req: Request,
+  req: any,
   res: Response
 ): Promise<Response> => {
   try {
@@ -528,7 +535,7 @@ export const readExamination = async (
 };
 
 export const deleteExamination = async (
-  req: Request,
+  req: any,
   res: Response
 ): Promise<Response> => {
   try {
@@ -560,7 +567,7 @@ export const deleteExamination = async (
 };
 
 export const updateSubjectExam = async (
-  req: Request,
+  req: any,
   res: Response
 ): Promise<Response> => {
   try {

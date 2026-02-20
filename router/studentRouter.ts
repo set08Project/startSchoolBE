@@ -45,6 +45,7 @@ import {
   updateStudentViewReportCard,
   updateStudentInfo,
   updateMainStudentBulkInfo,
+  qrScanClockInOut,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -73,6 +74,9 @@ router.route("/student-clock-out/:schoolID/:studentID").patch(clockOutAccount);
 
 router.route("/student-clock-in-with-id/:schoolID").patch(clockinAccount);
 router.route("/student-clock-out-with-id/:schoolID").patch(clockOutAccount);
+
+// QR Code scan → auto clock-in/out (returns HTML page for phone browser)
+router.route("/qr-scan/:schoolID/:studentID").get(qrScanClockInOut);
 
 // student bulk info
 router

@@ -53,7 +53,10 @@ const comment = async (x) => {
     else if (x >= 81 && x <= 85) {
         return "Outstanding achievement; impressive work!";
     }
-    else if (x >= 90 && x <= 95) {
+    else if (x >= 86 && x <= 90) {
+        return "Outstanding achievement; impressive work!";
+    }
+    else if (x >= 91 && x <= 95) {
         return "Brilliant performance; you’re a star!";
     }
     else if (x >= 96 && x <= 100) {

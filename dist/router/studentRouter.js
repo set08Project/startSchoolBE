@@ -27,6 +27,8 @@ router.route("/student-clock-in/:schoolID/:studentID").patch(studentController_1
 router.route("/student-clock-out/:schoolID/:studentID").patch(studentController_1.clockOutAccount);
 router.route("/student-clock-in-with-id/:schoolID").patch(studentController_1.clockinAccount);
 router.route("/student-clock-out-with-id/:schoolID").patch(studentController_1.clockOutAccount);
+// QR Code scan → auto clock-in/out (returns HTML page for phone browser)
+router.route("/qr-scan/:schoolID/:studentID").get(studentController_1.qrScanClockInOut);
 // student bulk info
 router
     .route("/update-student-bulk-info/:studentID")

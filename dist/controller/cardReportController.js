@@ -531,21 +531,21 @@ const createReportCardEntry = async (req, res) => {
         });
         // Helper function to calculate grade from marks
         const calculateGrade = (mark) => {
-            if (mark >= 74)
+            if (mark >= 75)
                 return "A1";
-            if (mark >= 69)
+            if (mark >= 70)
                 return "B2";
-            if (mark >= 64)
+            if (mark >= 65)
                 return "B3";
-            if (mark >= 59)
+            if (mark >= 60)
                 return "C4";
-            if (mark >= 54)
+            if (mark >= 55)
                 return "C5";
-            if (mark >= 49)
+            if (mark >= 50)
                 return "C6";
-            if (mark >= 44)
+            if (mark >= 45)
                 return "D7";
-            if (mark >= 39)
+            if (mark >= 40)
                 return "E8";
             if (mark >= 0)
                 return "F9";
@@ -553,87 +553,83 @@ const createReportCardEntry = async (req, res) => {
         };
         // Helper function to generate admin comment
         const generateAdminComment = (points) => {
-            if (points >= 96)
-                return "Outstanding achievement; impressive work!";
-            if (points >= 91)
+            if (points >= 90)
                 return "Brilliant performance; you're a star!";
-            if (points >= 86)
+            if (points >= 85)
                 return "Outstanding achievement; impressive work!";
-            if (points >= 81)
+            if (points >= 80)
                 return "Exceptional result; keep up the great work!";
-            if (points >= 76)
+            if (points >= 75)
                 return "Excellent performance; well done!";
-            if (points >= 71)
+            if (points >= 70)
                 return "Very good; consistent effort is visible.";
-            if (points >= 66)
+            if (points >= 65)
                 return "Commendable effort; very good.";
-            if (points >= 61)
+            if (points >= 60)
                 return "Good work; keep striving for excellence.";
-            if (points >= 56)
+            if (points >= 55)
                 return "Satisfactory; good progress.";
-            if (points >= 51)
+            if (points >= 50)
                 return "Passable; satisfactory effort.";
-            if (points >= 46)
+            if (points >= 45)
                 return "Decent work; shows potential.";
-            if (points >= 41)
+            if (points >= 40)
                 return "Slightly above average; keep it up.";
-            if (points >= 36)
+            if (points >= 35)
                 return "Average; showing gradual improvement.";
-            if (points >= 31)
+            if (points >= 30)
                 return "Average; a steady effort is needed.";
-            if (points >= 26)
+            if (points >= 25)
                 return "Fair performance; potential for improvement.";
-            if (points >= 21)
+            if (points >= 20)
                 return "Fair but not satisfactory; strive harder.";
-            if (points >= 16)
+            if (points >= 15)
                 return "Below average; more effort required.";
-            if (points >= 11)
+            if (points >= 10)
                 return "Below average; needs significant improvement.";
-            if (points >= 6)
+            if (points >= 5)
                 return "This result is poor; it's not satisfactory.";
             return "This is a very poor result.";
         };
         // Helper function to generate teacher comment
         const generateTeacherComment = (points) => {
-            if (points >= 96)
+            if (points >= 90)
                 return "Perfect! Flawless work that reflects deep understanding and careful attention to detail. Congratulations!";
-            if (points >= 91)
+            if (points >= 85)
                 return "Outstanding! Your understanding and presentation are impressive. A near-perfect submission!";
-            if (points >= 86)
+            if (points >= 80)
                 return "Excellent work! You've exceeded expectations. Keep up the fantastic effort!";
-            if (points >= 81)
+            if (points >= 75)
                 return "Well done! You have a good grasp of the material. Aim for more critical analysis next time!";
-            if (points >= 76)
+            if (points >= 70)
                 return "Strong work overall! A little more attention to detail could make it exceptional!";
-            if (points >= 71)
+            if (points >= 65)
                 return "This work meets expectations and demonstrates clear effort. Great job, but there's room for more depth.";
-            if (points >= 66)
+            if (points >= 60)
                 return "A solid understanding is evident, though there are areas to refine.";
-            if (points >= 61)
+            if (points >= 55)
                 return "Good work; keep striving for excellence.";
-            if (points >= 56)
+            if (points >= 50)
                 return "A decent attempt that meets some expectations but lacks polish and depth in certain areas.";
-            if (points >= 51)
+            if (points >= 45)
                 return "You are making progress but need to develop your analysis further to meet the standard.";
-            if (points >= 46)
+            if (points >= 40)
                 return "Some understanding is demonstrated, but key concepts are missing or incorrect.";
-            if (points >= 41)
+            if (points >= 35)
                 return "An acceptable effort, but there is room for improvement in clarity and depth.";
-            if (points >= 36)
+            if (points >= 30)
                 return "You are starting to grasp the material, but more depth and accuracy are needed.";
-            if (points >= 31)
+            if (points >= 25)
                 return "A basic attempt is made, but it falls short of expectations. Review the feedback to improve.";
-            if (points >= 26)
+            if (points >= 20)
                 return "The work shows minimal understanding of the topic. Focus on building your foundational knowledge.";
-            if (points >= 21)
+            if (points >= 15)
                 return "Some attempt is evident, but significant gaps in understanding remain. More effort is required.";
-            if (points >= 16)
+            if (points >= 10)
                 return "The response is incomplete and lacks critical understanding. Improvement is needed in future submissions.";
-            if (points >= 11)
+            if (points >= 5)
                 return "This effort does not meet the basic requirements. Please focus on the foundational concepts.";
-            if (points >= 6)
-                return "Very minimal effort is evident in the work. It's essential to review the material thoroughly.";
-            return "The submission demonstrates a lack of understanding of the topic. Please see me for guidance.";
+            return "Very minimal effort is evident in the work. It's essential to review the material thoroughly.";
         };
         // Calculate scores and grade for the subject
         const calculateSubjectScore = (t4, ex) => {
