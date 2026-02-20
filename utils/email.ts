@@ -7,6 +7,7 @@ import env from "dotenv";
 import schoolModel from "../model/schoolModel";
 import { updateStudentFirstName } from "../controller/studentController";
 import moment from "moment";
+import { sendClockInSMS, sendClockOutSMS } from "./sms";
 env.config();
 
 const GOOGLE_ID = process.env.GOOGLE_ID;
@@ -308,6 +309,9 @@ export const clockingInEmail = async (user: any, school: any) => {
     await transporter.sendMail(mailerOption).then((res) => {
       console.log("sent", user.parentEmail, res);
     });
+
+    // SMS via Termii (non-blocking)
+    sendClockInSMS(user, school).catch(() => {});
   } catch (error) {
     console.error();
   }
@@ -361,6 +365,9 @@ export const clockingOutEmail = async (user: any, school: any) => {
     };
 
     await transporter.sendMail(mailerOption);
+
+    // SMS via Termii (non-blocking)
+    sendClockOutSMS(user, school).catch(() => {});
   } catch (error) {
     console.error();
   }

@@ -12,6 +12,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const moment_1 = __importDefault(require("moment"));
+const sms_1 = require("./sms");
 dotenv_1.default.config();
 const GOOGLE_ID = process.env.GOOGLE_ID;
 const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
@@ -261,6 +262,8 @@ const clockingInEmail = async (user, school) => {
         await transporter.sendMail(mailerOption).then((res) => {
             console.log("sent", user.parentEmail, res);
         });
+        // SMS via Termii (non-blocking)
+        (0, sms_1.sendClockInSMS)(user, school).catch(() => { });
     }
     catch (error) {
         console.error();
@@ -308,6 +311,8 @@ const clockingOutEmail = async (user, school) => {
             html,
         };
         await transporter.sendMail(mailerOption);
+        // SMS via Termii (non-blocking)
+        (0, sms_1.sendClockOutSMS)(user, school).catch(() => { });
     }
     catch (error) {
         console.error();
