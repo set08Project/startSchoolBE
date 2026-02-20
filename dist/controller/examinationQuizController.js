@@ -47,39 +47,47 @@ const examinationModel_1 = __importDefault(require("../model/examinationModel"))
 // ──────────────────────────────────────────────────────────────
 // Unicode helpers
 // ──────────────────────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────────
-// Unicode helpers
-// ──────────────────────────────────────────────────────────────
 function toUnicodeSubscript(text) {
     const map = {
-        // Digits
-        "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄",
-        "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉",
-        // Operators
-        "+": "₊", "-": "₋", "=": "₌", "(": "₍", ")": "₎",
-        // Alphabet (Partial common set)
-        a: "ₐ", e: "ₑ", h: "ₕ", i: "ᵢ", j: "ⱼ", k: "ₖ", l: "ₗ", m: "ₘ",
-        n: "ₙ", o: "ₒ", p: "ₚ", r: "ᵣ", s: "ₛ", t: "ₜ", u: "ᵤ", v: "ᵥ", x: "ₓ",
+        "0": "₀",
+        "1": "₁",
+        "2": "₂",
+        "3": "₃",
+        "4": "₄",
+        "5": "₅",
+        "6": "₆",
+        "7": "₇",
+        "8": "₈",
+        "9": "₉",
     };
     return text
         .split("")
-        .map((c) => map[c.toLowerCase()] || c)
+        .map((c) => map[c] || c)
         .join("");
 }
 function toUnicodeSuperscript(text) {
     const map = {
-        // Digits
-        "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
-        "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹",
-        // Operators
-        "+": "⁺", "-": "⁻", "=": "⁼", "(": "⁽", ")": "⁾",
-        // Alphabet
-        a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ", k: "ᵏ", l: "ˡ", m: "ᵐ",
-        n: "ⁿ", o: "ᵒ", p: "ᵖ", r: "ʳ", s: "ˢ", t: "ᵗ", u: "ᵘ", v: "ᵛ", w: "ʷ", x: "ˣ", y: "ʸ", z: "ᶻ",
+        "0": "⁰",
+        "1": "¹",
+        "2": "²",
+        "3": "³",
+        "4": "⁴",
+        "5": "⁵",
+        "6": "⁶",
+        "7": "⁷",
+        "8": "⁸",
+        "9": "⁹",
+        "+": "⁺",
+        "-": "⁻",
+        "=": "⁼",
+        "(": "⁽",
+        ")": "⁾",
+        n: "ⁿ",
+        i: "ⁱ",
     };
     return text
         .split("")
-        .map((c) => map[c.toLowerCase()] || c)
+        .map((c) => map[c] || c)
         .join("");
 }
 // ──────────────────────────────────────────────────────────────
@@ -179,32 +187,26 @@ async function extractRawTextFromDocx(filePath) {
 }
 function processParagraph(paraXml) {
     const elements = [];
-    // Capture Runs, preserving their natural order
-    const runRegex = /<w:r[\s>](.*?)<\/w:r>/gs;
+    // 1. Text runs (w:t)
+    const textRunRegex = /<w:r[^>]*>.*?<w:t[^>]*>([^<]*)<\/w:t>.*?<\/w:r>/gs;
     let match;
-    while ((match = runRegex.exec(paraXml)) !== null) {
-        const runXml = match[1];
-        // Extract ALL text elements within the run
-        const textRegex = /<w:t[^>]*>([^<]*)<\/w:t>/g;
-        let tMatch;
-        let runText = "";
-        while ((tMatch = textRegex.exec(runXml)) !== null) {
-            runText += tMatch[1];
-        }
-        if (runText) {
-            // Check for vertical alignment (subscript/superscript)
-            if (runXml.includes('w:val="subscript"')) {
-                elements.push({ pos: match.index, content: toUnicodeSubscript(runText) });
-            }
-            else if (runXml.includes('w:val="superscript"')) {
-                elements.push({ pos: match.index, content: toUnicodeSuperscript(runText) });
-            }
-            else {
-                elements.push({ pos: match.index, content: runText });
-            }
+    while ((match = textRunRegex.exec(paraXml)) !== null) {
+        // Only add if it's NOT part of a math element and doesn't have alignment
+        if (!match[0].includes("<m:oMath") && !match[0].includes("<w:vertAlign")) {
+            elements.push({ pos: match.index, content: match[1] });
         }
     }
-    // Capture Math elements
+    // 2. Subscript w:r elements
+    const subRegex = /<w:r[^>]*><w:rPr[^>]*><w:vertAlign w:val="subscript"\/><\/w:rPr>.*?<w:t[^>]*>([^<]+?)<\/w:t><\/w:r>/g;
+    while ((match = subRegex.exec(paraXml)) !== null) {
+        elements.push({ pos: match.index, content: toUnicodeSubscript(match[1]) });
+    }
+    // 3. Superscript w:r elements
+    const supRegex = /<w:r[^>]*><w:rPr[^>]*><w:vertAlign w:val="superscript"\/><\/w:rPr>.*?<w:t[^>]*>([^<]+?)<\/w:t><\/w:r>/g;
+    while ((match = supRegex.exec(paraXml)) !== null) {
+        elements.push({ pos: match.index, content: toUnicodeSuperscript(match[1]) });
+    }
+    // 4. Math runs (m:oMath)
     const mathRunRegex = /<m:oMath>(.*?)<\/m:oMath>/gs;
     while ((match = mathRunRegex.exec(paraXml)) !== null) {
         elements.push({ pos: match.index, content: processMathElement(match[1]) });
@@ -217,18 +219,80 @@ function processParagraph(paraXml) {
 // ──────────────────────────────────────────────────────────────
 function processMathElement(mathXml) {
     const SUPER = {
-        "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
-        "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹",
-        "+": "⁺", "-": "⁻", "=": "⁼", "(": "⁽", ")": "⁾",
-        a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ", k: "ᵏ", l: "ˡ", m: "ᵐ",
-        n: "ⁿ", o: "ᵒ", p: "ᵖ", r: "ʳ", s: "ˢ", t: "ᵗ", u: "ᵘ", v: "ᵛ", w: "ʷ", x: "ˣ", y: "ʸ", z: "ᶻ",
+        "0": "⁰",
+        "1": "¹",
+        "2": "²",
+        "3": "³",
+        "4": "⁴",
+        "5": "⁵",
+        "6": "⁶",
+        "7": "⁷",
+        "8": "⁸",
+        "9": "⁹",
+        "+": "⁺",
+        "-": "⁻",
+        "=": "⁼",
+        "(": "⁽",
+        ")": "⁾",
+        n: "ⁿ",
+        i: "ⁱ",
+        a: "ᵃ",
+        b: "ᵇ",
+        c: "ᶜ",
+        d: "ᵈ",
+        e: "ᵉ",
+        f: "ᶠ",
+        g: "ᵍ",
+        h: "ʰ",
+        j: "ʲ",
+        k: "ᵏ",
+        l: "ˡ",
+        m: "ᵐ",
+        o: "ᵒ",
+        p: "ᵖ",
+        r: "ʳ",
+        s: "ˢ",
+        t: "ᵗ",
+        u: "ᵘ",
+        v: "ᵛ",
+        w: "ʷ",
+        x: "ˣ",
+        y: "ʸ",
+        z: "ᶻ",
     };
     const SUB = {
-        "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄",
-        "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉",
-        "+": "₊", "-": "₋", "=": "₌", "(": "₍", ")": "₎",
-        a: "ₐ", e: "ₑ", h: "ₕ", i: "ᵢ", j: "ⱼ", k: "ₖ", l: "ₗ", m: "ₘ",
-        n: "ₙ", o: "ₒ", p: "ₚ", r: "ᵣ", s: "ₛ", t: "ₜ", u: "ᵤ", v: "ᵥ", x: "ₓ",
+        "0": "₀",
+        "1": "₁",
+        "2": "₂",
+        "3": "₃",
+        "4": "₄",
+        "5": "₅",
+        "6": "₆",
+        "7": "₇",
+        "8": "₈",
+        "9": "₉",
+        "+": "₊",
+        "-": "₋",
+        "=": "₌",
+        "(": "₍",
+        ")": "₎",
+        a: "ₐ",
+        e: "ₑ",
+        h: "ₕ",
+        i: "ᵢ",
+        j: "ⱼ",
+        k: "ₖ",
+        l: "ₗ",
+        m: "ₘ",
+        n: "ₙ",
+        o: "ₒ",
+        p: "ₚ",
+        r: "ᵣ",
+        s: "ₛ",
+        t: "ₜ",
+        u: "ᵤ",
+        v: "ᵥ",
+        x: "ₓ",
     };
     const toSup = (s) => s
         .split("")
