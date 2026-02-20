@@ -32,6 +32,7 @@ import {
   importSchoolData,
   updateSchoolStamp,
   updateSchoolTeamData,
+  updateSchoolSMS,
 } from "../controller/schoolController";
 import multer from "multer";
 
@@ -126,5 +127,7 @@ router.route("/export-data-file/:schoolID").get(exportSchoolDataFile);
 router.route("/import-data").patch(importSchoolData);
 
 router.route("/delete-school/:schoolID").delete(deleteSchool);
+
+router.route("/update-school-sms/:schoolID").patch(updateSchoolSMS);
 
 export default router;

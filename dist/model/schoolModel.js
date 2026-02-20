@@ -128,6 +128,10 @@ const schoolModel = new mongoose_2.Schema({
         type: Boolean,
         default: false,
     },
+    sendSMS: {
+        type: Boolean,
+        default: false,
+    },
     schoolTags: [
         {
             type: {},

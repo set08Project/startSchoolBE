@@ -79,6 +79,7 @@ interface iSchool {
   purchaseHistory: Array<{}>;
   schoolFeesHistory: Array<{}>;
   outGoneStudents: Array<{}>;
+  sendSMS: boolean;
 }
 
 interface iSchoolData extends iSchool, Document {}
@@ -233,6 +234,10 @@ const schoolModel = new Schema<iSchoolData>(
       unique: true,
     },
     verify: {
+      type: Boolean,
+      default: false,
+    },
+    sendSMS: {
       type: Boolean,
       default: false,
     },

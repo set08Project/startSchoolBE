@@ -1582,3 +1582,28 @@ export const createSchoolTimetableRecord = async (
     });
   }
 };
+export const updateSchoolSMS = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { sendSMS } = req.body;
+
+    const school = await schoolModel.findByIdAndUpdate(
+      schoolID,
+      { sendSMS },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "School SMS Notification status updated",
+      data: school,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error updating school SMS Notification status",
+      data: error.message,
+    });
+  }
+};

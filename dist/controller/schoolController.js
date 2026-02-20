@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.RemoveSchoolPaymentOptions = exports.updateSchoolPaymentOptions = exports.updateSchoolTeamData = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolStamp = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.importSchoolData = exports.exportSchoolDataFile = exports.exportSchoolData = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.updateSchoolSMS = exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.RemoveSchoolPaymentOptions = exports.updateSchoolPaymentOptions = exports.updateSchoolTeamData = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolStamp = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.importSchoolData = exports.exportSchoolDataFile = exports.exportSchoolData = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -1316,3 +1316,21 @@ const createSchoolTimetableRecord = async (req, res) => {
     }
 };
 exports.createSchoolTimetableRecord = createSchoolTimetableRecord;
+const updateSchoolSMS = async (req, res) => {
+    try {
+        const { schoolID } = req.params;
+        const { sendSMS } = req.body;
+        const school = await schoolModel_1.default.findByIdAndUpdate(schoolID, { sendSMS }, { new: true });
+        return res.status(201).json({
+            message: "School SMS Notification status updated",
+            data: school,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating school SMS Notification status",
+            data: error.message,
+        });
+    }
+};
+exports.updateSchoolSMS = updateSchoolSMS;

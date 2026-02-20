@@ -262,8 +262,10 @@ const clockingInEmail = async (user, school) => {
         await transporter.sendMail(mailerOption).then((res) => {
             console.log("sent", user.parentEmail, res);
         });
-        // SMS via Termii (non-blocking)
-        (0, sms_1.sendClockInSMS)(user, school).catch(() => { });
+        // SMS via Termii (if enabled)
+        if (school?.sendSMS) {
+            (0, sms_1.sendClockInSMS)(user, school).catch(() => { });
+        }
     }
     catch (error) {
         console.error();
@@ -311,8 +313,10 @@ const clockingOutEmail = async (user, school) => {
             html,
         };
         await transporter.sendMail(mailerOption);
-        // SMS via Termii (non-blocking)
-        (0, sms_1.sendClockOutSMS)(user, school).catch(() => { });
+        // SMS via Termii (if enabled)
+        if (school?.sendSMS) {
+            (0, sms_1.sendClockOutSMS)(user, school).catch(() => { });
+        }
     }
     catch (error) {
         console.error();
