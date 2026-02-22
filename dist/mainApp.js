@@ -45,12 +45,12 @@ const mainApp = (app) => {
         app.use("/api", teachTopicQuiz_1.default);
         app.use("/api", teachSubjectTopicRouter_1.default);
         app.use("/api", teachSubjectRouter_1.default);
+        app.use("/api", paymentRouter_1.default); // Moved up
         app.use("/api", schoolRouter_1.default);
         app.use("/api", exanimationRouter_1.default);
         app.use("/api", schemeOfWorkRouter_1.default);
         app.use("/api", sessionRouter_1.default);
         app.use("/api", staffRouter_1.default);
-        app.use("/api", paymentRouter_1.default);
         app.use("/api", classRouter_1.default);
         app.use("/api", subjectRouter_1.default);
         app.use("/api", outGoneStudentRouter_1.default);

@@ -332,6 +332,7 @@ export const createNewSchoolSession = async (
           session: session._id,
           classHistory: session._id,
         },
+        sendSMS: false,
       },
       { new: true }
     );
@@ -788,6 +789,7 @@ export const termPerSession = async (
               presentTermID: sessionTerm?._id?.toString(),
               presentSessionID: sessionID,
               presentTerm: term,
+              sendSMS: false,
             },
             { new: true }
           );

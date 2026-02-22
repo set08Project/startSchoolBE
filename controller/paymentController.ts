@@ -963,3 +963,107 @@ export const verifyOtherSchoolTransaction = async (
     });
   }
 };
+
+export const makeSMSPayment = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const { schoolID } = req.params;
+
+    const school: any = await schoolModel.findById(schoolID);
+
+    // Cost: 6 Naira * 2/day * 5/week * 4/month * 4/term = 960 Naira per student
+    let amount = school?.students!.length! * 960;
+
+    const params = JSON.stringify({
+      email,
+      amount: (amount * 100).toString(),
+      callback_url: `${process.env.APP_URL_DEPLOY}/sms-payment-success`,
+      metadata: {
+        paymentType: "sms_activation",
+        schoolID,
+      },
+      channels: ["card"],
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/transaction/initialize",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const request = https
+      .request(options, (response: any) => {
+        let data = "";
+
+        response.on("data", (chunk: any) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          return res.status(201).json({
+            message: "processing SMS payment",
+            data: JSON.parse(data),
+            status: 201,
+          });
+        });
+      })
+      .on("error", (error: any) => {
+        console.error(error);
+      });
+
+    request.write(params);
+    request.end();
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error",
+      data: error.message,
+      status: 404,
+    });
+  }
+};
+
+export const verifySMSPayment = async (req: Request, res: Response) => {
+  try {
+    const { ref, schoolID } = req.params;
+
+    const url: string = `https://api.paystack.co/transaction/verify/${ref}`;
+
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+      },
+    });
+
+    if (response.data.status && response.data.data.status === "success") {
+      const metadata = response.data.data.metadata;
+      if (metadata.paymentType === "sms_activation") {
+        await schoolModel.findByIdAndUpdate(
+          schoolID,
+          { sendSMS: true },
+          { new: true }
+        );
+
+        return res.status(200).json({
+          message: "SMS payment verified and activated",
+          status: 200,
+          data: response.data.data,
+        });
+      }
+    }
+
+    return res.status(400).json({
+      message: "Payment verification failed",
+      status: 400,
+    });
+  } catch (error: any) {
+    res.status(404).json({
+      message: "Error",
+      data: error.message,
+    });
+  }
+};

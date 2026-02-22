@@ -14,9 +14,14 @@ import {
   verifySchoolTransaction,
   verifyTransaction,
   viewSchoolPayment,
+  makeSMSPayment,
+  verifySMSPayment,
 } from "../controller/paymentController";
 
 const router: Router = Router();
+
+router.route("/make-sms-payment/:schoolID").post(makeSMSPayment);
+router.route("/verify-sms-payment/:schoolID/:ref").get(verifySMSPayment);
 
 router.route("/payment/:schoolID").post(createPayment);
 
@@ -44,4 +49,5 @@ router
 router
   .route("/verify-other-cash-payment/:studentID")
   .post(verifyOtherSchoolTransaction);
+
 export default router;

@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const paymentController_1 = require("../controller/paymentController");
 const router = (0, express_1.Router)();
+router.route("/make-sms-payment/:schoolID").post(paymentController_1.makeSMSPayment);
+router.route("/verify-sms-payment/:schoolID/:ref").get(paymentController_1.verifySMSPayment);
 router.route("/payment/:schoolID").post(paymentController_1.createPayment);
 router.route("/get-banks/:schoolID").get(paymentController_1.getBankAccount);
 router.route("/payment/:schoolID").get(paymentController_1.viewSchoolPayment);

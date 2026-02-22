@@ -24,7 +24,7 @@ router.route("/payment-receipt/:schoolID").post(announcementController_1.createS
 router
     .route("/view-present-school-session/:sessionID")
     .get(sessionController_1.viewSchoolPresentSession);
-router.route("//:termID").get(sessionController_1.viewSchoolPresentSessionTerm);
+router.route("/view-term-by-id/:termID").get(sessionController_1.viewSchoolPresentSessionTerm);
 router.route("/view-all-session").get(sessionController_1.getAllSession);
 router
     .route("/view-class-result-history/:classID")

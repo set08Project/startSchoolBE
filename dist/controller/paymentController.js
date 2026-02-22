@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyOtherSchoolTransaction = exports.verifySchoolTransaction = exports.makeOtherSchoolPayment = exports.schoolFeePayment = exports.makeSplitSchoolfeePayment = exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
+exports.verifySMSPayment = exports.makeSMSPayment = exports.verifyOtherSchoolTransaction = exports.verifySchoolTransaction = exports.makeOtherSchoolPayment = exports.schoolFeePayment = exports.makeSplitSchoolfeePayment = exports.storePayment = exports.makeSplitPayment = exports.verifyTransaction = exports.makePayment = exports.createPayment = exports.getBankAccount = exports.createPaymentAccount = exports.paymentFromStore = exports.viewVerifyTransaction = exports.makeSchoolPayment = exports.viewSchoolPayment = exports.makePaymentWithCron = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const paymentModel_1 = __importDefault(require("../model/paymentModel"));
 const mongoose_1 = require("mongoose");
@@ -822,3 +822,92 @@ const verifyOtherSchoolTransaction = async (req, res) => {
     }
 };
 exports.verifyOtherSchoolTransaction = verifyOtherSchoolTransaction;
+const makeSMSPayment = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const { schoolID } = req.params;
+        const school = await schoolModel_1.default.findById(schoolID);
+        // Cost: 6 Naira * 2/day * 5/week * 4/month * 4/term = 960 Naira per student
+        let amount = school?.students.length * 960;
+        const params = JSON.stringify({
+            email,
+            amount: (amount * 100).toString(),
+            callback_url: `${process.env.APP_URL_DEPLOY}/sms-payment-success`,
+            metadata: {
+                paymentType: "sms_activation",
+                schoolID,
+            },
+            channels: ["card"],
+        });
+        const options = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/transaction/initialize",
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+                "Content-Type": "application/json",
+            },
+        };
+        const request = https
+            .request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                return res.status(201).json({
+                    message: "processing SMS payment",
+                    data: JSON.parse(data),
+                    status: 201,
+                });
+            });
+        })
+            .on("error", (error) => {
+            console.error(error);
+        });
+        request.write(params);
+        request.end();
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error",
+            data: error.message,
+            status: 404,
+        });
+    }
+};
+exports.makeSMSPayment = makeSMSPayment;
+const verifySMSPayment = async (req, res) => {
+    try {
+        const { ref, schoolID } = req.params;
+        const url = `https://api.paystack.co/transaction/verify/${ref}`;
+        const response = await axios_1.default.get(url, {
+            headers: {
+                Authorization: `Bearer ${process.env.APP_PAYSTACK}`,
+            },
+        });
+        if (response.data.status && response.data.data.status === "success") {
+            const metadata = response.data.data.metadata;
+            if (metadata.paymentType === "sms_activation") {
+                await schoolModel_1.default.findByIdAndUpdate(schoolID, { sendSMS: true }, { new: true });
+                return res.status(200).json({
+                    message: "SMS payment verified and activated",
+                    status: 200,
+                    data: response.data.data,
+                });
+            }
+        }
+        return res.status(400).json({
+            message: "Payment verification failed",
+            status: 400,
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "Error",
+            data: error.message,
+        });
+    }
+};
+exports.verifySMSPayment = verifySMSPayment;

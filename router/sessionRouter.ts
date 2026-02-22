@@ -46,7 +46,7 @@ router.route("/payment-receipt/:schoolID").post(createSchoolPaynemtReceipt);
 router
   .route("/view-present-school-session/:sessionID")
   .get(viewSchoolPresentSession);
-router.route("//:termID").get(viewSchoolPresentSessionTerm);
+router.route("/view-term-by-id/:termID").get(viewSchoolPresentSessionTerm);
 
 router.route("/view-all-session").get(getAllSession);
 

@@ -49,12 +49,12 @@ export const mainApp = (app: Application) => {
     app.use("/api", teachSubjectQuiz);
     app.use("/api", teachSubjectTopic);
     app.use("/api", teachSubject);
+    app.use("/api", payment); // Moved up
     app.use("/api", school);
     app.use("/api", exam);
     app.use("/api", scheme);
     app.use("/api", session);
     app.use("/api", staff);
-    app.use("/api", payment);
     app.use("/api", classes);
     app.use("/api", subject);
     app.use("/api", outgone);

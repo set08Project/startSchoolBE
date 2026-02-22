@@ -325,6 +325,7 @@ const createNewSchoolSession = async (req, res) => {
                 session: session._id,
                 classHistory: session._id,
             },
+            sendSMS: false,
         }, { new: true });
         // Helper function to promote class name
         const promoteClassName = (className) => {
@@ -674,6 +675,7 @@ const termPerSession = async (req, res) => {
                         presentTermID: sessionTerm?._id?.toString(),
                         presentSessionID: sessionID,
                         presentTerm: term,
+                        sendSMS: false,
                     }, { new: true });
                     session?.term.push(new mongoose_1.Types.ObjectId(sessionTerm?._id));
                     session?.save();
