@@ -487,7 +487,16 @@ const qrScanClockInOut = async (req, res) => {
         }
         const school = await schoolModel_1.default.findById(schoolID);
         const student = await studentModel_1.default.findById(studentID);
-        const staff = await staffModel_1.default.findById(req.session.isSchoolID);
+        // Check if the session is for a Staff or a School Admin
+        let staff = await staffModel_1.default.findById(req.session.isSchoolID);
+        let isAdmin = false;
+        if (!staff) {
+            // If not staff, check if it's the school admin themselves
+            const schoolAdmin = await schoolModel_1.default.findById(req.session.isSchoolID);
+            if (schoolAdmin && schoolAdmin._id.toString() === schoolID) {
+                isAdmin = true;
+            }
+        }
         if (!school || !student) {
             return res.status(404).send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
@@ -496,15 +505,19 @@ const qrScanClockInOut = async (req, res) => {
         </body></html>
       `);
         }
-        // AUTH CHECK: Ensure staff belongs to this school
-        if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
+        // AUTH CHECK: Ensure either valid staff or school admin belongs to this school
+        const isAuthorizedStaff = staff && (staff.schoolIDs === schoolID || staff.schoolName === school.schoolName);
+        if (!isAuthorizedStaff && !isAdmin) {
             return res.status(403).send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
           <h2 style="color:#dc2626;">❌ Unauthorized Access</h2>
-          <p>You do not have permission to record attendance for this school.</p>
+          <p>You do not have permission to record attendance for this school. Please log in as an authorized Staff or School Admin.</p>
         </body></html>
       `);
         }
+        // Set the name of the person marking attendance
+        const markedBy = isAdmin ? "School Admin" : staff.staffName;
+        const staffId = isAdmin ? school._id : staff._id;
         const now = (0, moment_1.default)(new Date().getTime()).format("llll");
         const name = `${student.studentFirstName} ${student.studentLastName}`;
         let action;
@@ -532,17 +545,17 @@ const qrScanClockInOut = async (req, res) => {
                 className: student.classAssigned,
                 studentFirstName: student.studentFirstName,
                 studentLastName: student.studentLastName,
-                classTeacher: staff.staffName,
+                classTeacher: markedBy,
                 dateTime: `${(0, moment_1.default)(dater).format("dddd")}, ${(0, moment_1.default)(dater).format("MMMM Do YYYY")}`,
                 date: (0, moment_1.default)(dater).format("dddd"),
                 present: action === "Clocked In" ? true : false,
                 absent: action === "Clocked Out" ? true : false,
-                staffs: staff._id,
+                staffs: staffId,
                 students: student._id,
                 classes: student.presentClassID,
             });
             // Update references
-            if (staff.attendance) {
+            if (!isAdmin && staff && staff.attendance) {
                 staff.attendance.push(new mongoose_1.Types.ObjectId(attendance._id));
                 await staff.save();
             }
@@ -628,7 +641,7 @@ const qrScanClockInOut = async (req, res) => {
           <div class="time">${actionTime}</div>
           <div class="badge">${student.enrollmentID}</div>
           <div class="school">${school.schoolName || ""}</div>
-          <div class="staff-info">Marked by: ${staff.staffName}</div>
+          <div class="staff-info">Marked by: ${markedBy}</div>
         </div>
       </body>
       </html>
@@ -648,24 +661,35 @@ exports.qrScanClockInOut = qrScanClockInOut;
 const qrStaffLogin = async (req, res) => {
     try {
         const { enrollmentID, schoolID, studentID } = req.body;
-        // Find teacher by enrollmentID
+        // 1. Try to find staff by enrollmentID
         const teacher = await staffModel_1.default.findOne({ enrollmentID });
-        if (!teacher) {
-            return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+        if (teacher) {
+            const school = await schoolModel_1.default.findById(schoolID);
+            if (!school || !school.verify) {
+                return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+            }
+            // Verify staff belongs to this school
+            if (teacher.schoolIDs !== schoolID && teacher.schoolName !== school.schoolName) {
+                return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+            }
+            // Log the teacher in (Session based)
+            req.session.isAuth = true;
+            req.session.isSchoolID = teacher._id;
+            return res.redirect(`/api/qr-scan/${schoolID}/${studentID}`);
         }
-        const school = await schoolModel_1.default.findById(schoolID);
-        if (!school || !school.verify) {
-            return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+        // 2. Try to find school admin by enrollmentID
+        const schoolAdmin = await schoolModel_1.default.findOne({ enrollmentID, _id: schoolID });
+        if (schoolAdmin) {
+            if (!schoolAdmin.verify) {
+                return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+            }
+            // Log the school in (Session based)
+            req.session.isAuth = true;
+            req.session.isSchoolID = schoolAdmin._id;
+            return res.redirect(`/api/qr-scan/${schoolID}/${studentID}`);
         }
-        // Verify staff belongs to this school
-        if (teacher.schoolIDs !== schoolID && teacher.schoolName !== school.schoolName) {
-            return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
-        }
-        // Log the teacher in (Session based)
-        req.session.isAuth = true;
-        req.session.isSchoolID = teacher._id;
-        // Redirect back to the scan endpoint to process attendance
-        return res.redirect(`/api/qr-scan/${schoolID}/${studentID}`);
+        // If neither found
+        return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
     }
     catch (error) {
         return res.status(500).send("Verification Error during scan flow");
