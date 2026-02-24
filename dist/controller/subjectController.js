@@ -110,7 +110,7 @@ const createBulkClassSubjects = async (req, res) => {
         for (let i of data) {
             // Clean and normalize input
             const subjectTitle = i?.subjectTitle?.trim();
-            let subjectTeacherName = i?.subjectTeacherName?.trim() || "";
+            let subjectTeacherName = (i?.subjectTeacherName || i?.subjectTeacher)?.trim() || "";
             let designated = i?.designated?.trim() || "";
             // Skip completely empty rows
             if (!subjectTitle && !subjectTeacherName && !designated) {
@@ -140,15 +140,44 @@ const createBulkClassSubjects = async (req, res) => {
                 continue;
             }
             try {
+                // Teacher lookup and assignment logic
+                let teacherID = "";
+                if (subjectTeacherName) {
+                    const teacher = await staffModel_1.default.findOne({
+                        staffName: subjectTeacherName,
+                        schoolIDs: schoolID,
+                    });
+                    if (teacher) {
+                        teacherID = teacher._id;
+                    }
+                    else {
+                        // Optional: log that teacher was not found, but proceed with creating subject
+                        // errors.push(`Teacher '${subjectTeacherName}' not found in this school list`);
+                    }
+                }
                 const subjects = await subjectModel_1.default.create({
                     schoolName: school.schoolName,
                     subjectTeacherName: subjectTeacherName,
+                    teacherID: teacherID, // Link teacher ID if found
                     subjectTitle: subjectTitle,
                     designated: designated,
                     classDetails: targetClassroom,
                     subjectClassID: targetClassroom._id,
                     subjectClassIDs: targetClassroom._id,
                 });
+                // Update staff record if teacher was found
+                if (teacherID) {
+                    await staffModel_1.default.findByIdAndUpdate(teacherID, {
+                        $push: {
+                            subjectAssigned: {
+                                title: subjects.subjectTitle,
+                                id: subjects._id,
+                                classMeant: subjects.designated,
+                                classID: targetClassroom._id, // linking to class ID
+                            },
+                        },
+                    }, { new: true });
+                }
                 const subId = new mongoose_1.Types.ObjectId(subjects._id);
                 newSubjectIds.push(subId);
                 const classIdStr = targetClassroom._id.toString();
@@ -233,6 +262,7 @@ const updateSchoolSubjectTeacher = async (req, res) => {
         const school = await schoolModel_1.default.findById(schoolID);
         const getTeacher = await staffModel_1.default.findOne({
             staffName: subjectTeacherName,
+            schoolIDs: schoolID,
         });
         if (school && school.schoolName && school.status === "school-admin") {
             if (getTeacher) {
