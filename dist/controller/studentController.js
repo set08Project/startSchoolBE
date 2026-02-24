@@ -662,14 +662,13 @@ const qrStaffLogin = async (req, res) => {
     try {
         const { enrollmentID, schoolID, studentID } = req.body;
         // 1. Try to find staff by enrollmentID
-        const teacher = await staffModel_1.default.findOne({ enrollmentID });
+        const teacher = await staffModel_1.default.findOne({
+            enrollmentID: enrollmentID?.trim(),
+            schoolIDs: schoolID
+        });
         if (teacher) {
             const school = await schoolModel_1.default.findById(schoolID);
             if (!school || !school.verify) {
-                return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
-            }
-            // Verify staff belongs to this school
-            if (teacher.schoolIDs !== schoolID && teacher.schoolName !== school.schoolName) {
                 return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
             }
             // Log the teacher in (Session based)
@@ -678,7 +677,10 @@ const qrStaffLogin = async (req, res) => {
             return res.redirect(`/api/qr-scan/${schoolID}/${studentID}`);
         }
         // 2. Try to find school admin by enrollmentID
-        const schoolAdmin = await schoolModel_1.default.findOne({ enrollmentID, _id: schoolID });
+        const schoolAdmin = await schoolModel_1.default.findOne({
+            enrollmentID: enrollmentID?.trim(),
+            _id: schoolID
+        });
         if (schoolAdmin) {
             if (!schoolAdmin.verify) {
                 return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);

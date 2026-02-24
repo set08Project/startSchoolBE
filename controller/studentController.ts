@@ -744,15 +744,14 @@ export const qrStaffLogin = async (req: any, res: Response): Promise<any> => {
     const { enrollmentID, schoolID, studentID } = req.body;
 
     // 1. Try to find staff by enrollmentID
-    const teacher = await staffModel.findOne({ enrollmentID });
+    const teacher = await staffModel.findOne({ 
+      enrollmentID: enrollmentID?.trim(),
+      schoolIDs: schoolID 
+    });
+    
     if (teacher) {
       const school = await schoolModel.findById(schoolID);
       if (!school || !school.verify) {
-        return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
-      }
-
-      // Verify staff belongs to this school
-      if (teacher.schoolIDs !== schoolID && teacher.schoolName !== school.schoolName) {
         return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
       }
 
@@ -763,7 +762,10 @@ export const qrStaffLogin = async (req: any, res: Response): Promise<any> => {
     }
 
     // 2. Try to find school admin by enrollmentID
-    const schoolAdmin = await schoolModel.findOne({ enrollmentID, _id: schoolID });
+    const schoolAdmin = await schoolModel.findOne({ 
+      enrollmentID: enrollmentID?.trim(), 
+      _id: schoolID 
+    });
     if (schoolAdmin) {
       if (!schoolAdmin.verify) {
         return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
