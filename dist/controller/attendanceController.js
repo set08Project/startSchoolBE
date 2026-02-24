@@ -13,6 +13,13 @@ const staffModel_1 = __importDefault(require("../model/staffModel"));
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const createAttendancePresent = async (req, res) => {
     try {
+        // SECURITY: Verify that a staff member is logged in and matches the teacherID
+        if (!req.session.isAuth || req.session.isSchoolID !== req.params.teacherID) {
+            return res.status(401).json({
+                message: "Unauthorized: You must be logged in as the correct staff member",
+                status: 401,
+            });
+        }
         const getTeacher = await staffModel_1.default.findById(req.params.teacherID);
         const getStudent = await studentModel_1.default.findById(req.params.studentID);
         const getClass = await classroomModel_1.default.findById(getStudent?.presentClassID);
@@ -79,6 +86,13 @@ const createAttendancePresent = async (req, res) => {
 exports.createAttendancePresent = createAttendancePresent;
 const createAttendanceAbsent = async (req, res) => {
     try {
+        // SECURITY: Verify that a staff member is logged in and matches the teacherID
+        if (!req.session.isAuth || req.session.isSchoolID !== req.params.teacherID) {
+            return res.status(401).json({
+                message: "Unauthorized: You must be logged in as the correct staff member",
+                status: 401,
+            });
+        }
         const getTeacher = await staffModel_1.default.findById(req.params.teacherID);
         const getStudent = await studentModel_1.default.findById(req.params.studentID);
         const getClass = await classroomModel_1.default.findById(getStudent?.presentClassID);

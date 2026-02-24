@@ -21,6 +21,7 @@ import moment from "moment";
 import fs from "node:fs";
 import path from "node:path";
 import termModel from "../model/termModel";
+import attendanceModel from "../model/attendanceModel";
 
 // CLOCK-IN/CLOCK-OUT
 
@@ -49,30 +50,84 @@ export const findStudenWithEnrollmentID = async (
 };
 
 export const clockinAccount = async (
-  req: Request,
+  req: Request | any,
   res: Response
 ): Promise<Response> => {
   try {
     const { schoolID, studentID } = req.params;
 
+    // SECURITY: Verify that a staff member is logged in
+    if (!req.session.isAuth || !req.session.isSchoolID) {
+      return res.status(401).json({
+        message: "Unauthorized: Staff authentication required",
+        status: 401,
+      });
+    }
+
     const school = await schoolModel.findById(schoolID);
+    const staff = await staffModel.findById(req.session.isSchoolID);
+
     if (school) {
       const student: any = await studentModel.findById(studentID);
 
       if (student?.schoolIDs === school?._id.toString()) {
+        // AUTH CHECK: Ensure staff belongs to this school
+        if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
+           return res.status(403).json({
+            message: "You do not have permission to mark attendance for this school",
+            status: 403,
+          });
+        }
+
         const clockInfo = await studentModel.findByIdAndUpdate(
           student._id,
           {
             clockIn: true,
             clockInTime: moment(new Date().getTime()).format("llll"),
-
             clockOut: false,
           },
           { new: true }
         );
 
-       await clockingInEmail(clockInfo, school);
-       
+        if (clockInfo) await clockingInEmail(clockInfo, school);
+
+        // CREATE ATTENDANCE RECORD
+        try {
+          const dater = Date.now();
+          const attendance = await attendanceModel.create({
+            className: student.classAssigned,
+            studentFirstName: student.studentFirstName,
+            studentLastName: student.studentLastName,
+            classTeacher: staff.staffName,
+            dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format("MMMM Do YYYY")}`,
+            date: moment(dater).format("dddd"),
+            present: true,
+            absent: false,
+            staffs: staff._id,
+            students: student._id,
+            classes: student.presentClassID,
+          });
+
+          // Update references
+          if (staff.attendance) {
+            staff.attendance.push(new Types.ObjectId(attendance._id));
+            await staff.save();
+          }
+
+          if (student.attendance) {
+            student.attendance.push(new Types.ObjectId(attendance._id));
+            await student.save();
+          }
+
+          const classroom = await classroomModel.findById(student.presentClassID);
+          if (classroom && classroom.attendance) {
+            classroom.attendance.push(new Types.ObjectId(attendance._id));
+            await classroom.save();
+          }
+        } catch (attErr) {
+          console.error("Error creating attendance record during clock-in:", attErr);
+        }
+
         return res.status(201).json({
           message: "student has clock-in",
           data: clockInfo,
@@ -102,30 +157,84 @@ export const clockinAccount = async (
 };
 
 export const clockinAccountWithID = async (
-  req: Request,
+  req: Request | any,
   res: Response
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
     const { enrollmentID } = req.body;
 
+    // SECURITY: Verify that a staff member is logged in
+    if (!req.session.isAuth || !req.session.isSchoolID) {
+      return res.status(401).json({
+        message: "Unauthorized: Staff authentication required",
+        status: 401,
+      });
+    }
+
     const school = await schoolModel.findById(schoolID);
+    const staff = await staffModel.findById(req.session.isSchoolID);
+
     if (school) {
       const student = await studentModel.findOne({ enrollmentID });
 
       if (student) {
+        // AUTH CHECK: Ensure staff belongs to this school
+        if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
+           return res.status(403).json({
+            message: "You do not have permission to mark attendance for this school",
+            status: 403,
+          });
+        }
+
         const clockInfo = await studentModel.findByIdAndUpdate(
           student._id,
           {
             clockIn: true,
             clockInTime: moment(new Date().getTime()).format("llll"),
-
             clockOut: false,
           },
           { new: true }
         );
 
-        clockingInEmail(clockInfo, school);
+        if (clockInfo) await clockingInEmail(clockInfo, school);
+
+        // CREATE ATTENDANCE RECORD
+        try {
+          const dater = Date.now();
+          const attendance = await attendanceModel.create({
+            className: student.classAssigned,
+            studentFirstName: student.studentFirstName,
+            studentLastName: student.studentLastName,
+            classTeacher: staff.staffName,
+            dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format("MMMM Do YYYY")}`,
+            date: moment(dater).format("dddd"),
+            present: true,
+            absent: false,
+            staffs: staff._id,
+            students: student._id,
+            classes: student.presentClassID,
+          });
+
+          // Update references
+          if (staff.attendance) {
+            staff.attendance.push(new Types.ObjectId(attendance._id));
+            await staff.save();
+          }
+
+          if (student.attendance) {
+            student.attendance.push(new Types.ObjectId(attendance._id));
+            await student.save();
+          }
+
+          const classroom = await classroomModel.findById(student.presentClassID);
+          if (classroom && classroom.attendance) {
+            classroom.attendance.push(new Types.ObjectId(attendance._id));
+            await classroom.save();
+          }
+        } catch (attErr) {
+          console.error("Error creating attendance record during clock-in:", attErr);
+        }
 
         return res.status(201).json({
           message: "student has clock-in",
@@ -156,17 +265,35 @@ export const clockinAccountWithID = async (
 };
 
 export const clockOutAccount = async (
-  req: Request,
+  req: Request | any,
   res: Response
 ): Promise<Response> => {
   try {
     const { schoolID, studentID } = req.params;
 
+    // SECURITY: Verify that a staff member is logged in
+    if (!req.session.isAuth || !req.session.isSchoolID) {
+      return res.status(401).json({
+        message: "Unauthorized: Staff authentication required",
+        status: 401,
+      });
+    }
+
     const school = await schoolModel.findById(schoolID);
+    const staff = await staffModel.findById(req.session.isSchoolID);
+
     if (school) {
       const student = await studentModel.findById(studentID);
 
       if (student?.schoolIDs === school?._id.toString()) {
+        // AUTH CHECK: Ensure staff belongs to this school
+        if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
+           return res.status(403).json({
+            message: "You do not have permission to mark attendance for this school",
+            status: 403,
+          });
+        }
+
         if (student?.clockIn) {
           const clockInfo = await studentModel.findByIdAndUpdate(
             student._id,
@@ -178,7 +305,44 @@ export const clockOutAccount = async (
             { new: true }
           );
 
-          clockingOutEmail(clockInfo, school).then
+          if (clockInfo) await clockingOutEmail(clockInfo, school);
+
+          // CREATE ATTENDANCE RECORD (as Absent/Out)
+          try {
+            const dater = Date.now();
+            const attendance = await attendanceModel.create({
+              className: student.classAssigned,
+              studentFirstName: student.studentFirstName,
+              studentLastName: student.studentLastName,
+              classTeacher: staff.staffName,
+              dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format("MMMM Do YYYY")}`,
+              date: moment(dater).format("dddd"),
+              present: false,
+              absent: true,
+              staffs: staff._id,
+              students: student._id,
+              classes: student.presentClassID,
+            });
+
+            // Update references
+            if (staff.attendance) {
+              staff.attendance.push(new Types.ObjectId(attendance._id));
+              await staff.save();
+            }
+
+            if (student.attendance) {
+              student.attendance.push(new Types.ObjectId(attendance._id));
+              await student.save();
+            }
+
+            const classroom = await classroomModel.findById(student.presentClassID);
+            if (classroom && classroom.attendance) {
+              classroom.attendance.push(new Types.ObjectId(attendance._id));
+              await classroom.save();
+            }
+          } catch (attErr) {
+            console.error("Error creating attendance record during clock-out:", attErr);
+          }
 
           return res.status(201).json({
             message: "student has clock-in",
@@ -216,18 +380,36 @@ export const clockOutAccount = async (
 };
 
 export const clockOutAccountWidthID = async (
-  req: Request,
+  req: Request | any,
   res: Response
 ): Promise<Response> => {
   try {
     const { schoolID } = req.params;
     const { enrollmentID } = req.body;
 
+    // SECURITY: Verify that a staff member is logged in
+    if (!req.session.isAuth || !req.session.isSchoolID) {
+      return res.status(401).json({
+        message: "Unauthorized: Staff authentication required",
+        status: 401,
+      });
+    }
+
     const school = await schoolModel.findById(schoolID);
+    const staff = await staffModel.findById(req.session.isSchoolID);
+
     if (school) {
       const student = await studentModel.findOne({ enrollmentID });
 
       if (student) {
+        // AUTH CHECK: Ensure staff belongs to this school
+        if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
+           return res.status(403).json({
+            message: "You do not have permission to mark attendance for this school",
+            status: 403,
+          });
+        }
+
         if (student?.clockIn) {
           const clockInfo = await studentModel.findByIdAndUpdate(
             student._id,
@@ -239,7 +421,44 @@ export const clockOutAccountWidthID = async (
             { new: true }
           );
 
-          clockingOutEmail(clockInfo, school);
+          if (clockInfo) await clockingOutEmail(clockInfo, school);
+
+          // CREATE ATTENDANCE RECORD (as Absent/Out)
+          try {
+            const dater = Date.now();
+            const attendance = await attendanceModel.create({
+              className: student.classAssigned,
+              studentFirstName: student.studentFirstName,
+              studentLastName: student.studentLastName,
+              classTeacher: staff.staffName,
+              dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format("MMMM Do YYYY")}`,
+              date: moment(dater).format("dddd"),
+              present: false,
+              absent: true,
+              staffs: staff._id,
+              students: student._id,
+              classes: student.presentClassID,
+            });
+
+            // Update references
+            if (staff.attendance) {
+              staff.attendance.push(new Types.ObjectId(attendance._id));
+              await staff.save();
+            }
+
+            if (student.attendance) {
+              student.attendance.push(new Types.ObjectId(attendance._id));
+              await student.save();
+            }
+
+            const classroom = await classroomModel.findById(student.presentClassID);
+            if (classroom && classroom.attendance) {
+              classroom.attendance.push(new Types.ObjectId(attendance._id));
+              await classroom.save();
+            }
+          } catch (attErr) {
+            console.error("Error creating attendance record during clock-out:", attErr);
+          }
 
           return res.status(201).json({
             message: "student has clock-in",
@@ -278,29 +497,79 @@ export const clockOutAccountWidthID = async (
 
 // QR Scan Clock-In/Out (called when phone scans student QR code)
 export const qrScanClockInOut = async (
-  req: Request,
+  req: Request | any,
   res: Response
 ): Promise<any> => {
   try {
     const { schoolID, studentID } = req.params;
 
+    // SECURITY: Verify that a staff member is logged in
+    if (!req.session.isAuth || !req.session.isSchoolID) {
+      // Return a mobile-optimized login page
+      const errorMsg = req.query.error === "true" ? "<p style='color:#ef4444;margin-bottom:15px;font-size:14px;'>❌ Invalid credentials. Please try again.</p>" : "";
+      
+      return res.status(200).send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+          <title>Staff Authentication Required</title>
+          <style>
+            body { font-family: sans-serif; background: #0f172a; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; color: white; }
+            .card { background: white; color: #1e293b; padding: 30px; border-radius: 16px; width: 100%; max-width: 360px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+            h2 { margin: 0 0 10px; color: #1e3a8a; }
+            p.desc { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+            .field { margin-bottom: 15px; }
+            label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 5px; color: #475569; }
+            input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+            button { width: 100%; padding: 14px; background: #1e3a8a; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+            button:active { transform: scale(0.98); }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h2>Staff Login</h2>
+            <p class="desc">Please verify your identity to record attendance for this student.</p>
+            ${errorMsg}
+            <form action="/api/qr-staff-login" method="POST">
+              <input type="hidden" name="schoolID" value="${schoolID}" />
+              <input type="hidden" name="studentID" value="${studentID}" />
+              <div class="field">
+                <label>Email Address</label>
+                <input type="email" name="email" required placeholder="name@school.com" />
+              </div>
+              <div class="field">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="••••••••" />
+              </div>
+              <button type="submit">Verify & Process Scan</button>
+            </form>
+          </div>
+        </body>
+        </html>
+      `);
+    }
+
     const school = await schoolModel.findById(schoolID);
     const student = await studentModel.findById(studentID);
+    const staff = await staffModel.findById(req.session.isSchoolID);
 
-    if (!school) {
+    if (!school || !student) {
       return res.status(404).send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
-          <h2 style="color:#dc2626;">❌ School Not Found</h2>
-          <p>This QR code is invalid.</p>
+          <h2 style="color:#dc2626;">❌ Resource Not Found</h2>
+          <p>This QR code is invalid or the student/school record is missing.</p>
         </body></html>
       `);
     }
 
-    if (!student) {
-      return res.status(404).send(`
+    // AUTH CHECK: Ensure staff belongs to this school
+    if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
+      return res.status(403).send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
-          <h2 style="color:#dc2626;">❌ Student Not Found</h2>
-          <p>This QR code is invalid.</p>
+          <h2 style="color:#dc2626;">❌ Unauthorized Access</h2>
+          <p>You do not have permission to record attendance for this school.</p>
         </body></html>
       `);
     }
@@ -313,11 +582,12 @@ export const qrScanClockInOut = async (
 
     if (student.clockIn) {
       // Currently clocked in → clock out
-      await studentModel.findByIdAndUpdate(
+      const updated = await studentModel.findByIdAndUpdate(
         student._id,
         { clockIn: false, clockOut: true, clockOutTime: now },
         { new: true }
-      ).then((updated) => clockingOutEmail(updated, school));
+      );
+      if (updated) await clockingOutEmail(updated, school);
 
       action = "Clocked Out";
       actionTime = now;
@@ -328,10 +598,47 @@ export const qrScanClockInOut = async (
         { clockIn: true, clockInTime: now, clockOut: false },
         { new: true }
       );
-      await clockingInEmail(updated, school);
+      if (updated) await clockingInEmail(updated, school);
 
       action = "Clocked In";
       actionTime = now;
+    }
+
+    // CREATE ATTENDANCE RECORD
+    try {
+      const dater = Date.now();
+      const attendance = await attendanceModel.create({
+        className: student.classAssigned,
+        studentFirstName: student.studentFirstName,
+        studentLastName: student.studentLastName,
+        classTeacher: staff.staffName,
+        dateTime: `${moment(dater).format("dddd")}, ${moment(dater).format("MMMM Do YYYY")}`,
+        date: moment(dater).format("dddd"),
+        present: action === "Clocked In" ? true : false,
+        absent: action === "Clocked Out" ? true : false,
+        staffs: staff._id,
+        students: student._id,
+        classes: student.presentClassID,
+      });
+
+      // Update references
+      if (staff.attendance) {
+        staff.attendance.push(new Types.ObjectId(attendance._id));
+        await staff.save();
+      }
+
+      if (student.attendance) {
+        student.attendance.push(new Types.ObjectId(attendance._id));
+        await student.save();
+      }
+
+      const classroom = await classroomModel.findById(student.presentClassID);
+      if (classroom && classroom.attendance) {
+        classroom.attendance.push(new Types.ObjectId(attendance._id));
+        await classroom.save();
+      }
+    } catch (attErr) {
+      console.error("Error creating attendance record during QR scan:", attErr);
     }
 
     return res.status(200).send(`
@@ -392,6 +699,7 @@ export const qrScanClockInOut = async (
             text-transform: uppercase;
           }
           .school { font-size: 12px; color: #9ca3af; margin-top: 20px; }
+          .staff-info { font-size: 11px; color: #64748b; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
         </style>
       </head>
       <body>
@@ -402,6 +710,7 @@ export const qrScanClockInOut = async (
           <div class="time">${actionTime}</div>
           <div class="badge">${student.enrollmentID}</div>
           <div class="school">${school.schoolName || ""}</div>
+          <div class="staff-info">Marked by: ${staff.staffName}</div>
         </div>
       </body>
       </html>
@@ -413,6 +722,37 @@ export const qrScanClockInOut = async (
         <p>${error.message}</p>
       </body></html>
     `);
+  }
+};
+
+// Specialized Login for QR Scanning Flow
+export const qrStaffLogin = async (req: any, res: Response): Promise<any> => {
+  try {
+    const { email, password, schoolID, studentID } = req.body;
+
+    const teacher = await staffModel.findOne({ email });
+    if (!teacher) {
+      return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+    }
+
+    const school = await schoolModel.findOne({ schoolName: teacher.schoolName });
+    if (!school || !school.verify) {
+      return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+    }
+
+    const isMatch = await bcrypt.compare(password, teacher.password);
+    if (!isMatch) {
+      return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
+    }
+
+    // Log the teacher in (Session based)
+    req.session.isAuth = true;
+    req.session.isSchoolID = teacher._id;
+
+    // Redirect back to the scan endpoint to process attendance
+    return res.redirect(`/api/qr-scan/${schoolID}/${studentID}`);
+  } catch (error) {
+    return res.status(500).send("Verification Error during scan flow");
   }
 };
 

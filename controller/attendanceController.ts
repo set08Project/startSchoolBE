@@ -8,8 +8,16 @@ import moment from "moment";
 import staffModel from "../model/staffModel";
 import classroomModel from "../model/classroomModel";
 
-export const createAttendancePresent = async (req: Request, res: Response) => {
+export const createAttendancePresent = async (req: Request | any, res: Response) => {
   try {
+    // SECURITY: Verify that a staff member is logged in and matches the teacherID
+    if (!req.session.isAuth || req.session.isSchoolID !== req.params.teacherID) {
+      return res.status(401).json({
+        message: "Unauthorized: You must be logged in as the correct staff member",
+        status: 401,
+      });
+    }
+
     const getTeacher = await staffModel.findById(req.params.teacherID);
     const getStudent = await studentModel.findById(req.params.studentID);
 
@@ -95,8 +103,16 @@ export const createAttendancePresent = async (req: Request, res: Response) => {
   }
 };
 
-export const createAttendanceAbsent = async (req: Request, res: Response) => {
+export const createAttendanceAbsent = async (req: Request | any, res: Response) => {
   try {
+    // SECURITY: Verify that a staff member is logged in and matches the teacherID
+    if (!req.session.isAuth || req.session.isSchoolID !== req.params.teacherID) {
+      return res.status(401).json({
+        message: "Unauthorized: You must be logged in as the correct staff member",
+        status: 401,
+      });
+    }
+
     const getTeacher = await staffModel.findById(req.params.teacherID);
     const getStudent = await studentModel.findById(req.params.studentID);
 
