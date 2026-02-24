@@ -13,11 +13,13 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const mainApp_1 = require("./mainApp");
 const dbConfig_1 = require("./utils/dbConfig");
 dotenv_1.default.config();
-// const MongoDBStore = MongoDB(session);
-// const store = new MongoDBStore({
-//   uri: process.env.MONGO_DB_URL_LOCAL!,
-//   collection: "sessions",
-// });
+// import { rateLimit } from "express-rate-limit";
+const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
+const MongoDBStore = (0, connect_mongodb_session_1.default)(express_session_1.default);
+const store = new MongoDBStore({
+    uri: "mongodb+srv://justtnext:justtnext@cluster0.9fh0y26.mongodb.net/nextIIDB?retryWrites=true&w=majority&appName=Cluster0",
+    collection: "sessions",
+});
 const app = (0, express_1.default)();
 const portServer = process.env.PORT;
 const port = parseInt(portServer);
@@ -65,13 +67,13 @@ app.use((0, express_session_1.default)({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: 1000 * 60 * 24 * 60,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
         // sameSite: "lax",
         // secure: false,
         httpOnly: true,
         // domain: process.env.APP_URL_DEPLOY,
     },
-    // store,
+    store,
 }));
 (0, mainApp_1.mainApp)(app);
 //13.51.1.65/.well-known/pki-validation/F5F57A81136A32F3A3EB73DF8DB4BC06.txt

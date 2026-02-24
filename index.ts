@@ -15,12 +15,12 @@ dotenv.config();
 
 import MongoDB from "connect-mongodb-session";
 
-// const MongoDBStore = MongoDB(session);
+const MongoDBStore = MongoDB(session);
 
-// const store = new MongoDBStore({
-//   uri: process.env.MONGO_DB_URL_LOCAL!,
-//   collection: "sessions",
-// });
+const store = new MongoDBStore({
+  uri: "mongodb+srv://justtnext:justtnext@cluster0.9fh0y26.mongodb.net/nextIIDB?retryWrites=true&w=majority&appName=Cluster0",
+  collection: "sessions",
+});
 
 const app: Application = express();
 const portServer = process.env.PORT!;
@@ -80,14 +80,14 @@ app.use(
     saveUninitialized: false,
 
     cookie: {
-      maxAge: 1000 * 60 * 24 * 60,
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
       // sameSite: "lax",
       // secure: false,
       httpOnly: true,
       // domain: process.env.APP_URL_DEPLOY,
     },
 
-    // store,
+    store,
   })
 );
 

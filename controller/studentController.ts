@@ -530,18 +530,14 @@ export const qrScanClockInOut = async (
         <body>
           <div class="card">
             <h2>Staff Login</h2>
-            <p class="desc">Please verify your identity to record attendance for this student.</p>
+            <p class="desc">Please enter your Staff ID to record attendance for this student.</p>
             ${errorMsg}
             <form action="/api/qr-staff-login" method="POST">
               <input type="hidden" name="schoolID" value="${schoolID}" />
               <input type="hidden" name="studentID" value="${studentID}" />
               <div class="field">
-                <label>Email Address</label>
-                <input type="email" name="email" required placeholder="name@school.com" />
-              </div>
-              <div class="field">
-                <label>Password</label>
-                <input type="password" name="password" required placeholder="••••••••" />
+                <label>Staff ID (Enrollment ID)</label>
+                <input type="text" name="enrollmentID" required placeholder="ST-12345" />
               </div>
               <button type="submit">Verify & Process Scan</button>
             </form>
@@ -728,20 +724,21 @@ export const qrScanClockInOut = async (
 // Specialized Login for QR Scanning Flow
 export const qrStaffLogin = async (req: any, res: Response): Promise<any> => {
   try {
-    const { email, password, schoolID, studentID } = req.body;
+    const { enrollmentID, schoolID, studentID } = req.body;
 
-    const teacher = await staffModel.findOne({ email });
+    // Find teacher by enrollmentID
+    const teacher = await staffModel.findOne({ enrollmentID });
     if (!teacher) {
       return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
     }
 
-    const school = await schoolModel.findOne({ schoolName: teacher.schoolName });
+    const school = await schoolModel.findById(schoolID);
     if (!school || !school.verify) {
       return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
     }
 
-    const isMatch = await bcrypt.compare(password, teacher.password);
-    if (!isMatch) {
+    // Verify staff belongs to this school
+    if (teacher.schoolIDs !== schoolID && teacher.schoolName !== school.schoolName) {
       return res.redirect(`/api/qr-scan/${schoolID}/${studentID}?error=true`);
     }
 
