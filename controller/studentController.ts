@@ -712,7 +712,12 @@ export const qrScanClockInOut = async (
             text-transform: uppercase;
           }
           .school { font-size: 12px; color: #9ca3af; margin-top: 20px; }
-          .staff-info { font-size: 11px; color: #64748b; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+          .staff-info { font-size: 11px; color: #64748b; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-bottom: 20px; }
+          .btn-group { display: flex; flex-direction: column; gap: 10px; }
+          .btn { display: block; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+          .btn-primary { background: #1e3a8a; color: white; }
+          .btn-secondary { background: #f1f5f9; color: #1e3a8a; border: 1px solid #e2e8f0; }
+          .btn:active { transform: scale(0.98); }
         </style>
       </head>
       <body>
@@ -724,6 +729,15 @@ export const qrScanClockInOut = async (
           <div class="badge">${student.enrollmentID}</div>
           <div class="school">${school.schoolName || ""}</div>
           <div class="staff-info">Marked by: ${markedBy}</div>
+          
+          <div class="btn-group">
+            <a href="/api/qr-scan/${schoolID}/${studentID}" class="btn btn-primary">
+               Perform Another Action
+            </a>
+            <a href="/" class="btn btn-secondary">
+               Done (Go to Dashboard)
+            </a>
+          </div>
         </div>
       </body>
       </html>
