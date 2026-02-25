@@ -11,18 +11,32 @@ const TERMII_API_KEY = process.env.TERMII_API_KEY;
 const TERMII_SENDER_ID = process.env.TERMII_SENDER_ID || "N-Alert";
 const TERMII_URL = "https://api.ng.termii.com/api/sms/send";
 const sendSMS = async (to, message) => {
-    if (!to || !TERMII_API_KEY)
+    if (!TERMII_API_KEY) {
+        console.warn("SMS Skipped: TERMII_API_KEY is missing in .env");
         return;
+    }
+    if (!to) {
+        console.warn("SMS Skipped: Recipient phone number is missing");
+        return;
+    }
     // Normalize Nigerian number: 080... → 2348...
     const phone = to.startsWith("0") ? `234${to.slice(1)}` : to;
-    await axios_1.default.post(TERMII_URL, {
-        api_key: TERMII_API_KEY,
-        to: phone,
-        from: TERMII_SENDER_ID,
-        sms: message,
-        type: "plain",
-        channel: "generic",
-    });
+    console.log(`Attempting to send SMS to ${phone} via Termii...`);
+    try {
+        const response = await axios_1.default.post(TERMII_URL, {
+            api_key: TERMII_API_KEY,
+            to: phone,
+            from: TERMII_SENDER_ID,
+            sms: message,
+            type: "plain",
+            channel: "generic",
+        });
+        console.log("Termii SMS Success:", response.data);
+    }
+    catch (error) {
+        console.error("Termii API Error:", error.response?.data || error.message);
+        throw error;
+    }
 };
 const sendClockInSMS = async (student, school) => {
     try {
@@ -33,6 +47,7 @@ const sendClockInSMS = async (student, school) => {
         const time = student.clockInTime || "";
         const schoolName = school?.schoolName || "School";
         const message = `${schoolName}: ${name} has CLOCKED IN at ${time}. Reply or call the school if this is unexpected.`;
+        console.log(`Triggering Clock-In SMS for ${name}...`);
         await sendSMS(parentPhone, message);
     }
     catch (error) {
@@ -50,6 +65,7 @@ const sendClockOutSMS = async (student, school) => {
         const time = student.clockOutTime || "";
         const schoolName = school?.schoolName || "School";
         const message = `${schoolName}: ${name} has CLOCKED OUT at ${time}. They are on their way home.`;
+        console.log(`Triggering Clock-Out SMS for ${name}...`);
         await sendSMS(parentPhone, message);
     }
     catch (error) {

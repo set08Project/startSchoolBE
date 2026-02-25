@@ -313,6 +313,8 @@ export const clockingInEmail = async (user: any, school: any) => {
     // SMS via Termii (if enabled)
     if (school?.sendSMS) {
       sendClockInSMS(user, school).catch(() => {});
+    } else {
+      console.log(`SMS Skipped for ${school?.schoolName}: sendSMS flag is false`);
     }
   } catch (error) {
     console.error();
@@ -371,6 +373,8 @@ export const clockingOutEmail = async (user: any, school: any) => {
     // SMS via Termii (if enabled)
     if (school?.sendSMS) {
       sendClockOutSMS(user, school).catch(() => {});
+    } else {
+      console.log(`SMS Skipped for ${school?.schoolName}: sendSMS flag is false`);
     }
   } catch (error) {
     console.error();
