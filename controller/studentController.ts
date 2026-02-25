@@ -731,7 +731,7 @@ export const qrScanClockInOut = async (
           <div class="staff-info">Marked by: ${markedBy}</div>
           
           <div class="btn-group">
-            <a href="${process.env.APP_URL_DEPLOY || ""}/scan-clocking" class="btn btn-primary">
+            <a href="zxing://scan/?ret=${encodeURIComponent((process.env.APP_URL_DEPLOY || "") + "/scan-clocking")}" class="btn btn-primary">
                Perform Another Action
             </a>
             <a href="${process.env.APP_URL_DEPLOY || ""}/dashboard" class="btn btn-secondary">
