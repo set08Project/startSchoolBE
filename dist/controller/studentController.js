@@ -649,14 +649,63 @@ const qrScanClockInOut = async (req, res) => {
           <div class="staff-info">Marked by: ${markedBy}</div>
           
           <div class="btn-group">
-            <a href="zxing://scan/?ret=${encodeURIComponent((process.env.APP_URL_DEPLOY || "") + "/scan-clocking")}" class="btn btn-primary">
+            <button onclick="startScanner()" class="btn btn-primary">
                Perform Another Action
-            </a>
+            </button>
             <a href="${process.env.APP_URL_DEPLOY || ""}/dashboard" class="btn btn-secondary">
                Done (Go to Dashboard)
             </a>
           </div>
+
+          <input type="file" id="cameraInput" style="display:none;" accept="image/*" capture="environment">
+          <div id="reader-hidden" style="display:none;"></div>
         </div>
+
+        <script src="https://unpkg.com/html5-qrcode"></script>
+        <script>
+          function startScanner() {
+            const returnUrl = encodeURIComponent("${process.env.APP_URL_DEPLOY || ""}/scan-clocking");
+            
+            // 1. Attempt deep link
+            const deepLink = "zxing://scan/?ret=" + returnUrl;
+            const intentLink = "intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=" + returnUrl + ";end";
+            
+            let opened = false;
+            
+            // Detect if page visibility changes (means app might have opened)
+            window.addEventListener('visibilitychange', function() {
+              if (document.visibilityState === 'hidden') opened = true;
+            }, { once: true });
+
+            // Try the link
+            window.location.href = deepLink;
+            
+            // 2. Fallback to System Camera if nothing happens in 2 seconds
+            setTimeout(() => {
+              if (!opened) {
+                console.log("Deep link failed or no response, triggering system camera...");
+                document.getElementById('cameraInput').click();
+              }
+            }, 2000);
+          }
+
+          document.getElementById('cameraInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const html5QrCode = new Html5Qrcode("reader-hidden");
+            try {
+              const decodedText = await html5QrCode.scanFile(file, true);
+              if (decodedText.includes("/api/qr-scan")) {
+                window.location.href = decodedText;
+              } else {
+                alert("This QR code is not valid for attendance.");
+              }
+            } catch (err) {
+              alert("Could not find a valid QR code in the photo. Please ensure the code is clear and try again.");
+            }
+          });
+        </script>
       </body>
       </html>
     `);
