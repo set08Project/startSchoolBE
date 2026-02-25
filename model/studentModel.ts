@@ -90,6 +90,7 @@ interface iStudent {
   complain: Array<{}>;
   purchaseHistory: Array<{}>;
   otherPayment: Array<{}>;
+  lastActionTimestamp: number;
 }
 
 interface iStudentData extends iStudent, Document {}
@@ -391,6 +392,10 @@ const studentModel = new Schema<iStudentData>(
         ref: "schoolFeesHistories",
       },
     ],
+    lastActionTimestamp: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

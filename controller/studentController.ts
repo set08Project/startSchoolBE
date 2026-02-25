@@ -68,9 +68,30 @@ export const clockinAccount = async (
     const staff = await staffModel.findById(req.session.isSchoolID);
 
     if (school) {
-      const student: any = await studentModel.findById(studentID);
+      const student = await studentModel.findById(studentID);
 
-      if (student?.schoolIDs === school?._id.toString()) {
+      if (student && student.schoolIDs === school?._id.toString()) {
+        const nowMillis = new Date().getTime();
+        const currentHour = new Date().getHours();
+        const thirtyMinutes = 30 * 60 * 1000;
+
+        // 1. Cooldown Check
+        if (student.lastActionTimestamp && (nowMillis - student.lastActionTimestamp < thirtyMinutes)) {
+          const remainingMins = Math.ceil((thirtyMinutes - (nowMillis - student.lastActionTimestamp)) / (60 * 1000));
+          return res.status(400).json({
+            message: `Cooldown active. Please wait ${remainingMins} more minutes.`,
+            status: 400,
+          });
+        }
+
+        // 2. Time Window Check (6-10 AM)
+        if (currentHour < 6 || currentHour >= 10) {
+          return res.status(400).json({
+            message: "Clock-in is only allowed between 6:00 AM and 10:00 AM",
+            status: 400,
+          });
+        }
+
         // AUTH CHECK: Ensure staff belongs to this school
         if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
            return res.status(403).json({
@@ -79,12 +100,13 @@ export const clockinAccount = async (
           });
         }
 
-        const clockInfo = await studentModel.findByIdAndUpdate(
+        const clockInfo: any = await studentModel.findByIdAndUpdate(
           student._id,
           {
             clockIn: true,
-            clockInTime: moment(new Date().getTime()).format("llll"),
+            clockInTime: moment(nowMillis).format("llll"),
             clockOut: false,
+            lastActionTimestamp: nowMillis,
           },
           { new: true }
         );
@@ -179,6 +201,27 @@ export const clockinAccountWithID = async (
       const student = await studentModel.findOne({ enrollmentID });
 
       if (student) {
+        const nowMillis = new Date().getTime();
+        const currentHour = new Date().getHours();
+        const thirtyMinutes = 30 * 60 * 1000;
+
+        // 1. Cooldown Check
+        if (student.lastActionTimestamp && (nowMillis - student.lastActionTimestamp < thirtyMinutes)) {
+          const remainingMins = Math.ceil((thirtyMinutes - (nowMillis - student.lastActionTimestamp)) / (60 * 1000));
+          return res.status(400).json({
+            message: `Cooldown active. Please wait ${remainingMins} more minutes.`,
+            status: 400,
+          });
+        }
+
+        // 2. Time Window Check (6-10 AM)
+        if (currentHour < 6 || currentHour >= 10) {
+          return res.status(400).json({
+            message: "Clock-in is only allowed between 6:00 AM and 10:00 AM",
+            status: 400,
+          });
+        }
+
         // AUTH CHECK: Ensure staff belongs to this school
         if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
            return res.status(403).json({
@@ -187,12 +230,13 @@ export const clockinAccountWithID = async (
           });
         }
 
-        const clockInfo = await studentModel.findByIdAndUpdate(
+        const clockInfo: any = await studentModel.findByIdAndUpdate(
           student._id,
           {
             clockIn: true,
-            clockInTime: moment(new Date().getTime()).format("llll"),
+            clockInTime: moment(nowMillis).format("llll"),
             clockOut: false,
+            lastActionTimestamp: nowMillis,
           },
           { new: true }
         );
@@ -285,7 +329,28 @@ export const clockOutAccount = async (
     if (school) {
       const student = await studentModel.findById(studentID);
 
-      if (student?.schoolIDs === school?._id.toString()) {
+      if (student && student.schoolIDs === school?._id.toString()) {
+        const nowMillis = new Date().getTime();
+        const currentHour = new Date().getHours();
+        const thirtyMinutes = 30 * 60 * 1000;
+
+        // 1. Cooldown Check
+        if (student.lastActionTimestamp && (nowMillis - student.lastActionTimestamp < thirtyMinutes)) {
+          const remainingMins = Math.ceil((thirtyMinutes - (nowMillis - student.lastActionTimestamp)) / (60 * 1000));
+          return res.status(400).json({
+            message: `Cooldown active. Please wait ${remainingMins} more minutes.`,
+            status: 400,
+          });
+        }
+
+        // 2. Time Window Check (12-6 PM)
+        if (currentHour < 12 || currentHour >= 18) {
+          return res.status(400).json({
+            message: "Clock-out is only allowed between 12:00 PM and 6:00 PM",
+            status: 400,
+          });
+        }
+
         // AUTH CHECK: Ensure staff belongs to this school
         if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
            return res.status(403).json({
@@ -295,12 +360,13 @@ export const clockOutAccount = async (
         }
 
         if (student?.clockIn) {
-          const clockInfo = await studentModel.findByIdAndUpdate(
+          const clockInfo: any = await studentModel.findByIdAndUpdate(
             student._id,
             {
               clockIn: false,
               clockOut: true,
-              clockOutTime: moment(new Date().getTime()).format("llll"),
+              clockOutTime: moment(nowMillis).format("llll"),
+              lastActionTimestamp: nowMillis,
             },
             { new: true }
           );
@@ -402,6 +468,27 @@ export const clockOutAccountWidthID = async (
       const student = await studentModel.findOne({ enrollmentID });
 
       if (student) {
+        const nowMillis = new Date().getTime();
+        const currentHour = new Date().getHours();
+        const thirtyMinutes = 30 * 60 * 1000;
+
+        // 1. Cooldown Check
+        if (student.lastActionTimestamp && (nowMillis - student.lastActionTimestamp < thirtyMinutes)) {
+          const remainingMins = Math.ceil((thirtyMinutes - (nowMillis - student.lastActionTimestamp)) / (60 * 1000));
+          return res.status(400).json({
+            message: `Cooldown active. Please wait ${remainingMins} more minutes.`,
+            status: 400,
+          });
+        }
+
+        // 2. Time Window Check (12-6 PM)
+        if (currentHour < 12 || currentHour >= 18) {
+          return res.status(400).json({
+            message: "Clock-out is only allowed between 12:00 PM and 6:00 PM",
+            status: 400,
+          });
+        }
+
         // AUTH CHECK: Ensure staff belongs to this school
         if (!staff || (staff.schoolIDs !== schoolID && staff.schoolName !== school.schoolName)) {
            return res.status(403).json({
@@ -411,12 +498,13 @@ export const clockOutAccountWidthID = async (
         }
 
         if (student?.clockIn) {
-          const clockInfo = await studentModel.findByIdAndUpdate(
+          const clockInfo: any = await studentModel.findByIdAndUpdate(
             student._id,
             {
               clockIn: false,
               clockOut: true,
-              clockOutTime: moment(new Date().getTime()).format("llll"),
+              clockOutTime: moment(nowMillis).format("llll"),
+              lastActionTimestamp: nowMillis,
             },
             { new: true }
           );
@@ -587,17 +675,53 @@ export const qrScanClockInOut = async (
     const markedBy = isAdmin ? "School Admin" : staff!.staffName;
     const staffId = isAdmin ? school!._id : staff!._id;
 
-    const now = moment(new Date().getTime()).format("llll");
+    const nowMillis = new Date().getTime();
+    const currentHour = new Date().getHours();
+    const currentMinutes = new Date().getMinutes();
+    const now = moment(nowMillis).format("llll");
     const name = `${student.studentFirstName} ${student.studentLastName}`;
+
+    // 1. 30-Minute Cooldown Check
+    const thirtyMinutes = 30 * 60 * 1000;
+    if (student.lastActionTimestamp && (nowMillis - student.lastActionTimestamp < thirtyMinutes)) {
+      const remainingMillis = thirtyMinutes - (nowMillis - student.lastActionTimestamp);
+      const remainingMins = Math.ceil(remainingMillis / (60 * 1000));
+      
+      return res.status(200).send(`
+        <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fff7ed;">
+          <div style="font-size:60px;margin-bottom:16px;">⏳</div>
+          <h2 style="color:#c2410c;">Cooldown Active</h2>
+          <p style="color:#7c2d12;margin-bottom:20px;">Please wait at least 30 minutes between clocking actions. Try again in about <strong>${remainingMins} minutes</strong>.</p>
+          <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#c2410c;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
+        </body></html>
+      `);
+    }
 
     let action: string;
     let actionTime: string;
 
     if (student.clockIn) {
-      // Currently clocked in → clock out
+      // CURRENTLY CLOCKED IN → CLOCK OUT
+      // Restriction: Clock-out only between 12:00 PM and 6:00 PM (12 to 18)
+      if (currentHour < 12 || currentHour >= 18) {
+         return res.status(200).send(`
+            <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
+              <div style="font-size:60px;margin-bottom:16px;">⏰</div>
+              <h2 style="color:#dc2626;">Clock-out Restricted</h2>
+              <p style="color:#991b1b;margin-bottom:20px;">Clock-out is only allowed between <strong>12:00 PM and 6:00 PM</strong>.</p>
+              <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
+            </body></html>
+          `);
+      }
+
       const updated = await studentModel.findByIdAndUpdate(
         student._id,
-        { clockIn: false, clockOut: true, clockOutTime: now },
+        { 
+          clockIn: false, 
+          clockOut: true, 
+          clockOutTime: now,
+          lastActionTimestamp: nowMillis 
+        },
         { new: true }
       );
       if (updated) await clockingOutEmail(updated, school);
@@ -605,10 +729,27 @@ export const qrScanClockInOut = async (
       action = "Clocked Out";
       actionTime = now;
     } else {
-      // Not clocked in → clock in
+      // NOT CLOCKED IN → CLOCK IN
+      // Restriction: Clock-in only between 6:00 AM and 10:00 AM (6 to 10)
+      if (currentHour < 6 || currentHour >= 10) {
+         return res.status(200).send(`
+            <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
+              <div style="font-size:60px;margin-bottom:16px;">⏰</div>
+              <h2 style="color:#dc2626;">Clock-in Restricted</h2>
+              <p style="color:#991b1b;margin-bottom:20px;">Clock-in is only allowed between <strong>6:00 AM and 10:00 AM</strong>.</p>
+              <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
+            </body></html>
+          `);
+      }
+
       const updated = await studentModel.findByIdAndUpdate(
         student._id,
-        { clockIn: true, clockInTime: now, clockOut: false },
+        { 
+          clockIn: true, 
+          clockInTime: now, 
+          clockOut: false,
+          lastActionTimestamp: nowMillis 
+        },
         { new: true }
       );
       if (updated) await clockingInEmail(updated, school);
@@ -727,42 +868,17 @@ export const qrScanClockInOut = async (
           <div class="name">${name}</div>
           <div class="time">${actionTime}</div>
           <div class="badge">${student.enrollmentID}</div>
-          <div class="school">${school.schoolName || ""}</div>
           <div class="staff-info">Marked by: ${markedBy}</div>
           
           <div class="btn-group">
-            <button onclick="document.getElementById('cameraInput').click()" class="btn btn-primary">
+            <a href="javascript:history.back()" class="btn btn-primary">
                Perform Another Action
-            </button>
+            </a>
             <a href="${process.env.APP_URL_DEPLOY || ""}/dashboard" class="btn btn-secondary">
                Done (Go to Dashboard)
             </a>
           </div>
-
-          <input type="file" id="cameraInput" style="display:none;" accept="image/*" capture="environment">
-          <div id="reader-hidden" style="display:none;"></div>
         </div>
-
-        <script src="https://unpkg.com/html5-qrcode"></script>
-        <script>
-          document.getElementById('cameraInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Show a simple loading indicator if desired, but for now we process
-            const html5QrCode = new Html5Qrcode("reader-hidden");
-            try {
-              const decodedText = await html5QrCode.scanFile(file, true);
-              if (decodedText.includes("/api/qr-scan")) {
-                window.location.href = decodedText;
-              } else {
-                alert("Invalid QR code. Please scan a student attendance code.");
-              }
-            } catch (err) {
-              alert("Scanner error: Could not find a clear QR code. Please try again.");
-            }
-          });
-        </script>
       </body>
       </html>
     `);

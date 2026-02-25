@@ -249,5 +249,9 @@ const studentModel = new mongoose_1.Schema({
             ref: "schoolFeesHistories",
         },
     ],
+    lastActionTimestamp: {
+        type: Number,
+        default: 0,
+    },
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("students", studentModel);
