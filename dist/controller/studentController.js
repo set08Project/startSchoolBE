@@ -556,6 +556,9 @@ const qrScanClockInOut = async (req, res) => {
               </div>
               <button type="submit">Verify & Process Scan</button>
             </form>
+            <div style="margin-top:20px;text-align:center;">
+              <a href="javascript:history.back()" style="color:#64748b;font-size:14px;text-decoration:none;">← Return to Scanner</a>
+            </div>
           </div>
         </body>
         </html>
@@ -577,7 +580,8 @@ const qrScanClockInOut = async (req, res) => {
             return res.status(404).send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
           <h2 style="color:#dc2626;">❌ Resource Not Found</h2>
-          <p>This QR code is invalid or the student/school record is missing.</p>
+          <p style="margin-bottom:20px;">This QR code is invalid or the student/school record is missing.</p>
+          <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
         </body></html>
       `);
         }
@@ -587,7 +591,8 @@ const qrScanClockInOut = async (req, res) => {
             return res.status(403).send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
           <h2 style="color:#dc2626;">❌ Unauthorized Access</h2>
-          <p>You do not have permission to record attendance for this school. Please log in as an authorized Staff or School Admin.</p>
+          <p style="margin-bottom:20px;">You do not have permission to record attendance for this school. Please log in as an authorized Staff or School Admin.</p>
+          <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
         </body></html>
       `);
         }
@@ -774,7 +779,7 @@ const qrScanClockInOut = async (req, res) => {
           
           <div class="btn-group">
             <a href="javascript:history.back()" class="btn btn-primary">
-               Perform Another Action
+               Return to Scanner
             </a>
             <a href="${process.env.APP_URL_DEPLOY || ""}/dashboard" class="btn btn-secondary">
                Done (Go to Dashboard)
