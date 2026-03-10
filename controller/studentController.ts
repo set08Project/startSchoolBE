@@ -22,6 +22,7 @@ import fs from "node:fs";
 import path from "node:path";
 import termModel from "../model/termModel";
 import attendanceModel from "../model/attendanceModel";
+import { sendTestSMS } from "../utils/sms";
 
 // CLOCK-IN/CLOCK-OUT
 
@@ -3197,5 +3198,78 @@ export const deleteAllStudents = async (
       status: 404,
       error: error.message,
     });
+  }
+};
+
+export const testSMS = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { phone } = req.params;
+    const { action, channel } = req.query;
+
+    const selectedChannel = (channel as string) || "generic";
+
+    if (action === "send") {
+      await sendTestSMS(phone, selectedChannel);
+      return res.status(200).send(`
+        <html><body style="font-family:sans-serif;text-align:center;padding:40px;">
+          <h2 style="color:#16a34a;">✅ Test SMS Sent (${selectedChannel})!</h2>
+          <p>Check your backend terminal logs for the Termii response.</p>
+          <a href="/api/test-sms/${phone}" style="color:#2563eb;">Go Back</a>
+        </body></html>
+      `);
+    }
+
+    return res.status(200).send(`
+      <html><body style="font-family:sans-serif;text-align:center;padding:40px;">
+        <h2>SMS Test Utility</h2>
+        <p>Testing SMS for number: <strong>${phone}</strong></p>
+        
+        <form action="/api/test-sms/${phone}" method="GET">
+          <input type="hidden" name="action" value="send" />
+          
+          <div style="margin-bottom:20px; text-align:left; display:inline-block;">
+            <p style="font-weight:bold;">Select Channel:</p>
+            <label style="display:block; margin-bottom:10px;">
+              <input type="radio" name="channel" value="generic" checked /> 
+              Generic (Best for approved IDs - default)
+            </label>
+            <label style="display:block; margin-bottom:10px;">
+              <input type="radio" name="channel" value="dnd" /> 
+              DND (Try this if Generic gives 404)
+            </label>
+            <label style="display:block;">
+              <input type="radio" name="channel" value="whatsapp" /> 
+              WhatsApp
+            </label>
+          </div>
+
+          <br/>
+          <button type="submit" style="padding:12px 24px;background:#1e3a8a;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+            Send Test SMS Now
+          </button>
+        </form>
+        <p style="margin-top:20px;color:#64748b;font-size:14px;">This will use your TERMII_API_KEY and TERMII_SENDER_ID from .env</p>
+      </body></html>
+    `);
+  } catch (error: any) {
+    return res.status(200).send(`
+      <html><body style="font-family:sans-serif;text-align:center;padding:40px;">
+        <h2 style="color:#dc2626;">❌ SMS Test Failed</h2>
+        <div style="background:#fef2f2; border:1px solid #fee2e2; padding:15px; border-radius:8px; margin-bottom:20px; text-align:left; display:inline-block; max-width:500px;">
+          <p><strong>Error Message:</strong> ${error.message}</p>
+          ${
+            error.response?.data
+              ? `<p><strong>Termii Details:</strong> <pre style="background:#fff; padding:10px; border-radius:4px;">${JSON.stringify(
+                  error.response.data,
+                  null,
+                  2
+                )}</pre></p>`
+              : ""
+          }
+        </div>
+        <br/>
+        <a href="javascript:history.back()" style="color:#2563eb; font-weight:bold;">Try Again</a>
+      </body></html>
+    `);
   }
 };

@@ -591,11 +591,19 @@ export const createSubjectExamination = async (req: any, res: Response) => {
       subjectID: subject._id,
       totalQuestions: questions.length,
     });
+
+    // Fetch current term/session from the classroom so the exam can be filtered later
+    const classroom = await classroomModel.findById(classID);
+    const presentTerm = classroom?.presentTerm || "";
+    const presentSession = classroom?.presentSession || "";
+
     let exam;
     try {
       exam = await examModel.create({
         subjectID: subject._id,
         subjectTitle: subject.subjectTitle,
+        term: presentTerm,
+        session: presentSession,
         quiz: {
           instruction: { duration, mark, instruction },
           question: questions,

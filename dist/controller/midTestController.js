@@ -49,6 +49,7 @@ const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const mongoose_1 = require("mongoose");
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const lodash_1 = __importDefault(require("lodash"));
+const normalize = (val) => (val || "").trim().toLowerCase();
 // ──────────────────────────────────────────────────────────────
 // Unicode helpers
 // ──────────────────────────────────────────────────────────────
@@ -568,9 +569,30 @@ const readSubjectMidTest = async (req, res) => {
                 },
             },
         });
-        let midTest = lodash_1.default.filter(subject?.midTest, {
+        // Determine the current term for this subject's class
+        let presentTerm = "";
+        if (subject?.classID) {
+            const classroom = await classroomModel_1.default.findById(subject.classID);
+            presentTerm = normalize(classroom?.presentTerm || "");
+        }
+        // If classroom lookup fails to provide a term, check the school specifically
+        if (!presentTerm && subject?.school) {
+            const school = await schoolModel_1.default.findById(subject.school);
+            presentTerm = normalize(school?.presentTerm || "");
+        }
+        // Filter by status AND current term (if a term is active)
+        const allMidTests = lodash_1.default.filter(subject?.midTest, {
             status: "midTest",
-        })[0];
+        });
+        let midTest;
+        if (presentTerm) {
+            // Only return a mid-test that explicitly belongs to the current term
+            midTest = allMidTests.find((m) => normalize(m?.term || "") === presentTerm);
+        }
+        else {
+            // If we don't know the current term, we shouldn't guess by returning the first one.
+            midTest = undefined;
+        }
         return res.status(201).json({
             message: "subject midTest read successfully",
             midTest,

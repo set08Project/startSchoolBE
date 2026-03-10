@@ -2,12 +2,13 @@ import axios from "axios";
 import env from "dotenv";
 env.config();
 
-const TERMII_API_KEY = process.env.TERMII_API_KEY;
-const TERMII_SENDER_ID = process.env.TERMII_SENDER_ID || "N-Alert";
 const TERMII_URL = "https://api.ng.termii.com/api/sms/send";
 
-const sendSMS = async (to: string, message: string): Promise<void> => {
-  if (!TERMII_API_KEY) {
+const sendSMS = async (to: string, message: string, channel: string = "generic"): Promise<void> => {
+  const apiKey = process.env.TERMII_API_KEY;
+  const senderId = process.env.TERMII_SENDER_ID || "N-Alert";
+
+  if (!apiKey) {
     console.warn("SMS Skipped: TERMII_API_KEY is missing in .env");
     return;
   }
@@ -18,16 +19,16 @@ const sendSMS = async (to: string, message: string): Promise<void> => {
 
   // Normalize Nigerian number: 080... → 2348...
   const phone = to.startsWith("0") ? `234${to.slice(1)}` : to;
-  console.log(`Attempting to send SMS to ${phone} via Termii...`);
+  console.log(`[SMS Diagnostic] SenderID: "${senderId}" | Channel: "${channel}" | To: ${phone}`);
 
   try {
     const response = await axios.post(TERMII_URL, {
-      api_key: TERMII_API_KEY,
+      api_key: apiKey,
       to: phone,
-      from: TERMII_SENDER_ID,
+      from: senderId,
       sms: message,
       type: "plain",
-      channel: "generic",
+      channel: channel,
     });
     console.log("Termii SMS Success:", response.data);
   } catch (error: any) {
@@ -48,14 +49,14 @@ export const sendClockInSMS = async (student: any, school: any): Promise<void> =
     const message = `${schoolName}: ${name} has CLOCKED IN at ${time}. Reply or call the school if this is unexpected.`;
 
     console.log(`Triggering Clock-In SMS for ${name}...`);
-    await sendSMS(parentPhone, message);
+    await sendSMS(parentPhone, message, "generic");
   } catch (error) {
     // SMS failure must never break the clock flow
     console.error("Termii clock-in SMS error:", error);
   }
 };
 
-export const sendClockOutSMS = async (student: any, school: any): Promise<void> => {
+export const sendClockOutSMS = async (student: any, school: any, channel: string = "generic"): Promise<void> => {
   try {
     const parentPhone = student?.parentPhoneNumber;
     if (!parentPhone) return;
@@ -67,8 +68,13 @@ export const sendClockOutSMS = async (student: any, school: any): Promise<void> 
     const message = `${schoolName}: ${name} has CLOCKED OUT at ${time}. They are on their way home.`;
 
     console.log(`Triggering Clock-Out SMS for ${name}...`);
-    await sendSMS(parentPhone, message);
+    await sendSMS(parentPhone, message, channel);
   } catch (error) {
     console.error("Termii clock-out SMS error:", error);
   }
+};
+
+export const sendTestSMS = async (to: string, channel: string = "generic"): Promise<void> => {
+  const message = "This is a TEST SMS from your School Management System. Termii configuration is working!";
+  await sendSMS(to, message, channel);
 };

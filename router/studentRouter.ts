@@ -47,6 +47,7 @@ import {
   updateMainStudentBulkInfo,
   qrScanClockInOut,
   qrStaffLogin,
+  testSMS,
 } from "../controller/studentController";
 import multer from "multer";
 import { fileUpload } from "../utils/multer";
@@ -206,5 +207,7 @@ router
   .patch(updateInstagramAccout);
 
 //Socials Route Ends Here!
+
+router.route("/test-sms/:phone").get(testSMS);
 
 export default router;

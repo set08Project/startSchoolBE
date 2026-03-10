@@ -17,6 +17,7 @@ const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const streamifier_1 = require("../utils/streamifier");
 const mongoose_1 = require("mongoose");
+const normalize = (val) => (val || "").trim().toLowerCase();
 const createSubjectExam = async (req, res) => {
     try {
         const { classID, subjectID } = req.params;
@@ -382,9 +383,31 @@ const readSubjectExamination = async (req, res) => {
                 },
             },
         });
-        let exam = lodash_1.default.filter(subject?.examination, {
+        // Determine the current term for this subject's class
+        let presentTerm = "";
+        if (subject?.classID) {
+            const classroom = await classroomModel_1.default.findById(subject.classID);
+            presentTerm = normalize(classroom?.presentTerm || "");
+        }
+        // If classroom lookup fails to provide a term, check the school specifically
+        if (!presentTerm && subject?.school) {
+            const school = await schoolModel_1.default.findById(subject.school);
+            presentTerm = normalize(school?.presentTerm || "");
+        }
+        // Filter by status AND current term (if a term is active)
+        const allExams = lodash_1.default.filter(subject?.examination, {
             status: "examination",
-        })[0];
+        });
+        let exam;
+        if (presentTerm) {
+            // Only return an exam that explicitly belongs to the current term
+            exam = allExams.find((e) => normalize(e?.term || "") === presentTerm);
+        }
+        else {
+            // If we don't know the current term, we shouldn't guess by returning the first one.
+            // Returning undefined will correctly trigger "No Test Available" on the frontend.
+            exam = undefined;
+        }
         return res.status(201).json({
             message: "subject exam read successfully",
             exam,

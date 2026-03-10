@@ -15,6 +15,8 @@ import mammoth from "mammoth";
 import cheerio from "cheerio";
 import lodash from "lodash";
 
+const normalize = (val: string) => (val || "").trim().toLowerCase();
+
 // ──────────────────────────────────────────────────────────────
 // Unicode helpers
 // ──────────────────────────────────────────────────────────────
@@ -608,9 +610,34 @@ export const readSubjectMidTest = async (
       },
     });
 
-    let midTest = lodash.filter(subject?.midTest, {
+    // Determine the current term for this subject's class
+    let presentTerm = "";
+    if (subject?.classID) {
+      const classroom = await classroomModel.findById(subject.classID);
+      presentTerm = normalize(classroom?.presentTerm || "");
+    }
+
+    // If classroom lookup fails to provide a term, check the school specifically
+    if (!presentTerm && subject?.school) {
+      const school = await schoolModel.findById(subject.school);
+      presentTerm = normalize(school?.presentTerm || "");
+    }
+
+    // Filter by status AND current term (if a term is active)
+    const allMidTests: any[] = lodash.filter(subject?.midTest, {
       status: "midTest",
-    })[0];
+    });
+
+    let midTest: any;
+    if (presentTerm) {
+      // Only return a mid-test that explicitly belongs to the current term
+      midTest = allMidTests.find(
+        (m: any) => normalize(m?.term || "") === presentTerm
+      );
+    } else {
+      // If we don't know the current term, we shouldn't guess by returning the first one.
+      midTest = undefined;
+    }
 
     return res.status(201).json({
       message: "subject midTest read successfully",

@@ -14,6 +14,8 @@ import fs from "node:fs";
 import { uploadDataUri } from "../utils/streamifier";
 import { Types } from "mongoose";
 
+const normalize = (val: string) => (val || "").trim().toLowerCase();
+
 export const createSubjectExam = async (
   req: any,
   res: Response
@@ -436,9 +438,35 @@ export const readSubjectExamination = async (
       },
     });
 
-    let exam = lodash.filter(subject?.examination, {
+    // Determine the current term for this subject's class
+    let presentTerm = "";
+    if (subject?.classID) {
+      const classroom = await classroomModel.findById(subject.classID);
+      presentTerm = normalize(classroom?.presentTerm || "");
+    }
+
+    // If classroom lookup fails to provide a term, check the school specifically
+    if (!presentTerm && subject?.school) {
+      const school = await schoolModel.findById(subject.school);
+      presentTerm = normalize(school?.presentTerm || "");
+    }
+
+    // Filter by status AND current term (if a term is active)
+    const allExams: any[] = lodash.filter(subject?.examination, {
       status: "examination",
-    })[0];
+    });
+
+    let exam: any;
+    if (presentTerm) {
+      // Only return an exam that explicitly belongs to the current term
+      exam = allExams.find(
+        (e: any) => normalize(e?.term || "") === presentTerm
+      );
+    } else {
+      // If we don't know the current term, we shouldn't guess by returning the first one.
+      // Returning undefined will correctly trigger "No Test Available" on the frontend.
+      exam = undefined;
+    }
 
     return res.status(201).json({
       message: "subject exam read successfully",

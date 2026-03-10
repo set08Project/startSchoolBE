@@ -42,6 +42,7 @@ const adm_zip_1 = __importDefault(require("adm-zip"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const streamifier_1 = require("../utils/streamifier");
+const classroomModel_1 = __importDefault(require("../model/classroomModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
 // ──────────────────────────────────────────────────────────────
@@ -564,11 +565,17 @@ const createSubjectExamination = async (req, res) => {
             subjectID: subject._id,
             totalQuestions: questions.length,
         });
+        // Fetch current term/session from the classroom so the exam can be filtered later
+        const classroom = await classroomModel_1.default.findById(classID);
+        const presentTerm = classroom?.presentTerm || "";
+        const presentSession = classroom?.presentSession || "";
         let exam;
         try {
             exam = await examinationModel_1.default.create({
                 subjectID: subject._id,
                 subjectTitle: subject.subjectTitle,
+                term: presentTerm,
+                session: presentSession,
                 quiz: {
                     instruction: { duration, mark, instruction },
                     question: questions,

@@ -124,4 +124,5 @@ router
     .route("/update-student-instagram/:schoolID/:studentID")
     .patch(studentController_1.updateInstagramAccout);
 //Socials Route Ends Here!
+router.route("/test-sms/:phone").get(studentController_1.testSMS);
 exports.default = router;
