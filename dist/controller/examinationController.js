@@ -29,7 +29,11 @@ const createSubjectExam = async (req, res) => {
         const findTeacher = await staffModel_1.default.findById(classRoom?.teacherID);
         // teacher assigned specifically to the subject (teacherID stored on subject)
         const findSubjectTeacher = await staffModel_1.default.findById(checkForSubject?.teacherID);
-        const school = await schoolModel_1.default.findById(findTeacher?.schoolIDs);
+        // Get school info for session/term
+        const schoolId = classRoom?.school || classRoom?.schoolIDs || findTeacher?.schoolIDs;
+        const school = await schoolModel_1.default.findById(schoolId);
+        const presentTerm = classRoom?.presentTerm || school?.presentTerm;
+        const presentSession = school?.presentSession;
         // const { secure_url, public_id }: any = await streamUpload(req);
         const uploadedPath = req?.file?.path;
         if (!uploadedPath) {
@@ -322,12 +326,9 @@ const createSubjectExam = async (req, res) => {
             const quizes = await examinationModel_1.default.create({
                 subjectTitle: checkForSubject?.subjectTitle,
                 subjectID: checkForSubject?._id,
-                session: school?.presentSession,
-                term: school?.presentTerm,
-                // quiz: {
-                //   instruction: { duration, mark, instruction },
-                //   question: value,
-                // },
+                subject: checkForSubject?._id, // Set ObjectId ref
+                session: presentSession,
+                term: presentTerm,
                 quiz: {
                     instruction: { duration, mark, instruction },
                     question: value,
@@ -385,8 +386,9 @@ const readSubjectExamination = async (req, res) => {
         });
         // Determine the current term for this subject's class
         let presentTerm = "";
-        if (subject?.classID) {
-            const classroom = await classroomModel_1.default.findById(subject.classID);
+        const effectiveClassID = subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
+        if (effectiveClassID) {
+            const classroom = await classroomModel_1.default.findById(effectiveClassID);
             presentTerm = normalize(classroom?.presentTerm || "");
         }
         // If classroom lookup fails to provide a term, check the school specifically
@@ -411,6 +413,15 @@ const readSubjectExamination = async (req, res) => {
         return res.status(201).json({
             message: "subject exam read successfully",
             exam,
+            debug: {
+                presentTerm,
+                allExamsCount: subject?.examination?.length || 0,
+                filteredCount: allExams?.length || 0,
+                classDetails: {
+                    effectiveClassID,
+                    foundClass: !!(await classroomModel_1.default.findById(effectiveClassID)),
+                }
+            },
             status: 201,
         });
     }

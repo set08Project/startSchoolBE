@@ -43,8 +43,10 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const streamifier_1 = require("../utils/streamifier");
 const classroomModel_1 = __importDefault(require("../model/classroomModel"));
+const staffModel_1 = __importDefault(require("../model/staffModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
+const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 // ──────────────────────────────────────────────────────────────
 // Unicode helpers
 // ──────────────────────────────────────────────────────────────
@@ -567,8 +569,15 @@ const createSubjectExamination = async (req, res) => {
         });
         // Fetch current term/session from the classroom so the exam can be filtered later
         const classroom = await classroomModel_1.default.findById(classID);
-        const presentTerm = classroom?.presentTerm || "";
-        const presentSession = classroom?.presentSession || "";
+        // Robust school lookup
+        let schoolId = classroom?.school || classroom?.schoolIDs;
+        if (!schoolId && classroom?.teacherID) {
+            const teacher = await staffModel_1.default.findById(classroom.teacherID);
+            schoolId = teacher?.schoolIDs;
+        }
+        const school = await schoolModel_1.default.findById(schoolId);
+        const presentTerm = classroom?.presentTerm || school?.presentTerm || "";
+        const presentSession = school?.presentSession || "";
         let exam;
         try {
             exam = await examinationModel_1.default.create({

@@ -26,7 +26,6 @@ export const createSubjectExam = async (
     let filePath = path.join(require("os").tmpdir(), "examination");
 
     const classRoom = await classroomModel.findById(classID);
-
     const checkForSubject = await subjectModel.findById(subjectID);
 
     // teacher assigned to the class
@@ -37,7 +36,12 @@ export const createSubjectExam = async (
       checkForSubject?.teacherID
     );
 
-    const school = await schoolModel.findById(findTeacher?.schoolIDs);
+    // Get school info for session/term
+    const schoolId = classRoom?.school || classRoom?.schoolIDs || findTeacher?.schoolIDs;
+    const school = await schoolModel.findById(schoolId);
+
+    const presentTerm = classRoom?.presentTerm || school?.presentTerm;
+    const presentSession = school?.presentSession;
 
     // const { secure_url, public_id }: any = await streamUpload(req);
 
@@ -366,13 +370,9 @@ export const createSubjectExam = async (
       const quizes = await examinationModel.create({
         subjectTitle: checkForSubject?.subjectTitle,
         subjectID: checkForSubject?._id,
-        session: school?.presentSession,
-        term: school?.presentTerm,
-        // quiz: {
-        //   instruction: { duration, mark, instruction },
-        //   question: value,
-        // },
-
+        subject: checkForSubject?._id, // Set ObjectId ref
+        session: presentSession,
+        term: presentTerm,
         quiz: {
           instruction: { duration, mark, instruction },
           question: value,
@@ -440,8 +440,11 @@ export const readSubjectExamination = async (
 
     // Determine the current term for this subject's class
     let presentTerm = "";
-    if (subject?.classID) {
-      const classroom = await classroomModel.findById(subject.classID);
+    const effectiveClassID =
+      subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
+
+    if (effectiveClassID) {
+      const classroom = await classroomModel.findById(effectiveClassID);
       presentTerm = normalize(classroom?.presentTerm || "");
     }
 
@@ -471,6 +474,15 @@ export const readSubjectExamination = async (
     return res.status(201).json({
       message: "subject exam read successfully",
       exam,
+      debug: {
+        presentTerm,
+        allExamsCount: subject?.examination?.length || 0,
+        filteredCount: allExams?.length || 0,
+        classDetails: {
+          effectiveClassID,
+          foundClass: !!(await classroomModel.findById(effectiveClassID)),
+        }
+      },
       status: 201,
     });
   } catch (error) {

@@ -395,7 +395,6 @@ export const createSubjectMidTest = async (
     let filePath = path.join(require("os").tmpdir(), "examination");
 
     const classRoom = await classroomModel.findById(classID);
-
     const checkForSubject = await subjectModel.findById(subjectID);
 
     const findTeacher = await staffModel.findById(classRoom?.teacherID);
@@ -404,7 +403,12 @@ export const createSubjectMidTest = async (
       checkForSubject?.teacherID
     );
 
-    const school = await schoolModel.findById(findTeacher?.schoolIDs);
+    // Get school info for session/term
+    const schoolId = classRoom?.school || classRoom?.schoolIDs || findTeacher?.schoolIDs;
+    const school = await schoolModel.findById(schoolId);
+
+    const presentTerm = classRoom?.presentTerm || school?.presentTerm || "";
+    const presentSession = school?.presentSession || "";
 
     const uploadedPath = req?.file?.path;
     if (!uploadedPath) {
@@ -543,8 +547,9 @@ export const createSubjectMidTest = async (
       const quizes = await midTestModel.create({
         subjectTitle: checkForSubject?.subjectTitle,
         subjectID: checkForSubject?._id,
-        session: school?.presentSession,
-        term: school?.presentTerm,
+        subject: checkForSubject?._id, // Set ObjectId ref
+        session: presentSession,
+        term: presentTerm,
         quiz: {
           instruction: { duration, mark, instruction },
           question: value,
@@ -612,8 +617,11 @@ export const readSubjectMidTest = async (
 
     // Determine the current term for this subject's class
     let presentTerm = "";
-    if (subject?.classID) {
-      const classroom = await classroomModel.findById(subject.classID);
+    const effectiveClassID =
+      subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
+
+    if (effectiveClassID) {
+      const classroom = await classroomModel.findById(effectiveClassID);
       presentTerm = normalize(classroom?.presentTerm || "");
     }
 

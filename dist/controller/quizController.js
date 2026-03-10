@@ -47,7 +47,6 @@ const quizModel_1 = __importDefault(require("../model/quizModel"));
 const studentModel_1 = __importDefault(require("../model/studentModel"));
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const streamifier_1 = require("../utils/streamifier");
-const lodash_1 = __importDefault(require("lodash"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
@@ -1965,18 +1964,37 @@ const readSubjectExamination = async (req, res) => {
     try {
         const { subjectID } = req.params;
         const subject = await subjectModel_1.default.findById(subjectID).populate({
-            path: "quiz",
+            path: "examination",
             options: {
                 sort: {
                     createdAt: -1,
                 },
             },
         });
-        let exam = lodash_1.default.filter(subject?.quiz, { status: "examination" })[0];
+        const classId = subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
+        const classroom = await classroomModel_1.default.findById(classId);
+        const schoolId = classroom?.school || classroom?.schoolIDs || subject?.school;
+        const school = await schoolModel_1.default.findById(schoolId);
+        const presentTerm = (classroom?.presentTerm ||
+            school?.presentTerm ||
+            "").trim().toLowerCase();
+        let exam = subject?.examination?.filter((e) => {
+            return (e.status === "examination" &&
+                (e.term || "").trim().toLowerCase() === presentTerm);
+        })[0];
         return res.status(201).json({
             message: "subject exam read successfully",
-            // data: subject?.quiz,
             exam,
+            debug: {
+                presentTerm,
+                allExamsCount: subject?.examination?.length || 0,
+                filteredCount: subject?.examination?.filter((e) => e.status === "examination")?.length || 0,
+                classDetails: {
+                    classId,
+                    foundClass: !!classroom,
+                    foundSchool: !!school,
+                }
+            },
             status: 201,
         });
     }

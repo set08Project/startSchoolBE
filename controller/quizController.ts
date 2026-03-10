@@ -2232,7 +2232,7 @@ export const readSubjectExamination = async (
     const { subjectID } = req.params;
 
     const subject = await subjectModel.findById(subjectID).populate({
-      path: "quiz",
+      path: "examination",
       options: {
         sort: {
           createdAt: -1,
@@ -2240,12 +2240,40 @@ export const readSubjectExamination = async (
       },
     });
 
-    let exam = lodash.filter(subject?.quiz, { status: "examination" })[0];
+    const classId =
+      subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
+    const classroom = await classroomModel.findById(classId);
+
+    const schoolId =
+      classroom?.school || classroom?.schoolIDs || subject?.school;
+    const school = await schoolModel.findById(schoolId);
+
+    const presentTerm = (
+      classroom?.presentTerm ||
+      school?.presentTerm ||
+      ""
+    ).trim().toLowerCase();
+
+    let exam = subject?.examination?.filter((e: any) => {
+      return (
+        e.status === "examination" &&
+        (e.term || "").trim().toLowerCase() === presentTerm
+      );
+    })[0];
 
     return res.status(201).json({
       message: "subject exam read successfully",
-      // data: subject?.quiz,
       exam,
+      debug: {
+        presentTerm,
+        allExamsCount: subject?.examination?.length || 0,
+        filteredCount: subject?.examination?.filter((e: any) => e.status === "examination")?.length || 0,
+        classDetails: {
+          classId,
+          foundClass: !!classroom,
+          foundSchool: !!school,
+        }
+      },
       status: 201,
     });
   } catch (error) {

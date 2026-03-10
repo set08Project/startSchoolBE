@@ -9,6 +9,7 @@ import classroomModel from "../model/classroomModel";
 import staffModel from "../model/staffModel";
 import subjectModel from "../model/subjectModel";
 import examModel from "../model/examinationModel";
+import schoolModel from "../model/schoolModel";
 
 // ──────────────────────────────────────────────────────────────
 // Unicode helpers
@@ -594,8 +595,18 @@ export const createSubjectExamination = async (req: any, res: Response) => {
 
     // Fetch current term/session from the classroom so the exam can be filtered later
     const classroom = await classroomModel.findById(classID);
-    const presentTerm = classroom?.presentTerm || "";
-    const presentSession = classroom?.presentSession || "";
+    
+    // Robust school lookup
+    let schoolId = classroom?.school || classroom?.schoolIDs;
+    if (!schoolId && classroom?.teacherID) {
+        const teacher = await staffModel.findById(classroom.teacherID);
+        schoolId = teacher?.schoolIDs;
+    }
+    
+    const school = await schoolModel.findById(schoolId);
+
+    const presentTerm = classroom?.presentTerm || school?.presentTerm || "";
+    const presentSession = school?.presentSession || "";
 
     let exam;
     try {
