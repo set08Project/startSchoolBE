@@ -47,8 +47,7 @@ const sendClockInSMS = async (student, school) => {
         const studentFirstName = student?.studentFirstName?.split(" ")[0] || "";
         const time = student.clockInTime || "";
         const schoolName = school?.schoolName || "School";
-        const message = `Hello Mr/Mrs ${studentLastName}, \nThis is to inform you that your child ${studentFirstName} has arrived at school now at ${time}. 
-    \nPowered by ${schoolName.split(" ")[0]}`;
+        const message = `Hello Mr/Mrs ${studentLastName}, \nThis is to inform you that your child ${studentFirstName} has arrived at school now at ${time}. \nPowered by ${schoolName.split(" ")[0]}`;
         console.log(`Triggering Clock-In SMS for ${studentFirstName}...`);
         await sendSMS(parentPhone, message, "dnd");
     }
