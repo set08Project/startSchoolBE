@@ -17,7 +17,7 @@ import purchasedModel from "../model/historyModel";
 import schoolFeeHistory from "../model/schoolFeeHistory";
 // import subjectModel from "../model/subjectModel";
 import csv from "csvtojson";
-import moment from "moment";
+import moment from "moment-timezone";
 import fs from "node:fs";
 import path from "node:path";
 import termModel from "../model/termModel";
@@ -72,6 +72,7 @@ export const clockinAccount = async (
       const student = await studentModel.findById(studentID);
 
       if (student && student.schoolIDs === school?._id.toString()) {
+
         const nowMillis = new Date().getTime();
         const currentHour = new Date().getHours();
         const thirtyMinutes = 30 * 60 * 1000;
@@ -85,10 +86,13 @@ export const clockinAccount = async (
           });
         }
 
-        // 2. Time Window Check (6-10 AM)
-        if (currentHour < 6 || currentHour >= 10) {
+        // 2. Time Window Check (6 AM - 12 PM Lagos Time for clock-in)
+        const lagosTime = moment().tz("Africa/Lagos");
+        const lagosHour = lagosTime.hour();
+
+        if (lagosHour < 6 || lagosHour >= 12) {
           return res.status(400).json({
-            message: "Clock-in is only allowed between 6:00 AM and 10:00 AM",
+            message: `Clock-in is only allowed between 6:00 AM and 12:00 PM (Lagos Time). Current Lagos hour: ${lagosHour}`,
             status: 400,
           });
         }
@@ -105,7 +109,7 @@ export const clockinAccount = async (
           student._id,
           {
             clockIn: true,
-            clockInTime: moment(nowMillis).format("llll"),
+            clockInTime: lagosTime.format("llll"),
             clockOut: false,
             lastActionTimestamp: nowMillis,
           },
@@ -215,10 +219,13 @@ export const clockinAccountWithID = async (
           });
         }
 
-        // 2. Time Window Check (6-10 AM)
-        if (currentHour < 6 || currentHour >= 10) {
+        // 2. Time Window Check (6 AM - 12 PM Lagos Time for clock-in)
+        const lagosTime = moment().tz("Africa/Lagos");
+        const lagosHour = lagosTime.hour();
+
+        if (lagosHour < 6 || lagosHour >= 12) {
           return res.status(400).json({
-            message: "Clock-in is only allowed between 6:00 AM and 10:00 AM",
+            message: `Clock-in is only allowed between 6:00 AM and 12:00 PM (Lagos Time). Current Lagos hour: ${lagosHour}`,
             status: 400,
           });
         }
@@ -235,7 +242,7 @@ export const clockinAccountWithID = async (
           student._id,
           {
             clockIn: true,
-            clockInTime: moment(nowMillis).format("llll"),
+            clockInTime: lagosTime.format("llll"),
             clockOut: false,
             lastActionTimestamp: nowMillis,
           },
@@ -344,10 +351,18 @@ export const clockOutAccount = async (
           });
         }
 
-        // 2. Time Window Check (12-6 PM)
-        if (currentHour < 12 || currentHour >= 18) {
+        // 2. Time Window Check (12:01 PM - 8 PM Lagos Time for clock-out)
+        const lagosTime = moment().tz("Africa/Lagos");
+        const lagosHour = lagosTime.hour();
+        const lagosMinute = lagosTime.minute();
+
+        // 12:01 PM check (Hour 12, Minute >= 1) or Hour > 12 and < 20 (8 PM)
+        const isAfterNoon = (lagosHour === 12 && lagosMinute >= 1) || lagosHour > 12;
+        const isBeforeEight = lagosHour < 20;
+
+        if (!isAfterNoon || !isBeforeEight) {
           return res.status(400).json({
-            message: "Clock-out is only allowed between 12:00 PM and 6:00 PM",
+            message: `Clock-out is only allowed between 12:01 PM and 8:00 PM (Lagos Time). Current Lagos time: ${lagosHour}:${lagosMinute}`,
             status: 400,
           });
         }
@@ -366,7 +381,7 @@ export const clockOutAccount = async (
             {
               clockIn: false,
               clockOut: true,
-              clockOutTime: moment(nowMillis).format("llll"),
+              clockOutTime: lagosTime.format("llll"),
               lastActionTimestamp: nowMillis,
             },
             { new: true }
@@ -482,10 +497,17 @@ export const clockOutAccountWidthID = async (
           });
         }
 
-        // 2. Time Window Check (12-6 PM)
-        if (currentHour < 12 || currentHour >= 18) {
+        // 2. Time Window Check (12:01 PM - 8 PM Lagos Time for clock-out)
+        const lagosTime = moment().tz("Africa/Lagos");
+        const lagosHour = lagosTime.hour();
+        const lagosMinute = lagosTime.minute();
+
+        const isAfterNoon = (lagosHour === 12 && lagosMinute >= 1) || lagosHour > 12;
+        const isBeforeEight = lagosHour < 20;
+
+        if (!isAfterNoon || !isBeforeEight) {
           return res.status(400).json({
-            message: "Clock-out is only allowed between 12:00 PM and 6:00 PM",
+            message: `Clock-out is only allowed between 12:01 PM and 8:00 PM (Lagos Time). Current Lagos time: ${lagosHour}:${lagosMinute}`,
             status: 400,
           });
         }
@@ -504,7 +526,7 @@ export const clockOutAccountWidthID = async (
             {
               clockIn: false,
               clockOut: true,
-              clockOutTime: moment(nowMillis).format("llll"),
+              clockOutTime: lagosTime.format("llll"),
               lastActionTimestamp: nowMillis,
             },
             { new: true }
@@ -681,10 +703,11 @@ export const qrScanClockInOut = async (
     const markedBy = isAdmin ? "School Admin" : staff!.staffName;
     const staffId = isAdmin ? school!._id : staff!._id;
 
-    const nowMillis = new Date().getTime();
-    const currentHour = new Date().getHours();
-    const currentMinutes = new Date().getMinutes();
-    const now = moment(nowMillis).format("llll");
+    const lagosTime = moment().tz("Africa/Lagos");
+    const nowMillis = lagosTime.valueOf();
+    const lagosHour = lagosTime.hour();
+    const lagosMinute = lagosTime.minute();
+    const now = lagosTime.format("llll");
     const name = `${student.studentFirstName} ${student.studentLastName}`;
 
     // 1. 30-Minute Cooldown Check
@@ -707,14 +730,16 @@ export const qrScanClockInOut = async (
     let actionTime: string;
 
     if (student.clockIn) {
-      // CURRENTLY CLOCKED IN → CLOCK OUT
-      // Restriction: Clock-out only between 12:00 PM and 6:00 PM (12 to 18)
-      if (currentHour < 12 || currentHour >= 18) {
+      // Restriction: Clock-out only between 12:01 PM and 8:00 PM
+      const isAfterNoon = (lagosHour === 12 && lagosMinute >= 1) || lagosHour > 12;
+      const isBeforeEight = lagosHour < 20;
+
+      if (!isAfterNoon || !isBeforeEight) {
          return res.status(200).send(`
             <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
               <div style="font-size:60px;margin-bottom:16px;">⏰</div>
               <h2 style="color:#dc2626;">Clock-out Restricted</h2>
-              <p style="color:#991b1b;margin-bottom:20px;">Clock-out is only allowed between <strong>12:00 PM and 6:00 PM</strong>.</p>
+              <p style="color:#991b1b;margin-bottom:20px;">Clock-out is only allowed between <strong>12:01 PM and 8:00 PM</strong> (Lagos Time). (Lagos Hour: ${lagosHour}:${lagosMinute})</p>
               <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
             </body></html>
           `);
@@ -735,14 +760,13 @@ export const qrScanClockInOut = async (
       action = "Clocked Out";
       actionTime = now;
     } else {
-      // NOT CLOCKED IN → CLOCK IN
-      // Restriction: Clock-in only between 6:00 AM and 10:00 AM (6 to 10)
-      if (currentHour < 6 || currentHour >= 10) {
+      // Restriction: Clock-in only between 6:00 AM and 12:00 NOON
+      if (lagosHour < 6 || lagosHour >= 12) {
          return res.status(200).send(`
             <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
               <div style="font-size:60px;margin-bottom:16px;">⏰</div>
               <h2 style="color:#dc2626;">Clock-in Restricted</h2>
-              <p style="color:#991b1b;margin-bottom:20px;">Clock-in is only allowed between <strong>6:00 AM and 10:00 AM</strong>.</p>
+              <p style="color:#991b1b;margin-bottom:20px;">Clock-in is only allowed between <strong>6:00 AM and 12:00 NOON</strong> (Lagos Time). (Lagos Hour: ${lagosHour})</p>
               <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
             </body></html>
           `);

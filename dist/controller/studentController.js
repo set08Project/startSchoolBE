@@ -19,7 +19,7 @@ const historyModel_1 = __importDefault(require("../model/historyModel"));
 const schoolFeeHistory_1 = __importDefault(require("../model/schoolFeeHistory"));
 // import subjectModel from "../model/subjectModel";
 const csvtojson_1 = __importDefault(require("csvtojson"));
-const moment_1 = __importDefault(require("moment"));
+const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const termModel_1 = __importDefault(require("../model/termModel"));
@@ -73,10 +73,12 @@ const clockinAccount = async (req, res) => {
                         status: 400,
                     });
                 }
-                // 2. Time Window Check (6-10 AM)
-                if (currentHour < 6 || currentHour >= 10) {
+                // 2. Time Window Check (6 AM - 12 PM Lagos Time for clock-in)
+                const lagosTime = (0, moment_timezone_1.default)().tz("Africa/Lagos");
+                const lagosHour = lagosTime.hour();
+                if (lagosHour < 6 || lagosHour >= 12) {
                     return res.status(400).json({
-                        message: "Clock-in is only allowed between 6:00 AM and 10:00 AM",
+                        message: `Clock-in is only allowed between 6:00 AM and 12:00 PM (Lagos Time). Current Lagos hour: ${lagosHour}`,
                         status: 400,
                     });
                 }
@@ -89,7 +91,7 @@ const clockinAccount = async (req, res) => {
                 }
                 const clockInfo = await studentModel_1.default.findByIdAndUpdate(student._id, {
                     clockIn: true,
-                    clockInTime: (0, moment_1.default)(nowMillis).format("llll"),
+                    clockInTime: lagosTime.format("llll"),
                     clockOut: false,
                     lastActionTimestamp: nowMillis,
                 }, { new: true });
@@ -103,8 +105,8 @@ const clockinAccount = async (req, res) => {
                         studentFirstName: student.studentFirstName,
                         studentLastName: student.studentLastName,
                         classTeacher: staff.staffName,
-                        dateTime: `${(0, moment_1.default)(dater).format("dddd")}, ${(0, moment_1.default)(dater).format("MMMM Do YYYY")}`,
-                        date: (0, moment_1.default)(dater).format("dddd"),
+                        dateTime: `${(0, moment_timezone_1.default)(dater).format("dddd")}, ${(0, moment_timezone_1.default)(dater).format("MMMM Do YYYY")}`,
+                        date: (0, moment_timezone_1.default)(dater).format("dddd"),
                         present: true,
                         absent: false,
                         staffs: staff._id,
@@ -187,10 +189,12 @@ const clockinAccountWithID = async (req, res) => {
                         status: 400,
                     });
                 }
-                // 2. Time Window Check (6-10 AM)
-                if (currentHour < 6 || currentHour >= 10) {
+                // 2. Time Window Check (6 AM - 12 PM Lagos Time for clock-in)
+                const lagosTime = (0, moment_timezone_1.default)().tz("Africa/Lagos");
+                const lagosHour = lagosTime.hour();
+                if (lagosHour < 6 || lagosHour >= 12) {
                     return res.status(400).json({
-                        message: "Clock-in is only allowed between 6:00 AM and 10:00 AM",
+                        message: `Clock-in is only allowed between 6:00 AM and 12:00 PM (Lagos Time). Current Lagos hour: ${lagosHour}`,
                         status: 400,
                     });
                 }
@@ -203,7 +207,7 @@ const clockinAccountWithID = async (req, res) => {
                 }
                 const clockInfo = await studentModel_1.default.findByIdAndUpdate(student._id, {
                     clockIn: true,
-                    clockInTime: (0, moment_1.default)(nowMillis).format("llll"),
+                    clockInTime: lagosTime.format("llll"),
                     clockOut: false,
                     lastActionTimestamp: nowMillis,
                 }, { new: true });
@@ -217,8 +221,8 @@ const clockinAccountWithID = async (req, res) => {
                         studentFirstName: student.studentFirstName,
                         studentLastName: student.studentLastName,
                         classTeacher: staff.staffName,
-                        dateTime: `${(0, moment_1.default)(dater).format("dddd")}, ${(0, moment_1.default)(dater).format("MMMM Do YYYY")}`,
-                        date: (0, moment_1.default)(dater).format("dddd"),
+                        dateTime: `${(0, moment_timezone_1.default)(dater).format("dddd")}, ${(0, moment_timezone_1.default)(dater).format("MMMM Do YYYY")}`,
+                        date: (0, moment_timezone_1.default)(dater).format("dddd"),
                         present: true,
                         absent: false,
                         staffs: staff._id,
@@ -300,10 +304,16 @@ const clockOutAccount = async (req, res) => {
                         status: 400,
                     });
                 }
-                // 2. Time Window Check (12-6 PM)
-                if (currentHour < 12 || currentHour >= 18) {
+                // 2. Time Window Check (12:01 PM - 8 PM Lagos Time for clock-out)
+                const lagosTime = (0, moment_timezone_1.default)().tz("Africa/Lagos");
+                const lagosHour = lagosTime.hour();
+                const lagosMinute = lagosTime.minute();
+                // 12:01 PM check (Hour 12, Minute >= 1) or Hour > 12 and < 20 (8 PM)
+                const isAfterNoon = (lagosHour === 12 && lagosMinute >= 1) || lagosHour > 12;
+                const isBeforeEight = lagosHour < 20;
+                if (!isAfterNoon || !isBeforeEight) {
                     return res.status(400).json({
-                        message: "Clock-out is only allowed between 12:00 PM and 6:00 PM",
+                        message: `Clock-out is only allowed between 12:01 PM and 8:00 PM (Lagos Time). Current Lagos time: ${lagosHour}:${lagosMinute}`,
                         status: 400,
                     });
                 }
@@ -318,7 +328,7 @@ const clockOutAccount = async (req, res) => {
                     const clockInfo = await studentModel_1.default.findByIdAndUpdate(student._id, {
                         clockIn: false,
                         clockOut: true,
-                        clockOutTime: (0, moment_1.default)(nowMillis).format("llll"),
+                        clockOutTime: lagosTime.format("llll"),
                         lastActionTimestamp: nowMillis,
                     }, { new: true });
                     if (clockInfo)
@@ -331,8 +341,8 @@ const clockOutAccount = async (req, res) => {
                             studentFirstName: student.studentFirstName,
                             studentLastName: student.studentLastName,
                             classTeacher: staff.staffName,
-                            dateTime: `${(0, moment_1.default)(dater).format("dddd")}, ${(0, moment_1.default)(dater).format("MMMM Do YYYY")}`,
-                            date: (0, moment_1.default)(dater).format("dddd"),
+                            dateTime: `${(0, moment_timezone_1.default)(dater).format("dddd")}, ${(0, moment_timezone_1.default)(dater).format("MMMM Do YYYY")}`,
+                            date: (0, moment_timezone_1.default)(dater).format("dddd"),
                             present: false,
                             absent: true,
                             staffs: staff._id,
@@ -422,10 +432,15 @@ const clockOutAccountWidthID = async (req, res) => {
                         status: 400,
                     });
                 }
-                // 2. Time Window Check (12-6 PM)
-                if (currentHour < 12 || currentHour >= 18) {
+                // 2. Time Window Check (12:01 PM - 8 PM Lagos Time for clock-out)
+                const lagosTime = (0, moment_timezone_1.default)().tz("Africa/Lagos");
+                const lagosHour = lagosTime.hour();
+                const lagosMinute = lagosTime.minute();
+                const isAfterNoon = (lagosHour === 12 && lagosMinute >= 1) || lagosHour > 12;
+                const isBeforeEight = lagosHour < 20;
+                if (!isAfterNoon || !isBeforeEight) {
                     return res.status(400).json({
-                        message: "Clock-out is only allowed between 12:00 PM and 6:00 PM",
+                        message: `Clock-out is only allowed between 12:01 PM and 8:00 PM (Lagos Time). Current Lagos time: ${lagosHour}:${lagosMinute}`,
                         status: 400,
                     });
                 }
@@ -440,7 +455,7 @@ const clockOutAccountWidthID = async (req, res) => {
                     const clockInfo = await studentModel_1.default.findByIdAndUpdate(student._id, {
                         clockIn: false,
                         clockOut: true,
-                        clockOutTime: (0, moment_1.default)(nowMillis).format("llll"),
+                        clockOutTime: lagosTime.format("llll"),
                         lastActionTimestamp: nowMillis,
                     }, { new: true });
                     if (clockInfo)
@@ -453,8 +468,8 @@ const clockOutAccountWidthID = async (req, res) => {
                             studentFirstName: student.studentFirstName,
                             studentLastName: student.studentLastName,
                             classTeacher: staff.staffName,
-                            dateTime: `${(0, moment_1.default)(dater).format("dddd")}, ${(0, moment_1.default)(dater).format("MMMM Do YYYY")}`,
-                            date: (0, moment_1.default)(dater).format("dddd"),
+                            dateTime: `${(0, moment_timezone_1.default)(dater).format("dddd")}, ${(0, moment_timezone_1.default)(dater).format("MMMM Do YYYY")}`,
+                            date: (0, moment_timezone_1.default)(dater).format("dddd"),
                             present: false,
                             absent: true,
                             staffs: staff._id,
@@ -601,10 +616,11 @@ const qrScanClockInOut = async (req, res) => {
         // Set the name of the person marking attendance
         const markedBy = isAdmin ? "School Admin" : staff.staffName;
         const staffId = isAdmin ? school._id : staff._id;
-        const nowMillis = new Date().getTime();
-        const currentHour = new Date().getHours();
-        const currentMinutes = new Date().getMinutes();
-        const now = (0, moment_1.default)(nowMillis).format("llll");
+        const lagosTime = (0, moment_timezone_1.default)().tz("Africa/Lagos");
+        const nowMillis = lagosTime.valueOf();
+        const lagosHour = lagosTime.hour();
+        const lagosMinute = lagosTime.minute();
+        const now = lagosTime.format("llll");
         const name = `${student.studentFirstName} ${student.studentLastName}`;
         // 1. 30-Minute Cooldown Check
         const thirtyMinutes = 30 * 60 * 1000;
@@ -623,14 +639,15 @@ const qrScanClockInOut = async (req, res) => {
         let action;
         let actionTime;
         if (student.clockIn) {
-            // CURRENTLY CLOCKED IN → CLOCK OUT
-            // Restriction: Clock-out only between 12:00 PM and 6:00 PM (12 to 18)
-            if (currentHour < 12 || currentHour >= 18) {
+            // Restriction: Clock-out only between 12:01 PM and 8:00 PM
+            const isAfterNoon = (lagosHour === 12 && lagosMinute >= 1) || lagosHour > 12;
+            const isBeforeEight = lagosHour < 20;
+            if (!isAfterNoon || !isBeforeEight) {
                 return res.status(200).send(`
             <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
               <div style="font-size:60px;margin-bottom:16px;">⏰</div>
               <h2 style="color:#dc2626;">Clock-out Restricted</h2>
-              <p style="color:#991b1b;margin-bottom:20px;">Clock-out is only allowed between <strong>12:00 PM and 6:00 PM</strong>.</p>
+              <p style="color:#991b1b;margin-bottom:20px;">Clock-out is only allowed between <strong>12:01 PM and 8:00 PM</strong> (Lagos Time). (Lagos Hour: ${lagosHour}:${lagosMinute})</p>
               <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
             </body></html>
           `);
@@ -647,14 +664,13 @@ const qrScanClockInOut = async (req, res) => {
             actionTime = now;
         }
         else {
-            // NOT CLOCKED IN → CLOCK IN
-            // Restriction: Clock-in only between 6:00 AM and 10:00 AM (6 to 10)
-            if (currentHour < 6 || currentHour >= 10) {
+            // Restriction: Clock-in only between 6:00 AM and 12:00 NOON
+            if (lagosHour < 6 || lagosHour >= 12) {
                 return res.status(200).send(`
             <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#fef2f2;">
               <div style="font-size:60px;margin-bottom:16px;">⏰</div>
               <h2 style="color:#dc2626;">Clock-in Restricted</h2>
-              <p style="color:#991b1b;margin-bottom:20px;">Clock-in is only allowed between <strong>6:00 AM and 10:00 AM</strong>.</p>
+              <p style="color:#991b1b;margin-bottom:20px;">Clock-in is only allowed between <strong>6:00 AM and 12:00 NOON</strong> (Lagos Time). (Lagos Hour: ${lagosHour})</p>
               <a href="javascript:history.back()" style="display:inline-block;padding:12px 24px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:600;">Return to Scanner</a>
             </body></html>
           `);
@@ -678,8 +694,8 @@ const qrScanClockInOut = async (req, res) => {
                 studentFirstName: student.studentFirstName,
                 studentLastName: student.studentLastName,
                 classTeacher: markedBy,
-                dateTime: `${(0, moment_1.default)(dater).format("dddd")}, ${(0, moment_1.default)(dater).format("MMMM Do YYYY")}`,
-                date: (0, moment_1.default)(dater).format("dddd"),
+                dateTime: `${(0, moment_timezone_1.default)(dater).format("dddd")}, ${(0, moment_timezone_1.default)(dater).format("MMMM Do YYYY")}`,
+                date: (0, moment_timezone_1.default)(dater).format("dddd"),
                 present: action === "Clocked In" ? true : false,
                 absent: action === "Clocked Out" ? true : false,
                 staffs: staffId,
@@ -1730,7 +1746,7 @@ const updateStudent1stFees = async (req, res) => {
                         studentID: getStudent._id,
                         feesPaid1st: getStudent.feesPaid1st,
                         cost: presentClass?.class1stFee,
-                        date: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                        date: (0, moment_timezone_1.default)(new Date().getTime()).format("llll"),
                     },
                 ],
             }, { new: true });
@@ -1938,7 +1954,7 @@ const updateStudent2ndFees = async (req, res) => {
                             studentID: getStudent._id,
                             feesPaid2nd: getStudent.feesPaid2nd,
                             cost: presentClass?.class2ndFee,
-                            date: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                            date: (0, moment_timezone_1.default)(new Date().getTime()).format("llll"),
                         },
                     ],
                 }, { new: true });
@@ -1989,7 +2005,7 @@ const updateStudent3rdFees = async (req, res) => {
                             studentID: getStudent._id,
                             feesPaid3rd: getStudent.feesPaid3rd,
                             cost: presentClass?.class3rdFee,
-                            date: (0, moment_1.default)(new Date().getTime()).format("llll"),
+                            date: (0, moment_timezone_1.default)(new Date().getTime()).format("llll"),
                         },
                     ],
                 }, { new: true });
