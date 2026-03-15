@@ -3248,7 +3248,7 @@ export const testSMS = async (req: Request, res: Response): Promise<any> => {
     const { phone } = req.params;
     const { action, channel, customMsg } = req.query;
 
-    const selectedChannel = (channel as string) || "dnd";
+    const selectedChannel = (channel as string) || "generic";
     const userCustomMessage = customMsg ? (customMsg as string) : undefined;
 
     if (action === "send") {

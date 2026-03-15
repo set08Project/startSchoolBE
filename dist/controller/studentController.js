@@ -2704,7 +2704,7 @@ const testSMS = async (req, res) => {
     try {
         const { phone } = req.params;
         const { action, channel, customMsg } = req.query;
-        const selectedChannel = channel || "dnd";
+        const selectedChannel = channel || "generic";
         const userCustomMessage = customMsg ? customMsg : undefined;
         if (action === "send") {
             await (0, sms_1.sendTestSMS)(phone, selectedChannel, userCustomMessage);
