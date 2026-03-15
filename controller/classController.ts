@@ -295,6 +295,14 @@ export const viewClassesBySubject = async (
           createdAt: -1,
         },
       },
+      populate: [
+        {
+          path: "examination",
+        },
+        {
+          path: "midTest",
+        },
+      ],
     });
 
     return res.status(200).json({
@@ -398,6 +406,14 @@ export const viewClassRM = async (
 
     const schoolClasses = await classroomModel.findById(classID).populate({
       path: "classSubjects",
+      populate: [
+        {
+          path: "examination",
+        },
+        {
+          path: "midTest",
+        },
+      ],
     });
 
     return res.status(200).json({

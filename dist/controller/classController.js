@@ -248,6 +248,14 @@ const viewClassesBySubject = async (req, res) => {
                     createdAt: -1,
                 },
             },
+            populate: [
+                {
+                    path: "examination",
+                },
+                {
+                    path: "midTest",
+                },
+            ],
         });
         return res.status(200).json({
             message: "finding classes by Name",
@@ -335,6 +343,14 @@ const viewClassRM = async (req, res) => {
         const { classID } = req.params;
         const schoolClasses = await classroomModel_1.default.findById(classID).populate({
             path: "classSubjects",
+            populate: [
+                {
+                    path: "examination",
+                },
+                {
+                    path: "midTest",
+                },
+            ],
         });
         return res.status(200).json({
             message: "School classes info found",
