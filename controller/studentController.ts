@@ -22,7 +22,7 @@ import fs from "node:fs";
 import path from "node:path";
 import termModel from "../model/termModel";
 import attendanceModel from "../model/attendanceModel";
-import { sendTestSMS } from "../utils/sms";
+import { sendClockInSMS, sendClockOutSMS, sendTestSMS } from "../utils/sms";
 
 // CLOCK-IN/CLOCK-OUT
 
@@ -116,7 +116,10 @@ export const clockinAccount = async (
           { new: true }
         );
 
-        if (clockInfo) await clockingInEmail(clockInfo, school);
+        if (clockInfo) {
+          await clockingInEmail(clockInfo, school);
+          await sendClockInSMS(clockInfo, school);
+        }
 
         // CREATE ATTENDANCE RECORD
         try {
@@ -249,7 +252,10 @@ export const clockinAccountWithID = async (
           { new: true }
         );
 
-        if (clockInfo) await clockingInEmail(clockInfo, school);
+        if (clockInfo) {
+          await clockingInEmail(clockInfo, school);
+          await sendClockInSMS(clockInfo, school);
+        }
 
         // CREATE ATTENDANCE RECORD
         try {
@@ -387,7 +393,10 @@ export const clockOutAccount = async (
             { new: true }
           );
 
-          if (clockInfo) await clockingOutEmail(clockInfo, school);
+          if (clockInfo) {
+            await clockingOutEmail(clockInfo, school);
+            await sendClockOutSMS(clockInfo, school);
+          }
 
           // CREATE ATTENDANCE RECORD (as Absent/Out)
           try {
@@ -532,7 +541,10 @@ export const clockOutAccountWidthID = async (
             { new: true }
           );
 
-          if (clockInfo) await clockingOutEmail(clockInfo, school);
+          if (clockInfo) {
+            await clockingOutEmail(clockInfo, school);
+            await sendClockOutSMS(clockInfo, school);
+          }
 
           // CREATE ATTENDANCE RECORD (as Absent/Out)
           try {
@@ -755,7 +767,10 @@ export const qrScanClockInOut = async (
         },
         { new: true }
       );
-      if (updated) await clockingOutEmail(updated, school);
+      if (updated) {
+        await clockingOutEmail(updated, school);
+        await sendClockOutSMS(updated, school);
+      }
 
       action = "Clocked Out";
       actionTime = now;
@@ -782,7 +797,10 @@ export const qrScanClockInOut = async (
         },
         { new: true }
       );
-      if (updated) await clockingInEmail(updated, school);
+      if (updated) {
+        await clockingInEmail(updated, school);
+        await sendClockInSMS(updated, school);
+      }
 
       action = "Clocked In";
       actionTime = now;

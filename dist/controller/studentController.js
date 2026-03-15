@@ -95,8 +95,10 @@ const clockinAccount = async (req, res) => {
                     clockOut: false,
                     lastActionTimestamp: nowMillis,
                 }, { new: true });
-                if (clockInfo)
+                if (clockInfo) {
                     await (0, email_1.clockingInEmail)(clockInfo, school);
+                    await (0, sms_1.sendClockInSMS)(clockInfo, school);
+                }
                 // CREATE ATTENDANCE RECORD
                 try {
                     const dater = Date.now();
@@ -211,8 +213,10 @@ const clockinAccountWithID = async (req, res) => {
                     clockOut: false,
                     lastActionTimestamp: nowMillis,
                 }, { new: true });
-                if (clockInfo)
+                if (clockInfo) {
                     await (0, email_1.clockingInEmail)(clockInfo, school);
+                    await (0, sms_1.sendClockInSMS)(clockInfo, school);
+                }
                 // CREATE ATTENDANCE RECORD
                 try {
                     const dater = Date.now();
@@ -331,8 +335,10 @@ const clockOutAccount = async (req, res) => {
                         clockOutTime: lagosTime.format("llll"),
                         lastActionTimestamp: nowMillis,
                     }, { new: true });
-                    if (clockInfo)
+                    if (clockInfo) {
                         await (0, email_1.clockingOutEmail)(clockInfo, school);
+                        await (0, sms_1.sendClockOutSMS)(clockInfo, school);
+                    }
                     // CREATE ATTENDANCE RECORD (as Absent/Out)
                     try {
                         const dater = Date.now();
@@ -458,8 +464,10 @@ const clockOutAccountWidthID = async (req, res) => {
                         clockOutTime: lagosTime.format("llll"),
                         lastActionTimestamp: nowMillis,
                     }, { new: true });
-                    if (clockInfo)
+                    if (clockInfo) {
                         await (0, email_1.clockingOutEmail)(clockInfo, school);
+                        await (0, sms_1.sendClockOutSMS)(clockInfo, school);
+                    }
                     // CREATE ATTENDANCE RECORD (as Absent/Out)
                     try {
                         const dater = Date.now();
@@ -658,8 +666,10 @@ const qrScanClockInOut = async (req, res) => {
                 clockOutTime: now,
                 lastActionTimestamp: nowMillis
             }, { new: true });
-            if (updated)
+            if (updated) {
                 await (0, email_1.clockingOutEmail)(updated, school);
+                await (0, sms_1.sendClockOutSMS)(updated, school);
+            }
             action = "Clocked Out";
             actionTime = now;
         }
@@ -681,8 +691,10 @@ const qrScanClockInOut = async (req, res) => {
                 clockOut: false,
                 lastActionTimestamp: nowMillis
             }, { new: true });
-            if (updated)
+            if (updated) {
                 await (0, email_1.clockingInEmail)(updated, school);
+                await (0, sms_1.sendClockInSMS)(updated, school);
+            }
             action = "Clocked In";
             actionTime = now;
         }
