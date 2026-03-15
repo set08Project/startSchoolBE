@@ -3204,16 +3204,18 @@ export const deleteAllStudents = async (
 export const testSMS = async (req: Request, res: Response): Promise<any> => {
   try {
     const { phone } = req.params;
-    const { action, channel } = req.query;
+    const { action, channel, customMsg } = req.query;
 
-    const selectedChannel = (channel as string) || "generic";
+    const selectedChannel = (channel as string) || "dnd";
+    const userCustomMessage = customMsg ? (customMsg as string) : undefined;
 
     if (action === "send") {
-      await sendTestSMS(phone, selectedChannel);
+      await sendTestSMS(phone, selectedChannel, userCustomMessage);
       return res.status(200).send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:40px;">
           <h2 style="color:#16a34a;">✅ Test SMS Sent (${selectedChannel})!</h2>
           <p>Check your backend terminal logs for the Termii response.</p>
+          <p><strong>Message:</strong> ${userCustomMessage || "Default Test Message"}</p>
           <a href="/api/test-sms/${phone}" style="color:#2563eb;">Go Back</a>
         </body></html>
       `);

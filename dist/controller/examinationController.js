@@ -413,15 +413,6 @@ const readSubjectExamination = async (req, res) => {
         return res.status(201).json({
             message: "subject exam read successfully",
             exam,
-            debug: {
-                presentTerm,
-                allExamsCount: subject?.examination?.length || 0,
-                filteredCount: allExams?.length || 0,
-                classDetails: {
-                    effectiveClassID,
-                    foundClass: !!(await classroomModel_1.default.findById(effectiveClassID)),
-                }
-            },
             status: 201,
         });
     }

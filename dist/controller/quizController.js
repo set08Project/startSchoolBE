@@ -1985,16 +1985,6 @@ const readSubjectExamination = async (req, res) => {
         return res.status(201).json({
             message: "subject exam read successfully",
             exam,
-            debug: {
-                presentTerm,
-                allExamsCount: subject?.examination?.length || 0,
-                filteredCount: subject?.examination?.filter((e) => e.status === "examination")?.length || 0,
-                classDetails: {
-                    classId,
-                    foundClass: !!classroom,
-                    foundSchool: !!school,
-                }
-            },
             status: 201,
         });
     }

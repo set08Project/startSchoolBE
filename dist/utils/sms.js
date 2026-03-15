@@ -10,7 +10,7 @@ dotenv_1.default.config();
 const TERMII_URL = "https://api.ng.termii.com/api/sms/send";
 const sendSMS = async (to, message, channel = "generic") => {
     const apiKey = process.env.TERMII_API_KEY;
-    const senderId = process.env.TERMII_SENDER_ID || "N-Alert";
+    const senderId = process.env.TERMII_SENDER_ID || "Next54NG";
     if (!apiKey) {
         console.warn("SMS Skipped: TERMII_API_KEY is missing in .env");
         return;
@@ -43,12 +43,14 @@ const sendClockInSMS = async (student, school) => {
         const parentPhone = student?.parentPhoneNumber;
         if (!parentPhone)
             return;
-        const name = `${student.studentFirstName} ${student.studentLastName}`;
+        const studentLastName = student?.studentLastName || "";
+        const studentFirstName = student?.studentFirstName?.split(" ")[0] || "";
         const time = student.clockInTime || "";
         const schoolName = school?.schoolName || "School";
-        const message = `${schoolName}: ${name} has CLOCKED IN at ${time}. Reply or call the school if this is unexpected.`;
-        console.log(`Triggering Clock-In SMS for ${name}...`);
-        await sendSMS(parentPhone, message, "generic");
+        const message = `Hello Mr/Mrs ${studentLastName}, \nThis is to inform you that your child ${studentFirstName} has arrived at school now at ${time}. 
+    \nPowered by ${schoolName.split(" ")[0]}`;
+        console.log(`Triggering Clock-In SMS for ${studentFirstName}...`);
+        await sendSMS(parentPhone, message, "dnd");
     }
     catch (error) {
         // SMS failure must never break the clock flow
@@ -56,16 +58,17 @@ const sendClockInSMS = async (student, school) => {
     }
 };
 exports.sendClockInSMS = sendClockInSMS;
-const sendClockOutSMS = async (student, school, channel = "generic") => {
+const sendClockOutSMS = async (student, school, channel = "dnd") => {
     try {
         const parentPhone = student?.parentPhoneNumber;
         if (!parentPhone)
             return;
-        const name = `${student.studentFirstName} ${student.studentLastName}`;
+        const studentLastName = student?.studentLastName || "";
+        const studentFirstName = student?.studentFirstName?.split(" ")[0] || "";
         const time = student.clockOutTime || "";
         const schoolName = school?.schoolName || "School";
-        const message = `${schoolName}: ${name} has CLOCKED OUT at ${time}. They are on their way home.`;
-        console.log(`Triggering Clock-Out SMS for ${name}...`);
+        const message = `Hello Mr/Mrs ${studentLastName}, \nThis is to inform you that your child ${studentFirstName} has left school now at ${time}. \nPowered by ${schoolName.split(" ")[0]}`;
+        console.log(`Triggering Clock-Out SMS for ${studentFirstName}...`);
         await sendSMS(parentPhone, message, channel);
     }
     catch (error) {
@@ -73,8 +76,8 @@ const sendClockOutSMS = async (student, school, channel = "generic") => {
     }
 };
 exports.sendClockOutSMS = sendClockOutSMS;
-const sendTestSMS = async (to, channel = "generic") => {
-    const message = "This is a TEST SMS from your School Management System. Termii configuration is working!";
+const sendTestSMS = async (to, channel = "dnd", customMessage) => {
+    const message = customMessage || "This is a TEST SMS from your School Management System. Termii configuration is working!";
     await sendSMS(to, message, channel);
 };
 exports.sendTestSMS = sendTestSMS;
