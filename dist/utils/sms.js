@@ -49,7 +49,7 @@ const sendClockInSMS = async (student, school) => {
         const studentFirstName = student?.studentFirstName?.split(" ")[0] || "";
         const time = student.clockInTime || "";
         const schoolName = school?.schoolName || "School";
-        const message = `Hello Mr/Mrs ${studentLastName || ""}, \nThis is to inform you that your child ${studentFirstName || ""} has arrived at school now at ${time || ""}. \nPowered by ${schoolName.split(" ")[0] || ""}`;
+        const message = `Hello Mr/Mrs ${studentLastName.slice(0, 9) || ""}, This is to inform you that your child ${studentFirstName.slice(0, 9) || ""} has arrived at school now at ${time || ""}. `.slice(0, 141);
         console.log(`Triggering Clock-In SMS for ${studentFirstName}...`);
         await sendSMS(parentPhone, message, "generic");
     }
@@ -72,12 +72,13 @@ const sendClockOutSMS = async (student, school, channel = "generic") => {
         const studentFirstName = student?.studentFirstName?.split(" ")[0] || "";
         const time = student.clockOutTime || "";
         const schoolName = school?.schoolName || "School";
-        const message = `Hello Mr/Mrs ${studentLastName || ""}, \nThis is to inform you that your child ${studentFirstName || ""} has left school now at ${time || ""}. \nPowered by ${schoolName.split(" ")[0] || ""}`;
+        const message = `Hello Mr/Mrs ${studentLastName.slice(0, 9) || ""}, This is to inform you that your child ${studentFirstName.slice(0, 9) || ""} has left school now at ${time || ""}`.slice(0, 141);
         console.log(`Triggering Clock-Out SMS for ${studentFirstName}...`);
         await sendSMS(parentPhone, message, channel);
     }
     catch (error) {
         console.error("Termii clock-out SMS error:", error);
+        ``;
     }
 };
 exports.sendClockOutSMS = sendClockOutSMS;
