@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendTestSMS = exports.sendClockOutSMS = exports.sendClockInSMS = void 0;
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const moment_1 = __importDefault(require("moment"));
+const moment_timezone_1 = __importDefault(require("moment-timezone"));
 dotenv_1.default.config();
 const TERMII_URL = "https://api.ng.termii.com/api/sms/send";
 const sendSMS = async (to, message, channel = "generic") => {
@@ -50,7 +50,7 @@ const sendClockInSMS = async (student, school) => {
         const studentFirstName = student?.studentFirstName?.split(" ")[0] || "";
         const time = student.clockInTime || "";
         const schoolName = school?.schoolName || "School";
-        const message = `Hello Mr/Mrs ${studentLastName.slice(0, 16) || ""}, This is to inform you that your child ${studentFirstName.slice(0, 16) || ""} has arrived at school: ${(0, moment_1.default)(time).format("DD/MM/YY hh:mmA") || ""}.`;
+        const message = `Hello Mr/Mrs ${studentLastName.slice(0, 16) || ""}, This is to inform you that your child ${studentFirstName.slice(0, 16) || ""} has arrived at school: ${(0, moment_timezone_1.default)(time).format("DD/MM/YY hh:mmA") || ""}.`;
         console.log(`Triggering Clock-In SMS for ${studentFirstName}...`);
         await sendSMS(parentPhone, message, "generic");
     }
@@ -73,7 +73,7 @@ const sendClockOutSMS = async (student, school, channel = "generic") => {
         const studentFirstName = student?.studentFirstName?.split(" ")[0] || "";
         const time = student.clockOutTime || "";
         const schoolName = school?.schoolName || "School";
-        const message = `Hello Mr/Mrs ${studentLastName.slice(0, 16) || ""}, This is to inform you that your child ${studentFirstName.slice(0, 16) || ""} has left school: ${(0, moment_1.default)(time).format("DD/MM/YY hh:mmA") || ""}.`;
+        const message = `Hello Mr/Mrs ${studentLastName.slice(0, 16) || ""}, This is to inform you that your child ${studentFirstName.slice(0, 16) || ""} has left school: ${(0, moment_timezone_1.default)(time).format("DD/MM/YY hh:mmA") || ""}.`;
         console.log(`Triggering Clock-Out SMS for ${studentFirstName}...`);
         await sendSMS(parentPhone, message, channel);
     }

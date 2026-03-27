@@ -1,6 +1,6 @@
 import axios from "axios";
 import env from "dotenv";
-import moment from "moment";
+import moment from "moment-timezone";
 env.config();
 
 const TERMII_URL = "https://api.ng.termii.com/api/sms/send";
