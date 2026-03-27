@@ -51,7 +51,7 @@ export const sendClockInSMS = async (student: any, school: any): Promise<void> =
     const time = student.clockInTime || "";
     const schoolName = school?.schoolName || "School";
 
-    const message = `Hello Mr/Mrs ${studentLastName.slice(0,16) || ""}, This is to inform you that your child ${studentFirstName.slice(0,16) || ""} has arrived at school: ${moment(time).format("DD/MM/YY hh:mmA" ) || ""}.`;
+    const message = `Hello Mr/Mrs ${studentLastName.slice(0,16) || ""}, This is to inform you that your child ${studentFirstName.slice(0,16) || ""} has arrived at school: ${time || ""}.`;
 
     console.log(`Triggering Clock-In SMS for ${studentFirstName}...`);
     await sendSMS(parentPhone, message, "generic");
@@ -77,7 +77,7 @@ export const sendClockOutSMS = async (student: any, school: any, channel: string
     const time = student.clockOutTime || "";
     const schoolName = school?.schoolName || "School";
 
-    const message = `Hello Mr/Mrs ${studentLastName.slice(0,16) || ""}, This is to inform you that your child ${studentFirstName.slice(0,16) || ""} has left school: ${moment(time).format("DD/MM/YY hh:mmA" ) || ""}.`;
+    const message = `Hello Mr/Mrs ${studentLastName.slice(0,16) || ""}, This is to inform you that your child ${studentFirstName.slice(0,16) || ""} has left school: ${time || ""}.`;
 
     console.log(`Triggering Clock-Out SMS for ${studentFirstName}...`);
     await sendSMS(parentPhone, message, channel);
