@@ -753,7 +753,7 @@ export const createSubjectQuizFromFile = async (
           } else if (/^[A-E][\.\)]?\s+\S/.test(line)) {
             options.push(line.replace(/^[A-E][\.\)]?\s+/, "").trim());
           } else if (/^Answer:/i.test(line)) {
-            questionData.answer = line.replace(/^Answer:\s*/i, "").trim();
+            questionData.answer = line.replace(/^Answer:\s*/i, "").replace(/<\/?(?:b|i|u)>/gi, "").trim();
           } else if (/^Explanation:/i.test(line)) {
             questionData.explanation = line.replace(/^Explanation:\s*/i, "").trim();
           } else if (questionData.question && options.length === 0) {

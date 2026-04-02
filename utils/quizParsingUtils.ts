@@ -78,7 +78,7 @@ export function parseQuizText(text: string): QuizQuestion[] {
         current.question = current.question.replace(RE_BRACKET_URL, "").trim();
       }
     } else if (RE_ANSWER.test(line)) {
-      if (current) current.answer = line.replace(RE_ANSWER, "").trim();
+      if (current) current.answer = line.replace(RE_ANSWER, "").replace(/<\/?(?:b|i|u)>/gi, "").trim();
     } else if (RE_EXPLANATION.test(line)) {
       if (current) current.explanation = line.replace(RE_EXPLANATION, "").trim();
     } else if (RE_OPTION_LONE.test(line)) {

@@ -70,7 +70,7 @@ function parseQuizText(text) {
         }
         else if (exports.RE_ANSWER.test(line)) {
             if (current)
-                current.answer = line.replace(exports.RE_ANSWER, "").trim();
+                current.answer = line.replace(exports.RE_ANSWER, "").replace(/<\/?(?:b|i|u)>/gi, "").trim();
         }
         else if (exports.RE_EXPLANATION.test(line)) {
             if (current)

@@ -555,7 +555,7 @@ const createSubjectExamination = async (req, res) => {
                     options.push(line.replace(/^[A-E][\.\)]?\s+/, "").trim());
                 }
                 else if (/^Answer:/i.test(line)) {
-                    current.answer = line.replace(/^Answer:\s*/i, "").trim();
+                    current.answer = line.replace(/^Answer:\s*/i, "").replace(/<\/?(?:b|i|u)>/gi, "").trim();
                 }
                 else if (current.question && options.length === 0) {
                     current.question += " " + line;
