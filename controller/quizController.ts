@@ -107,7 +107,7 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
     }
     let fullText = "";
 
-    const paragraphs = documentXml.split(/<w:p[\s>]/);
+    const paragraphs = documentXml.split(/<w:p[\s>]|<w:br[^>]*\/>/);
     for (const para of paragraphs) {
       if (!para.trim()) continue;
       let paraText = processParagraph(para);
@@ -136,20 +136,20 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
             webp: "image/webp",
             bmp: "image/bmp",
           };
-          const mime = mimeMap[ext] || "application/octet-stream";
+          const mime = mimeMap[ext];
+          // Skip non-image files (e.g. EMF/WMF/XML metadata) — Cloudinary rejects them with 400
+          if (!mime) continue;
           const dataUri = `data:${mime};base64,${fileBuff.toString("base64")}`;
           // Upload to cloudinary (if configured) so clients can fetch by URL
           try {
             const uploadRes: any = await uploadDataUri(dataUri, "exams");
             if (uploadRes && uploadRes.secure_url) {
               imageUrls.push(uploadRes.secure_url);
-            } else {
-              // Fallback: use data URI directly
-              imageUrls.push(dataUri);
             }
-          } catch (uploadErr) {
-            // Upload failed – include data URI as fallback
-            imageUrls.push(dataUri);
+            // Skip if no URL — don't embed raw data URIs which can be very large
+          } catch (uploadErr: any) {
+            // Upload failed silently — continue processing text
+            console.warn("Cloudinary upload failed for embedded image:", uploadErr?.message || uploadErr);
           }
         } catch (ex: any) {
           // ignore particular image failures – continue parsing text
@@ -167,7 +167,9 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
       if (paraText.trim()) fullText += paraText.trim() + "\n";
     }
 
-    return fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    let decodedText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    decodedText = decodedText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+    return decodedText;
   } catch (error: any) {
     console.error("Error creating exam:", error);
     throw error;
@@ -177,12 +179,12 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
 function processParagraph(paraXml: string): string {
   const elements: { pos: number; content: string }[] = [];
 
-  // Capture Runs, preserving their natural order
+  // Capture Runs, preserving their natural order, with formatting detection
   const runRegex = /<w:r[\s>](.*?)<\/w:r>/gs;
   let match;
   while ((match = runRegex.exec(paraXml)) !== null) {
     const runXml = match[1];
-    
+
     // Extract ALL text elements within the run
     const textRegex = /<w:t[^>]*>([^<]*)<\/w:t>/g;
     let tMatch;
@@ -198,7 +200,16 @@ function processParagraph(paraXml: string): string {
       } else if (runXml.includes('w:val="superscript"')) {
         elements.push({ pos: match.index, content: toUnicodeSuperscript(runText) });
       } else {
-        elements.push({ pos: match.index, content: runText });
+        // Check for inline formatting in w:rPr
+        let text = runText;
+        const rPrMatch = runXml.match(/<w:rPr[^>]*>(.*?)<\/w:rPr>/s);
+        if (rPrMatch) {
+          const rPr = rPrMatch[1];
+          if (/<w:u\s/.test(rPr) && !/<w:u\s[^>]*w:val="none"/.test(rPr)) text = `<u>${text}</u>`;
+          if (/<w:b[\s\/]/.test(rPr) && !/<w:b\s[^>]*w:val="false"/.test(rPr)) text = `<b>${text}</b>`;
+          if (/<w:i[\s\/]/.test(rPr) && !/<w:i\s[^>]*w:val="false"/.test(rPr)) text = `<i>${text}</i>`;
+        }
+        elements.push({ pos: match.index, content: text });
       }
     }
   }
@@ -736,14 +747,17 @@ export const createSubjectQuizFromFile = async (
               questionData.images = [url];
               questionData.url = url;
             }
-          } else if (/^[A-D][\.\)]/.test(line)) {
-            options.push(line.replace(/^[A-D][\.\)]\s*/, "").trim());
+          } else if (/^[A-E][\.\)]?\s*$/.test(line)) {
+            // Lone option letter on its own line — text will be on next line
+            options.push("");
+          } else if (/^[A-E][\.\)]?\s+\S/.test(line)) {
+            options.push(line.replace(/^[A-E][\.\)]?\s+/, "").trim());
           } else if (/^Answer:/i.test(line)) {
             questionData.answer = line.replace(/^Answer:\s*/i, "").trim();
           } else if (/^Explanation:/i.test(line)) {
             questionData.explanation = line.replace(/^Explanation:\s*/i, "").trim();
-          } else if (questionData && !questionData.options && Object.keys(questionData).length > 0) {
-            // Continuation of question
+          } else if (questionData.question && options.length === 0) {
+            // Continuation of question text (before any options start)
             const match = line.match(BRACKET_URL_REGEX);
             let url = match ? match[1].trim() : null;
             if (!url) {
@@ -757,6 +771,13 @@ export const createSubjectQuizFromFile = async (
               if (!questionData.images) questionData.images = [];
               questionData.images.push(url);
               if (!questionData.url) questionData.url = url;
+            }
+          } else if (options.length > 0) {
+            // Fill in lone-letter placeholder or append continuation to last option
+            if (options[options.length - 1] === "") {
+              options[options.length - 1] = line.trim();
+            } else {
+              options[options.length - 1] += " " + line.trim();
             }
           }
         }

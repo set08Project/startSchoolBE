@@ -82,7 +82,7 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
     }
     let fullText = "";
 
-    const paragraphs = documentXml.split(/<w:p[\s>]/);
+    const paragraphs = documentXml.split(/<w:p[\s>]|<w:br[^>]*\/>/);
     for (const para of paragraphs) {
       if (!para.trim()) continue;
       let paraText = processParagraph(para);
@@ -111,20 +111,20 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
             webp: "image/webp",
             bmp: "image/bmp",
           };
-          const mime = mimeMap[ext] || "application/octet-stream";
+          const mime = mimeMap[ext];
+          // Skip non-image files (e.g. EMF/WMF/XML metadata) — Cloudinary rejects them with 400
+          if (!mime) continue;
           const dataUri = `data:${mime};base64,${fileBuff.toString("base64")}`;
           // Upload to cloudinary (if configured) so clients can fetch by URL
           try {
             const uploadRes: any = await uploadDataUri(dataUri, "exams");
             if (uploadRes && uploadRes.secure_url) {
               imageUrls.push(uploadRes.secure_url);
-            } else {
-              // Fallback: use data URI directly
-              imageUrls.push(dataUri);
             }
-          } catch (uploadErr) {
-            // Upload failed – include data URI as fallback
-            imageUrls.push(dataUri);
+            // Skip if no URL — don't embed raw data URIs which can be very large
+          } catch (uploadErr: any) {
+            // Upload failed silently — continue processing text
+            console.warn("Cloudinary upload failed for embedded image:", uploadErr?.message || uploadErr);
           }
         } catch (ex: any) {
           // ignore particular image failures – continue parsing text
@@ -142,7 +142,9 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
       if (paraText.trim()) fullText += paraText.trim() + "\n";
     }
 
-    return fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    let decodedText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    decodedText = decodedText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+    return decodedText;
   } catch (error) {
     console.error("Error extracting DOCX:", error);
     throw error;
@@ -152,12 +154,12 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
 function processParagraph(paraXml: string): string {
   const elements: { pos: number; content: string }[] = [];
 
-  // Capture Runs, preserving their natural order
+  // Capture Runs, preserving their natural order, with formatting detection
   const runRegex = /<w:r[\s>](.*?)<\/w:r>/gs;
   let match;
   while ((match = runRegex.exec(paraXml)) !== null) {
     const runXml = match[1];
-    
+
     // Extract ALL text elements within the run
     const textRegex = /<w:t[^>]*>([^<]*)<\/w:t>/g;
     let tMatch;
@@ -173,7 +175,16 @@ function processParagraph(paraXml: string): string {
       } else if (runXml.includes('w:val="superscript"')) {
         elements.push({ pos: match.index, content: toUnicodeSuperscript(runText) });
       } else {
-        elements.push({ pos: match.index, content: runText });
+        // Check for inline formatting in w:rPr
+        let text = runText;
+        const rPrMatch = runXml.match(/<w:rPr[^>]*>(.*?)<\/w:rPr>/s);
+        if (rPrMatch) {
+          const rPr = rPrMatch[1];
+          if (/<w:u\s/.test(rPr) && !/<w:u\s[^>]*w:val="none"/.test(rPr)) text = `<u>${text}</u>`;
+          if (/<w:b[\s\/]/.test(rPr) && !/<w:b\s[^>]*w:val="false"/.test(rPr)) text = `<b>${text}</b>`;
+          if (/<w:i[\s\/]/.test(rPr) && !/<w:i\s[^>]*w:val="false"/.test(rPr)) text = `<i>${text}</i>`;
+        }
+        elements.push({ pos: match.index, content: text });
       }
     }
   }
@@ -428,11 +439,15 @@ export const createSubjectMidTest = async (
       
       // Virtual Splitting for merged lines
       let splitText = rawText;
-      splitText = splitText.replace(/(\S)\s*([A-D][\.\)]\s+)/g, "$1\n$2");
-      // Split only if NOT preceded by symbols common in chemical formulas like (C=12, O=16)
+      // Split before options with dot/paren: "A. option" or "A) option"
+      splitText = splitText.replace(/(\S)\s*([A-E][\.\)]\s+)/g, "$1\n$2");
+      // Split before number-prefixed questions, skip chemical formula contexts
       splitText = splitText.replace(/([^,(=])\s*(\b\d+[\.\)]\s+)/g, "$1\n$2");
       splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
       splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
+      // Split before no-dot option letters: "D bringing\nA convenience" etc.
+      // Pattern: (end of option text) + whitespace + (A-E followed by uppercase or text that looks like an option)
+      splitText = splitText.replace(/([a-z,\.!\?])\s+([A-E]\s+[A-Z])/g, "$1\n$2");
 
       const lines = splitText
         .split("\n")
@@ -466,14 +481,17 @@ export const createSubjectMidTest = async (
             questionData.images = [url];
             questionData.url = url;
           }
-        } else if (/^[A-D][\.\)]/.test(line)) {
-          options.push(line.replace(/^[A-D][\.\)]\s*/, "").trim());
+        } else if (/^[A-E][\.\)]?\s+\S/.test(line)) {
+          options.push(line.replace(/^[A-E][\.\)]?\s+/, "").trim());
         } else if (/^Answer:/i.test(line)) {
           questionData.answer = line.replace(/^Answer:\s*/i, "").trim();
         } else if (/^Explanation:/i.test(line)) {
           questionData.explanation = line.replace(/^Explanation:\s*/i, "").trim();
-        } else if (questionData && !questionData.options) {
-          // Continuation of question
+        } else if (/^[A-E][\\.\\)]?\s*$/.test(line)) {
+          // Lone option letter on its own line (D alone, text on next line)
+          options.push("");
+        } else if (questionData.question && options.length === 0) {
+          // Still in question text (no options collected yet)
           const match = line.match(BRACKET_URL_REGEX);
           let url = match ? match[1].trim() : null;
           if (!url) {
@@ -487,6 +505,13 @@ export const createSubjectMidTest = async (
             if (!questionData.images) questionData.images = [];
             questionData.images.push(url);
             if (!questionData.url) questionData.url = url;
+          }
+        } else if (options.length > 0) {
+          // Continuation of the last option (or fills in after a lone letter)
+          if (options[options.length - 1] === "") {
+            options[options.length - 1] = line.trim();
+          } else {
+            options[options.length - 1] += " " + line.trim();
           }
         }
       }

@@ -32,20 +32,16 @@ import resultHistory from "./router/resultHistoryRouter";
 import course from "./router/courseRouter";
 import teachSubject from "./router/teachSubjectRouter";
 import teachSubjectTopic from "./router/teachSubjectTopicRouter";
+import docxRepair from "./router/docxRepairRouter";
 import teachSubjectQuiz from "./router/teachTopicQuiz";
-
-import cronParser from "cron-parser";
-import fs from "fs";
 
 import { HTTP } from "./utils/enums";
 import { mainError } from "./error/mianError";
 import { handleError } from "./error/handleError";
-import cron from "node-cron";
-
-import schoolModel from "./model/schoolModel";
 
 export const mainApp = (app: Application) => {
   try {
+    app.use("/api", docxRepair); // Register the docx repair endpoint
     app.use("/api", teachSubjectQuiz);
     app.use("/api", teachSubjectTopic);
     app.use("/api", teachSubject);

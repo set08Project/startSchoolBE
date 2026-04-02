@@ -36,12 +36,14 @@ const resultHistoryRouter_1 = __importDefault(require("./router/resultHistoryRou
 const courseRouter_1 = __importDefault(require("./router/courseRouter"));
 const teachSubjectRouter_1 = __importDefault(require("./router/teachSubjectRouter"));
 const teachSubjectTopicRouter_1 = __importDefault(require("./router/teachSubjectTopicRouter"));
+const docxRepairRouter_1 = __importDefault(require("./router/docxRepairRouter"));
 const teachTopicQuiz_1 = __importDefault(require("./router/teachTopicQuiz"));
 const enums_1 = require("./utils/enums");
 const mianError_1 = require("./error/mianError");
 const handleError_1 = require("./error/handleError");
 const mainApp = (app) => {
     try {
+        app.use("/api", docxRepairRouter_1.default); // Register the docx repair endpoint
         app.use("/api", teachTopicQuiz_1.default);
         app.use("/api", teachSubjectTopicRouter_1.default);
         app.use("/api", teachSubjectRouter_1.default);

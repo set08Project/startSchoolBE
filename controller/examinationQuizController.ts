@@ -87,7 +87,7 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
     }
     let fullText = "";
 
-    const paragraphs = documentXml.split(/<w:p[\s>]/);
+    const paragraphs = documentXml.split(/<w:p[\s>]|<w:br[^>]*\/>/);
     for (const para of paragraphs) {
       if (!para.trim()) continue;
       let paraText = processParagraph(para);
@@ -116,20 +116,20 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
             webp: "image/webp",
             bmp: "image/bmp",
           };
-          const mime = mimeMap[ext] || "application/octet-stream";
+          const mime = mimeMap[ext];
+          // Skip non-image files (e.g. EMF/WMF/XML metadata) — Cloudinary rejects them with 400
+          if (!mime) continue;
           const dataUri = `data:${mime};base64,${fileBuff.toString("base64")}`;
           // Upload to cloudinary (if configured) so clients can fetch by URL
           try {
             const uploadRes: any = await uploadDataUri(dataUri, "exams");
             if (uploadRes && uploadRes.secure_url) {
               imageUrls.push(uploadRes.secure_url);
-            } else {
-              // Fallback: use data URI directly
-              imageUrls.push(dataUri);
             }
-          } catch (uploadErr) {
-            // Upload failed – include data URI as fallback
-            imageUrls.push(dataUri);
+            // Skip if no URL — don't embed raw data URIs which can be very large
+          } catch (uploadErr: any) {
+            // Upload failed silently — continue processing text
+            console.warn("Cloudinary upload failed for embedded image:", uploadErr?.message || uploadErr);
           }
         } catch (ex) {
           // ignore particular image failures – continue parsing text
@@ -147,7 +147,9 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
       if (paraText.trim()) fullText += paraText.trim() + "\n";
     }
 
-    return fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    let decodedText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    decodedText = decodedText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+    return decodedText;
   } catch (error) {
     console.error("Error extracting DOCX:", error);
     throw error;
@@ -157,14 +159,23 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
 function processParagraph(paraXml: string): string {
   const elements: { pos: number; content: string }[] = [];
 
-  // 1. Text runs (w:t)
-  const textRunRegex = /<w:r[^>]*>.*?<w:t[^>]*>([^<]*)<\/w:t>.*?<\/w:r>/gs;
+  // 1. Text runs (w:t) — with formatting detection (underline, bold, italic)
+  const textRunRegex = /<w:r[^>]*>(.*?)<\/w:r>/gs;
   let match;
   while ((match = textRunRegex.exec(paraXml)) !== null) {
-    // Only add if it's NOT part of a math element and doesn't have alignment
-    if (!match[0].includes("<m:oMath") && !match[0].includes("<w:vertAlign")) {
-      elements.push({ pos: match.index, content: match[1] });
+    const rInner = match[1];
+    if (match[0].includes("<m:oMath") || match[0].includes("<w:vertAlign")) continue;
+    const tMatch = rInner.match(/<w:t[^>]*>([^<]*)<\/w:t>/);
+    if (!tMatch || !tMatch[1]) continue;
+    let text = tMatch[1];
+    const rPrMatch = rInner.match(/<w:rPr[^>]*>(.*?)<\/w:rPr>/s);
+    if (rPrMatch) {
+      const rPr = rPrMatch[1];
+      if (/<w:u\s/.test(rPr) && !/<w:u\s[^>]*w:val="none"/.test(rPr)) text = `<u>${text}</u>`;
+      if (/<w:b[\s\/]/.test(rPr) && !/<w:b\s[^>]*w:val="false"/.test(rPr)) text = `<b>${text}</b>`;
+      if (/<w:i[\s\/]/.test(rPr) && !/<w:i\s[^>]*w:val="false"/.test(rPr)) text = `<i>${text}</i>`;
     }
+    elements.push({ pos: match.index, content: text });
   }
 
   // 2. Subscript w:r elements
@@ -515,7 +526,22 @@ export const createSubjectExamination = async (req: any, res: Response) => {
 
     if (ext === ".docx" || ext === ".doc") {
       const raw = await extractRawTextFromDocx(uploadedPath);
-      const lines = raw
+
+      // Debug: log first 2000 chars to see what raw text looks like
+      console.log("=== RAW DOCX TEXT (first 2000 chars) ===");
+      console.log(raw.slice(0, 2000));
+      console.log("=== END RAW ===");
+
+      // Virtual splitting — same as midTestController
+      let splitText = raw;
+      splitText = splitText.replace(/(\S)\s*([A-E][\\.\\)]\s+)/g, "$1\n$2");
+      splitText = splitText.replace(/([^,(=])\s*(\b\d+[\\.\\)]\s+)/g, "$1\n$2");
+      splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
+      splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
+      // Split before no-dot option letters e.g. "D bringing A convenience"
+      splitText = splitText.replace(/([a-z,\\.!\\?])\s+([A-E]\s+[A-Z])/g, "$1\n$2");
+
+      const lines = splitText
         .split("\n")
         .map((l) => l.trim())
         .filter(Boolean);
@@ -540,14 +566,22 @@ export const createSubjectExamination = async (req: any, res: Response) => {
             current.images = su;
             current.url = su[0];
           }
-        } else if (/^[A-D][\.\)]\s/.test(line)) {
-          options.push(line.replace(/^[A-D][\.\)]\s*/, "").trim());
+        } else if (/^[A-E][\.\)]?\s*$/.test(line)) {
+          // Lone option letter on its own line — text will be on the next line
+          options.push("");
+        } else if (/^[A-E][\.\)]?\s+\S/.test(line)) {
+          options.push(line.replace(/^[A-E][\.\)]?\s+/, "").trim());
         } else if (/^Answer:/i.test(line)) {
           current.answer = line.replace(/^Answer:\s*/i, "").trim();
         } else if (current.question && options.length === 0) {
           current.question += " " + line;
         } else if (options.length > 0) {
-          options[options.length - 1] += " " + line;
+          // Fill in lone-letter placeholder or append continuation
+          if (options[options.length - 1] === "") {
+            options[options.length - 1] = line.trim();
+          } else {
+            options[options.length - 1] += " " + line.trim();
+          }
         }
       }
       if (current.question) {
