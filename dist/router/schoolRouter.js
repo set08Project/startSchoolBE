@@ -71,4 +71,7 @@ router.route("/export-data-file/:schoolID").get(schoolController_1.exportSchoolD
 router.route("/import-data").patch(schoolController_1.importSchoolData);
 router.route("/delete-school/:schoolID").delete(schoolController_1.deleteSchool);
 router.route("/update-school-sms/:schoolID").patch(schoolController_1.updateSchoolSMS);
+router
+    .route("/update-class-teacher-grading/:schoolID")
+    .patch(schoolController_1.updateClassTeacherGrading);
 exports.default = router;

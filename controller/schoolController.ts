@@ -1607,3 +1607,29 @@ export const updateSchoolSMS = async (
     });
   }
 };
+
+export const updateClassTeacherGrading = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { schoolID } = req.params;
+    const { allowClassTeacherGrading } = req.body;
+
+    const school = await schoolModel.findByIdAndUpdate(
+      schoolID,
+      { allowClassTeacherGrading },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "School Class Teacher Grading status updated",
+      data: school,
+    });
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error updating school Class Teacher Grading status",
+      data: error.message,
+    });
+  }
+};

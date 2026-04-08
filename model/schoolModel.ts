@@ -80,6 +80,7 @@ interface iSchool {
   schoolFeesHistory: Array<{}>;
   outGoneStudents: Array<{}>;
   sendSMS: boolean;
+  allowClassTeacherGrading: boolean;
 }
 
 interface iSchoolData extends iSchool, Document {}
@@ -240,6 +241,10 @@ const schoolModel = new Schema<iSchoolData>(
     sendSMS: {
       type: Boolean,
       default: false,
+    },
+    allowClassTeacherGrading: {
+      type: Boolean,
+      default: true,
     },
 
     schoolTags: [

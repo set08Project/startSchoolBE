@@ -132,6 +132,10 @@ const schoolModel = new mongoose_2.Schema({
         type: Boolean,
         default: false,
     },
+    allowClassTeacherGrading: {
+        type: Boolean,
+        default: true,
+    },
     schoolTags: [
         {
             type: {},
