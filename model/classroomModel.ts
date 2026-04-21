@@ -31,6 +31,7 @@ interface iClass {
   assignmentResolve: Array<{}>;
   school: {};
   weekStudent: {};
+  topStudents: Array<{}>;
 }
 
 interface iClassData extends iClass, Document {}
@@ -40,6 +41,11 @@ const classesModel = new Schema<iClassData>(
     weekStudent: {
       type: {},
     },
+    topStudents: [
+      {
+        type: {},
+      },
+    ],
 
     lessonNotes: [
       {

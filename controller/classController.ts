@@ -791,6 +791,46 @@ export const studentOfWeek = async (
   }
 };
 
+export const setTopStudents = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { teacherID } = req.params;
+    const { topStudents } = req.body;
+
+    const teacher = await staffModel.findById(teacherID);
+
+    const classRM = await classroomModel.findById(teacher?.presentClassID);
+
+    if (teacher?.status === "school-teacher" && classRM) {
+      const updatedClass = await classroomModel.findByIdAndUpdate(
+        classRM?._id,
+        {
+          topStudents,
+        },
+        { new: true }
+      );
+
+      return res.status(201).json({
+        message: "top students set successfully",
+        status: 201,
+        data: updatedClass,
+      });
+    } else {
+      return res.status(404).json({
+        message: "teacher or class not found",
+        status: 404,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error setting top students",
+      status: 404,
+    });
+  }
+};
+
 /**
  * GET /view-class-positions/:classID?source=historical|report|mid&term=&session=
  * source defaults to 'historical'.

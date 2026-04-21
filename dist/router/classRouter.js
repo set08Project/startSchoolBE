@@ -30,4 +30,5 @@ router
     .patch(classController_1.updateSchoolClassTeacher);
 router.route("/delete-classrooms/:schoolID/:classID").delete(classController_1.deleteSchoolClass);
 router.route("/student-week/:teacherID").patch(classController_1.studentOfWeek);
+router.route("/set-top-students/:teacherID").patch(classController_1.setTopStudents);
 exports.default = router;

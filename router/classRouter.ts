@@ -4,6 +4,7 @@ import {
   createSchoolClasses,
   deleteSchoolClass,
   studentOfWeek,
+  setTopStudents,
   updateSchoolClass1stFee,
   updateSchoolClassName,
   updateSchoolClassTeacher,
@@ -56,4 +57,5 @@ router
 router.route("/delete-classrooms/:schoolID/:classID").delete(deleteSchoolClass);
 
 router.route("/student-week/:teacherID").patch(studentOfWeek);
+router.route("/set-top-students/:teacherID").patch(setTopStudents);
 export default router;

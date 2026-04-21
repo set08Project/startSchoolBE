@@ -5,6 +5,11 @@ const classesModel = new mongoose_1.Schema({
     weekStudent: {
         type: {},
     },
+    topStudents: [
+        {
+            type: {},
+        },
+    ],
     lessonNotes: [
         {
             type: mongoose_1.Types.ObjectId,

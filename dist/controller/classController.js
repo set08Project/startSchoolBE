@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.viewClassPositions = exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClass1stFee = exports.updateSchoolClassTeacher = exports.updateSchoolClassName = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createBulkSchoolClassroom = exports.createSchoolClasses = void 0;
+exports.viewClassPositions = exports.setTopStudents = exports.studentOfWeek = exports.viewClassTopStudent = exports.deleteSchoolClass = exports.updateSchoolClass1stFee = exports.updateSchoolClassTeacher = exports.updateSchoolClassName = exports.viewClassRM = exports.viewOneClassRM = exports.viewSchoolClasses = exports.viewSchoolClassesByName = exports.viewClassesBySubject = exports.viewClassesByStudent = exports.viewClassesByTimeTable = exports.updateSchoolClassesPerformance = exports.createBulkSchoolClassroom = exports.createSchoolClasses = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const mongoose_1 = require("mongoose");
@@ -646,6 +646,37 @@ const studentOfWeek = async (req, res) => {
     }
 };
 exports.studentOfWeek = studentOfWeek;
+const setTopStudents = async (req, res) => {
+    try {
+        const { teacherID } = req.params;
+        const { topStudents } = req.body;
+        const teacher = await staffModel_1.default.findById(teacherID);
+        const classRM = await classroomModel_1.default.findById(teacher?.presentClassID);
+        if (teacher?.status === "school-teacher" && classRM) {
+            const updatedClass = await classroomModel_1.default.findByIdAndUpdate(classRM?._id, {
+                topStudents,
+            }, { new: true });
+            return res.status(201).json({
+                message: "top students set successfully",
+                status: 201,
+                data: updatedClass,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "teacher or class not found",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error setting top students",
+            status: 404,
+        });
+    }
+};
+exports.setTopStudents = setTopStudents;
 /**
  * GET /view-class-positions/:classID?source=historical|report|mid&term=&session=
  * source defaults to 'historical'.
