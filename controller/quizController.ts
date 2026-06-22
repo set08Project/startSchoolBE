@@ -705,8 +705,8 @@ export const createSubjectQuizFromFile = async (
         // Virtual Splitting for merged lines
         let splitText = rawText;
         splitText = splitText.replace(/(\S)\s*([A-D][\.\)]\s+)/g, "$1\n$2");
-        // Split only if NOT preceded by symbols common in chemical formulas like (C=12, O=16)
-        splitText = splitText.replace(/([^,(=])\s*(\b\d+[\.\)]\s+)/g, "$1\n$2");
+        // Split only if preceded by end-of-sentence punctuation or letters, to avoid math like (C=12) or (n-2)
+        splitText = splitText.replace(/([a-zA-Z!?."'>\)])\s+(\b\d+[\.\)]\s+)/g, "$1\n$2");
         splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
         splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
 
@@ -1045,8 +1045,8 @@ export const createSubjectExam = async (
         // Virtual Splitting for merged lines
         let splitText = rawText;
         splitText = splitText.replace(/(\S)\s*([A-D][\.\)]\s+)/g, "$1\n$2");
-        // Split only if NOT preceded by symbols common in chemical formulas like (C=12, O=16)
-        splitText = splitText.replace(/([^,(=])\s*(\b\d+[\.\)]\s+)/g, "$1\n$2");
+        // Split only if preceded by end-of-sentence punctuation or letters, to avoid math like (C=12) or (n-2)
+        splitText = splitText.replace(/([a-zA-Z!?."'>\)])\s+(\b\d+[\.\)]\s+)/g, "$1\n$2");
         splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
         splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
 
