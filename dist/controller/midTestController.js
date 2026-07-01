@@ -416,7 +416,7 @@ const createSubjectMidTest = async (req, res) => {
             // Split before options with dot/paren: "A. option" or "A) option"
             splitText = splitText.replace(/(\S)\s*([A-E][\.\)]\s+)/g, "$1\n$2");
             // Split before number-prefixed questions, skip chemical formula contexts
-            splitText = splitText.replace(/([^,(=])\s*(\b\d+[\.\)]\s+)/g, "$1\n$2");
+            splitText = splitText.replace(/([a-zA-Z!?."'>\)])\s+(\b\d+[\.\)]\s+)/g, "$1\n$2");
             splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
             splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
             // Split before no-dot option letters: "D bringing\nA convenience" etc.

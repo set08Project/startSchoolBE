@@ -517,12 +517,12 @@ const createSubjectExamination = async (req, res) => {
             console.log("=== END RAW ===");
             // Virtual splitting — same as midTestController
             let splitText = raw;
-            splitText = splitText.replace(/(\S)\s*([A-E][\\.\\)]\s+)/g, "$1\n$2");
-            splitText = splitText.replace(/([^,(=])\s*(\b\d+[\\.\\)]\s+)/g, "$1\n$2");
+            splitText = splitText.replace(/(\S)\s*([A-E][\.\)]\s+)/g, "$1\n$2");
+            splitText = splitText.replace(/([a-zA-Z!?."'>\)])\s+(\b\d+[\\.\\)]\s+)/g, "$1\n$2");
             splitText = splitText.replace(/(\S)\s*(Answer:\s*)/gi, "$1\n$2");
             splitText = splitText.replace(/(\S)\s*(Explanation:\s*)/gi, "$1\n$2");
             // Split before no-dot option letters e.g. "D bringing A convenience"
-            splitText = splitText.replace(/([a-z,\\.!\\?])\s+([A-E]\s+[A-Z])/g, "$1\n$2");
+            splitText = splitText.replace(/([a-z,\.!\?])\s+([A-E]\s+[A-Z])/g, "$1\n$2");
             const lines = splitText
                 .split("\n")
                 .map((l) => l.trim())
