@@ -13,6 +13,7 @@ import {
   adminMidReportRemark,
   removeSubjectFromResult,
   deleteReportCardEntry,
+  getClassReportCards,
 } from "../controller/cardReportController";
 
 const router: Router = Router();
@@ -62,5 +63,7 @@ router
 router.route("/student-report-card/:studentID").get(studentReportRemark);
 
 router.route("/student-mid-report-card/:studentID").get(studentMidReportRemark);
+
+router.route("/class-report-cards/:classID").get(getClassReportCards);
 
 export default router;

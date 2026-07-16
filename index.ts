@@ -2,6 +2,10 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import fs from "fs";
+import dns from "dns";
+
+// Override DNS servers to resolve MongoDB Atlas SRV lookup issues
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 import cookieParser from "cookie-parser";
 import session from "express-session";

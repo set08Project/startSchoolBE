@@ -745,13 +745,17 @@ export const createReportCardEntry = async (
         { new: true }
       );
 
-      // Calculate overall points and grade
-      const totalPoints = updatedReport.result.reduce(
+      // Calculate overall points and grade (filtering out unoffered subjects with 0 marks)
+      const offeredResults = (updatedReport.result || []).filter((r: any) => {
+        const currentTotal = (r.test1 || 0) + (r.test2 || 0) + (r.test3 || 0) + (r.test4 || 0) + (r.exam || 0) + (r.points || 0);
+        return currentTotal > 0;
+      });
+      const totalPoints = offeredResults.reduce(
         (sum: number, r: any) => sum + (r.points || 0),
         0
       );
       const avgPoints = parseFloat(
-        (totalPoints / updatedReport.result.length).toFixed(2)
+        (totalPoints / (offeredResults.length || 1)).toFixed(2)
       );
       const overallGrade = calculateGrade(avgPoints);
 
@@ -1709,8 +1713,13 @@ async function updateExistingReport(
     { new: true }
   );
 
-  // Calculate overall average points
-  const validPoints = report?.result
+  // Calculate overall average points (filtering out unoffered subjects with 0 marks)
+  const offeredResults = (report?.result || []).filter((r: any) => {
+    const currentTotal = (r.test1 || 0) + (r.test2 || 0) + (r.test3 || 0) + (r.test4 || 0) + (r.exam || 0) + (r.points || 0);
+    return currentTotal > 0;
+  });
+
+  const validPoints = offeredResults
     ?.map((el: any) => el?.points)
     .filter((points: number) => points != null);
 
@@ -2359,11 +2368,16 @@ export const removeSubjectFromResult = async (
       });
     }
 
+    const offeredResults = updatedResults.filter((el: any) => {
+      const currentTotal = (el.test1 || 0) + (el.test2 || 0) + (el.test3 || 0) + (el.test4 || 0) + (el.exam || 0) + (el.points || 0);
+      return currentTotal > 0;
+    });
+
     const numb = parseFloat(
       (
-        updatedResults
+        offeredResults
           .map((el: any) => el.points)
-          .reduce((a: number, b: number) => a + b, 0) / updatedResults.length
+          .reduce((a: number, b: number) => a + b, 0) / (offeredResults.length || 1)
       ).toFixed(2)
     );
 
@@ -2552,8 +2566,13 @@ export const deleteReportCardEntry = async (
       });
     }
 
-    // Recalculate generic metrics
-    const validPoints = updatedResults
+    // Recalculate generic metrics (filtering out unoffered subjects with 0 marks)
+    const offeredResults = updatedResults.filter((el: any) => {
+      const currentTotal = (el.test1 || 0) + (el.test2 || 0) + (el.test3 || 0) + (el.test4 || 0) + (el.exam || 0) + (el.points || 0);
+      return currentTotal > 0;
+    });
+
+    const validPoints = offeredResults
       .map((el: any) => el.points)
       .filter((points: number) => points != null && !isNaN(points));
 
@@ -2651,6 +2670,64 @@ export const deleteReportCardEntry = async (
     console.error("Error removing subject from report card:", error);
     return res.status(500).json({
       message: "Error removing subject from report card",
+      error: error.message,
+      status: 500,
+    });
+  }
+};
+
+/**
+ * Bulk fetch report cards for all students in a class.
+ * Used for computing class position efficiently (single DB round-trip).
+ * GET /class-report-cards/:classID
+ */
+export const getClassReportCards = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { classID } = req.params;
+
+    // Fetch all students in the class with their report cards populated
+    const students: any[] = await studentModel
+      .find({ presentClassID: classID })
+      .populate({ path: "reportCard" })
+      .select("_id reportCard classAssigned");
+
+    if (!students || students.length === 0) {
+      return res.status(200).json({
+        message: "No students found in class",
+        data: [],
+        status: 200,
+      });
+    }
+
+    // Return only the data needed for position computation
+    const data = students.map((s: any) => ({
+      id: s._id?.toString(),
+      classAssigned: s.classAssigned,
+      reportCard: (s.reportCard || []).map((card: any) => ({
+        classInfo: card.classInfo,
+        result: (card.result || []).map((r: any) => ({
+          subject: r.subject,
+          test1: r.test1 ?? 0,
+          test2: r.test2 ?? 0,
+          test3: r.test3 ?? 0,
+          test4: r.test4 ?? 0,
+          exam: r.exam ?? 0,
+          mark: r.mark,
+        })),
+      })),
+    }));
+
+    return res.status(200).json({
+      message: "Class report cards fetched successfully",
+      data,
+      status: 200,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error fetching class report cards",
       error: error.message,
       status: 500,
     });
