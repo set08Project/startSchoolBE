@@ -37,4 +37,5 @@ router
     .patch(cardReportController_1.classTeacherMidReportRemark);
 router.route("/student-report-card/:studentID").get(cardReportController_1.studentReportRemark);
 router.route("/student-mid-report-card/:studentID").get(cardReportController_1.studentMidReportRemark);
+router.route("/class-report-cards/:classID").get(cardReportController_1.getClassReportCards);
 exports.default = router;

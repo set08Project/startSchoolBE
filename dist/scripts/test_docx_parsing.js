@@ -58,7 +58,7 @@ const parseHtml = (html) => {
     let questionData = {};
     let options = [];
     const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
-    elems.each((i, el) => {
+    elems.each((el) => {
         const text = $(el).text().trim();
         const htmlContent = $(el).html()?.trim() || "";
         if (!text)

@@ -21,13 +21,13 @@ const parseHtml = (html: string) => {
   const $ = cheerio.load(html);
   const blocks: string[] = [];
   const elems = $("body").children();
-  
+
   let value: any[] = [];
   let questionData: any = {};
   let options: string[] = [];
   const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
 
-  elems.each((i, el) => {
+  elems.each((el: any) => {
     const text = $(el).text().trim();
     const htmlContent = $(el).html()?.trim() || "";
 
@@ -47,9 +47,9 @@ const parseHtml = (html: string) => {
       let cleanHtml = htmlContent;
       // Simple strip of numbering for test verification if needed, 
       // but current logic keeps it in HTML if it's there.
-      
+
       if (url) {
-         cleanHtml = cleanHtml.replace(BRACKET_URL_REGEX, "").trim();
+        cleanHtml = cleanHtml.replace(BRACKET_URL_REGEX, "").trim();
       }
 
       questionData = { question: cleanHtml };
@@ -64,14 +64,14 @@ const parseHtml = (html: string) => {
       questionData.explanation = text.replace("Explanation:", "").trim();
     } else {
       if (questionData.question && options.length === 0) {
-         questionData.question += `<br/>${htmlContent}`;
-         const match = text.match(BRACKET_URL_REGEX);
-         const url = match ? match[1].trim() : null;
-         if (url) {
-            if (!questionData.images) questionData.images = [];
-            questionData.images.push(url);
-            questionData.question = questionData.question.replace(BRACKET_URL_REGEX, "");
-         }
+        questionData.question += `<br/>${htmlContent}`;
+        const match = text.match(BRACKET_URL_REGEX);
+        const url = match ? match[1].trim() : null;
+        if (url) {
+          if (!questionData.images) questionData.images = [];
+          questionData.images.push(url);
+          questionData.question = questionData.question.replace(BRACKET_URL_REGEX, "");
+        }
       }
     }
   });
@@ -80,7 +80,7 @@ const parseHtml = (html: string) => {
     questionData.options = options;
     value.push(questionData);
   }
-  
+
   return value;
 };
 
@@ -89,18 +89,18 @@ console.log(JSON.stringify(result, null, 2));
 
 // Assertions
 if (result.length !== 2) {
-    console.error("FAILED: Expected 2 questions");
-    process.exit(1);
+  console.error("FAILED: Expected 2 questions");
+  process.exit(1);
 }
 
 if (!result[0].options[0].includes("<sub>2</sub>")) {
-    console.error("FAILED: Subscript formatting lost in option A of Q1");
-    process.exit(1);
+  console.error("FAILED: Subscript formatting lost in option A of Q1");
+  process.exit(1);
 }
 
 if (!result[1].question.includes("<sup>2</sup>")) {
-    console.error("FAILED: Superscript formatting lost in Q2");
-    process.exit(1);
+  console.error("FAILED: Superscript formatting lost in Q2");
+  process.exit(1);
 }
 
 console.log("SUCCESS: Formatting preserved!");

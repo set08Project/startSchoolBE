@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
+const dns_1 = __importDefault(require("dns"));
+// Override DNS servers to resolve MongoDB Atlas SRV lookup issues
+dns_1.default.setServers(["8.8.8.8", "1.1.1.1"]);
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_session_1 = __importDefault(require("express-session"));
 const cors_1 = __importDefault(require("cors"));

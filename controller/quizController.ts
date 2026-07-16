@@ -418,7 +418,7 @@ const stripLeadingNumberFromHtml = (html: string) => {
   const container = $frag("div");
   const firstTextNode = container
     .contents()
-    .filter((i, el) => el.type === "text")[0] as any;
+    .filter((el: any) => el.type === "text")[0] as any;
   if (firstTextNode && firstTextNode.data) {
     firstTextNode.data = firstTextNode.data.replace(/^\s*\d+\.\s*/u, "");
   }
@@ -445,7 +445,7 @@ const stripLeadingOptionLetter = (html: string) => {
 async function testDocxParsing(filePath: string) {
   console.log("\n🔍 Testing DOCX Parsing...\n");
   console.log("File:", filePath);
-  
+
   try {
     // Check if file exists
     if (!fs.existsSync(filePath)) {
@@ -457,18 +457,18 @@ async function testDocxParsing(filePath: string) {
     console.log("\n📄 Converting DOCX to HTML...");
     const result = await mammoth.convertToHtml(
       { path: filePath },
-      { 
+      {
         includeDefaultStyleMap: true,
-        includeEmbeddedStyleMap: true 
+        includeEmbeddedStyleMap: true
       }
     );
-    
+
     const html = result.value || "";
-    
+
     console.log("\n=== RAW HTML OUTPUT ===");
     console.log(html);
     console.log("=== END HTML ===\n");
-    
+
     if (!html || html.trim() === "") {
       console.error("❌ HTML is empty!");
       return;
@@ -477,25 +477,25 @@ async function testDocxParsing(filePath: string) {
     // Parse with Cheerio
     const $ = cheerio.load(html);
     const elems = $("body").children();
-    
+
     console.log(`\n📊 Found ${elems.length} elements in body\n`);
-    
+
     let value: any[] = [];
     let questionData: any = {};
     let options: string[] = [];
 
     console.log("=== PARSING ELEMENTS ===\n");
-    
+
     elems.each((i, el) => {
       const rawText = $(el).text().trim();
       const normalizedText = normalizeText(rawText);
       const htmlContent = $(el).html()?.trim() || "";
-      
+
       console.log(`[${i}] Element Type: ${(el as any).tagName}`);
       console.log(`    Raw Text: "${rawText}"`);
       console.log(`    Normalized: "${normalizedText}"`);
       console.log(`    HTML: "${htmlContent.substring(0, 100)}..."`);
-      
+
       if (!normalizedText) {
         console.log("    ⚠️ Skipped (empty)");
         return;
@@ -504,7 +504,7 @@ async function testDocxParsing(filePath: string) {
       // Test question pattern
       const questionMatch = /^\d+[\.\)]/u.test(normalizedText);
       console.log(`    Question pattern match: ${questionMatch}`);
-      
+
       if (questionMatch) {
         // Save previous question
         if (Object.keys(questionData).length > 0) {
@@ -519,31 +519,31 @@ async function testDocxParsing(filePath: string) {
         questionData = { question: cleanHtml };
         console.log(`    ✅ NEW QUESTION: "${cleanHtml}"`);
       }
-      
+
       // Test option pattern
       const optionMatch = /^[A-D][\.\)]/u.test(normalizedText);
       console.log(`    Option pattern match: ${optionMatch}`);
-      
+
       if (optionMatch) {
         const cleanOption = stripLeadingOptionLetter(htmlContent);
         options.push(cleanOption);
         console.log(`    ✅ OPTION: "${cleanOption}"`);
       }
-      
+
       // Test answer pattern
       const answerMatch = /^Answer:/i.test(normalizedText);
       console.log(`    Answer pattern match: ${answerMatch}`);
-      
+
       if (answerMatch) {
         const answerText = normalizedText.replace(/^Answer:\s*/i, "").trim();
         questionData.answer = answerText;
         console.log(`    ✅ ANSWER: "${answerText}"`);
       }
-      
+
       // Test explanation pattern
       const explanationMatch = /^Explanation:/i.test(normalizedText);
       console.log(`    Explanation pattern match: ${explanationMatch}`);
-      
+
       if (explanationMatch) {
         const explanationText = normalizedText.replace(/^Explanation:\s*/i, "").trim();
         questionData.explanation = explanationText;
@@ -560,9 +560,9 @@ async function testDocxParsing(filePath: string) {
     console.log("\n\n=== FINAL PARSED QUESTIONS ===\n");
     console.log(JSON.stringify(value, null, 2));
     console.log("\n=== END ===\n");
-    
+
     console.log(`\n✅ Successfully parsed ${value.length} questions`);
-    
+
     // Validation
     console.log("\n📋 Validation Results:\n");
     value.forEach((q, i) => {
@@ -572,9 +572,9 @@ async function testDocxParsing(filePath: string) {
       console.log(`  - Has answer: ${!!q.answer && q.answer !== ""}`);
       console.log(`  - Has explanation: ${!!q.explanation && q.explanation !== ""}`);
     });
-    
+
     return value;
-    
+
   } catch (error: any) {
     console.error("\n❌ Error:", error.message);
     console.error(error.stack);
@@ -595,11 +595,11 @@ export { testDocxParsing };
 // Validation function
 const validateQuestion = (question: any, index: number): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  
+
   if (!question.question || question.question.trim() === "") {
     errors.push(`Question ${index + 1}: Missing question text`);
   }
-  
+
   if (!question.options || question.options.length === 0) {
     errors.push(`Question ${index + 1}: No options provided`);
   } else if (question.options.length < 2) {
@@ -612,11 +612,11 @@ const validateQuestion = (question: any, index: number): { valid: boolean; error
       }
     });
   }
-  
+
   if (!question.answer || question.answer.trim() === "") {
     errors.push(`Question ${index + 1}: Missing answer`);
   }
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -638,11 +638,11 @@ export const createSubjectQuizFromFile = async (
   res: Response
 ): Promise<Response> => {
   let uploadedPath: string | undefined;
-  
+
   try {
     const { classID, subjectID } = req.params;
     const { instruction, duration, mark } = req.body;
-       console.log("found docx!!!!");
+    console.log("found docx!!!!");
     // Validate required parameters
     if (!classID || !subjectID) {
       return res.status(400).json({
@@ -650,7 +650,7 @@ export const createSubjectQuizFromFile = async (
         status: 400,
       });
     }
-    
+
     if (!duration || !mark) {
       return res.status(400).json({
         message: "Missing required fields: duration and mark",
@@ -701,7 +701,7 @@ export const createSubjectQuizFromFile = async (
       try {
         // Direct XML parsing for high-fidelity scientific/math support
         const rawText = await extractRawTextFromDocx(uploadedPath!);
-        
+
         // Virtual Splitting for merged lines
         let splitText = rawText;
         splitText = splitText.replace(/(\S)\s*([A-D][\.\)]\s+)/g, "$1\n$2");
@@ -720,11 +720,11 @@ export const createSubjectQuizFromFile = async (
         const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
 
         console.log("=== PARSING LINES ===");
-        
+
         for (let i = 0; i < lines.length; i++) {
           let line = lines[i];
           console.log(`Line ${i}: "${line.substring(0, 80)}..."`);
-          
+
           if (/^\d+[\.\)]/.test(line)) {
             // Save previous question
             if (Object.keys(questionData).length > 0) {
@@ -812,7 +812,7 @@ export const createSubjectQuizFromFile = async (
     } else if (ext === ".csv") {
       try {
         const data = await csv().fromFile(uploadedPath);
-        
+
         for (const i of data) {
           const opts = i.options ? i.options.split(";;") : [];
           const read = {
@@ -919,7 +919,7 @@ export const createSubjectQuizFromFile = async (
 
   } catch (error: any) {
     console.error("Error creating quiz:", error);
-    
+
     // Clean up file on error
     if (uploadedPath && fs.existsSync(uploadedPath)) {
       try {
@@ -946,7 +946,7 @@ export const createSubjectExam = async (
   res: Response
 ): Promise<Response> => {
   let uploadedPath: string | undefined;
-  
+
   try {
     const { classID, subjectID } = req.params;
     const { instruction, duration, mark } = req.body;
@@ -954,14 +954,14 @@ export const createSubjectExam = async (
     console.log("=== QUIZ UPLOAD REQUEST ===");
     console.log("Class ID:", classID);
     console.log("Subject ID:", subjectID);
-    
+
     if (!classID || !subjectID) {
       return res.status(400).json({
         message: "Missing required parameters: classID and subjectID",
         status: 400,
       });
     }
-    
+
     if (!duration || !mark) {
       return res.status(400).json({
         message: "Missing required fields: duration and mark",
@@ -1027,14 +1027,14 @@ export const createSubjectExam = async (
     if (ext === ".doc" || ext === ".docx") {
       try {
         console.log("\n=== EXTRACTING RAW TEXT FROM DOCX (preserves LaTeX) ===");
-        
+
         // Extract raw text to preserve LaTeX expressions
         const rawText = await extractRawTextFromDocx(uploadedPath!);
-        
+
         console.log("Raw text preview:");
         console.log(rawText.substring(0, 500));
         console.log("\nRaw text length:", rawText.length);
-        
+
         if (!rawText || rawText.trim() === "") {
           return res.status(400).json({
             message: "The uploaded file appears to be empty or could not be read",
@@ -1052,9 +1052,9 @@ export const createSubjectExam = async (
 
         // Split by lines and process
         const lines = splitText.split('\n').map(line => line.trim()).filter(line => line);
-        
+
         console.log(`\nFound ${lines.length} lines to parse\n`);
-        
+
         let questionData: any = {};
         let options: string[] = [];
         const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
@@ -1063,9 +1063,9 @@ export const createSubjectExam = async (
 
         for (let i = 0; i < lines.length; i++) {
           let line = lines[i];
-          
+
           console.log(`\nLine ${i}: "${line.substring(0, 80)}..."`);
-          
+
           if (!line) {
             console.log("  -> Skipped (empty)");
             continue;
@@ -1074,7 +1074,7 @@ export const createSubjectExam = async (
           // Detect new question (starts with number)
           if (/^\d+[\.\)]/.test(line)) {
             console.log("  -> Detected QUESTION");
-            
+
             // Save previous question if present
             if (Object.keys(questionData).length > 0) {
               questionData.options = options;
@@ -1156,7 +1156,7 @@ export const createSubjectExam = async (
       try {
         console.log("\n=== PARSING CSV FILE ===");
         const data = await csv().fromFile(uploadedPath!);
-        
+
         for (const i of data) {
           const opts = i.options ? i.options.split(";;") : [];
           const read = {
@@ -1209,7 +1209,7 @@ export const createSubjectExam = async (
     if (validationErrors.length > 0) {
       console.log("\n=== VALIDATION FAILED ===");
       console.log(validationErrors);
-      
+
       return res.status(400).json({
         message: "Validation errors found in quiz questions",
         status: 400,
@@ -1279,7 +1279,7 @@ export const createSubjectExam = async (
   } catch (error: any) {
     console.error("=== ERROR CREATING QUIZ ===");
     console.error(error);
-    
+
     if (uploadedPath && fs.existsSync(uploadedPath)) {
       try {
         fs.unlinkSync(uploadedPath);
@@ -1302,7 +1302,7 @@ export const createSubjectExam = async (
 //   res: Response
 // ): Promise<Response> => {
 //   let uploadedPath: string | undefined;
-  
+
 //   try {
 //     const { classID, subjectID } = req.params;
 //     const { instruction, duration, mark } = req.body;
@@ -1312,7 +1312,7 @@ export const createSubjectExam = async (
 //     console.log("Subject ID:", subjectID);
 //     console.log("Body:", req.body);
 //     console.log("File:", req.file);
-    
+
 //     // Validate required parameters
 //     if (!classID || !subjectID) {
 //       return res.status(400).json({
@@ -1320,7 +1320,7 @@ export const createSubjectExam = async (
 //         status: 400,
 //       });
 //     }
-    
+
 //     if (!duration || !mark) {
 //       return res.status(400).json({
 //         message: "Missing required fields: duration and mark",
@@ -1388,19 +1388,19 @@ export const createSubjectExam = async (
 //     if (ext === ".doc" || ext === ".docx") {
 //       try {
 //         console.log("\n=== CONVERTING DOCX TO HTML ===");
-        
+
 //         // Convert Word docx to HTML to preserve images and markup
 //         const result = await mammoth.convertToHtml(
 //           { path: uploadedPath as string },
 //           { includeEmbeddedStyleMap: true }
 //         );
-        
+
 //         const html = result.value || "";
-        
+
 //         console.log("HTML Output Preview:");
 //         console.log(html.substring(0, 500));
 //         console.log("HTML Length:", html.length);
-        
+
 //         if (!html || html.trim() === "") {
 //           return res.status(400).json({
 //             message: "The uploaded file appears to be empty or could not be converted",
@@ -1410,9 +1410,9 @@ export const createSubjectExam = async (
 
 //         const $ = cheerio.load(html);
 //         const elems = $("body").children();
-        
+
 //         console.log(`\nFound ${elems.length} elements to parse`);
-        
+
 //         let questionData: any = {};
 //         let options: string[] = [];
 //         const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
@@ -1423,9 +1423,9 @@ export const createSubjectExam = async (
 //           // Use normalized text for pattern matching but keep HTML for storage
 //           const rawText = normalizeText($(el).text().trim());
 //           const htmlContent = $(el).html()?.trim() || "";
-          
+
 //           console.log(`\nElement ${i}: "${rawText.substring(0, 50)}..."`);
-          
+
 //           if (!rawText) {
 //             console.log("  -> Skipped (empty)");
 //             return; // skip empty blocks
@@ -1434,7 +1434,7 @@ export const createSubjectExam = async (
 //           // Detect new question (starts with number)
 //           if (/^\d+[\.\)]/u.test(rawText)) {
 //             console.log("  -> Detected QUESTION");
-            
+
 //             // Save previous question if present
 //             if (Object.keys(questionData).length) {
 //               questionData.options = options;
@@ -1457,7 +1457,7 @@ export const createSubjectExam = async (
 //             console.log(`  -> Question HTML: "${cleanHtml.substring(0, 100)}..."`);
 
 //             questionData = { question: cleanHtml };
-            
+
 //             if (url) {
 //               if (isValidUrl(url)) {
 //                 questionData.images = [url];
@@ -1541,7 +1541,7 @@ export const createSubjectExam = async (
 //       try {
 //         console.log("\n=== PARSING CSV FILE ===");
 //         const data = await csv().fromFile(uploadedPath!);
-        
+
 //         for (const i of data) {
 //           const opts = i.options ? i.options.split(";;") : [];
 //           const read = {
@@ -1594,7 +1594,7 @@ export const createSubjectExam = async (
 //     if (validationErrors.length > 0) {
 //       console.log("\n=== VALIDATION FAILED ===");
 //       console.log(validationErrors);
-      
+
 //       return res.status(400).json({
 //         message: "Validation errors found in quiz questions",
 //         status: 400,
@@ -1664,7 +1664,7 @@ export const createSubjectExam = async (
 //   } catch (error: any) {
 //     console.error("=== ERROR CREATING QUIZ ===");
 //     console.error(error);
-    
+
 //     // Clean up file on error
 //     if (uploadedPath && fs.existsSync(uploadedPath)) {
 //       try {
@@ -2163,42 +2163,42 @@ export const createSubjectExam = async (
 
 //       // await examinationModel.deleteMany();
 
-      // const quizes = await quizModel.create({
-      //   subjectTitle: checkForSubject?.subjectTitle,
-      //   subjectID: checkForSubject?._id,
-      //   session: school?.presentSession,
-      //   term: school?.presentTerm,
-      //   // quiz: {
-      //   //   instruction: { duration, mark, instruction },
-      //   //   question: value,
-      //   // },
+// const quizes = await quizModel.create({
+//   subjectTitle: checkForSubject?.subjectTitle,
+//   subjectID: checkForSubject?._id,
+//   session: school?.presentSession,
+//   term: school?.presentTerm,
+//   // quiz: {
+//   //   instruction: { duration, mark, instruction },
+//   //   question: value,
+//   // },
 
-      //   quiz: {
-      //     instruction: { duration, mark, instruction },
-      //     question: value,
-      //     theory,
-      //   },
-      //   totalQuestions: value?.length,
-      //   status: "examination",
-      //   startExam: false,
-      // });
+//   quiz: {
+//     instruction: { duration, mark, instruction },
+//     question: value,
+//     theory,
+//   },
+//   totalQuestions: value?.length,
+//   status: "examination",
+//   startExam: false,
+// });
 
-      // checkForSubject?.examination.push(new Types.ObjectId(quizes._id));
+// checkForSubject?.examination.push(new Types.ObjectId(quizes._id));
 
-      // checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
+// checkForSubject?.performance?.push(new Types.ObjectId(quizes._id));
 
-      // checkForSubject?.save();
+// checkForSubject?.save();
 
-      // findTeacher?.examination.push(new Types.ObjectId(quizes._id));
-      // findTeacher?.save();
+// findTeacher?.examination.push(new Types.ObjectId(quizes._id));
+// findTeacher?.save();
 
-      // findSubjectTeacher?.examination.push(new Types.ObjectId(quizes._id));
-      // findSubjectTeacher?.save();
+// findSubjectTeacher?.examination.push(new Types.ObjectId(quizes._id));
+// findSubjectTeacher?.save();
 
-      // const x = setTimeout(async () => {
-      //   await deleteFilesInFolder(filePath);
-      //   clearTimeout(x);
-      // }, 15000);
+// const x = setTimeout(async () => {
+//   await deleteFilesInFolder(filePath);
+//   clearTimeout(x);
+// }, 15000);
 
 //       return res.status(201).json({
 //         message: "exam entry successfully",

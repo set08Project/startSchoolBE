@@ -412,7 +412,7 @@ const stripLeadingNumberFromHtml = (html) => {
     const container = $frag("div");
     const firstTextNode = container
         .contents()
-        .filter((i, el) => el.type === "text")[0];
+        .filter((el) => el.type === "text")[0];
     if (firstTextNode && firstTextNode.data) {
         firstTextNode.data = firstTextNode.data.replace(/^\s*\d+\.\s*/u, "");
     }

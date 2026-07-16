@@ -102,7 +102,7 @@ export const createSubjectExam = async (
 
           const subBlocks = splitText
             .split("\n")
-            .map((b) => b.trim())
+            .map((b: any) => b.trim())
             .filter(Boolean);
           blocks.push(...subBlocks);
         }
