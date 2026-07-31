@@ -431,7 +431,7 @@ const stripLeadingOptionLetter = (html: string) => {
   const container = $frag("div");
   const firstTextNode = container
     .contents()
-    .filter((i, el) => el.type === "text")[0] as any;
+    .filter((i: any, el: any) => el.type === "text")[0] as any;
   if (firstTextNode && firstTextNode.data) {
     firstTextNode.data = firstTextNode.data.replace(/^\s*[A-D]\.\s*/u, "");
   }
@@ -486,7 +486,7 @@ async function testDocxParsing(filePath: string) {
 
     console.log("=== PARSING ELEMENTS ===\n");
 
-    elems.each((i, el) => {
+    elems.each((i: any, el: any) => {
       const rawText = $(el).text().trim();
       const normalizedText = normalizeText(rawText);
       const htmlContent = $(el).html()?.trim() || "";

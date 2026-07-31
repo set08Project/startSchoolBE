@@ -7,6 +7,7 @@ import termModel from "../model/termModel";
 import classroomModel from "../model/classroomModel";
 import classHistoryModel from "../model/classHistory";
 import staffModel from "../model/staffModel";
+import cardReportModel from "../model/cardReportModel";
 
 export const createSchoolSession = async (
   req: Request,
@@ -405,9 +406,79 @@ export const createNewSchoolSession = async (
     const studentDeletions: string[] = [];
     const jss3Students: string[] = []; // Collect all JSS 3 students (JSS 3, JSS 3A, JSS 3B, JSS 3C, etc.) for SSS 1Holders class
 
+    const isCardoso =
+      schoolID === "7b92fdb8" ||
+      school.email?.toLowerCase() === "richardmd44@yahoo.com" ||
+      school.schoolName?.toLowerCase().includes("cardoso");
+
     for (const student of students) {
-      // Collect all JSS 3 students (JSS 3, JSS 3A, JSS 3B, JSS 3C, etc.) BEFORE they are promoted
       const classAssignedTrimmed = student.classAssigned?.trim() || "";
+      let shouldRepeat = false;
+
+      if (isCardoso) {
+        // Fetch report card matching this student and target session info
+        const targetClassInfo = `${student.classAssigned} session: ${school.presentSession}(${school.presentTerm})`;
+        const reportCard: any = await cardReportModel.findOne({
+          student: student._id,
+          classInfo: targetClassInfo,
+        });
+
+        if (reportCard) {
+          const results = reportCard.result || [];
+          const percentage = reportCard.points || 0;
+
+          const isSubjectFail = (sub: any) => {
+            if (!sub) return false;
+            const mark =
+              sub?.mark ??
+              ((sub?.test1 ?? 0) +
+                (sub?.test2 ?? 0) +
+                (sub?.test3 ?? 0) +
+                (sub?.test4 ?? 0) +
+                (sub?.exam ?? 0));
+            const grade = (sub?.grade || "").toString().toUpperCase();
+            return mark < 40 || grade === "F9" || grade === "F";
+          };
+
+          const mathSubject = results.find((item: any) =>
+            (item?.subject || "").toLowerCase().includes("math")
+          );
+          const englishSubject = results.find((item: any) =>
+            (item?.subject || "").toLowerCase().includes("english")
+          );
+
+          const failedMaths = mathSubject ? isSubjectFail(mathSubject) : false;
+          const failedEnglish = englishSubject ? isSubjectFail(englishSubject) : false;
+          const failedBothMathsAndEnglish = failedMaths && failedEnglish;
+
+          const isBelow45Percent = percentage < 45;
+
+          if (failedBothMathsAndEnglish || isBelow45Percent) {
+            shouldRepeat = true;
+          }
+        }
+      }
+
+      if (shouldRepeat) {
+        // Keep them in their current class room
+        studentUpdates.push(
+          studentModel.findByIdAndUpdate(
+            student._id,
+            {
+              classAssigned: student.classAssigned, // Unchanged
+              attendance: null,
+              performance: null,
+              feesPaid1st: false,
+              feesPaid2nd: false,
+              feesPaid3rd: false,
+            },
+            { new: true }
+          )
+        );
+        continue;
+      }
+
+      // Collect all JSS 3 students (JSS 3, JSS 3A, JSS 3B, JSS 3C, etc.) BEFORE they are promoted
       if (classAssignedTrimmed.startsWith("JSS 3")) {
         jss3Students.push(student._id.toString());
         // Don't promote them individually; they'll be assigned to SSS 1Holders

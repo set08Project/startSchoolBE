@@ -1,5 +1,5 @@
 const axios = require("axios");
-const URL = "https://startschoolbe-1-toq0.onrender.comapi";
+const URL = "https://startschoolnextbe.onrender.comapi";
 const subjectID = "692d32fe681568bad8602ce4";
 
 async function testAPI() {
