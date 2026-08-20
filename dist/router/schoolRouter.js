@@ -74,4 +74,7 @@ router.route("/update-school-sms/:schoolID").patch(schoolController_1.updateScho
 router
     .route("/update-class-teacher-grading/:schoolID")
     .patch(schoolController_1.updateClassTeacherGrading);
+router
+    .route("/change-enrollment-id/:schoolID")
+    .patch(schoolController_1.changeSchoolEnrollmentID);
 exports.default = router;

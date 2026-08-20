@@ -435,7 +435,7 @@ const stripLeadingOptionLetter = (html) => {
 // Run this separately to see what's being extracted
 async function testDocxParsing(filePath) {
     console.log("\n🔍 Testing DOCX Parsing...\n");
-    console.log("File:", filePath);
+    // console.log("File:", filePath);
     try {
         // Check if file exists
         if (!node_fs_1.default.existsSync(filePath)) {

@@ -1284,6 +1284,57 @@ export const updateAdminCode = async (req: any, res: Response) => {
   }
 };
 
+export const changeSchoolEnrollmentID = async (req: any, res: Response) => {
+  try {
+    const { schoolID } = req.params;
+    const { currentEnrollmentID, newEnrollmentID } = req.body;
+
+    if (!currentEnrollmentID || !newEnrollmentID) {
+      return res.status(400).json({
+        message: "Please provide both present and new Enrollment ID",
+        status: 400,
+      });
+    }
+
+    const school: any = await schoolModel.findById(schoolID);
+
+    if (!school) {
+      return res.status(404).json({
+        message: "School not found",
+        status: 404,
+      });
+    }
+
+    if (school.enrollmentID !== currentEnrollmentID) {
+      return res.status(400).json({
+        message: "Present Enrollment ID is incorrect",
+        status: 400,
+      });
+    }
+
+    const updatedSchool = await schoolModel.findByIdAndUpdate(
+      schoolID,
+      {
+        enrollmentID: newEnrollmentID,
+      },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "Enrollment ID updated successfully",
+      data: updatedSchool,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Error updating enrollment ID",
+      error: error?.message,
+      status: 500,
+    });
+  }
+};
+
+
 export const updateSchoolName = async (req: any, res: Response) => {
   try {
     const { schoolID } = req.params;

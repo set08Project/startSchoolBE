@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateClassTeacherGrading = exports.updateSchoolSMS = exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.updateAdminCode = exports.RemoveSchoolPaymentOptions = exports.updateSchoolPaymentOptions = exports.updateSchoolTeamData = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolStamp = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.importSchoolData = exports.exportSchoolDataFile = exports.exportSchoolData = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
+exports.updateClassTeacherGrading = exports.updateSchoolSMS = exports.createSchoolTimetableRecord = exports.changeSchoolTag = exports.approveRegistration = exports.getSchoolRegistered = exports.updateRegisterationStatus = exports.updateSchoolName = exports.changeSchoolEnrollmentID = exports.updateAdminCode = exports.RemoveSchoolPaymentOptions = exports.updateSchoolPaymentOptions = exports.updateSchoolTeamData = exports.updateSchoolAccountDetail = exports.updateSchoolStartPossition = exports.updateSchoolSignature = exports.updateSchoolStamp = exports.updateSchoolAvatar = exports.changeSchoolPersonalName = exports.changeSchoolPhoneNumber = exports.changeSchoolAddress = exports.changeSchoolName = exports.importSchoolData = exports.exportSchoolDataFile = exports.exportSchoolData = exports.deleteSchool = exports.viewAllSchools = exports.readSchoolCookie = exports.logoutSchool = exports.viewSchoolStatusByName = exports.viewSchoolStatus = exports.verifySchool = exports.createSchool = exports.loginSchool = exports.viewSchoolTopStudent = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
@@ -1082,6 +1082,47 @@ const updateAdminCode = async (req, res) => {
     }
 };
 exports.updateAdminCode = updateAdminCode;
+const changeSchoolEnrollmentID = async (req, res) => {
+    try {
+        const { schoolID } = req.params;
+        const { currentEnrollmentID, newEnrollmentID } = req.body;
+        if (!currentEnrollmentID || !newEnrollmentID) {
+            return res.status(400).json({
+                message: "Please provide both present and new Enrollment ID",
+                status: 400,
+            });
+        }
+        const school = await schoolModel_1.default.findById(schoolID);
+        if (!school) {
+            return res.status(404).json({
+                message: "School not found",
+                status: 404,
+            });
+        }
+        if (school.enrollmentID !== currentEnrollmentID) {
+            return res.status(400).json({
+                message: "Present Enrollment ID is incorrect",
+                status: 400,
+            });
+        }
+        const updatedSchool = await schoolModel_1.default.findByIdAndUpdate(schoolID, {
+            enrollmentID: newEnrollmentID,
+        }, { new: true });
+        return res.status(201).json({
+            message: "Enrollment ID updated successfully",
+            data: updatedSchool,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Error updating enrollment ID",
+            error: error?.message,
+            status: 500,
+        });
+    }
+};
+exports.changeSchoolEnrollmentID = changeSchoolEnrollmentID;
 const updateSchoolName = async (req, res) => {
     try {
         const { schoolID } = req.params;

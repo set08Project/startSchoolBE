@@ -444,7 +444,7 @@ const stripLeadingOptionLetter = (html: string) => {
 
 async function testDocxParsing(filePath: string) {
   console.log("\n🔍 Testing DOCX Parsing...\n");
-  console.log("File:", filePath);
+  // console.log("File:", filePath);
 
   try {
     // Check if file exists
