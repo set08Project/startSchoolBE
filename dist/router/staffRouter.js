@@ -31,6 +31,7 @@ router.route("/login-teacher-token").post(staffController_1.loginStaffWithToken)
 router.route("/read-teacher-cookie").get(staffController_1.readTeacherCookie);
 router.route("/view-teacher-detail/:staffID").get(staffController_1.readTeacherDetail);
 router.route("/update-teacher-salery/:staffID").patch(staffController_1.updateTeacherSalary);
+router.route("/update-staff-bulk-info/:staffID").patch(staffController_1.updateStaffBulkInfo);
 router
     .route("/update-staffAddress/:schoolID/:stafffID")
     .patch(staffController_1.updateStaffAdress);

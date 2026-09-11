@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.updateStaffSignature = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.updateStaffLinkedinAcct = exports.updateStaffInstagramAcct = exports.updateStaffXAcct = exports.updateFacebookAccount = exports.updateStaffAdress = exports.updateStaffGender = exports.updatePhoneNumber = exports.updateStaffName = exports.createBulkTeachers = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
+exports.updateStaffBulkInfo = exports.deleteStaff = exports.updateStaffActiveness = exports.updateStaffAvatar = exports.updateStaffSignature = exports.logoutTeacher = exports.updateTeacherSalary = exports.readTeacherDetail = exports.readSchooTeacher = exports.updateStaffLinkedinAcct = exports.updateStaffInstagramAcct = exports.updateStaffXAcct = exports.updateFacebookAccount = exports.updateStaffAdress = exports.updateStaffGender = exports.updatePhoneNumber = exports.updateStaffName = exports.createBulkTeachers = exports.createSchoolTeacher = exports.createSchoolTeacherByAdmin = exports.createSchoolTeacherByVicePrincipal = exports.createSchoolTeacherByPrincipal = exports.createSchoolVicePrincipal = exports.createSchoolPrincipal = exports.readTeacherCookie = exports.loginStaffWithToken = exports.loginTeacher = void 0;
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 const staffModel_1 = __importDefault(require("../model/staffModel"));
 const mongoose_1 = require("mongoose");
@@ -995,3 +995,47 @@ const deleteStaff = async (req, res) => {
     }
 };
 exports.deleteStaff = deleteStaff;
+const updateStaffBulkInfo = async (req, res) => {
+    try {
+        const { staffID } = req.params;
+        const { staffName, phone, gender, staffAddress, salary, email, staffRole } = req.body;
+        const staff = await staffModel_1.default.findById(staffID);
+        if (staff) {
+            const updateData = {};
+            if (staffName !== undefined && staffName !== "")
+                updateData.staffName = staffName;
+            if (phone !== undefined && phone !== "")
+                updateData.phone = phone;
+            if (gender !== undefined && gender !== "")
+                updateData.gender = gender;
+            if (staffAddress !== undefined && staffAddress !== "")
+                updateData.staffAddress = staffAddress;
+            if (salary !== undefined && salary !== "")
+                updateData.salary = salary;
+            if (email !== undefined && email !== "")
+                updateData.email = email;
+            if (staffRole !== undefined && staffRole !== "")
+                updateData.staffRole = staffRole;
+            const updatedStaff = await staffModel_1.default.findByIdAndUpdate(staffID, updateData, { new: true });
+            return res.status(200).json({
+                message: "Staff details updated successfully",
+                status: 200,
+                data: updatedStaff,
+            });
+        }
+        else {
+            return res.status(404).json({
+                message: "Staff does not exist",
+                status: 404,
+            });
+        }
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error updating staff details",
+            status: 404,
+            data: error.message,
+        });
+    }
+};
+exports.updateStaffBulkInfo = updateStaffBulkInfo;

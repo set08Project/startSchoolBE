@@ -1162,3 +1162,50 @@ export const deleteStaff = async (
     });
   }
 };
+
+export const updateStaffBulkInfo = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { staffID } = req.params;
+    const { staffName, phone, gender, staffAddress, salary, email, staffRole } =
+      req.body;
+
+    const staff = await staffModel.findById(staffID);
+    if (staff) {
+      const updateData: any = {};
+      if (staffName !== undefined && staffName !== "") updateData.staffName = staffName;
+      if (phone !== undefined && phone !== "") updateData.phone = phone;
+      if (gender !== undefined && gender !== "") updateData.gender = gender;
+      if (staffAddress !== undefined && staffAddress !== "") updateData.staffAddress = staffAddress;
+      if (salary !== undefined && salary !== "") updateData.salary = salary;
+      if (email !== undefined && email !== "") updateData.email = email;
+      if (staffRole !== undefined && staffRole !== "") updateData.staffRole = staffRole;
+
+      const updatedStaff = await staffModel.findByIdAndUpdate(
+        staffID,
+        updateData,
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Staff details updated successfully",
+        status: 200,
+        data: updatedStaff,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Staff does not exist",
+        status: 404,
+      });
+    }
+  } catch (error: any) {
+    return res.status(404).json({
+      message: "Error updating staff details",
+      status: 404,
+      data: error.message,
+    });
+  }
+};
+
