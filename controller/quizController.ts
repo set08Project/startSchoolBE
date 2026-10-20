@@ -16,6 +16,19 @@ import mammoth from "mammoth";
 import * as cheerio from "cheerio";
 
 // ──────────────────────────────────────────────────────────────
+// Decode XML numeric character references (&#xNNNN; and &#NNNN;)
+// ──────────────────────────────────────────────────────────────
+function decodeXmlEntities(text: string): string {
+  let decoded = text.replace(/&#x([0-9A-Fa-f]+);/g, (_, hex) =>
+    String.fromCodePoint(parseInt(hex, 16))
+  );
+  decoded = decoded.replace(/&#(\d+);/g, (_, dec) =>
+    String.fromCodePoint(parseInt(dec, 10))
+  );
+  return decoded;
+}
+
+// ──────────────────────────────────────────────────────────────
 // Unicode helpers
 // ──────────────────────────────────────────────────────────────
 function toUnicodeSubscript(text: string): string {
@@ -168,6 +181,7 @@ async function extractRawTextFromDocx(filePath: string): Promise<string> {
     }
 
     let decodedText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+    decodedText = decodeXmlEntities(decodedText);
     decodedText = decodedText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
     return decodedText;
   } catch (error: any) {
@@ -191,6 +205,26 @@ function processParagraph(paraXml: string): string {
     let runText = "";
     while ((tMatch = textRegex.exec(runXml)) !== null) {
       runText += tMatch[1];
+    }
+
+    // Handle <w:sym> elements — Word stores special symbols (₦, −, ², etc.)
+    // as <w:sym w:font="..." w:char="XXXX"/> where XXXX is a hex code point
+    const symRegex = /<w:sym[^>]*w:char="([0-9A-Fa-f]+)"[^>]*\/>/g;
+    let symMatch;
+    while ((symMatch = symRegex.exec(runXml)) !== null) {
+      try {
+        const codePoint = parseInt(symMatch[1], 16);
+        if (codePoint > 0) {
+          runText += String.fromCodePoint(codePoint);
+        }
+      } catch (e) {
+        // Skip invalid code points
+      }
+    }
+
+    // Decode any XML numeric character references in the extracted text
+    if (runText) {
+      runText = decodeXmlEntities(runText);
     }
 
     if (runText) {
@@ -717,7 +751,7 @@ export const createSubjectQuizFromFile = async (
 
         let questionData: any = {};
         let options: string[] = [];
-        const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+        const BRACKET_URL_REGEX = /\[(https?:\/\/[^\]]+|data:[^\]]+)\]/;
 
         console.log("=== PARSING LINES ===");
 
@@ -1057,7 +1091,7 @@ export const createSubjectExam = async (
 
         let questionData: any = {};
         let options: string[] = [];
-        const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+        const BRACKET_URL_REGEX = /\[(https?:\/\/[^\]]+|data:[^\]]+)\]/;
 
         console.log("=== PARSING LINES ===");
 

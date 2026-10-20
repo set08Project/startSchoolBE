@@ -25,7 +25,7 @@ const parseHtml = (html: string) => {
   let value: any[] = [];
   let questionData: any = {};
   let options: string[] = [];
-  const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+  const BRACKET_URL_REGEX = /\[(https?:\/\/[^\]]+|data:[^\]]+)\]/;
 
   elems.each((el: any) => {
     const text = $(el).text().trim();

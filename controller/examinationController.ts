@@ -150,7 +150,7 @@ export const createSubjectExam = async (
       let questionData: any = {};
       let options: string[] = [];
 
-      const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+      const BRACKET_URL_REGEX = /\[(https?:\/\/[^\]]+|data:[^\]]+)\]/;
       for (let idx = 0; idx < blocks.length; idx++) {
         let line = blocks[idx];
         if (/^\d+[\.\)]/.test(line)) {
