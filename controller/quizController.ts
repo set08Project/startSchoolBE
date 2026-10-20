@@ -2297,7 +2297,19 @@ export const readSubjectExamination = async (
 
     const classId =
       subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
-    const classroom = await classroomModel.findById(classId);
+    let classroom: any;
+    if (classId) {
+      classroom = await classroomModel.findById(classId);
+    }
+    if (!classroom && subject?.designated) {
+      classroom = await classroomModel.findOne({
+        className: subject.designated,
+        ...(subject.school ? { school: subject.school } : {}),
+      });
+    }
+    if (!classroom) {
+      classroom = await classroomModel.findOne({ classSubjects: subjectID });
+    }
 
     const schoolId =
       classroom?.school || classroom?.schoolIDs || subject?.school;
@@ -2307,14 +2319,33 @@ export const readSubjectExamination = async (
       classroom?.presentTerm ||
       school?.presentTerm ||
       ""
-    ).trim().toLowerCase();
+    )
+      .trim()
+      .toLowerCase();
 
-    let exam = subject?.examination?.filter((e: any) => {
-      return (
-        e.status === "examination" &&
-        (e.term || "").trim().toLowerCase() === presentTerm
-      );
-    })[0];
+    const presentSession = (school?.presentSession || "")
+      .trim()
+      .toLowerCase();
+
+    let exam: any;
+    if (presentTerm && presentSession) {
+      exam = subject?.examination?.find((e: any) => {
+        return (
+          e.status === "examination" &&
+          (e.term || "").trim().toLowerCase() === presentTerm &&
+          (e.session || "").trim().toLowerCase() === presentSession
+        );
+      });
+    } else if (presentTerm) {
+      exam = subject?.examination?.find((e: any) => {
+        return (
+          e.status === "examination" &&
+          (e.term || "").trim().toLowerCase() === presentTerm
+        );
+      });
+    } else {
+      exam = undefined;
+    }
 
     return res.status(201).json({
       message: "subject exam read successfully",

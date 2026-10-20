@@ -384,30 +384,57 @@ const readSubjectExamination = async (req, res) => {
                 },
             },
         });
-        // Determine the current term for this subject's class
+        // Determine the current term and session for this subject's class
         let presentTerm = "";
+        let presentSession = "";
+        let classroom;
         const effectiveClassID = subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
         if (effectiveClassID) {
-            const classroom = await classroomModel_1.default.findById(effectiveClassID);
+            classroom = await classroomModel_1.default.findById(effectiveClassID);
+        }
+        if (!classroom && subject?.designated) {
+            classroom = await classroomModel_1.default.findOne({
+                className: subject.designated,
+                ...(subject.school ? { school: subject.school } : {}),
+            });
+        }
+        if (!classroom) {
+            classroom = await classroomModel_1.default.findOne({ classSubjects: subjectID });
+        }
+        if (classroom) {
             presentTerm = normalize(classroom?.presentTerm || "");
+            if (classroom?.school || classroom?.schoolIDs) {
+                const school = await schoolModel_1.default.findById(classroom.school || classroom.schoolIDs);
+                presentSession = normalize(school?.presentSession || "");
+                if (!presentTerm) {
+                    presentTerm = normalize(school?.presentTerm || "");
+                }
+            }
         }
-        // If classroom lookup fails to provide a term, check the school specifically
-        if (!presentTerm && subject?.school) {
+        // If classroom lookup fails to provide term or session, check the school specifically
+        if ((!presentTerm || !presentSession) && subject?.school) {
             const school = await schoolModel_1.default.findById(subject.school);
-            presentTerm = normalize(school?.presentTerm || "");
+            if (!presentTerm)
+                presentTerm = normalize(school?.presentTerm || "");
+            if (!presentSession)
+                presentSession = normalize(school?.presentSession || "");
         }
-        // Filter by status AND current term (if a term is active)
+        // Filter by status AND current term AND current session
         const allExams = lodash_1.default.filter(subject?.examination, {
             status: "examination",
         });
         let exam;
-        if (presentTerm) {
-            // Only return an exam that explicitly belongs to the current term
+        if (presentTerm && presentSession) {
+            // Only return an exam that explicitly belongs to the current term and session
+            exam = allExams.find((e) => normalize(e?.term || "") === presentTerm &&
+                normalize(e?.session || "") === presentSession);
+        }
+        else if (presentTerm) {
+            // Fallback: if no session info, filter by term
             exam = allExams.find((e) => normalize(e?.term || "") === presentTerm);
         }
         else {
             // If we don't know the current term, we shouldn't guess by returning the first one.
-            // Returning undefined will correctly trigger "No Test Available" on the frontend.
             exam = undefined;
         }
         return res.status(201).json({

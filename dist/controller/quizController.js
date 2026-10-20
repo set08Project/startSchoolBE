@@ -2027,16 +2027,46 @@ const readSubjectExamination = async (req, res) => {
             },
         });
         const classId = subject?.subjectClassID || subject?.subjectClassIDs || subject?.classID;
-        const classroom = await classroomModel_1.default.findById(classId);
+        let classroom;
+        if (classId) {
+            classroom = await classroomModel_1.default.findById(classId);
+        }
+        if (!classroom && subject?.designated) {
+            classroom = await classroomModel_1.default.findOne({
+                className: subject.designated,
+                ...(subject.school ? { school: subject.school } : {}),
+            });
+        }
+        if (!classroom) {
+            classroom = await classroomModel_1.default.findOne({ classSubjects: subjectID });
+        }
         const schoolId = classroom?.school || classroom?.schoolIDs || subject?.school;
         const school = await schoolModel_1.default.findById(schoolId);
         const presentTerm = (classroom?.presentTerm ||
             school?.presentTerm ||
-            "").trim().toLowerCase();
-        let exam = subject?.examination?.filter((e) => {
-            return (e.status === "examination" &&
-                (e.term || "").trim().toLowerCase() === presentTerm);
-        })[0];
+            "")
+            .trim()
+            .toLowerCase();
+        const presentSession = (school?.presentSession || "")
+            .trim()
+            .toLowerCase();
+        let exam;
+        if (presentTerm && presentSession) {
+            exam = subject?.examination?.find((e) => {
+                return (e.status === "examination" &&
+                    (e.term || "").trim().toLowerCase() === presentTerm &&
+                    (e.session || "").trim().toLowerCase() === presentSession);
+            });
+        }
+        else if (presentTerm) {
+            exam = subject?.examination?.find((e) => {
+                return (e.status === "examination" &&
+                    (e.term || "").trim().toLowerCase() === presentTerm);
+            });
+        }
+        else {
+            exam = undefined;
+        }
         return res.status(201).json({
             message: "subject exam read successfully",
             exam,
