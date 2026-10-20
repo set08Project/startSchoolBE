@@ -48,6 +48,14 @@ const subjectModel_1 = __importDefault(require("../model/subjectModel"));
 const examinationModel_1 = __importDefault(require("../model/examinationModel"));
 const schoolModel_1 = __importDefault(require("../model/schoolModel"));
 // ──────────────────────────────────────────────────────────────
+// Decode XML numeric character references (&#xNNNN; and &#NNNN;)
+// ──────────────────────────────────────────────────────────────
+function decodeXmlEntities(text) {
+    let decoded = text.replace(/&#x([0-9A-Fa-f]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)));
+    decoded = decoded.replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)));
+    return decoded;
+}
+// ──────────────────────────────────────────────────────────────
 // Unicode helpers
 // ──────────────────────────────────────────────────────────────
 function toUnicodeSubscript(text) {
@@ -182,6 +190,7 @@ async function extractRawTextFromDocx(filePath) {
                 fullText += paraText.trim() + "\n";
         }
         let decodedText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+        decodedText = decodeXmlEntities(decodedText);
         decodedText = decodedText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
         return decodedText;
     }
@@ -199,10 +208,29 @@ function processParagraph(paraXml) {
         const rInner = match[1];
         if (match[0].includes("<m:oMath") || match[0].includes("<w:vertAlign"))
             continue;
+        // Extract text from <w:t> elements
         const tMatch = rInner.match(/<w:t[^>]*>([^<]*)<\/w:t>/);
-        if (!tMatch || !tMatch[1])
+        let text = tMatch ? tMatch[1] : "";
+        // Handle <w:sym> elements — Word stores special symbols (₦, −, ², etc.)
+        const symRegex = /<w:sym[^>]*w:char="([0-9A-Fa-f]+)"[^>]*\/>/g;
+        let symMatch;
+        while ((symMatch = symRegex.exec(rInner)) !== null) {
+            try {
+                const codePoint = parseInt(symMatch[1], 16);
+                if (codePoint > 0) {
+                    text += String.fromCodePoint(codePoint);
+                }
+            }
+            catch (e) {
+                // Skip invalid code points
+            }
+        }
+        // Decode XML numeric character references
+        if (text) {
+            text = decodeXmlEntities(text);
+        }
+        if (!text)
             continue;
-        let text = tMatch[1];
         const rPrMatch = rInner.match(/<w:rPr[^>]*>(.*?)<\/w:rPr>/s);
         if (rPrMatch) {
             const rPr = rPrMatch[1];

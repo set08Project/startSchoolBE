@@ -53,6 +53,14 @@ const node_path_1 = __importDefault(require("node:path"));
 const mammoth_1 = __importDefault(require("mammoth"));
 const cheerio = __importStar(require("cheerio"));
 // ──────────────────────────────────────────────────────────────
+// Decode XML numeric character references (&#xNNNN; and &#NNNN;)
+// ──────────────────────────────────────────────────────────────
+function decodeXmlEntities(text) {
+    let decoded = text.replace(/&#x([0-9A-Fa-f]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)));
+    decoded = decoded.replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)));
+    return decoded;
+}
+// ──────────────────────────────────────────────────────────────
 // Unicode helpers
 // ──────────────────────────────────────────────────────────────
 function toUnicodeSubscript(text) {
@@ -202,6 +210,7 @@ async function extractRawTextFromDocx(filePath) {
                 fullText += paraText.trim() + "\n";
         }
         let decodedText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+        decodedText = decodeXmlEntities(decodedText);
         decodedText = decodedText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
         return decodedText;
     }
@@ -223,6 +232,25 @@ function processParagraph(paraXml) {
         let runText = "";
         while ((tMatch = textRegex.exec(runXml)) !== null) {
             runText += tMatch[1];
+        }
+        // Handle <w:sym> elements — Word stores special symbols (₦, −, ², etc.)
+        // as <w:sym w:font="..." w:char="XXXX"/> where XXXX is a hex code point
+        const symRegex = /<w:sym[^>]*w:char="([0-9A-Fa-f]+)"[^>]*\/>/g;
+        let symMatch;
+        while ((symMatch = symRegex.exec(runXml)) !== null) {
+            try {
+                const codePoint = parseInt(symMatch[1], 16);
+                if (codePoint > 0) {
+                    runText += String.fromCodePoint(codePoint);
+                }
+            }
+            catch (e) {
+                // Skip invalid code points
+            }
+        }
+        // Decode any XML numeric character references in the extracted text
+        if (runText) {
+            runText = decodeXmlEntities(runText);
         }
         if (runText) {
             // Check for vertical alignment (subscript/superscript)
@@ -652,7 +680,7 @@ const createSubjectQuizFromFile = async (req, res) => {
                     .filter(Boolean);
                 let questionData = {};
                 let options = [];
-                const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+                const BRACKET_URL_REGEX = /\[(https?:\/\/[^\]]+|data:[^\]]+)\]/;
                 console.log("=== PARSING LINES ===");
                 for (let i = 0; i < lines.length; i++) {
                     let line = lines[i];
@@ -957,7 +985,7 @@ const createSubjectExam = async (req, res) => {
                 console.log(`\nFound ${lines.length} lines to parse\n`);
                 let questionData = {};
                 let options = [];
-                const BRACKET_URL_REGEX = /\[([^\]]+)\]/;
+                const BRACKET_URL_REGEX = /\[(https?:\/\/[^\]]+|data:[^\]]+)\]/;
                 console.log("=== PARSING LINES ===");
                 for (let i = 0; i < lines.length; i++) {
                     let line = lines[i];

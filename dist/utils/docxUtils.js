@@ -43,6 +43,14 @@ const adm_zip_1 = __importDefault(require("adm-zip"));
 const path = __importStar(require("path"));
 const streamifier_1 = require("./streamifier");
 // ──────────────────────────────────────────────────────────────
+// Decode XML numeric character references (&#xNNNN; and &#NNNN;)
+// ──────────────────────────────────────────────────────────────
+function decodeXmlEntities(text) {
+    let decoded = text.replace(/&#x([0-9A-Fa-f]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)));
+    decoded = decoded.replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)));
+    return decoded;
+}
+// ──────────────────────────────────────────────────────────────
 // Unicode helpers for Subscript/Superscript
 // ──────────────────────────────────────────────────────────────
 function toUnicodeSubscript(text) {
@@ -138,6 +146,7 @@ async function extractRawTextFromDocx(filePath) {
                 fullText += paraText.trim() + "\n";
         }
         let decodedText = fullText.replace(/\n\n\n+/g, "\n\n").trim();
+        decodedText = decodeXmlEntities(decodedText);
         decodedText = decodedText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
         return decodedText;
     }
@@ -157,6 +166,23 @@ function processParagraph(paraXml) {
         let runText = "";
         while ((tMatch = textRegex.exec(runXml)) !== null) {
             runText += tMatch[1];
+        }
+        if (runText) {
+            runText = decodeXmlEntities(runText);
+        }
+        // Handle <w:sym> elements — Word stores special symbols (₦, −, ², etc.)
+        const symRegex = /<w:sym[^>]*w:char="([0-9A-Fa-f]+)"[^>]*\/>/g;
+        let symMatch;
+        while ((symMatch = symRegex.exec(runXml)) !== null) {
+            try {
+                const codePoint = parseInt(symMatch[1], 16);
+                if (codePoint > 0) {
+                    runText += String.fromCodePoint(codePoint);
+                }
+            }
+            catch (e) {
+                // Skip invalid code points
+            }
         }
         if (runText) {
             if (runXml.includes('w:val="subscript"')) {
